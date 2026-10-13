@@ -1,0 +1,129 @@
+<UserControl x:Class="Avion2.Overlay.HomePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style x:Key="CardLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#B8C8D8" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <Style x:Key="CardValue" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AionDisplayFont}" />
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Margin" Value="0,6,0,0" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,28,32,32">
+            <!-- Hero -->
+            <TextBlock Text="◇   ✦   ◇" HorizontalAlignment="Center" Foreground="#CFEFFF" FontSize="12" Opacity="0.8" Margin="0,24,0,6" />
+            <TextBlock Text="YOUR DAMAGE TAKES FLIGHT" Style="{StaticResource AionHeroTitle}" />
+            <Rectangle Height="1" Width="620" Margin="0,8,0,0" Fill="{StaticResource AionDividerBrush}" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,0">
+                <Ellipse x:Name="StatusDot" Width="9" Height="9" Fill="#6B7280" Margin="0,0,8,0" VerticalAlignment="Center" />
+                <TextBlock x:Name="StatusTitle" Text="Meter stopped" FontFamily="{StaticResource AionDisplayFont}" FontSize="16"
+                           Foreground="White" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock x:Name="StatusDetail" HorizontalAlignment="Center" Foreground="#C9D7E4" Margin="0,4,0,0" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="720"
+                       Text="Start the meter, then play: the overlay appears and finds the game connection by itself." />
+            <TextBlock x:Name="LiveLine" HorizontalAlignment="Center" Margin="0,6,0,0" FontWeight="SemiBold"
+                       Foreground="{StaticResource AionGoldBrush}" Visibility="Collapsed" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,22,0,0">
+                <Button x:Name="StartStop" Style="{StaticResource AionPrimaryButton}" Content="Start Meter" MinWidth="230" Margin="0,0,14,0" Click="StartStop_Click" />
+                <Button Style="{StaticResource AionSecondaryButton}" Content="Fight History" MinWidth="230" Click="AllFights_Click" />
+            </StackPanel>
+
+            <WrapPanel x:Name="Options" HorizontalAlignment="Center" Margin="0,16,0,0">
+                <TextBlock Text="Capture" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#C9D7E4" />
+                <ComboBox x:Name="DeviceBox" Width="320" Margin="0,0,16,0" DisplayMemberPath="Label"
+                          ToolTip="Automatic captures on every adapter and finds the game connection by itself (also through VPNs and ping reducers)." />
+                <CheckBox x:Name="RecordBox" Content="Record session (.pcap)" VerticalAlignment="Center" Foreground="#C9D7E4" />
+            </WrapPanel>
+
+            <!-- Status cards (site "Notice / Event" cards) -->
+            <UniformGrid Columns="3" Margin="0,44,0,0" MaxWidth="1000">
+                <Grid Margin="8,0">
+                    <Border Style="{StaticResource AionCard}" Margin="0,8,0,0" MinHeight="96">
+                        <StackPanel>
+                            <Border Style="{StaticResource AionChip}"><TextBlock Text="Capture" Style="{StaticResource CardLabel}" /></Border>
+                            <TextBlock x:Name="NpcapValue" Style="{StaticResource CardValue}" />
+                        </StackPanel>
+                    </Border>
+                    <Path Style="{StaticResource AionStar}" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                </Grid>
+                <Grid Margin="8,0">
+                    <Border Style="{StaticResource AionCard}" Margin="0,8,0,0" MinHeight="96">
+                        <StackPanel>
+                            <Border Style="{StaticResource AionChip}"><TextBlock Text="Names" Style="{StaticResource CardLabel}" /></Border>
+                            <TextBlock x:Name="NamesValue" Style="{StaticResource CardValue}" />
+                        </StackPanel>
+                    </Border>
+                    <Path Style="{StaticResource AionStar}" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                </Grid>
+                <Grid Margin="8,0">
+                    <Border Style="{StaticResource AionCard}" Margin="0,8,0,0" MinHeight="96">
+                        <StackPanel>
+                            <Border Style="{StaticResource AionChip}"><TextBlock Text="Daeva" Style="{StaticResource CardLabel}" /></Border>
+                            <TextBlock x:Name="CharactersValue" Style="{StaticResource CardValue}" />
+                        </StackPanel>
+                    </Border>
+                    <Path Style="{StaticResource AionStar}" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                </Grid>
+            </UniformGrid>
+
+            <!-- Recent fights -->
+            <Grid Margin="8,30,8,0" MaxWidth="984">
+                <Border Style="{StaticResource AionCard}" Margin="0,8,0,0">
+                    <StackPanel>
+                        <DockPanel Margin="0,4,0,10">
+                            <Button DockPanel.Dock="Right" Content="All fights →" Click="AllFights_Click" />
+                            <TextBlock Text="Recent Fights" Style="{StaticResource AionHeading}" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <TextBlock x:Name="NoFights" Text="No fights yet. They show up here when they end." Foreground="#8FA3B8" Visibility="Collapsed" Margin="0,0,0,6" />
+                        <ItemsControl x:Name="Recent">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="10,8" Cursor="Hand" MouseLeftButtonUp="Recent_Click" BorderBrush="#1FFFFFFF" BorderThickness="0,1,0,0">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#1A7FD8FF" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="130" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="70" />
+                                                <ColumnDefinition Width="120" />
+                                                <ColumnDefinition Width="120" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding When}" Foreground="#8FA3B8" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Title}" Foreground="White" FontFamily="{StaticResource AionDisplayFont}" FontSize="14"
+                                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="2" Text="{Binding Duration}" Foreground="#8FA3B8" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="3" VerticalAlignment="Center">
+                                                <Run Text="You " Foreground="#8FA3B8" /><Run Text="{Binding YourDps, Mode=OneWay}" Foreground="#7FD8FF" /><Run Text="/s" Foreground="#8FA3B8" />
+                                            </TextBlock>
+                                            <TextBlock Grid.Column="4" VerticalAlignment="Center">
+                                                <Run Text="Party " Foreground="#8FA3B8" /><Run Text="{Binding TotalDps, Mode=OneWay}" Foreground="{StaticResource AionGoldBrush}" /><Run Text="/s" Foreground="#8FA3B8" />
+                                            </TextBlock>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                <Path Style="{StaticResource AionStar}" VerticalAlignment="Top" HorizontalAlignment="Center" />
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

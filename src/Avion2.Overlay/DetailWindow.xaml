@@ -1,0 +1,13 @@
+<Window x:Class="Avion2.Overlay.DetailWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Avion2.Overlay"
+        Icon="pack://application:,,,/AVION2;component/Assets/avion2.ico"
+        Title="AVION2 — Details"
+        ThemeMode="Dark"
+        Width="1180" Height="640" MinWidth="720" MinHeight="360"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource AionNightBrush}"
+        FontFamily="Segoe UI" FontSize="12">
+    <local:DetailView x:Name="View" Margin="14" />
+</Window>

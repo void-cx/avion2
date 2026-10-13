@@ -1,0 +1,13 @@
+bin/
+obj/
+.vs/
+*.user
+# captures and logs may contain other players' data — never commit them
+captures/
+*.pcap
+*.pcapng
+*.jsonl
+# extracted game data (NCSoft content) stays local
+data/*.json
+# local Claude Code settings
+.claude/settings.local.json

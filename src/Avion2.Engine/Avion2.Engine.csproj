@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Avion2.Capture\Avion2.Capture.csproj" />
+    <ProjectReference Include="..\Avion2.Analysis\Avion2.Analysis.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+  </PropertyGroup>
+
+</Project>

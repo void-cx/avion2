@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Avion2.Capture\Avion2.Capture.csproj" />
+    <ProjectReference Include="..\Avion2.Analysis\Avion2.Analysis.csproj" />
+    <ProjectReference Include="..\Avion2.Engine\Avion2.Engine.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>avion2</AssemblyName>
+    <RootNamespace>Avion2.Cli</RootNamespace>
+  </PropertyGroup>
+
+</Project>
+

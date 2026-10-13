@@ -1,0 +1,142 @@
+using System.Globalization;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Avion2.Analysis;
+
+namespace Avion2.Engine;
+
+/// <summary>A finished encounter on disk.</summary>
+public sealed record HistoryEntry(string Path, MeterSnapshot Snapshot);
+
+/// <summary>
+/// Finished encounters as JSON files in %LocalAppData%\AVION2\history (one file per fight, newest kept).
+/// They contain other players' names and damage: local only, never uploaded.
+/// </summary>
+public sealed class HistoryStore
+{
+    public const int MaxFiles = 300;
+
+    private static readonly JsonSerializerOptions Options = new()
+    {
+        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() },
+    };
+
+    public HistoryStore(string? directory = null)
+    {
+        Directory = directory ?? System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "history");
+    }
+
+    public string Directory { get; }
+
+    public HistoryEntry? Save(MeterSnapshot snapshot)
+    {
+        try
+        {
+            System.IO.Directory.CreateDirectory(Directory);
+            var started = DateTimeOffset.FromUnixTimeMilliseconds(snapshot.StartedAtMs).ToLocalTime();
+            string name = $"{started:yyyyMMdd-HHmmss}-{Sanitize(snapshot.Title)}.json";
+            string path = System.IO.Path.Combine(Directory, name);
+            File.WriteAllText(path, JsonSerializer.Serialize(snapshot, Options));
+            Prune();
+            return new HistoryEntry(path, snapshot);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    public bool Delete(HistoryEntry entry)
+    {
+        try
+        {
+            if (entry.Path.Length > 0 && File.Exists(entry.Path))
+            {
+                File.Delete(entry.Path);
+                return true;
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // locked; leave it
+        }
+
+        return false;
+    }
+
+    /// <summary>Most recent encounters first.</summary>
+    public List<HistoryEntry> Load(int max = 50)
+    {
+        var entries = new List<HistoryEntry>();
+        if (!System.IO.Directory.Exists(Directory))
+        {
+            return entries;
+        }
+
+        foreach (string path in System.IO.Directory.GetFiles(Directory, "*.json").OrderByDescending(p => p, StringComparer.Ordinal).Take(max))
+        {
+            try
+            {
+                if (JsonSerializer.Deserialize<MeterSnapshot>(File.ReadAllText(path), Options) is { } snapshot)
+                {
+                    entries.Add(new HistoryEntry(path, snapshot));
+                }
+            }
+            catch (Exception ex) when (ex is IOException or JsonException or NotSupportedException)
+            {
+                // skip unreadable files (older formats)
+            }
+        }
+
+        return entries;
+    }
+
+    /// <summary>Plain-text summary, e.g. for pasting into a chat.</summary>
+    public static string Summarize(MeterSnapshot s, int maxRows = 10)
+    {
+        var sb = new StringBuilder();
+        var started = DateTimeOffset.FromUnixTimeMilliseconds(s.StartedAtMs).ToLocalTime();
+        sb.Append(CultureInfo.InvariantCulture, $"AVION2 — {s.Title} · {Duration(s.DurationSeconds)} · {Compact(s.TotalDps)}/s");
+        sb.AppendLine(CultureInfo.InvariantCulture, $" · {started:yyyy-MM-dd HH:mm}");
+        int rank = 0;
+        foreach (var row in s.Rows.Take(maxRows))
+        {
+            rank++;
+            string cls = row.Class == Protocol.GameClass.Unknown ? string.Empty : $" ({row.Class})";
+            sb.AppendLine(CultureInfo.InvariantCulture,
+                $"{rank}. {row.Name}{cls}  {Compact(row.Dps)}/s  {Compact(row.Total)}  {row.Share * 100:0.0}%  crit {row.CritRate * 100:0}%");
+        }
+
+        return sb.ToString().TrimEnd();
+    }
+
+    public static string Compact(double value) => value switch
+    {
+        >= 1_000_000_000 => (value / 1_000_000_000).ToString("0.00", CultureInfo.InvariantCulture) + "B",
+        >= 1_000_000 => (value / 1_000_000).ToString("0.00", CultureInfo.InvariantCulture) + "M",
+        >= 10_000 => (value / 1_000).ToString("0.0", CultureInfo.InvariantCulture) + "K",
+        _ => value.ToString("0", CultureInfo.InvariantCulture),
+    };
+
+    public static string Duration(double seconds) =>
+        TimeSpan.FromSeconds(seconds).ToString(seconds >= 3600 ? @"h\:mm\:ss" : @"mm\:ss", CultureInfo.InvariantCulture);
+
+    private void Prune()
+    {
+        var files = System.IO.Directory.GetFiles(Directory, "*.json").OrderByDescending(p => p, StringComparer.Ordinal).Skip(MaxFiles);
+        foreach (string old in files)
+        {
+            File.Delete(old);
+        }
+    }
+
+    private static string Sanitize(string title)
+    {
+        var invalid = System.IO.Path.GetInvalidFileNameChars();
+        string clean = new(title.Select(c => invalid.Contains(c) || c == ' ' ? '_' : c).ToArray());
+        return clean.Length > 40 ? clean[..40] : clean;
+    }
+}

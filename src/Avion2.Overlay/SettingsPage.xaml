@@ -1,0 +1,152 @@
+<UserControl x:Class="Avion2.Overlay.SettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style x:Key="Section" TargetType="Border" BasedOn="{StaticResource ArmoryPanel}">
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+        <Style x:Key="Heading" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AionDisplayFont}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+        </Style>
+        <Style x:Key="Hint" TargetType="TextBlock">
+            <Setter Property="Opacity" Value="0.7" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,2,0,6" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16" MaxWidth="720" HorizontalAlignment="Left">
+            <TextBlock Text="Settings" Style="{StaticResource AionHeading}" FontSize="28" Margin="0,0,0,16" />
+
+            <!-- General -->
+            <Border Style="{StaticResource Section}">
+                <StackPanel>
+                    <TextBlock Text="General" Style="{StaticResource Heading}" />
+                    <CheckBox Content="Start the meter automatically when AVION2 opens" IsChecked="{Binding AutoStart}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Appearance -->
+            <Border Style="{StaticResource Section}">
+                <StackPanel>
+                    <TextBlock Text="Appearance" Style="{StaticResource Heading}" />
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="None" Margin="6,0,0,0" Click="NoVideo_Click" />
+                        <Button DockPanel.Dock="Right" Content="Default" Margin="6,0,0,0" Click="DefaultVideo_Click" />
+                        <Button DockPanel.Dock="Right" Content="Browse…" Margin="6,0,0,0" Click="BrowseVideo_Click" />
+                        <TextBlock Text="Home background" Width="150" VerticalAlignment="Center" />
+                        <TextBlock x:Name="VideoName" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="A looping video behind the home page (e.g. the official key-art loop). Default: %AppData%\AVION2\background.mp4. Stays on your PC." />
+                </StackPanel>
+            </Border>
+
+            <!-- Overlay -->
+            <Border Style="{StaticResource Section}">
+                <StackPanel>
+                    <TextBlock Text="Overlay" Style="{StaticResource Heading}" />
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Right" Width="44" TextAlignment="Right" VerticalAlignment="Center"
+                                   Text="{Binding BackgroundOpacity, StringFormat={}{0:P0}}" />
+                        <TextBlock Text="Background opacity" Width="150" VerticalAlignment="Center" />
+                        <Slider Minimum="0.2" Maximum="1" Value="{Binding BackgroundOpacity}" SmallChange="0.05" LargeChange="0.1" />
+                    </DockPanel>
+                    <CheckBox Margin="0,8,0,0" Content="Show all targets nearby (not only the ones I hit)" IsChecked="{Binding AllTargets}" />
+                    <CheckBox Margin="0,4,0,0" Content="Lock overlay (click-through to the game)" IsChecked="{Binding Locked}" />
+                    <TextBlock Style="{StaticResource Hint}" Text="While locked, unlock with Ctrl+Shift+L." />
+                </StackPanel>
+            </Border>
+
+            <!-- Low HP alert -->
+            <Border Style="{StaticResource Section}">
+                <StackPanel>
+                    <TextBlock Text="Low-HP alert" Style="{StaticResource Heading}" />
+                    <CheckBox Content="Play a sound and flash the overlay when my HP is low" IsChecked="{Binding LowHpAlert}" />
+                    <DockPanel Margin="0,8,0,0">
+                        <TextBlock DockPanel.Dock="Right" Width="44" TextAlignment="Right" VerticalAlignment="Center"
+                                   Text="{Binding LowHpThreshold, StringFormat={}{0:P0}}" />
+                        <TextBlock Text="Warn below" Width="150" VerticalAlignment="Center" />
+                        <Slider Minimum="0.1" Maximum="0.7" Value="{Binding LowHpThreshold}" SmallChange="0.05" LargeChange="0.1"
+                                TickFrequency="0.05" IsSnapToTickEnabled="True" />
+                    </DockPanel>
+                    <DockPanel Margin="0,8,0,0">
+                        <TextBlock DockPanel.Dock="Right" Width="44" TextAlignment="Right" VerticalAlignment="Center"
+                                   Text="{Binding AlertVolume, StringFormat={}{0:P0}}" />
+                        <TextBlock Text="Volume" Width="150" VerticalAlignment="Center" />
+                        <Slider Minimum="0" Maximum="1" Value="{Binding AlertVolume}" SmallChange="0.05" LargeChange="0.1"
+                                TickFrequency="0.05" IsSnapToTickEnabled="True" />
+                    </DockPanel>
+                    <DockPanel Margin="0,8,0,0">
+                        <Button DockPanel.Dock="Right" Content="Built-in" Margin="6,0,0,0" Click="DefaultSound_Click" />
+                        <Button DockPanel.Dock="Right" Content="Browse…" Margin="6,0,0,0" Click="BrowseSound_Click" />
+                        <Button DockPanel.Dock="Right" Content="▶ Test" Margin="6,0,0,0" Click="TestSound_Click" />
+                        <TextBlock Text="Sound" Width="150" VerticalAlignment="Center" />
+                        <TextBlock x:Name="SoundName" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="Max HP is never sent by the game; it is learned from the highest HP seen and remembered per character." />
+                </StackPanel>
+            </Border>
+
+            <!-- Game data -->
+            <Border Style="{StaticResource Section}">
+                <StackPanel>
+                    <TextBlock Text="Skill and NPC names" Style="{StaticResource Heading}" />
+                    <TextBlock x:Name="DataStatus" TextWrapping="Wrap" />
+                    <DockPanel Margin="0,8,0,0">
+                        <Button x:Name="ImportButton" DockPanel.Dock="Right" Content="Download / update" Margin="6,0,0,0" Click="Import_Click" />
+                        <TextBlock Text="Language" Width="150" VerticalAlignment="Center" />
+                        <ComboBox x:Name="LanguageBox" Width="120" HorizontalAlignment="Left" />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="Names are NCSoft game data, taken from the A2Tools project (GPL-3.0). They are stored locally only. Re-run after game patches." />
+                </StackPanel>
+            </Border>
+
+            <!-- History -->
+            <Border Style="{StaticResource Section}">
+                <StackPanel>
+                    <TextBlock Text="Fight history" Style="{StaticResource Heading}" />
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Open folder" Click="HistoryFolder_Click" />
+                        <TextBlock x:Name="HistoryStatus" VerticalAlignment="Center" TextWrapping="Wrap" />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="Finished fights are saved as JSON (newest 300). They include other players' names: keep them to yourself unless those players agree." />
+                </StackPanel>
+            </Border>
+
+            <!-- Hotkeys -->
+            <Border Style="{StaticResource Section}">
+                <StackPanel>
+                    <TextBlock Text="Hotkeys" Style="{StaticResource Heading}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Ctrl+Shift+L" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="1" Text="Lock / unlock the overlay" />
+                        <TextBlock Grid.Row="1" Text="Ctrl+Shift+R" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="Reset the current fight" />
+                        <TextBlock Grid.Row="2" Text="Ctrl+Shift+O" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="Hide / show the overlay" />
+                        <TextBlock Grid.Row="3" Text="Ctrl+Wheel" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="Over the overlay header: opacity" />
+                        <TextBlock Grid.Row="4" Text="Wheel" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="Over the speaker icon: alert volume" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

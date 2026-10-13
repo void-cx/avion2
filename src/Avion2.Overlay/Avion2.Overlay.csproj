@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Avion2.Engine\Avion2.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Cinzel display font (SIL Open Font License 1.1, see Fonts/Cinzel-OFL.txt) -->
+    <Resource Include="Fonts\Cinzel.ttf" />
+    <Resource Include="Assets\avion2.ico" />
+    <None Include="Fonts\Cinzel-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\avion2.ico</ApplicationIcon>
+    <AssemblyName>AVION2</AssemblyName>
+    <!-- Window.ThemeMode (Fluent dark theme) is marked experimental in WPF -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
+  </PropertyGroup>
+
+</Project>

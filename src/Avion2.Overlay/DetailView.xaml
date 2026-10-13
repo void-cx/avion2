@@ -1,0 +1,164 @@
+<UserControl x:Class="Avion2.Overlay.DetailView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <!-- Stat tile -->
+        <DataTemplate x:Key="TileTemplate">
+            <Border Margin="0,0,6,6" Padding="10,6" MinWidth="104" CornerRadius="2" Background="#CC1B2028" BorderBrush="#2E3642" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="{Binding Label}" Opacity="0.7" FontSize="11" />
+                    <TextBlock x:Name="Value" Text="{Binding Value}" FontSize="15" FontWeight="SemiBold" />
+                </StackPanel>
+            </Border>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Tone}" Value="accent"><Setter TargetName="Value" Property="Foreground" Value="#4ADE80" /></DataTrigger>
+                <DataTrigger Binding="{Binding Tone}" Value="crit"><Setter TargetName="Value" Property="Foreground" Value="#F472B6" /></DataTrigger>
+                <DataTrigger Binding="{Binding Tone}" Value="back"><Setter TargetName="Value" Property="Foreground" Value="#22D3EE" /></DataTrigger>
+                <DataTrigger Binding="{Binding Tone}" Value="double"><Setter TargetName="Value" Property="Foreground" Value="#FACC15" /></DataTrigger>
+                <DataTrigger Binding="{Binding Tone}" Value="perfect"><Setter TargetName="Value" Property="Foreground" Value="#34D399" /></DataTrigger>
+                <DataTrigger Binding="{Binding Tone}" Value="hp"><Setter TargetName="Value" Property="Foreground" Value="#F87171" /></DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <Style x:Key="Right" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="Margin" Value="0,0,6,0" />
+        </Style>
+        <Style x:Key="Crit" TargetType="TextBlock" BasedOn="{StaticResource Right}"><Setter Property="Foreground" Value="#F472B6" /></Style>
+        <Style x:Key="Back" TargetType="TextBlock" BasedOn="{StaticResource Right}"><Setter Property="Foreground" Value="#22D3EE" /></Style>
+        <Style x:Key="Double" TargetType="TextBlock" BasedOn="{StaticResource Right}"><Setter Property="Foreground" Value="#FACC15" /></Style>
+        <Style x:Key="Perfect" TargetType="TextBlock" BasedOn="{StaticResource Right}"><Setter Property="Foreground" Value="#34D399" /></Style>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <!-- Header: target, player picker, source -->
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="Target" Opacity="0.7" FontSize="11" />
+                <TextBlock Text="{Binding Target}" FontFamily="{StaticResource AionDisplayFont}" FontSize="20" Foreground="White" TextTrimming="CharacterEllipsis" Effect="{StaticResource AionSoftGlow}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Margin="12,0">
+                <TextBlock Text="Player" Opacity="0.7" FontSize="11" />
+                <ComboBox Width="260" ItemsSource="{Binding Players}" SelectedItem="{Binding SelectedPlayer}" DisplayMemberPath="Label" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Orientation="Horizontal">
+                <Border Padding="8,4" CornerRadius="4" Background="#2660A5FA" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Source}" Foreground="#93C5FD" />
+                </Border>
+                <ToggleButton x:Name="PinButton" Visibility="Collapsed" Margin="8,0,0,0" Padding="8,4" Content="&#xE718;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                              ToolTip="Keep this window on top of the game" Checked="Pin_Changed" Unchecked="Pin_Changed" />
+            </StackPanel>
+        </Grid>
+
+        <TabControl SelectedIndex="{Binding TabIndex}">
+            <TabItem Header="Damage dealt">
+                <DockPanel Margin="0,10,0,0">
+                    <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Tiles}" ItemTemplate="{StaticResource TileTemplate}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+
+                    <DataGrid Background="#E6161A21" BorderBrush="#2E3642" ItemsSource="{Binding Skills}" Margin="0,4,0,0" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single" CanUserResizeRows="False" RowHeight="28" HorizontalScrollBarVisibility="Auto" CanUserResizeColumns="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Skill" Binding="{Binding Name}" Width="*" MinWidth="160" />
+                            <DataGridTemplateColumn Header="Spec" Width="70" MinWidth="70" CanUserSort="False">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ItemsControl ItemsSource="{Binding Spec}" VerticalAlignment="Center"
+                                                      ToolTip="Specialisation slots (from the skill id)">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Ellipse x:Name="Dot" Width="6" Height="6" Margin="1.5,0" Fill="#4D9AA3B2" />
+                                                    <DataTemplate.Triggers>
+                                                        <DataTrigger Binding="{Binding}" Value="True">
+                                                            <Setter TargetName="Dot" Property="Fill" Value="#22D3EE" />
+                                                        </DataTrigger>
+                                                    </DataTemplate.Triggers>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Hits" Binding="{Binding Hits}" Width="56" MinWidth="56" ElementStyle="{StaticResource Right}" />
+                            <DataGridTextColumn Header="Crit" Binding="{Binding Crit, StringFormat={}{0:P1}}" Width="66" MinWidth="66" ElementStyle="{StaticResource Crit}" />
+                            <DataGridTextColumn Header="Back" Binding="{Binding Back, StringFormat={}{0:P1}}" Width="66" MinWidth="66" ElementStyle="{StaticResource Back}" />
+                            <DataGridTextColumn Header="Double" Binding="{Binding Double, StringFormat={}{0:P1}}" Width="70" MinWidth="70" ElementStyle="{StaticResource Double}" />
+                            <DataGridTextColumn Header="Perfect" Binding="{Binding Perfect, StringFormat={}{0:P1}}" Width="70" MinWidth="70" ElementStyle="{StaticResource Perfect}" />
+                            <DataGridTextColumn Header="Parried" Binding="{Binding Parry, StringFormat={}{0:P1}}" Width="70" MinWidth="70" ElementStyle="{StaticResource Right}" />
+                            <DataGridTextColumn Header="Multi" Binding="{Binding Multi, StringFormat={}{0:P1}}" Width="66" MinWidth="66" ElementStyle="{StaticResource Right}" />
+                            <DataGridTextColumn Header="Multi dmg" Binding="{Binding MultiDamage, StringFormat={}{0:N0}}" Width="84" MinWidth="84" ElementStyle="{StaticResource Right}" />
+                            <DataGridTextColumn Header="Average" Binding="{Binding Average, StringFormat={}{0:N0}}" Width="80" MinWidth="80" ElementStyle="{StaticResource Right}" />
+                            <DataGridTextColumn Header="Min" Binding="{Binding Min, StringFormat={}{0:N0}}" Width="72" MinWidth="72" ElementStyle="{StaticResource Right}" />
+                            <DataGridTextColumn Header="Max" Binding="{Binding Max, StringFormat={}{0:N0}}" Width="80" MinWidth="80" ElementStyle="{StaticResource Right}" />
+                            <DataGridTemplateColumn Header="Total" Width="190" MinWidth="190" SortMemberPath="Total" SortDirection="Descending">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="2,3">
+                                            <Border Background="#594DB6AC" CornerRadius="2" RenderTransformOrigin="0,0.5">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform ScaleX="{Binding Share}" />
+                                                </Border.RenderTransform>
+                                            </Border>
+                                            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#FACC15">
+                                                <Run Text="{Binding Total, StringFormat={}{0:N0}, Mode=OneWay}" />
+                                                <Run Text="{Binding Share, StringFormat={} ({0:P1}), Mode=OneWay}" />
+                                            </TextBlock>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <TabItem Header="Damage taken">
+                <DockPanel Margin="0,10,0,0">
+                    <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding TakenTiles}" ItemTemplate="{StaticResource TileTemplate}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+
+                    <DataGrid Background="#E6161A21" BorderBrush="#2E3642" ItemsSource="{Binding Sources}" Margin="0,4,0,0" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single" CanUserResizeRows="False" RowHeight="28" HorizontalScrollBarVisibility="Auto" CanUserResizeColumns="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Attacker" Binding="{Binding Attacker}" Width="*" MinWidth="160" />
+                            <DataGridTextColumn Header="Skill" Binding="{Binding Skill}" Width="*" MinWidth="140" />
+                            <DataGridTextColumn Header="Hits" Binding="{Binding Hits}" Width="60" MinWidth="60" ElementStyle="{StaticResource Right}" />
+                            <DataGridTextColumn Header="Crits" Binding="{Binding Crits}" Width="60" MinWidth="60" ElementStyle="{StaticResource Crit}" />
+                            <DataGridTextColumn Header="Average" Binding="{Binding Average, StringFormat={}{0:N0}}" Width="84" MinWidth="84" ElementStyle="{StaticResource Right}" />
+                            <DataGridTextColumn Header="Max" Binding="{Binding Max, StringFormat={}{0:N0}}" Width="84" MinWidth="84" ElementStyle="{StaticResource Right}" />
+                            <DataGridTemplateColumn Header="Total" Width="190" MinWidth="190" SortMemberPath="Total" SortDirection="Descending">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="2,3">
+                                            <Border Background="#59C04545" CornerRadius="2" RenderTransformOrigin="0,0.5">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform ScaleX="{Binding Share}" />
+                                                </Border.RenderTransform>
+                                            </Border>
+                                            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#FCA5A5">
+                                                <Run Text="{Binding Total, StringFormat={}{0:N0}, Mode=OneWay}" />
+                                                <Run Text="{Binding Share, StringFormat={} ({0:P1}), Mode=OneWay}" />
+                                            </TextBlock>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

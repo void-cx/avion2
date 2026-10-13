@@ -1,0 +1,72 @@
+using System.IO;
+using System.Text.Json;
+
+namespace Avion2.Overlay;
+
+/// <summary>Window placement and preferences, stored in %AppData%\AVION2\overlay.json.</summary>
+public sealed class OverlaySettings
+{
+    private static readonly string FilePath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AVION2", "overlay.json");
+
+    public double Left { get; set; } = 80;
+    public double Top { get; set; } = 160;
+    public double Width { get; set; } = 340;
+    public double Height { get; set; } = 260;
+    public double BackgroundOpacity { get; set; } = 0.78;
+    public bool AllTargets { get; set; }
+    public bool Locked { get; set; }
+
+    public bool LowHpAlert { get; set; } = true;
+
+    /// <summary>Start the meter as soon as AVION2 opens.</summary>
+    public bool AutoStart { get; set; }
+
+    /// <summary>Capture device index; null = automatic (all adapters, the game connection is detected).</summary>
+    public int? Device { get; set; }
+
+    /// <summary>Home-screen background video: null = %AppData%\AVION2\background.mp4 if present, "" = none.</summary>
+    public string? BackgroundVideo { get; set; }
+
+    /// <summary>Record each meter session to a .pcap (for troubleshooting).</summary>
+    public bool RecordSessions { get; set; }
+
+    /// <summary>Fraction of max HP below which the alert fires (0.3 = 30%).</summary>
+    public double LowHpThreshold { get; set; } = 0.3;
+
+    /// <summary>0..1; scroll over the speaker icon to change it.</summary>
+    public double LowHpVolume { get; set; } = 0.6;
+
+    /// <summary>Optional custom .wav/.mp3; empty = built-in chime.</summary>
+    public string? LowHpSound { get; set; }
+
+    public static OverlaySettings Load()
+    {
+        try
+        {
+            if (File.Exists(FilePath))
+            {
+                return JsonSerializer.Deserialize<OverlaySettings>(File.ReadAllText(FilePath)) ?? new OverlaySettings();
+            }
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+        {
+            // fall back to defaults
+        }
+
+        return new OverlaySettings();
+    }
+
+    public void Save()
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
+            File.WriteAllText(FilePath, JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // not critical
+        }
+    }
+}
