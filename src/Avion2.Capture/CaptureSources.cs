@@ -48,6 +48,11 @@ public static class CaptureDevices
         {
             var device = devices[i];
             var iface = device.Interface;
+            if (iface is null)
+            {
+                continue;
+            }
+
             bool loopback = (iface.Flags & PcapIfLoopback) != 0 ||
                             (iface.Description ?? string.Empty).Contains("loopback", StringComparison.OrdinalIgnoreCase);
             var addresses = iface.Addresses

@@ -119,14 +119,21 @@ public sealed class DetailViewModel : Bindable
         get => _selectedPlayer;
         set
         {
-            if (Set(ref _selectedPlayer, value) && value is not null)
+            if (Set(ref _selectedPlayer, value) && value is not null && value.ActorId != SelectedActorId)
             {
                 SelectedActorId = value.ActorId;
                 Skills.Clear();
                 Sources.Clear();
+                PlayerChanged?.Invoke();
             }
         }
     }
+
+    /// <summary>
+    /// Raised when the user picks another player. The owner must refresh right away: a saved fight has no
+    /// timer that would repopulate the tables.
+    /// </summary>
+    public event Action? PlayerChanged;
 
     public uint? SelectedActorId { get; set; }
 
@@ -204,6 +211,7 @@ public sealed class DetailViewModel : Bindable
             new StatTile("Share", Percent(row.Share)),
             new StatTile("Critical", Percent(row.CritRate), "crit"),
             new StatTile("Back attack", Percent(row.BackRate), "back"),
+            new StatTile("Front attack", Percent(row.FrontRate)),
             new StatTile("Double", Percent(row.DoubleRate), "double"),
             new StatTile("Perfect", Percent(row.PerfectRate), "perfect"),
             new StatTile("Parried", Percent(row.ParryRate)),

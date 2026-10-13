@@ -76,15 +76,24 @@ public sealed record HealEvent(
 
 public sealed record SummonLinkEvent(long TimestampMs, uint SummonId, uint OwnerId) : GameEvent(TimestampMs);
 
+/// <param name="CombatPower">Our combat power as shown on the armory page, if found in the record.</param>
 public sealed record SelfIdentityEvent(
     long TimestampMs,
     uint EntityId,
     string Name,
     ushort ServerId,
     GameClass Class,
-    uint Level) : GameEvent(TimestampMs);
+    uint Level,
+    uint? CombatPower = null) : GameEvent(TimestampMs);
 
-public sealed record PlayerSpawnEvent(long TimestampMs, uint EntityId, string Name, ushort? ServerId) : GameEvent(TimestampMs);
+/// <param name="CombatPower">Unverified: read with the prior-art rule (u32 after the <c>F4 CB 1F</c> marker).</param>
+public sealed record PlayerSpawnEvent(
+    long TimestampMs,
+    uint EntityId,
+    string Name,
+    ushort? ServerId,
+    GameClass Class = GameClass.Unknown,
+    uint? CombatPower = null) : GameEvent(TimestampMs);
 
 /// <param name="Kind">Low byte of the spawn mask: 0x0C/0x0D NPC, 0x5F summon, 0x1C effect, 0x1D/0x1F/0x5D spirit/ground spell.</param>
 /// <param name="InlineName">For summons this is the owner's name.</param>

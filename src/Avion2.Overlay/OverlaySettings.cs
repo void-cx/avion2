@@ -22,6 +22,27 @@ public sealed class OverlaySettings
     /// <summary>Start the meter as soon as AVION2 opens.</summary>
     public bool AutoStart { get; set; }
 
+    /// <summary>Single-line overlay rows instead of player cards.</summary>
+    public bool CompactRows { get; set; }
+
+    /// <summary>Server region for the rift/event timetable.</summary>
+    public Avion2.Analysis.ServerRegion Region { get; set; } = Avion2.Analysis.ServerRegion.Europe;
+
+    /// <summary>Minutes before an event to notify.</summary>
+    public int NotifyLeadMinutes { get; set; } = 5;
+
+    public bool NotifyRift { get; set; } = true;
+    public bool NotifyBossRaid { get; set; } = true;
+    public bool NotifyFieldEvents { get; set; }
+    public bool NotifyPvp { get; set; } = true;
+    public bool NotifyReset { get; set; }
+    public bool NotifySound { get; set; } = true;
+
+    /// <summary>Position of the free-floating notification area; null = top centre.</summary>
+    public double? NoticeLeft { get; set; }
+
+    public double? NoticeTop { get; set; }
+
     /// <summary>Capture device index; null = automatic (all adapters, the game connection is detected).</summary>
     public int? Device { get; set; }
 

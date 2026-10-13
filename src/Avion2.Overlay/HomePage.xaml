@@ -74,6 +74,48 @@
                 </Grid>
             </UniformGrid>
 
+            <!-- Timers -->
+            <Grid Margin="8,30,8,0" MaxWidth="984">
+                <Border Style="{StaticResource AionCard}" Margin="0,8,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="300" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,4,24,4">
+                            <Border Style="{StaticResource AionChip}"><TextBlock x:Name="RegionChip" Foreground="#B8C8D8" FontSize="11" /></Border>
+                            <TextBlock Text="Next Spacetime Rift" Style="{StaticResource AionHeading}" Margin="0,8,0,0" />
+                            <TextBlock x:Name="RiftCountdown" FontFamily="{StaticResource AionDisplayFont}" FontSize="34" Foreground="White"
+                                       Effect="{StaticResource AionGlow}" Margin="0,2,0,0" />
+                            <TextBlock x:Name="RiftAt" Foreground="#C9D7E4" />
+                            <TextBlock x:Name="RiftList" Foreground="#8FA3B8" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ItemsControl x:Name="EventList" Grid.Column="1" Margin="0,4,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="104" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="90" />
+                                            <ColumnDefinition Width="90" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Style="{StaticResource AionChip}" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Category}" Foreground="#B8C8D8" FontSize="10.5" />
+                                        </Border>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="White" FontFamily="{StaticResource AionDisplayFont}" FontSize="13"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="2" Text="{Binding At}" Foreground="#8FA3B8" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="3" Text="{Binding In}" Foreground="{StaticResource AionGoldBrush}" VerticalAlignment="Center" TextAlignment="Right" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+                <Path Style="{StaticResource AionStar}" VerticalAlignment="Top" HorizontalAlignment="Center" />
+            </Grid>
+
             <!-- Recent fights -->
             <Grid Margin="8,30,8,0" MaxWidth="984">
                 <Border Style="{StaticResource AionCard}" Margin="0,8,0,0">

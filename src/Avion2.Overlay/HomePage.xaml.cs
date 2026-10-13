@@ -10,6 +10,8 @@ namespace Avion2.Overlay;
 
 public sealed record DeviceOption(int? Index, string Label);
 
+public sealed record EventLine(string Category, string Name, string At, string In);
+
 /// <summary>Start/stop the meter, see what's going on, jump to recent fights.</summary>
 public partial class HomePage : UserControl
 {
@@ -49,8 +51,35 @@ public partial class HomePage : UserControl
         Unloaded += (_, _) => _timer.Stop();
     }
 
+    private void RefreshTimers()
+    {
+        var now = DateTimeOffset.Now;
+        var region = _state.Settings.Region;
+        var offset = Avion2.Analysis.GameSchedule.ServerOffset(region);
+        RegionChip.Text = $"{region} server · GMT+{offset.TotalHours:0}";
+
+        var rifts = _state.Timers.NextRifts(now, 5);
+        RiftCountdown.Text = Countdown(rifts[0] - now);
+        RiftAt.Text = $"Opens at {rifts[0].ToLocalTime():HH:mm} your time";
+        RiftList.Text = "Then " + string.Join(" · ", rifts.Skip(1).Select(r => r.ToLocalTime().ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture)));
+
+        EventList.ItemsSource = _state.Timers.Upcoming(now)
+            .Where(o => o.Event.Category != Avion2.Analysis.ScheduleCategory.Rift)
+            .Select(o => new EventLine(
+                AppState.CategoryLabel(o.Event.Category),
+                o.Event.Name,
+                o.StartsAt.ToLocalTime().ToString(o.StartsAt - now > TimeSpan.FromHours(20) ? "ddd HH:mm" : "HH:mm", System.Globalization.CultureInfo.InvariantCulture),
+                "in " + Countdown(o.StartsAt - now)))
+            .ToList();
+    }
+
+    private static string Countdown(TimeSpan span) => span.TotalHours >= 24
+        ? $"{(int)span.TotalDays}d {span.Hours}h {span.Minutes:00}m"
+        : $"{(int)span.TotalHours:00}:{span.Minutes:00}:{span.Seconds:00}";
+
     private void Refresh()
     {
+        RefreshTimers();
         NpcapValue.Text = AppState.NpcapInstalled ? "Installed ✓" : "Missing — install from npcap.com";
         NamesValue.Text = _state.SkillNames == 0
             ? "Not installed (Settings → download)"

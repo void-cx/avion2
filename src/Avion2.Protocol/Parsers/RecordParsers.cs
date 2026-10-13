@@ -4,6 +4,8 @@ namespace Avion2.Protocol.Parsers;
 public static class RecordParsers
 {
     private static ReadOnlySpan<byte> NpcCodeMarkerA => [0x00, 0x40, 0x02];
+    private static ReadOnlySpan<byte> SelfCombatPowerTrailer => [0x05, 0x01, 0x91, 0x00];
+    private static ReadOnlySpan<byte> PlayerCombatPowerMarker => [0xF4, 0xCB, 0x1F];
     private static ReadOnlySpan<byte> NpcCodeMarkerB => [0x00, 0x00, 0x02];
 
     /// <summary><c>05 38</c>: target varint, effect u8, actor varint, ? varint, skill×100 u32, amount varint.</summary>
@@ -60,11 +62,55 @@ public static class RecordParsers
         r.TryU32(out uint classCode);
         r.TrySkip(1);
         r.TryU32(out uint level);
-        emit(new SelfIdentityEvent(ts, id, name, server, GameClasses.FromRosterCode(classCode), level));
+        emit(new SelfIdentityEvent(ts, id, name, server, GameClasses.FromRosterCode(classCode), level, FindSelfCombatPower(body)));
         return true;
     }
 
-    /// <summary><c>45 36</c>: id varint, mask1 u32, mask2 u8, [len u8, name], [server u16].</summary>
+    /// <summary>
+    /// Our combat power: <c>cp u32, 0 u32, best? u32, 0 u32, 05 01 91 00</c> (verified against the armory:
+    /// 37,381 → 37.38K). Its offset varies with the record's contents, so the trailer is searched.
+    /// </summary>
+    private static uint? FindSelfCombatPower(ReadOnlySpan<byte> body)
+    {
+        int at = body.IndexOf(SelfCombatPowerTrailer);
+        while (at >= 16)
+        {
+            var r = new SpanReader(body, at - 16);
+            if (r.TryU32(out uint cp) && r.TryU32(out uint zero1) && r.TryU32(out _) && r.TryU32(out uint zero2) &&
+                zero1 == 0 && zero2 == 0 && cp is > 0 and < 10_000_000)
+            {
+                return cp;
+            }
+
+            int next = body[(at + 1)..].IndexOf(SelfCombatPowerTrailer);
+            at = next < 0 ? -1 : at + 1 + next;
+        }
+
+        return null;
+    }
+
+    /// <summary>Other players: after the last <c>F4 CB 1F</c>, from +11, a u32 in 1..10M followed by a u32 0 (prior art; unverified).</summary>
+    private static uint? FindPlayerCombatPower(ReadOnlySpan<byte> body)
+    {
+        int marker = body.LastIndexOf(PlayerCombatPowerMarker);
+        if (marker < 0)
+        {
+            return null;
+        }
+
+        for (int i = marker + 11; i + 8 <= body.Length && i < marker + 80; i++)
+        {
+            var r = new SpanReader(body, i);
+            if (r.TryU32(out uint value) && r.TryU32(out uint zero) && value is >= 1 and <= 10_000_000 && zero == 0)
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary><c>45 36</c>: id varint, mask1 u32, mask2 u8, [len u8, name], class u32 (roster code), ...</summary>
     public static bool ParsePlayerSpawn(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
         var r = new SpanReader(body);
@@ -78,8 +124,9 @@ public static class RecordParsers
             return false;
         }
 
-        ushort? server = r.TryU16(out ushort s) && s is >= 1000 and <= 2999 ? s : null;
-        emit(new PlayerSpawnEvent(ts, id, name, server));
+        // Live captures: the class code follows the name directly (e.g. 19 00 00 00 = 25 = Sorcerer).
+        var cls = r.TryU32(out uint classCode) ? GameClasses.FromRosterCode(classCode) : GameClass.Unknown;
+        emit(new PlayerSpawnEvent(ts, id, name, null, cls, FindPlayerCombatPower(body)));
         return true;
     }
 

@@ -12,7 +12,7 @@ namespace Avion2.Overlay;
 /// </summary>
 internal static class DevShots
 {
-    public static void Run(AppState state, HomeWindow home, string directory)
+    public static void Run(AppState state, HomeWindow home, string directory, double delaySeconds = 9)
     {
         Directory.CreateDirectory(directory);
         state.PersistSettings = false;
@@ -25,13 +25,22 @@ internal static class DevShots
             overlay.Left = -20000;
         }
 
-        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(9) };
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(delaySeconds) };
         timer.Tick += (_, _) =>
         {
             timer.Stop();
             if (state.Overlay is { } running)
             {
                 Save(running, Path.Combine(directory, "overlay.png"));
+                state.Notices.Notify("Spacetime Rift in 5 min (14:00)", "Spacetime Rift");
+                state.Notices.Notify("Beritra Air Raid in 5 min (13:30)", "Boss raid");
+                state.Notices.Left = -20000;
+                Pump(TimeSpan.FromMilliseconds(900));
+                Save(state.Notices, Path.Combine(directory, "notices.png"));
+                state.Notices.SetPositioning(true);
+                state.Notices.Left = -20000;
+                Pump(TimeSpan.FromMilliseconds(400));
+                Save(state.Notices, Path.Combine(directory, "notices-move.png"));
                 running.OpenDetails(null, 0);
                 if (running.DetailView is { } detail)
                 {

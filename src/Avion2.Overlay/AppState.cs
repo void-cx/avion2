@@ -28,7 +28,45 @@ public sealed class AppState
         }
 
         RefreshGameDataInfo();
+        Timers = new TimerService(Settings);
+        Timers.Due += OnEventDue;
     }
+
+    /// <summary>Rift/event timetable and its notifications.</summary>
+    public TimerService Timers { get; }
+
+    /// <summary>Overlay banner while the meter runs, otherwise a small toast in the corner.</summary>
+    private void OnEventDue(Avion2.Analysis.Occurrence occurrence)
+    {
+        var minutes = Math.Max(1, (int)Math.Round((occurrence.StartsAt - DateTimeOffset.Now).TotalMinutes));
+        string when = occurrence.StartsAt.ToLocalTime().ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+        string text = $"{occurrence.Event.Name} in {minutes} min ({when})";
+
+        if (Settings.NotifySound)
+        {
+            _notifySound ??= new AlertSound(Settings.LowHpSound, Settings.AlertVolume);
+            _notifySound.Volume = Settings.AlertVolume;
+            _notifySound.Play();
+        }
+
+        Notices.Notify(text, CategoryLabel(occurrence.Event.Category));
+    }
+
+    private NotificationWindow? _notices;
+
+    /// <summary>The free-floating notification area (created on first use, lives as long as the app).</summary>
+    public NotificationWindow Notices => _notices ??= new NotificationWindow(this);
+
+    private AlertSound? _notifySound;
+
+    public static string CategoryLabel(Avion2.Analysis.ScheduleCategory category) => category switch
+    {
+        Avion2.Analysis.ScheduleCategory.Rift => "Spacetime Rift",
+        Avion2.Analysis.ScheduleCategory.BossRaid => "Boss raid",
+        Avion2.Analysis.ScheduleCategory.FieldEvent => "Field event",
+        Avion2.Analysis.ScheduleCategory.Pvp => "PvP",
+        _ => "Reset",
+    };
 
     /// <summary>Persisted settings (window placement etc.).</summary>
     public OverlaySettings Stored { get; }
@@ -203,6 +241,15 @@ public sealed class AppState
         Settings.LowHpThreshold = s.LowHpThreshold;
         Settings.LowHpSound = string.IsNullOrWhiteSpace(s.LowHpSound) ? null : s.LowHpSound;
         Settings.AutoStart = s.AutoStart;
+        Settings.CompactRows = s.CompactRows;
+        Settings.Region = s.Region;
+        Settings.NotifyLeadMinutes = s.NotifyLeadMinutes;
+        Settings.NotifyRift = s.NotifyRift;
+        Settings.NotifyBossRaid = s.NotifyBossRaid;
+        Settings.NotifyFieldEvents = s.NotifyFieldEvents;
+        Settings.NotifyPvp = s.NotifyPvp;
+        Settings.NotifyReset = s.NotifyReset;
+        Settings.NotifySound = s.NotifySound;
     }
 
     /// <summary>False for developer render runs, so they never overwrite the user's settings.</summary>
@@ -224,6 +271,15 @@ public sealed class AppState
         s.LowHpThreshold = Settings.LowHpThreshold;
         s.LowHpSound = Settings.LowHpSound;
         s.AutoStart = Settings.AutoStart;
+        s.CompactRows = Settings.CompactRows;
+        s.Region = Settings.Region;
+        s.NotifyLeadMinutes = Settings.NotifyLeadMinutes;
+        s.NotifyRift = Settings.NotifyRift;
+        s.NotifyBossRaid = Settings.NotifyBossRaid;
+        s.NotifyFieldEvents = Settings.NotifyFieldEvents;
+        s.NotifyPvp = Settings.NotifyPvp;
+        s.NotifyReset = Settings.NotifyReset;
+        s.NotifySound = Settings.NotifySound;
         s.Save();
     }
 }

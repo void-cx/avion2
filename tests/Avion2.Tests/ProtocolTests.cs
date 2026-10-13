@@ -324,3 +324,26 @@ public class SelfDetectionTests
         Assert.Equal(10545u, hint.EntityId);
     }
 }
+
+public class CombatPowerTests
+{
+    [Fact]
+    public void SelfIdentityCarriesCombatPower()
+    {
+        // ... level u32, then (elsewhere in the record) cp, 0, best, 0, 05 01 91 00
+        var self = Assert.IsType<SelfIdentityEvent>(Assert.Single(TestPackets.Parse(
+            "3336 ed74 5e91c128 37 06 4e6169636861 1805 1e000000 01 1c000000 0000 05920000 00000000 e4930000 00000000 05019100")));
+        Assert.Equal(37381u, self.CombatPower);
+    }
+
+    [Fact]
+    public void PlayerSpawnCarriesClassAndCombatPower()
+    {
+        // id 300, mask, name "Test", class 25 (Sorcerer), filler, F4 CB 1F, 8 bytes, cp 50,000, 0
+        var player = Assert.IsType<PlayerSpawnEvent>(Assert.Single(TestPackets.Parse(
+            "4536 ac02 00000000 01 04 54657374 19000000 0101 aabbcc f4cb1f 0000000000000000 50c30000 00000000")));
+        Assert.Equal("Test", player.Name);
+        Assert.Equal(GameClass.Sorcerer, player.Class);
+        Assert.Equal(50000u, player.CombatPower);
+    }
+}

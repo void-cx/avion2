@@ -48,6 +48,7 @@ public sealed class ActorStats(uint actorId)
     public int Hits { get; internal set; }
     public int Crits { get; internal set; }
     public int BackHits { get; internal set; }
+    public int FrontHits { get; internal set; }
     public int Perfects { get; internal set; }
     public int Doubles { get; internal set; }
     public int Misses { get; internal set; }
@@ -71,6 +72,7 @@ public sealed class ActorStats(uint actorId)
         Hits += other.Hits;
         Crits += other.Crits;
         BackHits += other.BackHits;
+        FrontHits += other.FrontHits;
         Perfects += other.Perfects;
         Doubles += other.Doubles;
         Misses += other.Misses;
@@ -318,6 +320,7 @@ public sealed class CombatTracker
         var flags = damage.Flags;
         if ((flags & HitFlags.Critical) != 0) { stats.Crits++; skill.Crits++; }
         if ((flags & HitFlags.Back) != 0) { stats.BackHits++; skill.BackHits++; }
+        if ((flags & HitFlags.Front) != 0) { stats.FrontHits++; }
         if ((flags & HitFlags.Perfect) != 0) { stats.Perfects++; skill.Perfects++; }
         if ((flags & HitFlags.Double) != 0) { stats.Doubles++; skill.Doubles++; }
         if ((flags & HitFlags.Parry) != 0) { stats.Parried++; skill.Parried++; }

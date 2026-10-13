@@ -8,7 +8,7 @@
     <!-- Cinzel display font (SIL Open Font License 1.1, see Fonts/Cinzel-OFL.txt) -->
     <Resource Include="Fonts\Cinzel.ttf" />
     <Resource Include="Assets\avion2.ico" />
-    <None Include="Fonts\Cinzel-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Fonts\Cinzel-OFL.txt" Link="Cinzel-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <PropertyGroup>

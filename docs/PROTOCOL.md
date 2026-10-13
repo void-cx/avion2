@@ -99,8 +99,15 @@ server u16 LE (1000-2999), class u32, u8, level u32
 ```
 Sent on map load and periodically (often inside embedded bundles). Teleport once to trigger it.
 
-### `45 36` — Other player spawn (pre-June `44 36`)
-Same `id, mask1 u32, mask2, [len, name]` prefix. Server u16 + legion name follow.
+### `45 36` — Other player spawn (pre-June `44 36`) ✅ class verified
+`id, mask1 u32, mask2, [len, name]`, then **class u32** (roster code; `19 00 00 00` = 25 = Sorcerer). All 52 spawns in a
+town capture decoded a class, and every class matched the players' own skills.
+Combat power (unverified): after the last `F4 CB 1F`, from +11, the first u32 in 1..10M followed by a u32 0 (prior art);
+values 10K–85K.
+
+### Own combat power ✅
+In the `33 36` self record: `cp u32, 0 u32, best? u32, 0 u32, 05 01 91 00` (searched by the trailer, offset varies).
+37,381 matches the armory's 37.38K; the following u32 (37,860) is probably the best value.
 
 ### `41 36` — Mob / summon spawn (pre-June `40 36`) ✅ code + HP verified
 ```
@@ -120,8 +127,14 @@ Kinds seen live: 4, 5 (mobs), 0x0C (NPC). Prior art says the u32 after the id is
 `summon_or_mob varint, 4 bytes, owner varint, server u16, len u8 name, len u8 server name`
 
 ### HP
-- `00 8D` ✅: `entity varint, 02 01 00, curHP u32 LE, 00000000` (max HP comes from the spawn record).
-- `21 8D`: `entity varint, 00, 01|00` enters/leaves combat (seen for us and for mobs).
+- `00 8D` ✅ resource update: `entity varint, kind u8, ? u8, resource u8, value u32 [tail]`. Resource 0 = HP (mobs and us),
+  1 = MP (max 2,599 matched the HUD), 3/4/6 = other gauges. Max HP is not sent: learned from the highest HP seen
+  (9,016 matched the HUD).
+- `21 8D` ✅ combat state: `entity varint, 00, 01|00` (entered/left combat). For us it brackets the in-game Combat
+  Analysis clock (on ~0.2 s before the first hit, off 3–5 s after the last).
+- `01 91` field-boss table: `00 00, map u32 (e.g. 1010), count u8, then per entry 01, spawn-point u32 (431497…),
+  x/y/z f32, …, u64 ms timestamp`. The timestamps are in the past (last kill?). Boss names and respawn
+  intervals need game data; not used yet.
 - `1B 92`: `actor varint, hp varint, hpMax varint`.
 - Scan: `8D <id varint> 02 01 00 <u32 LE curHP> 00 00 00 00` (NPC; `01 01 01` for local player).
 

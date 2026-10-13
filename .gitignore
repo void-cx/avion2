@@ -11,3 +11,4 @@ captures/
 data/*.json
 # local Claude Code settings
 .claude/settings.local.json
+artifacts/

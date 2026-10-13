@@ -21,6 +21,7 @@ public partial class SettingsPage : UserControl
         InitializeComponent();
         DataContext = state.Settings;
 
+        RegionBox.ItemsSource = Enum.GetValues<Avion2.Analysis.ServerRegion>();
         LanguageBox.ItemsSource = GameDataImporter.Languages;
         LanguageBox.SelectedItem = (state.DataDirectory is { } dir ? GameDataImporter.InstalledLanguage(dir) : null) ?? "en";
         state.Settings.PropertyChanged += OnSettingChanged;
@@ -48,6 +49,10 @@ public partial class SettingsPage : UserControl
             ? "No name tables installed: skills and mobs are shown by id."
             : $"{_state.SkillNames:N0} skills · {_state.NpcNames:N0} NPCs · {_state.DataDirectory}";
         HistoryStatus.Text = $"{_state.Fights.Count} fights saved in {_state.History.Directory}";
+        int icons = Enum.GetValues<Avion2.Protocol.GameClass>().Count(c => ClassIcons.For(c) is not null);
+        IconStatus.Text = icons == 0
+            ? "Drawn emblems (official icons not downloaded)"
+            : $"{icons} official class icons in use (stored locally, not bundled)";
         VideoName.Text = _state.BackgroundVideo is { } video ? Path.GetFileName(video) : "None (drawn backdrop)";
         SoundName.Text = string.IsNullOrWhiteSpace(_state.Settings.LowHpSound) ? "Built-in chime" : Path.GetFileName(_state.Settings.LowHpSound);
     }
@@ -60,6 +65,14 @@ public partial class SettingsPage : UserControl
     }
 
     private void TestSound_Click(object sender, RoutedEventArgs e) => PlayPreview();
+
+    private void TestNotification_Click(object sender, RoutedEventArgs e)
+    {
+        var next = _state.Timers.NextRifts(DateTimeOffset.Now, 1)[0];
+        _state.Notices.Notify($"Spacetime Rift at {next.ToLocalTime():HH:mm} (test)", "Spacetime Rift");
+    }
+
+    private void MoveNotifications_Click(object sender, RoutedEventArgs e) => _state.Notices.SetPositioning(true);
 
     private void BrowseSound_Click(object sender, RoutedEventArgs e)
     {
@@ -123,6 +136,21 @@ public partial class SettingsPage : UserControl
     {
         _state.SetBackgroundVideo(string.Empty);
         UpdateStatus();
+    }
+
+    private async void DownloadIcons_Click(object sender, RoutedEventArgs e)
+    {
+        IconButton.IsEnabled = false;
+        IconStatus.Text = "Downloading…";
+        int saved = await ClassIconDownloader.DownloadAsync(overwrite: true);
+        IconStatus.Text = saved == 0 ? "Download failed — keeping the drawn emblems" : $"Downloaded {saved} official class icons";
+        IconButton.IsEnabled = true;
+    }
+
+    private void ClassIcons_Click(object sender, RoutedEventArgs e)
+    {
+        Directory.CreateDirectory(ClassIcons.Directory);
+        Process.Start(new ProcessStartInfo("explorer.exe", ClassIcons.Directory) { UseShellExecute = true });
     }
 
     private void HistoryFolder_Click(object sender, RoutedEventArgs e)

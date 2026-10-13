@@ -99,12 +99,23 @@
                            Foreground="White" Effect="{StaticResource AionSoftGlow}"
                            VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,4,0">
-                    <TextBlock Text="{Binding TotalDps}" Foreground="{StaticResource AionGoldBrush}" FontWeight="SemiBold" Margin="0,0,8,0" />
-                    <TextBlock Text="{Binding Duration}" Foreground="{StaticResource MutedBrush}" />
-                </StackPanel>
+                <Border Grid.Column="2" Margin="8,0,4,0" Padding="8,1" VerticalAlignment="Center" CornerRadius="3"
+                        Background="#80050A13" BorderBrush="#4D7FD8FF" BorderThickness="1">
+                    <TextBlock Text="{Binding Duration}" FontFamily="{StaticResource AionDisplayFont}" FontSize="13" Foreground="White" />
+                </Border>
 
+                <!-- Buttons appear on hover so the boss name gets the full width during fights -->
                 <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="0,0,4,0" VerticalAlignment="Center">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
                     <Button Style="{StaticResource HeaderButton}" Content="{Binding ScopeGlyph}" ToolTip="{Binding ScopeTooltip}" Click="Scope_Click" />
                     <Button Style="{StaticResource HeaderButton}" Content="{Binding AlertGlyph}" ToolTip="{Binding AlertTooltip}" Click="Alert_Click" MouseWheel="Alert_MouseWheel" />
                     <Button Style="{StaticResource HeaderButton}" Content="&#xE72C;" ToolTip="Reset encounter (Ctrl+Shift+R)" Click="Reset_Click" />
@@ -121,66 +132,171 @@
                 <Button Style="{StaticResource TabButton}" Content="Taken" Tag="{Binding IsTakenTab}" Click="TabTaken_Click" />
             </StackPanel>
 
-            <!-- Target HP -->
-            <Grid DockPanel.Dock="Top" Height="4" Margin="10,0,10,5" ToolTip="{Binding HpText}"
-                  Visibility="{Binding HasHp, Converter={StaticResource BoolToVis}}">
-                <Border Background="#33FFFFFF" CornerRadius="2" />
-                <Border Background="{StaticResource HpBrush}" CornerRadius="2" RenderTransformOrigin="0,0.5">
+            <!-- Target HP with numbers -->
+            <Grid DockPanel.Dock="Top" Margin="10,0,10,6" Visibility="{Binding HasHp, Converter={StaticResource BoolToVis}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="5" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="{Binding HpText}" FontSize="10.5" Foreground="#C9D7E4" />
+                <TextBlock Text="{Binding HpPercent}" FontSize="10.5" Foreground="White" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                <Border Grid.Row="1" Margin="0,1,0,0" Background="#33FFFFFF" CornerRadius="2" />
+                <Border Grid.Row="1" Margin="0,1,0,0" CornerRadius="2" RenderTransformOrigin="0,0.5">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#B3262B" Offset="0" />
+                            <GradientStop Color="#F0584F" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
                     <Border.RenderTransform>
                         <ScaleTransform ScaleX="{Binding HpRatio}" />
                     </Border.RenderTransform>
                 </Border>
             </Grid>
 
-            <!-- Footer: who we are, our HP -->
-            <DockPanel DockPanel.Dock="Bottom" Margin="10,2,20,6">
-                <TextBlock DockPanel.Dock="Right" Text="{Binding SelfHp}" FontSize="10.5" Margin="8,0,0,0"
-                           Foreground="{StaticResource MutedBrush}" ToolTip="Your HP (max HP is learned from the highest value seen)" />
-                <TextBlock Text="{Binding Footer}" Foreground="{StaticResource MutedBrush}" FontSize="10.5" TextTrimming="CharacterEllipsis" />
-            </DockPanel>
+            <!-- Footer: who we are + our HP, party DPS -->
+            <Grid DockPanel.Dock="Bottom" Margin="10,2,20,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Footer}" Foreground="{StaticResource MutedBrush}" FontSize="10.5" TextTrimming="CharacterEllipsis" MaxWidth="190" />
+                    <TextBlock Text="{Binding SelfHp}" FontSize="10.5" Margin="8,0,0,0" Foreground="{StaticResource MutedBrush}"
+                               ToolTip="Your HP (max HP is learned from the highest value seen)" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding PartyLabel}" FontSize="10.5" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding PartyValue}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource AionGoldBrush}" />
+                </StackPanel>
+            </Grid>
 
-            <!-- Player rows: click opens the detail window -->
-            <ScrollViewer VerticalScrollBarVisibility="Hidden" Margin="6,0,6,0">
-                <ItemsControl ItemsSource="{Binding Rows}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Height="22" Margin="0,1" Background="Transparent" Cursor="Hand"
-                                  Tag="{Binding ActorId}" ToolTip="{Binding Detail}" MouseLeftButtonUp="Row_Click">
-                                <Border Background="{Binding BarBrush}" CornerRadius="3" RenderTransformOrigin="0,0.5">
-                                    <Border.RenderTransform>
-                                        <ScaleTransform ScaleX="{Binding Ratio}" />
-                                    </Border.RenderTransform>
+            <Grid>
+                <!-- Detailed player cards -->
+                <ScrollViewer VerticalScrollBarVisibility="Hidden" Margin="6,0,6,0"
+                              Visibility="{Binding DetailedRows, Converter={StaticResource BoolToVis}}">
+                    <ItemsControl ItemsSource="{Binding Rows}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,0,4" Padding="6,4,8,0" CornerRadius="4" Background="#1AFFFFFF" BorderThickness="1"
+                                        Cursor="Hand" Tag="{Binding ActorId}" ToolTip="{Binding Detail}" MouseLeftButtonUp="Row_Click">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="BorderBrush" Value="#14FFFFFF" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelf}" Value="True">
+                                                    <Setter Property="BorderBrush" Value="#807FD8FF" />
+                                                    <Setter Property="Background" Value="#267FD8FF" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="32" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="5" />
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Class emblem: official icon if downloaded, else a drawn ring with the class initials -->
+                                        <Grid Grid.RowSpan="2" Width="30" Height="30" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-2,0,0,0">
+                                            <Grid Width="26" Height="26">
+                                                <Grid.Style>
+                                                    <Style TargetType="Grid">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasIcon}" Value="True">
+                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Grid.Style>
+                                                <Ellipse Fill="#CC0B1727" Stroke="{Binding ClassBrush}" StrokeThickness="1.6" />
+                                                <TextBlock Text="{Binding Emblem}" FontFamily="{StaticResource AionDisplayFont}" FontSize="10" Foreground="{Binding ClassBrush}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" />
+                                            </Grid>
+                                            <Image Source="{Binding Icon}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"
+                                                   Visibility="{Binding HasIcon, Converter={StaticResource BoolToVis}}">
+                                                <Image.Effect>
+                                                    <DropShadowEffect Color="#D9C08A" BlurRadius="6" ShadowDepth="0" Opacity="0.55" />
+                                                </Image.Effect>
+                                            </Image>
+                                        </Grid>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="White" TextTrimming="CharacterEllipsis" MaxWidth="150" />
+                                            <TextBlock Text="{Binding CombatPower, StringFormat={}⚔ {0}}" FontSize="10.5" Foreground="#8FA3B8" Margin="7,0,0,1" VerticalAlignment="Bottom"
+                                                       Visibility="{Binding HasCombatPower, Converter={StaticResource BoolToVis}}" ToolTip="Combat power" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <TextBlock Text="{Binding Value}" FontSize="16" FontWeight="Bold" Foreground="White" />
+                                            <TextBlock Text="{Binding Share}" FontSize="10.5" Foreground="#8FA3B8" Margin="6,0,0,2" VerticalAlignment="Bottom" MinWidth="36" TextAlignment="Right" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Stats}" FontSize="10.5" Foreground="#9FB2C4"
+                                                   TextTrimming="CharacterEllipsis" Margin="0,1,0,0" />
+
+                                        <!-- Share line in class colour -->
+                                        <Border Grid.Row="2" Grid.ColumnSpan="3" Height="2" Margin="-6,3,-8,0" VerticalAlignment="Bottom"
+                                                Background="{Binding ClassBrush}" RenderTransformOrigin="0,0.5">
+                                            <Border.RenderTransform>
+                                                <ScaleTransform ScaleX="{Binding Ratio}" />
+                                            </Border.RenderTransform>
+                                        </Border>
+                                    </Grid>
                                 </Border>
-                                <Grid Margin="6,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="18" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="58" />
-                                        <ColumnDefinition Width="48" />
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.Effect>
-                                        <DropShadowEffect BlurRadius="2" ShadowDepth="1" Opacity="0.8" Color="Black" />
-                                    </Grid.Effect>
-                                    <TextBlock Text="{Binding Rank}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" />
-                                    <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsSelf}" Value="True">
-                                                        <Setter Property="FontWeight" Value="Bold" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                    <TextBlock Grid.Column="2" Text="{Binding Dps}" FontWeight="SemiBold" TextAlignment="Right" VerticalAlignment="Center" />
-                                    <TextBlock Grid.Column="3" Text="{Binding Share}" Foreground="{StaticResource MutedBrush}" TextAlignment="Right" VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- Compact rows -->
+                <ScrollViewer VerticalScrollBarVisibility="Hidden" Margin="6,0,6,0"
+                              Visibility="{Binding CompactRows, Converter={StaticResource BoolToVis}}">
+                    <ItemsControl ItemsSource="{Binding Rows}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Height="22" Margin="0,1" Background="Transparent" Cursor="Hand"
+                                      Tag="{Binding ActorId}" ToolTip="{Binding Detail}" MouseLeftButtonUp="Row_Click">
+                                    <Border Background="{Binding BarBrush}" CornerRadius="3" RenderTransformOrigin="0,0.5">
+                                        <Border.RenderTransform>
+                                            <ScaleTransform ScaleX="{Binding Ratio}" />
+                                        </Border.RenderTransform>
+                                    </Border>
+                                    <Grid Margin="6,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="18" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="64" />
+                                            <ColumnDefinition Width="48" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.Effect>
+                                            <DropShadowEffect BlurRadius="2" ShadowDepth="1" Opacity="0.8" Color="Black" />
+                                        </Grid.Effect>
+                                        <TextBlock Text="{Binding Rank}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSelf}" Value="True">
+                                                            <Setter Property="FontWeight" Value="Bold" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock Grid.Column="2" Text="{Binding Value}" FontWeight="SemiBold" TextAlignment="Right" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="3" Text="{Binding Share}" Foreground="{StaticResource MutedBrush}" TextAlignment="Right" VerticalAlignment="Center" />
+                                    </Grid>
                                 </Grid>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </DockPanel>
     </Border>
 </Window>

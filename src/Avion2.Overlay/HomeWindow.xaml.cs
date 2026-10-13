@@ -20,6 +20,9 @@ public partial class HomeWindow : Window
     private readonly HistoryPage _history;
     private readonly SettingsPage _settings;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(500) };
+    private string _page = "home";
+    private bool _gameConnected;
+    private string? _playing;
 
     public HomeWindow(AppState state)
     {
@@ -31,7 +34,12 @@ public partial class HomeWindow : Window
         _settings = new SettingsPage(state);
 
         state.ShowPageRequested += page => ShowPage(page);
-        state.BackdropChanged += LoadBackdrop;
+        state.BackdropChanged += () =>
+        {
+            _playing = null; // force a reload of the (possibly new) file
+            UpdateBackdrop();
+        };
+        StateChanged += (_, _) => UpdateBackdrop();
         Closing += (_, _) =>
         {
             state.StopMeter();
@@ -40,8 +48,8 @@ public partial class HomeWindow : Window
         _timer.Tick += (_, _) => UpdateNavStatus();
         Loaded += (_, _) =>
         {
-            LoadBackdrop();
             UpdateNavStatus();
+            UpdateBackdrop();
             _timer.Start();
         };
 
@@ -93,22 +101,43 @@ public partial class HomeWindow : Window
 
         // The key art belongs to the home page; inner pages get an armory-style dark.
         Dim.BeginAnimation(OpacityProperty, new DoubleAnimation(tag == "home" ? 0 : 0.86, TimeSpan.FromMilliseconds(250)));
+        _page = tag;
+        UpdateBackdrop();
     }
 
-    private void LoadBackdrop()
+    /// <summary>
+    /// The video only plays when it is actually worth the GPU/CPU: on the home page, window visible, and the
+    /// game not connected yet. Otherwise it is unloaded (decoder freed) and the drawn backdrop shows instead.
+    /// </summary>
+    private void UpdateBackdrop()
     {
         string? path = _state.BackgroundVideo;
-        if (path is null || !File.Exists(path))
+        bool wanted = path is not null && File.Exists(path) && !_gameConnected &&
+                      _page == "home" && WindowState != WindowState.Minimized && IsVisible;
+
+        if (!wanted)
         {
-            BackdropVideo.Stop();
-            BackdropVideo.Source = null;
-            BackdropVideo.Visibility = Visibility.Collapsed;
+            if (_playing is not null)
+            {
+                BackdropVideo.Stop();
+                BackdropVideo.Close();
+                BackdropVideo.Source = null;
+                BackdropVideo.Visibility = Visibility.Collapsed;
+                _playing = null;
+            }
+
+            return;
+        }
+
+        if (_playing == path)
+        {
             return;
         }
 
         BackdropVideo.Visibility = Visibility.Visible;
-        BackdropVideo.Source = new Uri(path, UriKind.Absolute);
+        BackdropVideo.Source = new Uri(path!, UriKind.Absolute);
         BackdropVideo.Play();
+        _playing = path;
     }
 
     private void BackdropVideo_MediaEnded(object sender, RoutedEventArgs e)
@@ -122,6 +151,13 @@ public partial class HomeWindow : Window
 
     private void UpdateNavStatus()
     {
+        bool connected = _state.Engine?.Status().Locked == true;
+        if (connected != _gameConnected)
+        {
+            _gameConnected = connected;
+            UpdateBackdrop();
+        }
+
         if (_state.Engine is not { } engine)
         {
             NavDot.Fill = Idle;

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
@@ -13,20 +14,71 @@ public enum OverlayTab
     Taken,
 }
 
-public sealed record RowViewModel(
-    uint ActorId,
-    int Rank,
-    string Name,
-    string Dps,
-    string Total,
-    string Share,
-    string Detail,
-    double Ratio,
-    Brush BarBrush,
-    bool IsSelf);
+/// <summary>
+/// One player card in the overlay. Updated in place every tick (no list rebuilds), and its bar glides
+/// toward the target length instead of jumping.
+/// </summary>
+public sealed class PlayerCard(uint actorId) : Bindable
+{
+    private int _rank;
+    private string _name = string.Empty;
+    private string _emblem = "?";
+    private Brush _classBrush = Brushes.Gray;
+    private ImageSource? _icon;
+    private Brush _barBrush = Brushes.Gray;
+    private bool _isSelf;
+    private string _combatPower = string.Empty;
+    private string _value = string.Empty;
+    private string _share = string.Empty;
+    private string _stats = string.Empty;
+    private string _detail = string.Empty;
+    private double _ratio;
+
+    public uint ActorId { get; } = actorId;
+    public int Rank { get => _rank; set => Set(ref _rank, value); }
+    public string Name { get => _name; set => Set(ref _name, value); }
+    public string Emblem { get => _emblem; set => Set(ref _emblem, value); }
+    public Brush ClassBrush { get => _classBrush; set => Set(ref _classBrush, value); }
+
+    /// <summary>Optional class icon supplied by the user; null = drawn emblem.</summary>
+    public ImageSource? Icon
+    {
+        get => _icon;
+        set
+        {
+            if (Set(ref _icon, value))
+            {
+                OnPropertyChanged(nameof(HasIcon));
+            }
+        }
+    }
+
+    public bool HasIcon => _icon is not null;
+    public Brush BarBrush { get => _barBrush; set => Set(ref _barBrush, value); }
+    public bool IsSelf { get => _isSelf; set => Set(ref _isSelf, value); }
+    public string CombatPower { get => _combatPower; set => Set(ref _combatPower, value); }
+    public bool HasCombatPower => _combatPower.Length > 0;
+    public string Value { get => _value; set => Set(ref _value, value); }
+    public string Share { get => _share; set => Set(ref _share, value); }
+    public string Stats { get => _stats; set => Set(ref _stats, value); }
+    public string Detail { get => _detail; set => Set(ref _detail, value); }
+
+    /// <summary>Displayed bar length (0..1), eased toward <see cref="TargetRatio"/>.</summary>
+    public double Ratio { get => _ratio; private set => Set(ref _ratio, value); }
+
+    public double TargetRatio { get; set; }
+
+    public void Ease()
+    {
+        double next = _ratio + (TargetRatio - _ratio) * 0.45;
+        Ratio = Math.Abs(TargetRatio - next) < 0.002 ? TargetRatio : next;
+    }
+
+    public void NotifyCombatPower() => OnPropertyChanged(nameof(HasCombatPower));
+}
 
 /// <summary>
-/// Bindable state for the compact overlay (bars only) plus the user settings that the Settings window edits.
+/// Bindable state for the overlay plus the user settings that the Settings page edits.
 /// </summary>
 public sealed class OverlayViewModel : Bindable
 {
@@ -44,19 +96,38 @@ public sealed class OverlayViewModel : Bindable
         [GameClass.Unknown] = Color.FromRgb(0x80, 0x88, 0x90),
     };
 
+    private static readonly Dictionary<GameClass, string> Emblems = new()
+    {
+        [GameClass.Gladiator] = "GL",
+        [GameClass.Templar] = "TE",
+        [GameClass.Ranger] = "RA",
+        [GameClass.Assassin] = "AS",
+        [GameClass.Elementalist] = "EL",
+        [GameClass.Sorcerer] = "SO",
+        [GameClass.Cleric] = "CL",
+        [GameClass.Chanter] = "CH",
+        [GameClass.Fighter] = "FI",
+        [GameClass.Unknown] = "?",
+    };
+
+    private static readonly Dictionary<GameClass, Brush> SolidBrushes = ClassColors.ToDictionary(
+        kv => kv.Key, kv => (Brush)Freeze(new SolidColorBrush(kv.Value)));
+
     private static readonly Dictionary<GameClass, Brush> BarBrushes = ClassColors.ToDictionary(
         kv => kv.Key,
         kv => (Brush)Freeze(new SolidColorBrush(Color.FromArgb(0x99, kv.Value.R, kv.Value.G, kv.Value.B))));
 
     private string _title = "AVION2";
     private string _duration = "--:--";
-    private string _totalDps = string.Empty;
+    private string _partyValue = string.Empty;
+    private string _partyLabel = "Party DPS";
     private string _status = "Starting…";
     private string _footer = string.Empty;
     private string _selfHp = string.Empty;
     private bool _hasHp;
     private double _hpRatio;
     private string _hpText = string.Empty;
+    private string _hpPercent = string.Empty;
     private bool _allTargets;
     private bool _locked;
     private bool _lowHpAlert = true;
@@ -64,22 +135,34 @@ public sealed class OverlayViewModel : Bindable
     private double _lowHpThreshold = 0.3;
     private string? _lowHpSound;
     private bool _autoStart;
+    private bool _compactRows;
+    private ServerRegion _region = ServerRegion.Europe;
+    private int _notifyLeadMinutes = 5;
+    private bool _notifyRift = true;
+    private bool _notifyBossRaid = true;
+    private bool _notifyFieldEvents;
+    private bool _notifyPvp = true;
+    private bool _notifyReset;
+    private bool _notifySound = true;
+
     private bool _alerting;
     private OverlayTab _tab;
-    private IReadOnlyList<RowViewModel> _rows = [];
     private double _backgroundOpacity = 0.78;
 
     public string Title { get => _title; private set => Set(ref _title, value); }
     public string Duration { get => _duration; private set => Set(ref _duration, value); }
-    public string TotalDps { get => _totalDps; private set => Set(ref _totalDps, value); }
+    public string PartyValue { get => _partyValue; private set => Set(ref _partyValue, value); }
+    public string PartyLabel { get => _partyLabel; private set => Set(ref _partyLabel, value); }
     public string Status { get => _status; private set => Set(ref _status, value); }
     public string Footer { get => _footer; private set => Set(ref _footer, value); }
     public string SelfHp { get => _selfHp; private set => Set(ref _selfHp, value); }
     public bool HasHp { get => _hasHp; private set => Set(ref _hasHp, value); }
     public double HpRatio { get => _hpRatio; private set => Set(ref _hpRatio, value); }
     public string HpText { get => _hpText; private set => Set(ref _hpText, value); }
-    public IReadOnlyList<RowViewModel> Rows { get => _rows; private set => Set(ref _rows, value); }
-    public bool HasRows => _rows.Count > 0;
+    public string HpPercent { get => _hpPercent; private set => Set(ref _hpPercent, value); }
+
+    /// <summary>Player cards, updated in place and kept in rank order.</summary>
+    public ObservableCollection<PlayerCard> Rows { get; } = new();
 
     /// <summary>Briefly true after a low-HP alert; drives the red border.</summary>
     public bool Alerting { get => _alerting; set => Set(ref _alerting, value); }
@@ -91,6 +174,7 @@ public sealed class OverlayViewModel : Bindable
         {
             if (Set(ref _tab, value))
             {
+                Rows.Clear();
                 OnPropertyChanged(nameof(IsDamageTab));
                 OnPropertyChanged(nameof(IsTakenTab));
             }
@@ -163,6 +247,41 @@ public sealed class OverlayViewModel : Bindable
 
     public bool AutoStart { get => _autoStart; set => Set(ref _autoStart, value); }
 
+    /// <summary>Single-line rows instead of the two-line player cards.</summary>
+    public bool CompactRows
+    {
+        get => _compactRows;
+        set
+        {
+            if (Set(ref _compactRows, value))
+            {
+                OnPropertyChanged(nameof(DetailedRows));
+            }
+        }
+    }
+
+    public bool DetailedRows => !_compactRows;
+
+    public ServerRegion Region { get => _region; set => Set(ref _region, value); }
+    public int NotifyLeadMinutes { get => _notifyLeadMinutes; set => Set(ref _notifyLeadMinutes, Math.Clamp(value, 1, 60)); }
+    public bool NotifyRift { get => _notifyRift; set => Set(ref _notifyRift, value); }
+    public bool NotifyBossRaid { get => _notifyBossRaid; set => Set(ref _notifyBossRaid, value); }
+    public bool NotifyFieldEvents { get => _notifyFieldEvents; set => Set(ref _notifyFieldEvents, value); }
+    public bool NotifyPvp { get => _notifyPvp; set => Set(ref _notifyPvp, value); }
+    public bool NotifyReset { get => _notifyReset; set => Set(ref _notifyReset, value); }
+    public bool NotifySound { get => _notifySound; set => Set(ref _notifySound, value); }
+
+    public bool Notifies(ScheduleCategory category) => category switch
+    {
+        ScheduleCategory.Rift => _notifyRift,
+        ScheduleCategory.BossRaid => _notifyBossRaid,
+        ScheduleCategory.FieldEvent => _notifyFieldEvents,
+        ScheduleCategory.Pvp => _notifyPvp,
+        ScheduleCategory.Reset => _notifyReset,
+        _ => false,
+    };
+
+
     public double BackgroundOpacity
     {
         get => _backgroundOpacity;
@@ -193,9 +312,11 @@ public sealed class OverlayViewModel : Bindable
         UpdateHeader(snapshot);
         if (snapshot is null)
         {
-            Rows = [];
+            Rows.Clear();
+            return;
         }
-        else if (_tab == OverlayTab.Taken)
+
+        if (_tab == OverlayTab.Taken)
         {
             UpdateTaken(snapshot);
         }
@@ -203,8 +324,6 @@ public sealed class OverlayViewModel : Bindable
         {
             UpdateDamage(snapshot);
         }
-
-        OnPropertyChanged(nameof(HasRows));
     }
 
     private void UpdateHeader(MeterSnapshot? snapshot)
@@ -213,22 +332,30 @@ public sealed class OverlayViewModel : Bindable
         {
             Title = "Waiting for combat…";
             Duration = "--:--";
-            TotalDps = string.Empty;
+            PartyValue = string.Empty;
             HasHp = false;
             return;
         }
 
         Title = snapshot.Title;
         Duration = HistoryStore.Duration(snapshot.DurationSeconds);
-        TotalDps = _tab == OverlayTab.Taken
-            ? $"{Format(snapshot.Incoming.Sum(i => i.Total) / snapshot.DurationSeconds)}/s taken"
-            : $"{Format(snapshot.TotalDps)}/s";
+        if (_tab == OverlayTab.Taken)
+        {
+            PartyLabel = "Party taken/s";
+            PartyValue = Big(snapshot.Incoming.Sum(i => i.Total) / snapshot.DurationSeconds);
+        }
+        else
+        {
+            PartyLabel = "Party DPS";
+            PartyValue = Big(snapshot.TotalDps);
+        }
 
         if (snapshot.TargetMaxHp is { } max && snapshot.TargetHp is { } hp && max > 0)
         {
             HasHp = true;
             HpRatio = Math.Clamp((double)hp / max, 0, 1);
-            HpText = Invariant($"{HpRatio * 100:0.0}%");
+            HpText = Invariant($"{hp:N0} / {max:N0}");
+            HpPercent = Invariant($"{HpRatio * 100:0.0} %");
         }
         else
         {
@@ -239,23 +366,98 @@ public sealed class OverlayViewModel : Bindable
     private void UpdateDamage(MeterSnapshot snapshot)
     {
         double top = snapshot.Rows.Count > 0 ? Math.Max(snapshot.Rows[0].Total, 1) : 1;
-        int rank = 0;
-        Rows = snapshot.Rows.Select(row => new RowViewModel(
-            row.ActorId, ++rank, row.Name, Format(row.Dps), Format(row.Total), Invariant($"{row.Share * 100:0.0}%"),
-            Invariant($"{Format(row.Total)} · crit {row.CritRate * 100:0}% · back {row.BackRate * 100:0}% · {row.Hits} hits\nClick for details"),
-            row.Total / top, BarBrushes[row.Class], row.IsSelf)).ToList();
+        Sync(snapshot.Rows.Select(r => r.ActorId), (card, i) =>
+        {
+            var row = snapshot.Rows[i];
+            Fill(card, row.Name, row.Class, row.IsSelf, row.CombatPower);
+            card.Value = Big(row.Dps);
+            card.Share = Invariant($"{row.Share * 100:0.0}%");
+            card.Stats = Invariant($"Dbl {row.DoubleRate * 100:0}%  Perf {row.PerfectRate * 100:0}%  Crit {row.CritRate * 100:0}%  Front {row.FrontRate * 100:0}%  Back {row.BackRate * 100:0}%");
+            card.Detail = Invariant($"{row.Total:N0} damage · {row.Hits} hits\nClick for details");
+            card.TargetRatio = row.Total / top;
+        });
     }
 
     private void UpdateTaken(MeterSnapshot snapshot)
     {
         var incoming = snapshot.Incoming;
         double top = incoming.Count > 0 ? Math.Max(incoming[0].Total, 1) : 1;
-        int rank = 0;
-        Rows = incoming.Select(row => new RowViewModel(
-            row.VictimId, ++rank, row.Name, Format(row.Dtps), Format(row.Total), Invariant($"{row.Share * 100:0.0}%"),
-            Invariant($"{Format(row.Total)} taken · {row.Hits} hits · {row.Crits} crits\nClick for details"),
-            row.Total / top, BarBrushes[row.Class], row.IsSelf)).ToList();
+        Sync(incoming.Select(r => r.VictimId), (card, i) =>
+        {
+            var row = incoming[i];
+            Fill(card, row.Name, row.Class, row.IsSelf, null);
+            card.Value = Big(row.Dtps);
+            card.Share = Invariant($"{row.Share * 100:0.0}%");
+            card.Stats = Invariant($"Hits {row.Hits}  Crits {row.Crits}  Parried {row.Parried}  Blocked {row.Blocked + row.PerfectBlocks}  Absorbed {Format(row.Absorbed)}");
+            card.Detail = Invariant($"{row.Total:N0} damage taken\nClick for details");
+            card.TargetRatio = row.Total / top;
+        });
     }
+
+    /// <summary>Keeps <see cref="Rows"/> in the given order, reusing cards by id; eases every bar.</summary>
+    private void Sync(IEnumerable<uint> orderedIds, Action<PlayerCard, int> update)
+    {
+        var ids = orderedIds.ToList();
+        for (int i = Rows.Count - 1; i >= 0; i--)
+        {
+            if (!ids.Contains(Rows[i].ActorId))
+            {
+                Rows.RemoveAt(i);
+            }
+        }
+
+        for (int i = 0; i < ids.Count; i++)
+        {
+            int existing = -1;
+            for (int j = i; j < Rows.Count; j++)
+            {
+                if (Rows[j].ActorId == ids[i])
+                {
+                    existing = j;
+                    break;
+                }
+            }
+
+            PlayerCard card;
+            if (existing < 0)
+            {
+                card = new PlayerCard(ids[i]);
+                Rows.Insert(i, card);
+            }
+            else
+            {
+                card = Rows[existing];
+                if (existing != i)
+                {
+                    Rows.Move(existing, i);
+                }
+            }
+
+            card.Rank = i + 1;
+            update(card, i);
+            card.Ease();
+        }
+    }
+
+    private static void Fill(PlayerCard card, string name, GameClass cls, bool isSelf, uint? combatPower)
+    {
+        card.Name = name;
+        card.Emblem = Emblems[cls];
+        card.Icon = ClassIcons.For(cls);
+        card.ClassBrush = SolidBrushes[cls];
+        card.BarBrush = BarBrushes[cls];
+        card.IsSelf = isSelf;
+        string cp = combatPower is { } value ? Format(value) : string.Empty;
+        if (cp != card.CombatPower)
+        {
+            card.CombatPower = cp;
+            card.NotifyCombatPower();
+        }
+    }
+
+    /// <summary>Full numbers up to a million (like the game), compact above.</summary>
+    private static string Big(double value) =>
+        value < 1_000_000 ? value.ToString("N0", CultureInfo.InvariantCulture) : Format(value);
 
     public static string Format(double value) => HistoryStore.Compact(value);
 

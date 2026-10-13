@@ -16,7 +16,16 @@
 - Low-HP sound alert and red flash; HP shown in the footer; max HP learned per character
 - Fight history saved to disk, browsable in the overlay, copy-as-text summary
 
+## Done (milestone 4)
+- Home window (Home / History / Settings) in AION2 style, Cinzel, app icon, single-exe publish
+- Player cards in the overlay (class emblem, combat power, Dbl/Perf/Crit/Front/Back), boss HP numbers,
+  timer box, party DPS, 10 Hz updates with eased bars; compact rows option
+- Rift and event timetable with notifications in a free-floating, click-through notification area, per region
+- Official class emblems fetched from the AION2 armory CDN
+  (`assets.playnccdn.com/static-aion2/characters/img/class/class_icon_<class>.png`) into %AppData%, never bundled
+
 ## Next
+- **Field boss timers**: decode the `01 91` table fully (spawn point → boss, respawn interval); needs game data
 - **Per-target view** (the game's "Metric: <target>"): pick one target instead of "my targets".
 
 ## Ideas

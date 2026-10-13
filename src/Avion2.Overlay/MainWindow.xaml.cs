@@ -21,7 +21,7 @@ public partial class MainWindow : Window
     private readonly AppState _state;
     private readonly MeterEngine _engine;
     private readonly OverlayViewModel _vm;
-    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(250) };
+    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(100) };
     private readonly DispatcherTimer _alertTimer = new() { Interval = TimeSpan.FromMilliseconds(1500) };
     private readonly LowHpMonitor _lowHp = new();
     private AlertSound _alertSound;
@@ -54,6 +54,8 @@ public partial class MainWindow : Window
     public OverlayTab StartTab { get; set; }
 
     internal DetailWindow? DetailView => _detail;
+
+
 
     protected override void OnSourceInitialized(EventArgs e)
     {

@@ -25,6 +25,7 @@ public partial class DetailView : UserControl
     {
         InitializeComponent();
         DataContext = _vm;
+        _vm.PlayerChanged += Refresh;
         _timer.Tick += (_, _) => Refresh();
         Loaded += (_, _) =>
         {

@@ -31,6 +31,37 @@
                 </StackPanel>
             </Border>
 
+            <!-- Timers -->
+            <Border Style="{StaticResource Section}">
+                <StackPanel>
+                    <TextBlock Text="Timers &amp; notifications" Style="{StaticResource Heading}" />
+                    <DockPanel>
+                        <TextBlock Text="Server region" Width="150" VerticalAlignment="Center" />
+                        <ComboBox x:Name="RegionBox" Width="180" HorizontalAlignment="Left" SelectedItem="{Binding Region}" />
+                    </DockPanel>
+                    <DockPanel Margin="0,8,0,0">
+                        <TextBlock DockPanel.Dock="Right" Width="60" TextAlignment="Right" VerticalAlignment="Center"
+                                   Text="{Binding NotifyLeadMinutes, StringFormat={}{0} min}" />
+                        <TextBlock Text="Notify before" Width="150" VerticalAlignment="Center" />
+                        <Slider Minimum="1" Maximum="30" Value="{Binding NotifyLeadMinutes}" TickFrequency="1" IsSnapToTickEnabled="True" />
+                    </DockPanel>
+                    <WrapPanel Margin="150,8,0,0">
+                        <CheckBox Content="Spacetime Rifts" IsChecked="{Binding NotifyRift}" Margin="0,0,16,4" />
+                        <CheckBox Content="Beritra Air Raid" IsChecked="{Binding NotifyBossRaid}" Margin="0,0,16,4" />
+                        <CheckBox Content="Hourly field events" IsChecked="{Binding NotifyFieldEvents}" Margin="0,0,16,4" />
+                        <CheckBox Content="PvP events" IsChecked="{Binding NotifyPvp}" Margin="0,0,16,4" />
+                        <CheckBox Content="Resets" IsChecked="{Binding NotifyReset}" Margin="0,0,16,4" />
+                        <CheckBox Content="Play the alert sound" IsChecked="{Binding NotifySound}" Margin="0,0,16,4" />
+                    </WrapPanel>
+                    <StackPanel Orientation="Horizontal" Margin="150,6,0,0">
+                        <Button Content="Show a test notification" Margin="0,0,6,0" Click="TestNotification_Click" />
+                        <Button Content="Move notification area" Click="MoveNotifications_Click" />
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="Notices appear in their own transparent, click-through area on top of the game; place it with &quot;Move notification area&quot;. Timetable from aion2hub.com (Global client of 2026-09-19); field boss timers come later." />
+                </StackPanel>
+            </Border>
+
             <!-- Appearance -->
             <Border Style="{StaticResource Section}">
                 <StackPanel>
@@ -41,6 +72,12 @@
                         <Button DockPanel.Dock="Right" Content="Browse…" Margin="6,0,0,0" Click="BrowseVideo_Click" />
                         <TextBlock Text="Home background" Width="150" VerticalAlignment="Center" />
                         <TextBlock x:Name="VideoName" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    </DockPanel>
+                    <DockPanel Margin="0,8,0,0">
+                        <Button DockPanel.Dock="Right" Content="Open folder" Margin="6,0,0,0" Click="ClassIcons_Click" />
+                        <Button x:Name="IconButton" DockPanel.Dock="Right" Content="Download official icons" Margin="6,0,0,0" Click="DownloadIcons_Click" />
+                        <TextBlock Text="Class icons" Width="150" VerticalAlignment="Center" />
+                        <TextBlock x:Name="IconStatus" TextWrapping="Wrap" Opacity="0.85" VerticalAlignment="Center" />
                     </DockPanel>
                     <TextBlock Style="{StaticResource Hint}"
                                Text="A looping video behind the home page (e.g. the official key-art loop). Default: %AppData%\AVION2\background.mp4. Stays on your PC." />
@@ -59,6 +96,7 @@
                     </DockPanel>
                     <CheckBox Margin="0,8,0,0" Content="Show all targets nearby (not only the ones I hit)" IsChecked="{Binding AllTargets}" />
                     <CheckBox Margin="0,4,0,0" Content="Lock overlay (click-through to the game)" IsChecked="{Binding Locked}" />
+                    <CheckBox Margin="0,4,0,0" Content="Compact rows (one line per player instead of player cards)" IsChecked="{Binding CompactRows}" />
                     <TextBlock Style="{StaticResource Hint}" Text="While locked, unlock with Ctrl+Shift+L." />
                 </StackPanel>
             </Border>

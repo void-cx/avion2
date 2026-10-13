@@ -36,6 +36,10 @@ public sealed record MeterRow(
 {
     public int Parried { get; init; }
     public int MultiHits { get; init; }
+    public int FrontHits { get; init; }
+    public uint? CombatPower { get; init; }
+
+    public double FrontRate => Hits == 0 ? 0 : (double)FrontHits / Hits;
 
     public double DoubleRate => Hits == 0 ? 0 : (double)Doubles / Hits;
     public double PerfectRate => Hits == 0 ? 0 : (double)Perfects / Hits;
@@ -232,6 +236,8 @@ public static class MeterView
             {
                 Parried = actor.Parried,
                 MultiHits = actor.MultiHits,
+                FrontHits = actor.FrontHits,
+                CombatPower = info?.CombatPower,
             });
         }
 

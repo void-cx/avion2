@@ -14,10 +14,17 @@ public partial class App : Application
         var home = new HomeWindow(state);
         MainWindow = home;
 
+        // Official class icons are fetched once into %AppData% (never bundled); drawn emblems until then.
+        if (!ClassIconDownloader.AllPresent)
+        {
+            _ = ClassIconDownloader.DownloadAsync();
+        }
+
         var tab = Get(args, "tab") is { } t && Enum.TryParse<OverlayTab>(t, ignoreCase: true, out var parsed) ? parsed : OverlayTab.Damage;
         if (Get(args, "render-shots") is { } shots)
         {
-            DevShots.Run(state, home, shots);
+            double delay = double.TryParse(Get(args, "shot-delay"), CultureInfo.InvariantCulture, out double d) ? d : 9;
+            DevShots.Run(state, home, shots, delay);
             return;
         }
 

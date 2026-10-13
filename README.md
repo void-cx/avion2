@@ -19,6 +19,16 @@ A gameplay analyzer for **AION2**. It passively reads the game's network traffic
 - .NET 10 SDK
 - Admin rights may be needed, depending on how Npcap was installed.
 
+## Download-free build (single exe)
+
+```bash
+dotnet publish src/Avion2.Overlay -p:PublishProfile=Portable
+```
+
+This produces `artifacts/AVION2/AVION2.exe`, about 65 MB with the .NET runtime inside. It needs no installer and no
+.NET install: copy it anywhere and run it. Npcap still has to be installed once per PC. Settings, name tables and
+saved fights live in `%AppData%` / `%LocalAppData%\AVION2`.
+
 ## Usage
 
 ### App
@@ -28,7 +38,7 @@ dotnet run --project src/Avion2.Overlay -c Release
 ```
 
 The **home window** is the app's main window, styled after AION2's own site and armory:
-- The key-art video plays behind the home page. Copy a video to `%AppData%\AVION2\background.mp4`, or pick one under Settings → Appearance. It stays local: NCSoft artwork is never committed.
+- The key-art video plays behind the home page. Copy a video to `%AppData%\AVION2\background.mp4`, or pick one under Settings → Appearance. It stays local: NCSoft artwork is never committed. To save resources, the video only plays on the Home page while the meter is not connected to the game. Once AION2 is connected, or the window is minimized or on another page, the video is unloaded and a drawn backdrop shows instead.
 - Glowing serif display type, aether-blue and violet pill buttons, and star-topped cards.
 - Charcoal "armory" panels on the inner pages.
 
@@ -57,6 +67,8 @@ While the meter runs, a compact **overlay** sits on top of the game (windowed or
 | Lock (click-through) | Lock icon; unlock with **Ctrl+Shift+L** |
 | Hide / show | **Ctrl+Shift+O** |
 | Low-HP alert | Sound + red border below the threshold. Speaker icon: click to mute, scroll for volume |
+| Event notices | Gold notice cards a few minutes before Spacetime Rifts, Beritra raids, PvP events and more, shown in their own transparent, click-through notification area. They appear even when the meter is stopped. Settings → Timers → "Move notification area" to place it |
+| Player cards | Class emblem, combat power, DPS and share, Dbl/Perf/Crit/Front/Back rates. Settings → compact rows for one line per player. The official class emblems are downloaded on first start from NCSoft's armory CDN into `%AppData%\AVION2\classes`; they are not bundled, and drawn emblems are used until they arrive |
 | Stop the meter | ✕ (the running fight is saved) |
 
 Options: `--start` (start the meter right away), `--record captures/x.pcap`, `--log captures/x.jsonl`,

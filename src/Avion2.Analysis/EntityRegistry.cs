@@ -24,6 +24,7 @@ public sealed class EntityInfo(uint id)
     public string? OwnerName { get; set; }
     public bool IsBoss { get; set; }
     public bool IsDummy { get; set; }
+    public uint? CombatPower { get; set; }
 }
 
 /// <summary>
@@ -137,6 +138,7 @@ public sealed class EntityRegistry
                 info.Kind = EntityKind.Player;
                 info.Name = self.Name;
                 info.ServerId = self.ServerId;
+                info.CombatPower = self.CombatPower ?? info.CombatPower;
                 if (self.Class != GameClass.Unknown)
                 {
                     info.Class = self.Class;
@@ -160,6 +162,11 @@ public sealed class EntityRegistry
                 info.Kind = EntityKind.Player;
                 info.Name = player.Name;
                 info.ServerId = player.ServerId ?? info.ServerId;
+                info.CombatPower = player.CombatPower ?? info.CombatPower;
+                if (player.Class != GameClass.Unknown)
+                {
+                    info.Class = player.Class;
+                }
                 if (SelfId is null && player.Name == _confirmedName)
                 {
                     SelfId = player.EntityId;
