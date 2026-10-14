@@ -52,7 +52,7 @@ jobs:
             '',
             '**Updating:** AVION2 shows an "Update now" banner on the home page; one click installs this version.',
             '**New here?** Install [Npcap](https://npcap.com), download the zip below, unzip it and run `AVION2.exe`.')
-          if ($previous) { $notes += @('', "Changes since $previous: https://github.com/${{ github.repository }}/compare/$previous...$tag") }
+          if ($previous) { $notes += @('', "Changes since ${previous}: https://github.com/${{ github.repository }}/compare/${previous}...${tag}") }
           $notes -join "`n" | Set-Content -Encoding utf8 release-notes.md
           Get-Content release-notes.md
 
