@@ -112,7 +112,8 @@ public partial class HomeWindow : Window
 
     /// <summary>
     /// The video only plays when it is actually worth the GPU/CPU: on the home page, window visible, and the
-    /// game not connected yet. Otherwise it is unloaded (decoder freed) and the drawn backdrop shows instead.
+    /// game neither running on this PC nor connected. Otherwise it is unloaded (decoder freed) and the drawn
+    /// backdrop shows instead.
     /// </summary>
     private void UpdateBackdrop()
     {
@@ -156,7 +157,9 @@ public partial class HomeWindow : Window
 
     private void UpdateNavStatus()
     {
-        bool connected = _state.Engine?.Status().Locked == true;
+        // The game running here is enough (no need to wait for the meter to find its connection); the lock still
+        // counts for a game on another PC whose traffic we see.
+        bool connected = _state.Engine?.Status().Locked == true || Avion2.Engine.GameProcess.IsRunning;
         if (connected != _gameConnected)
         {
             _gameConnected = connected;
