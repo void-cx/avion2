@@ -181,6 +181,10 @@ public partial class MapPage : UserControl
         View.Transform ??= TransformFor(map);
         bool here = mapId == map.MapId;
         View.SetLive(here ? live : []);
+        if (here)
+        {
+            FollowRenderedCube();
+        }
         CenterMe.IsEnabled = here && View.SelfPoint is not null;
 
         int players = live.Count(e => e.Kind == LiveKind.Player);
@@ -247,27 +251,69 @@ public partial class MapPage : UserControl
         {
             GoToNextCube(); // opened by us or taken by someone else
         }
-        else if (target.Area is not null && latest.State == CubeState.Available && Near(latest, target.Area))
+        else
         {
-            Lead(current, CubeTarget.For(latest)); // found it: precision finding from here on
+            FollowRenderedCube();
         }
 
         UpdateSearchArea();
     }
 
-    /// <summary>A cube close enough to a search area (or to us) to be the one we are looking for.</summary>
-    private bool Near(CubeSighting cube, MapMarker area)
+    /// <summary>Metres from us to a cube, or null when our position is unknown.</summary>
+    private double? MetersTo(CubeSighting cube)
     {
-        if (View.Transform is not { } t)
+        if (View.Transform is not { } t || View.SelfPoint is not { } me)
         {
-            return false;
+            return null;
         }
 
         var (x, y) = t.ToImage(cube.Position);
-        double reach = CubeLog.SearchMeters * 1.25 * 100 * t.Scale;
-        bool nearArea = Math.Sqrt((x - area.X) * (x - area.X) + (y - area.Y) * (y - area.Y)) <= reach;
-        bool nearUs = View.SelfPoint is { } me && Math.Sqrt((x - me.X) * (x - me.X) + (y - me.Y) * (y - me.Y)) <= reach;
-        return nearArea || nearUs;
+        return Math.Sqrt((x - me.X) * (x - me.X) + (y - me.Y) * (y - me.Y)) / t.Scale / 100;
+    }
+
+    /// <summary>The nearest cube the game is rendering for us now: there, not skipped, within render range.</summary>
+    private (CubeSighting Cube, double Meters)? NearestRendered()
+    {
+        if (View.Map is not { } map)
+        {
+            return null;
+        }
+
+        return _state.CubeLog.OnMap(map.MapId)
+            .Where(c => c.State == CubeState.Available && !IsSkipped(c.Id))
+            .Select(c => (Cube: c, Meters: MetersTo(c)))
+            .Where(c => c.Meters is <= CubeLog.RenderMeters)
+            .OrderBy(c => c.Meters)
+            .Select(c => ((CubeSighting, double)?)(c.Cube, c.Meters!.Value))
+            .FirstOrDefault();
+    }
+
+    /// <summary>
+    /// The nearest cube on screen always wins: whatever the compass leads to (an area, an old hint, a cube further
+    /// away), it switches to a rendered cube — and between two rendered ones only when the new one is 10 m closer.
+    /// </summary>
+    private void FollowRenderedCube()
+    {
+        if (_compass?.Target is not { } target || View.Map is not { } map || NearestRendered() is not { } nearest)
+        {
+            return;
+        }
+
+        if (target.Exact is { } leading)
+        {
+            if (leading.Id == nearest.Cube.Id)
+            {
+                return;
+            }
+
+            var current = _state.CubeLog.Find(leading.Id) ?? leading;
+            if (current.State == CubeState.Available && MetersTo(current) is { } now && now <= CubeLog.RenderMeters && now - nearest.Meters < 10)
+            {
+                return; // already on a rendered cube about as close
+            }
+        }
+
+        Lead(map, CubeTarget.For(nearest.Cube));
     }
 
     /// <summary>aion2hub's cube markers on this map: areas where cubes were reported, not positions.</summary>
@@ -307,6 +353,11 @@ public partial class MapPage : UserControl
 
         var from = View.SelfPoint ?? new Point(map.Size / 2.0, map.Size / 2.0);
         double Distance(double x, double y) => Math.Sqrt((x - from.X) * (x - from.X) + (y - from.Y) * (y - from.Y));
+
+        if (NearestRendered() is { } rendered)
+        {
+            return CubeTarget.For(rendered.Cube);
+        }
 
         long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var spots = _state.CubeLog.OnMap(map.MapId)

@@ -115,6 +115,12 @@ public sealed class CubeLog
     /// <summary>Sightings closer than this (cm) are the same spot.</summary>
     public const float SameCubeCm = 300;
 
+    /// <summary>
+    /// How far the game renders cubes (m): 12 cubes first appeared 87–114 m away. A cube that is there and this
+    /// close to us is on screen — the best thing to lead to.
+    /// </summary>
+    public const double RenderMeters = 120;
+
     /// <summary>Sightings of a spot this far apart count as separate visits.</summary>
     public const long VisitGapMs = 10 * 60_000;
 
