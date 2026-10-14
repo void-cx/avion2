@@ -219,4 +219,24 @@ public class HistoryStoreTests
             Directory.Delete(dir, recursive: true);
         }
     }
+
+    [Fact]
+    public void BestFightPerBossIgnoresTheTargetSuffix()
+    {
+        static HistoryEntry Fight(string title, double seconds, double myDps) => new(title + seconds, new MeterSnapshot(
+            1, title, seconds, 1000, myDps, null, null,
+            [new MeterRow(1, "TestDaeva", GameClass.Chanter, true, (long)(myDps * seconds), myDps, 1, 0, 0, 1, 0, 0, 0, 0, [])],
+            StartedAtMs: 1, End: EncounterEnd.BossKilled));
+
+        Assert.Equal("Air Raiders Captain Tetrata", HistoryStore.BossOf("Air Raiders Captain Tetrata (+25)"));
+        var best = HistoryStore.BestPerBoss([
+            Fight("Tetrata (+25)", 120, 3_000),
+            Fight("Tetrata (+3)", 90, 4_500),   // same boss, better
+            Fight("Tetrata", 5, 9_000),         // too short to count
+            Fight("Combat", 60, 8_000),         // not a boss
+            Fight("Kaira", 60, 2_000),
+        ]);
+
+        Assert.Equal(["Tetrata (+3)", "Kaira"], best.Select(b => b.Snapshot.Title));
+    }
 }

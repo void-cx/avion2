@@ -19,6 +19,13 @@ public sealed record HistoryRow(HistoryEntry Entry)
     public double YourDpsValue => S.Self?.Dps ?? 0;
     public string YourDps => S.Self is { } me ? HistoryStore.Compact(me.Dps) : "–";
     public int Players => S.Rows.Count;
+
+    /// <summary>Our best fight per boss (see <see cref="HistoryStore.BestPerBoss"/>), as rows.</summary>
+    public static List<HistoryRow> BestPerBoss(IEnumerable<HistoryRow> fights)
+    {
+        var rows = fights.ToDictionary(f => f.Entry);
+        return HistoryStore.BestPerBoss(rows.Keys).Select(e => rows[e]).ToList();
+    }
     public string Ended => S.End switch
     {
         EncounterEnd.BossKilled => "Boss killed",

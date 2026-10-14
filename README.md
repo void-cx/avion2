@@ -5,13 +5,14 @@ did how much damage, live and after every fight.
 
 It is passive: it never touches the game, its files or its memory, and sends nothing anywhere.
 
-**Website and download:** https://void-cx.github.io/avion2/
+**Website and download:** https://avion2.void.cx
 
 ## Features
 
 - **Live overlay** on top of the game: damage per player (DPS, share, crit, back attacks and more), damage taken,
   boss HP, fight timer.
-- **Fight history** with the full breakdown of every fight: skills, hits, crits, damage taken by source.
+- **Fight history** with the full breakdown of every fight: skills, hits, crits, damage taken by source, and your
+  best DPS per boss.
 - **Timeline** of every skill cast per player, **buff uptime**, and a **replay** of the fight on a map.
 - **Timers and notices** for Spacetime Rifts, Beritra air raids, PvP events, resets, Reshanta world bosses and
   field boss respawns.

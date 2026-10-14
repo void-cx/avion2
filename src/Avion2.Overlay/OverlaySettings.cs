@@ -29,6 +29,10 @@ public sealed class OverlaySettings
     public string? MapKey { get; set; }
     public bool MapFollow { get; set; } = true;
     public List<string>? MapLayers { get; set; }
+    public List<string> MapHiddenSubtypes { get; set; } = [];
+    public List<string>? MapMonsterRanks { get; set; }
+    public int MapMinLevel { get; set; }
+    public int MapMaxLevel { get; set; }
     public List<string> FoundCollectibles { get; set; } = [];
     /// <summary>Skipped hidden cubes (hub marker id → until when, UTC) and how long a skip lasts (0 = until un-skipped).</summary>
     public Dictionary<string, DateTime> SkippedCubes { get; set; } = [];

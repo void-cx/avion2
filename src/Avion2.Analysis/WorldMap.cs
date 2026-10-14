@@ -56,11 +56,13 @@ public sealed record MapTransform(
     }
 }
 
+/// <param name="Icon">The game's marker icon for this category (a PNG in the built-in map data), or null.</param>
 public sealed record MapCategory(
     [property: JsonPropertyName("group")] string Group,
     [property: JsonPropertyName("groupLabel")] string GroupLabel,
     [property: JsonPropertyName("key")] string Key,
-    [property: JsonPropertyName("label")] string Label);
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("icon")] string? Icon = null);
 
 /// <summary>A point of interest in image pixels of the full-size map.</summary>
 /// <param name="Subtype">Category key: teleport, hiddenCube, gatheringOre, creatureFeral, npc, namedBoss…</param>
@@ -103,8 +105,25 @@ public sealed class WorldMap
 
     public static WorldMap Parse(string json) => JsonSerializer.Deserialize<WorldMap>(json) ?? throw new JsonException("empty map");
 
+    /// <summary>
+    /// A region or place name as people write it: "EllunRiverMarsh" → "Ellun River Marsh", and the data's
+    /// "Forestof Exiles" / "Gardenofthe Illusion God" → "Forest of Exiles" / "Garden of the Illusion God".
+    /// </summary>
+    public static string Readable(string name)
+    {
+        if (!name.Contains(' '))
+        {
+            name = string.Concat(name.Select((c, i) => i > 0 && char.IsUpper(c) && !char.IsUpper(name[i - 1]) ? " " + c : c.ToString()));
+        }
+
+        // "of" / "the" / "and" glued to the end of a word
+        return System.Text.RegularExpressions.Regex.Replace(name, @"(?<=[a-z]{3})(of|the|and)(?=\s|[A-Z]|the\b)", " $1");
+    }
+
     /// <summary>Group of a marker subtype (location, collection, gathering, monster, npc, creature).</summary>
     public string GroupOf(string subtype) => Categories.FirstOrDefault(c => c.Key == subtype)?.Group ?? "other";
+
+    public string? IconOf(string subtype) => Categories.FirstOrDefault(c => c.Key == subtype)?.Icon;
 
     public string LabelOf(string subtype) => Categories.FirstOrDefault(c => c.Key == subtype)?.Label ?? subtype;
 

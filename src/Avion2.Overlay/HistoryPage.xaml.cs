@@ -21,18 +21,52 @@ public partial class HistoryPage : UserControl
         UpdateHint();
     }
 
+    /// <summary>Render shots: the best-per-boss view.</summary>
+    internal void ShowBest() => BestMode.IsChecked = true;
+
     public void Select(HistoryRow row)
     {
         Grid.SelectedItem = row;
         Grid.ScrollIntoView(row);
     }
 
-    private void OnFightsChanged(object? sender, NotifyCollectionChangedEventArgs e) => UpdateHint();
+    private void OnFightsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (BestMode.IsChecked == true)
+        {
+            Grid.ItemsSource = HistoryRow.BestPerBoss(_state.Fights);
+        }
 
-    private void UpdateHint() =>
+        UpdateHint();
+    }
+
+    /// <summary>All fights, or the best fight per boss (your DPS records).</summary>
+    private void Mode_Checked(object sender, RoutedEventArgs e)
+    {
+        if (!IsInitialized || _state is null)
+        {
+            return;
+        }
+
+        Grid.ItemsSource = BestMode.IsChecked == true ? HistoryRow.BestPerBoss(_state.Fights) : _state.Fights;
+        UpdateHint();
+    }
+
+    private void UpdateHint()
+    {
+        if (BestMode.IsChecked == true)
+        {
+            int bosses = (Grid.ItemsSource as ICollection<HistoryRow>)?.Count ?? 0;
+            Hint.Text = bosses == 0
+                ? "No records yet: they come from fights of 20 s or more where you dealt damage."
+                : $"Your best DPS against {bosses} targets · from the {_state.Fights.Count} saved fights";
+            return;
+        }
+
         Hint.Text = _state.Fights.Count == 0
             ? "No fights saved yet. Fights are saved when they end."
             : $"{_state.Fights.Count} fights · saved locally only · they include other players' names, so ask before sharing";
+    }
 
     private HistoryRow? Selected => Grid.SelectedItem as HistoryRow;
 

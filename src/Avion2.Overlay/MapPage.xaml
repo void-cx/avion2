@@ -8,44 +8,52 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!-- Controls -->
+        <!-- Controls: search, map, layers -->
         <Border Style="{DynamicResource Card}" Margin="0,0,12,0">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
-                    <TextBlock Text="Map" Style="{DynamicResource CardHeading}" Margin="0,2,0,8" />
-                    <ComboBox x:Name="MapBox" DisplayMemberPath="Name" SelectionChanged="MapBox_SelectionChanged" />
-                    <CheckBox x:Name="FollowBox" Content="Follow the map I'm on" Margin="0,8,0,0" Click="FollowBox_Click" />
-
-                    <TextBlock Text="Layers" Foreground="{DynamicResource ChipTextBrush}" FontSize="11" Margin="0,16,0,4" />
-                    <StackPanel x:Name="LayerList" />
-
-                    <TextBlock Text="Hidden cubes" Foreground="{DynamicResource ChipTextBrush}" FontSize="11" Margin="0,16,0,4" />
-                    <TextBlock x:Name="CubeProgress" Foreground="{DynamicResource TitleBrush}" FontFamily="{DynamicResource DisplayFont}" FontSize="16" />
-                    <TextBlock x:Name="CubeHint" Foreground="{DynamicResource MutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,0" />
-                    <Button x:Name="NextCube" Content="Find a cube" Margin="0,8,0,0" HorizontalAlignment="Left" Click="NextCube_Click" />
-                    <DockPanel Margin="0,8,0,0">
-                        <TextBlock Text="Skip hides it for" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                        <ComboBox x:Name="SkipBox" DisplayMemberPath="Label" SelectionChanged="SkipBox_SelectionChanged"
-                                  ToolTip="Cubes others opened first are gone for a while. A skipped cube also comes back as soon as the game shows it again." />
-                    </DockPanel>
-
-                    <TextBlock Text="Find" Foreground="{DynamicResource ChipTextBrush}" FontSize="11" Margin="0,16,0,4" />
                     <Grid>
                         <TextBox x:Name="FindBox" TextChanged="FindBox_TextChanged" />
-                        <TextBlock x:Name="FindHint" Text="Monster, NPC, place…" IsHitTestVisible="False" Foreground="{DynamicResource MutedBrush}"
+                        <TextBlock x:Name="FindHint" Text="Find a monster, NPC, place…" IsHitTestVisible="False" Foreground="{DynamicResource MutedBrush}"
                                    VerticalAlignment="Center" Margin="11,0,0,0" />
                     </Grid>
-                    <ListBox x:Name="FindList" MaxHeight="180" Margin="0,4,0,0" Background="Transparent" BorderThickness="0"
-                             SelectionChanged="FindList_SelectionChanged" Visibility="Collapsed">
+                    <ListBox x:Name="FindList" MaxHeight="260" Margin="0,4,0,0" Background="Transparent" BorderThickness="0"
+                             SelectionChanged="FindList_SelectionChanged" Visibility="Collapsed" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
                                 <Setter Property="Padding" Value="8,2" />
                                 <Setter Property="MinHeight" Value="0" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                             </Style>
                         </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Text}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Zone}" Foreground="{DynamicResource MutedBrush}" FontSize="10.5" TextTrimming="CharacterEllipsis">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <Trigger Property="Text" Value="">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
                     </ListBox>
 
-                    <TextBlock x:Name="LiveStatus" Foreground="{DynamicResource MutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,16,0,0" />
+                    <TextBlock Text="Map" Foreground="{DynamicResource ChipTextBrush}" FontSize="11" Margin="0,14,0,4" />
+                    <ComboBox x:Name="MapBox" DisplayMemberPath="Name" SelectionChanged="MapBox_SelectionChanged" />
+                    <CheckBox x:Name="FollowBox" Content="Follow the map I'm on" Margin="0,6,0,0" Click="FollowBox_Click" />
+
+                    <TextBlock Text="Layers" Foreground="{DynamicResource ChipTextBrush}" FontSize="11" Margin="0,14,0,2" />
+                    <StackPanel x:Name="LayerList" />
+
+                    <TextBlock x:Name="LiveStatus" Foreground="{DynamicResource MutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,14,0,0" />
                 </StackPanel>
             </ScrollViewer>
         </Border>
@@ -58,6 +66,26 @@
                     <Button x:Name="CenterMe" Content="Center on me" Margin="0,0,6,0" Click="CenterMe_Click" />
                     <Button Content="Whole map" Click="Fit_Click" />
                 </StackPanel>
+
+                <!-- Hidden cubes: a small card on the map -->
+                <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Padding="12,9,12,10" CornerRadius="8" Width="240"
+                        Background="{DynamicResource NoticeBackground}" BorderBrush="{DynamicResource NoticeBorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Style="{StaticResource HeaderButton}" Content="&#xE9D2;" Click="CubeStats_Click"
+                                    ToolTip="Statistics: spots seen, opened and taken by others, per map" Margin="0,-3,-6,0" />
+                            <TextBlock Text="Hidden cubes" Foreground="{DynamicResource ChipTextBrush}" FontSize="11" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <TextBlock x:Name="CubeProgress" Foreground="{DynamicResource TitleBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,1,0,0" />
+                        <TextBlock x:Name="CubeHint" Foreground="{DynamicResource MutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0" />
+                        <Grid x:Name="CubeStatsPanel" Visibility="Collapsed" Margin="0,8,0,0" />
+                        <DockPanel Margin="0,8,0,0">
+                            <Button x:Name="NextCube" DockPanel.Dock="Left" Content="Find a cube" Click="NextCube_Click" Padding="10,3" MinHeight="0" Margin="0,0,8,0" />
+                            <ComboBox x:Name="SkipBox" DisplayMemberPath="Label" SelectionChanged="SkipBox_SelectionChanged" FontSize="11" MinHeight="0"
+                                      ToolTip="How long Skip hides a cube. Cubes others opened first are gone for a while; a skipped cube also comes back as soon as the game shows it again." />
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
             </Grid>
         </Border>
     </Grid>

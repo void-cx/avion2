@@ -109,6 +109,10 @@ public sealed class CubeTracker
         new(CubeSighting.SpotId(mapId, obj.Position), mapId, obj.Position.X, obj.Position.Y, obj.Position.Z, obj.Code, seenMs);
 }
 
+/// <summary>Cube numbers for one map.</summary>
+/// <param name="Taken">Spots where someone else opened the cube (at least once) before we did.</param>
+public sealed record CubeStats(uint MapId, int Spots, int Opened, int Taken);
+
 /// <summary>Every cube spot seen, opened or taken, kept between sessions (one entry per spot).</summary>
 public sealed class CubeLog
 {
@@ -167,6 +171,14 @@ public sealed class CubeLog
     public CubeSighting? Find(string id) => Cubes.FirstOrDefault(c => c.Id == id);
 
     public IEnumerable<CubeSighting> OnMap(uint mapId) => Cubes.Where(c => c.MapId == mapId);
+
+    /// <summary>Per map: spots seen, how many we opened and how many someone else opened first.</summary>
+    public IReadOnlyList<CubeStats> Stats() => Cubes
+        .GroupBy(c => c.MapId)
+        .Select(g => new CubeStats(g.Key, g.Count(), g.Count(c => c.OpenedMs is not null), g.Count(c => c.TakenMs is not null)))
+        .OrderByDescending(s => s.Opened)
+        .ThenByDescending(s => s.Spots)
+        .ToList();
 
     /// <summary>Cube spots we opened (all maps, or one).</summary>
     public int OpenedCount(uint? mapId = null) => Cubes.Count(c => c.OpenedMs is not null && (mapId is null || c.MapId == mapId));

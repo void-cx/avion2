@@ -121,6 +121,20 @@ public sealed class HistoryStore
         return false;
     }
 
+    /// <summary>A fight's boss or target without the "(+N)" extra-targets suffix, for grouping the same boss.</summary>
+    public static string BossOf(string title) => System.Text.RegularExpressions.Regex.Replace(title, @"\s*\(\+\d+\)$", string.Empty);
+
+    /// <summary>
+    /// Our best fight per boss: the highest own DPS among fights of at least <paramref name="minSeconds"/> where we
+    /// dealt damage (generic "Combat" fights left out), best first.
+    /// </summary>
+    public static List<HistoryEntry> BestPerBoss(IEnumerable<HistoryEntry> fights, double minSeconds = 20) => fights
+        .Where(f => f.Snapshot.Self is { Dps: > 0 } && f.Snapshot.DurationSeconds >= minSeconds && BossOf(f.Snapshot.Title) != "Combat")
+        .GroupBy(f => BossOf(f.Snapshot.Title))
+        .Select(g => g.MaxBy(f => f.Snapshot.Self!.Dps)!)
+        .OrderByDescending(f => f.Snapshot.Self!.Dps)
+        .ToList();
+
     /// <summary>Saved fights on disk (all of them, not only the ones loaded) and the bytes they and their replays take.</summary>
     public (int Fights, long Bytes) Usage()
     {

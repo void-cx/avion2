@@ -12,6 +12,11 @@
         <DockPanel>
             <TextBlock DockPanel.Dock="Top" Text="Fight History" Style="{DynamicResource CardHeading}" FontSize="28" />
             <TextBlock x:Name="Hint" DockPanel.Dock="Top" Opacity="0.7" FontSize="11" Margin="0,2,0,8" TextWrapping="Wrap" />
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                <RadioButton x:Name="AllMode" Content="All fights" GroupName="HistoryMode" IsChecked="True" Checked="Mode_Checked" Margin="0,0,16,0" />
+                <RadioButton x:Name="BestMode" Content="Best per target" GroupName="HistoryMode" Checked="Mode_Checked"
+                             ToolTip="For every boss or named target, the fight where you did the most damage per second (fights of 20 s or more)" />
+            </StackPanel>
             <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
                 <Button Content="Copy summary" Margin="0,0,6,0" Click="Copy_Click" IsEnabled="{Binding SelectedItem, ElementName=Grid, Converter={StaticResource NotNull}}"
                         ToolTip="Copy the selected fight as text, e.g. for chat" />

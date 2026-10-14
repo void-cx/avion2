@@ -122,4 +122,13 @@ public class MapTests
         Assert.Equal(270, e.Facing!.Value, 1);
         Assert.Equal(0, e.FacingAgeMs);
     }
+
+    [Theory]
+    [InlineData("Forestof Exiles", "Forest of Exiles")]
+    [InlineData("Gardenofthe Illusion God", "Garden of the Illusion God")]
+    [InlineData("EllunRiverMarsh", "Ellun River Marsh")]
+    [InlineData("Western Cantas Valley", "Western Cantas Valley")]
+    [InlineData("Dranactus", "Dranactus")]
+    [InlineData("Theobomos Laboratory", "Theobomos Laboratory")]
+    public void RegionNamesReadNaturally(string raw, string shown) => Assert.Equal(shown, WorldMap.Readable(raw));
 }

@@ -54,6 +54,10 @@ public static class BundledGameData
         }
     }
 
+    /// <summary>A map marker icon (PNG) by file name, or null.</summary>
+    public static Stream? MapIcon(string name) =>
+        typeof(BundledGameData).Assembly.GetManifestResourceStream($"gamedata/world/icons/{name}");
+
     /// <summary>The map picture (JPEG, half the marker resolution).</summary>
     public static Stream? WorldMapImage(string key) =>
         typeof(BundledGameData).Assembly.GetManifestResourceStream($"gamedata/world/{key}.jpg");

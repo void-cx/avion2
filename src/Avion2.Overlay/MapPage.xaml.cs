@@ -11,7 +11,8 @@ public sealed record MapChoice(string Key, string Name);
 
 public sealed record SkipChoice(int Minutes, string Label);
 
-public sealed record FindLine(MapMarker Marker, string Text)
+/// <param name="MapKey">The zone the marker is on (search covers every map).</param>
+public sealed record FindLine(MapMarker Marker, string MapKey, string Text, string Zone)
 {
     public override string ToString() => Text;
 }
@@ -54,13 +55,16 @@ public partial class MapPage : UserControl
             View.Layers.UnionWith(layers);
         }
 
-        foreach (var (group, label) in LayerChoices)
+        View.HiddenSubtypes = new HashSet<string>(state.Stored.MapHiddenSubtypes);
+        if (state.Stored.MapMonsterRanks is { Count: > 0 } ranks)
         {
-            var box = new CheckBox { Content = label, IsChecked = View.Layers.Contains(group), Margin = new Thickness(0, 0, 0, 2), Tag = group };
-            box.Click += Layer_Click;
-            LayerList.Children.Add(box);
+            View.MonsterRanks = new HashSet<string>(ranks);
         }
 
+        View.MinLevel = state.Stored.MapMinLevel;
+        View.MaxLevel = state.Stored.MapMaxLevel;
+
+        View.IconSource = LoadIcon;
         View.Found = new HashSet<string>(state.Stored.FoundCollectibles);
         View.FoundChanged += (_, _) =>
         {
@@ -73,7 +77,7 @@ public partial class MapPage : UserControl
             state.Stored.SkippedCubes.Remove(marker.Id!);
             state.SaveSettings();
         };
-        var skips = new List<SkipChoice> { new(15, "15 min"), new(30, "30 min"), new(60, "1 hour"), new(24 * 60, "1 day"), new(0, "until I un-skip it") };
+        var skips = new List<SkipChoice> { new(15, "Skip: 15 min"), new(30, "Skip: 30 min"), new(60, "Skip: 1 hour"), new(24 * 60, "Skip: 1 day"), new(0, "Skip: until un-skipped") };
         SkipBox.ItemsSource = skips;
         SkipBox.SelectedItem = skips.FirstOrDefault(s => s.Minutes == state.Stored.CubeSkipMinutes) ?? skips[1];
         state.CubeUpdated += OnCube;
@@ -113,10 +117,36 @@ public partial class MapPage : UserControl
         }
 
         View.Show(map, Image(key));
+        BuildLayerPanel(map);
         View.Transform = TransformFor(map);
         View.ExactCubes = _state.CubeLog.OnMap(map.MapId).ToList();
         RefreshCubes();
         Find(FindBox.Text);
+    }
+
+    private readonly Dictionary<string, BitmapSource?> _icons = new();
+
+    /// <summary>A built-in marker icon, decoded once.</summary>
+    private BitmapSource? LoadIcon(string name)
+    {
+        if (!_icons.TryGetValue(name, out var icon))
+        {
+            using var stream = BundledGameData.MapIcon(name);
+            if (stream is not null)
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.StreamSource = stream;
+                bitmap.EndInit();
+                bitmap.Freeze();
+                icon = bitmap;
+            }
+
+            _icons[name] = icon;
+        }
+
+        return icon;
     }
 
     private BitmapSource? Image(string key)
@@ -195,6 +225,205 @@ public partial class MapPage : UserControl
                 : View.SelfPoint is null
                     ? $"{players} players nearby. Your own dot appears after a teleport, buff or skill (the game doesn't send your movement)."
                     : $"{players} players nearby. Your dot updates on teleports, buffs and skills.";
+    }
+
+    private readonly Dictionary<string, CheckBox> _groupBoxes = new();
+    private readonly HashSet<string> _expanded = new();
+
+    /// <summary>Smaller than the default checkbox (the panel lists many of them).</summary>
+    private static CheckBox Compact(CheckBox box)
+    {
+        box.MinHeight = 0;
+        box.Height = 26;
+        box.FontSize = 12;
+        box.Padding = new Thickness(4, 0, 0, 0);
+        box.LayoutTransform = new System.Windows.Media.ScaleTransform(0.9, 0.9);
+        return box;
+    }
+
+    /// <summary>
+    /// One collapsible section per marker group, with a checkbox for the group, one per kind (with its icon and
+    /// count), and for monsters rank and level filters. Rebuilt per map (maps have different kinds).
+    /// </summary>
+    private void BuildLayerPanel(WorldMap map)
+    {
+        LayerList.Children.Clear();
+        _groupBoxes.Clear();
+        var counts = map.Markers.GroupBy(m => m.Subtype).ToDictionary(g => g.Key, g => g.Count());
+
+        foreach (var (group, label) in LayerChoices)
+        {
+            var kinds = map.Categories
+                .Where(c => group == "monolith" ? c.Key == "monolithMaterial"
+                    : group == "collection" ? c.Key == "hiddenCube"
+                    : c.Group == group && c.Key != "monolithMaterial")
+                .Where(c => counts.ContainsKey(c.Key))
+                .ToList();
+            int total = kinds.Sum(k => counts[k.Key]);
+            if (group != "live" && total == 0)
+            {
+                continue;
+            }
+
+            var groupBox = Compact(new CheckBox
+            {
+                Content = group == "live" ? label : $"{label} ({total:N0})",
+                IsChecked = View.Layers.Contains(group),
+                Tag = group,
+                VerticalAlignment = VerticalAlignment.Center,
+            });
+            groupBox.Click += Layer_Click;
+            _groupBoxes[group] = groupBox;
+
+            var details = new StackPanel { Margin = new Thickness(22, 0, 0, 4) };
+            if (kinds.Count > 1)
+            {
+                foreach (var kind in kinds)
+                {
+                    details.Children.Add(KindBox(map, kind, counts[kind.Key]));
+                }
+            }
+
+            if (group == "monster")
+            {
+                details.Children.Add(MonsterFilters(map));
+            }
+
+            if (details.Children.Count == 0)
+            {
+                LayerList.Children.Add(groupBox);
+                continue;
+            }
+
+            // A compact row: the group's checkbox, and a small chevron that folds its kinds and filters open
+            bool open = _expanded.Contains(group);
+            details.Visibility = open ? Visibility.Visible : Visibility.Collapsed;
+            var chevron = new Button
+            {
+                Style = (Style)FindResource("HeaderButton"),
+                Content = open ? "\uE70E" : "\uE70D",
+                ToolTip = "Kinds and filters",
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            chevron.Click += (_, _) =>
+            {
+                bool show = details.Visibility != Visibility.Visible;
+                details.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+                chevron.Content = show ? "\uE70E" : "\uE70D";
+                if (show)
+                {
+                    _expanded.Add(group);
+                }
+                else
+                {
+                    _expanded.Remove(group);
+                }
+            };
+
+            var header = new Grid();
+            header.Children.Add(groupBox);
+            header.Children.Add(chevron);
+            LayerList.Children.Add(header);
+            LayerList.Children.Add(details);
+        }
+    }
+
+    /// <summary>A checkbox for one kind of marker (e.g. Orichalcum Ore) with its map icon.</summary>
+    private CheckBox KindBox(WorldMap map, MapCategory kind, int count)
+    {
+        var row = new StackPanel { Orientation = Orientation.Horizontal };
+        var icon = kind.Icon is { } name ? LoadIcon(name) : MapView.Badge(kind.Group);
+        if (icon is not null)
+        {
+            row.Children.Add(new System.Windows.Controls.Image { Source = icon, Width = 16, Height = 16, Margin = new Thickness(0, 0, 6, 0) });
+        }
+
+        row.Children.Add(new TextBlock { Text = $"{kind.Label} ({count:N0})", VerticalAlignment = VerticalAlignment.Center });
+        var box = Compact(new CheckBox { Content = row, IsChecked = !View.HiddenSubtypes.Contains(kind.Key) });
+        box.Click += (_, _) =>
+        {
+            if (box.IsChecked == true)
+            {
+                View.HiddenSubtypes.Remove(kind.Key);
+            }
+            else
+            {
+                View.HiddenSubtypes.Add(kind.Key);
+            }
+
+            _state.Stored.MapHiddenSubtypes = View.HiddenSubtypes.ToList();
+            _state.SaveSettings();
+            View.InvalidateVisual();
+        };
+        return box;
+    }
+
+    /// <summary>Rank toggles and a level range for monsters.</summary>
+    private UIElement MonsterFilters(WorldMap map)
+    {
+        var panel = new StackPanel { Margin = new Thickness(0, 6, 0, 0) };
+        var ranks = new WrapPanel();
+        foreach (var (rank, label) in new[] { ("normal", "Normal"), ("elite", "Elite"), ("named", "Named") })
+        {
+            var box = Compact(new CheckBox { Content = label, IsChecked = View.MonsterRanks.Contains(rank), Margin = new Thickness(0, 0, 8, 0) });
+            box.Click += (_, _) =>
+            {
+                if (box.IsChecked == true)
+                {
+                    View.MonsterRanks.Add(rank);
+                }
+                else
+                {
+                    View.MonsterRanks.Remove(rank);
+                }
+
+                _state.Stored.MapMonsterRanks = View.MonsterRanks.ToList();
+                _state.SaveSettings();
+                View.InvalidateVisual();
+            };
+            ranks.Children.Add(box);
+        }
+
+        panel.Children.Add(ranks);
+
+        var levels = map.Markers.Where(m => m.Level is not null).Select(m => m.Level!.Value).ToList();
+        if (levels.Count == 0)
+        {
+            return panel;
+        }
+
+        int lowest = levels.Min(), highest = levels.Max();
+        var range = new TextBlock { Foreground = (System.Windows.Media.Brush)FindResource("SecondaryTextBrush"), Margin = new Thickness(0, 6, 0, 0) };
+        var min = new Slider { Minimum = lowest, Maximum = highest, IsSnapToTickEnabled = true, TickFrequency = 1 };
+        var max = new Slider { Minimum = lowest, Maximum = highest, IsSnapToTickEnabled = true, TickFrequency = 1 };
+        min.Value = View.MinLevel > 0 ? Math.Clamp(View.MinLevel, lowest, highest) : lowest;
+        max.Value = View.MaxLevel > 0 ? Math.Clamp(View.MaxLevel, lowest, highest) : highest;
+
+        void Apply()
+        {
+            if (min.Value > max.Value)
+            {
+                max.Value = min.Value;
+            }
+
+            range.Text = $"Level {min.Value:0} – {max.Value:0}";
+            View.MinLevel = min.Value <= lowest ? 0 : (int)min.Value;
+            View.MaxLevel = max.Value >= highest ? 0 : (int)max.Value;
+            _state.Stored.MapMinLevel = View.MinLevel;
+            _state.Stored.MapMaxLevel = View.MaxLevel;
+            View.InvalidateVisual();
+        }
+
+        min.ValueChanged += (_, _) => Apply();
+        max.ValueChanged += (_, _) => Apply();
+        min.LostMouseCapture += (_, _) => _state.SaveSettings();
+        max.LostMouseCapture += (_, _) => _state.SaveSettings();
+        Apply();
+        panel.Children.Add(range);
+        panel.Children.Add(min);
+        panel.Children.Add(max);
+        return panel;
     }
 
     private void Layer_Click(object sender, RoutedEventArgs e)
@@ -332,10 +561,73 @@ public partial class MapPage : UserControl
         int open = spots.Count(c => c.IsReliable(now));
         CubeProgress.Text = spots.Count == 0 ? "None seen here yet" : $"{opened} opened · {open} there now";
         CubeHint.Text = spots.Count == 0
-            ? "Cubes the game shows you are kept here with their exact spot. Until then the hub's markers are search areas."
-            : $"{spots.Count} spots seen on {map.Name}; {_state.CubeLog.OpenedCount()} opened on all maps. Hub markers are search areas.";
+            ? "Cubes the game shows you are remembered with their exact spot."
+            : $"{spots.Count} spots seen here · {_state.CubeLog.OpenedCount()} opened on all maps";
         NextCube.IsEnabled = spots.Count > 0 || Areas.Any();
+        RefreshCubeStats();
     }
+
+    private void CubeStats_Click(object sender, RoutedEventArgs e)
+    {
+        CubeStatsPanel.Visibility = CubeStatsPanel.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+        RefreshCubeStats();
+    }
+
+    /// <summary>A small table: per map, spots seen, opened by us, and opened by someone else first.</summary>
+    private void RefreshCubeStats()
+    {
+        if (CubeStatsPanel.Visibility != Visibility.Visible)
+        {
+            return;
+        }
+
+        var grid = CubeStatsPanel;
+        grid.Children.Clear();
+        grid.RowDefinitions.Clear();
+        grid.ColumnDefinitions.Clear();
+        foreach (var width in new[] { new GridLength(1, GridUnitType.Star), GridLength.Auto, GridLength.Auto, GridLength.Auto })
+        {
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = width });
+        }
+
+        var stats = _state.CubeLog.Stats();
+        var rows = new List<string[]> { new[] { string.Empty, "Seen", "Opened", "Others" } };
+        rows.AddRange(stats.Select(s => new[] { MapName(s.MapId), $"{s.Spots}", $"{s.Opened}", $"{s.Taken}" }));
+        if (stats.Count > 1)
+        {
+            rows.Add(new[] { "All maps", $"{stats.Sum(s => s.Spots)}", $"{stats.Sum(s => s.Opened)}", $"{stats.Sum(s => s.Taken)}" });
+        }
+
+        if (stats.Count == 0)
+        {
+            rows.Add(new[] { "No cubes seen yet", string.Empty, string.Empty, string.Empty });
+        }
+
+        for (int r = 0; r < rows.Count; r++)
+        {
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            for (int col = 0; col < 4; col++)
+            {
+                bool header = r == 0, total = r == rows.Count - 1 && stats.Count > 1;
+                var cell = new TextBlock
+                {
+                    Text = rows[r][col],
+                    FontSize = 11,
+                    Margin = new Thickness(col == 0 ? 0 : 10, 1, 0, 1),
+                    TextAlignment = col == 0 ? TextAlignment.Left : TextAlignment.Right,
+                    FontWeight = total ? FontWeights.SemiBold : FontWeights.Normal,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                };
+                cell.SetResourceReference(TextBlock.ForegroundProperty, header ? "MutedBrush" : "TitleBrush");
+                Grid.SetRow(cell, r);
+                Grid.SetColumn(cell, col);
+                grid.Children.Add(cell);
+            }
+        }
+    }
+
+    private static string MapName(uint mapId) =>
+        BundledGameData.WorldMapKeys.Select(BundledGameData.WorldMap).FirstOrDefault(m => m?.MapId == mapId)?.Name ?? $"Map {mapId}";
 
     private bool IsSkipped(string id) =>
         _state.Stored.SkippedCubes.TryGetValue(id, out var until) && until > DateTime.UtcNow;
@@ -484,11 +776,19 @@ public partial class MapPage : UserControl
             return;
         }
 
-        var lines = map.Markers
-            .Where(m => m.Name.Contains(query.Trim(), StringComparison.OrdinalIgnoreCase))
-            .GroupBy(m => (m.Name, m.Subtype))
-            .Select(g => new FindLine(g.First(), g.Count() > 1 ? $"{g.Key.Name} ({g.Count()})" : g.Key.Name))
-            .Take(40)
+        // Every zone, the one shown first: "where is that monster?" without knowing the map
+        string text = query.Trim();
+        var lines = BundledGameData.WorldMapKeys
+            .Select(BundledGameData.WorldMap)
+            .OfType<WorldMap>()
+            .OrderBy(m => m.MapId == map.MapId ? 0 : 1)
+            .SelectMany(m => m.Markers
+                .Where(x => x.Name.Contains(text, StringComparison.OrdinalIgnoreCase))
+                .GroupBy(x => (x.Name, x.Subtype))
+                .Select(g => new FindLine(g.First(), m.Key,
+                    g.Count() > 1 ? $"{g.Key.Name} ({g.Count()})" : g.Key.Name,
+                    m.MapId == map.MapId ? string.Empty : m.Name)))
+            .Take(60)
             .ToList();
         FindList.ItemsSource = lines;
         FindList.Visibility = lines.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -496,19 +796,39 @@ public partial class MapPage : UserControl
 
     private void FindList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (FindList.SelectedItem is FindLine line && View.Map is { } map)
+        if (FindList.SelectedItem is not FindLine line)
         {
-            View.Layers.Add(View.LayerOf(line.Marker));
-            SyncLayerBoxes();
-            View.Select(line.Marker);
+            return;
         }
+
+        if (View.Map?.Key != line.MapKey)
+        {
+            MapBox.SelectedItem = ((IEnumerable<MapChoice>)MapBox.ItemsSource).First(c => c.Key == line.MapKey);
+        }
+
+        // Make sure the marker is not filtered out
+        View.Layers.Add(View.LayerOf(line.Marker));
+        View.HiddenSubtypes.Remove(line.Marker.Subtype);
+        if (View.Map?.GroupOf(line.Marker.Subtype) == "monster")
+        {
+            View.MonsterRanks.Add(line.Marker.Rank ?? "normal");
+            View.MinLevel = View.MaxLevel = 0;
+        }
+
+        if (View.Map is { } shown)
+        {
+            BuildLayerPanel(shown);
+        }
+
+        SyncLayerBoxes();
+        View.Select(line.Marker);
     }
 
     private void SyncLayerBoxes()
     {
-        foreach (CheckBox box in LayerList.Children)
+        foreach (var (group, box) in _groupBoxes)
         {
-            box.IsChecked = View.Layers.Contains((string)box.Tag);
+            box.IsChecked = View.Layers.Contains(group);
         }
     }
 
@@ -535,6 +855,24 @@ public partial class MapPage : UserControl
         View.CenterOn(x, y, 0.8);
         View.SelectObject(cube);
         return true;
+    }
+
+    /// <summary>For render shots: a search across all maps, with the cube statistics open.</summary>
+    internal void PreviewSearch(string query)
+    {
+        FindBox.Text = query;
+        CubeStatsPanel.Visibility = Visibility.Visible;
+        RefreshCubeStats();
+    }
+
+    /// <summary>For render shots: zoomed in close around a marker.</summary>
+    internal void PreviewClose(string find, double zoom)
+    {
+        Preview("World_L_A", find);
+        if (View.Map?.Markers.FirstOrDefault(m => m.Name == find) is { } marker)
+        {
+            View.CenterOn(marker.X, marker.Y, zoom);
+        }
     }
 
     /// <summary>For render shots: the compass on the next cube or area.</summary>

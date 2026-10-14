@@ -119,4 +119,20 @@ public class CubeTests
         Assert.Equal(2, log.Find(id)!.Visits);
         Assert.True(log.Find(id)!.IsReliable(10 * 60 * 60_000));
     }
+
+    [Fact]
+    public void StatsPerMap()
+    {
+        var log = new CubeLog();
+        CubeSighting Spot(uint map, float x, long? opened = null, long? taken = null) =>
+            new(CubeSighting.SpotId(map, new Vec3(x, 0, 0)), map, x, 0, 0, 1_200_039, 1, opened, taken);
+        log.Merge(Spot(1010, 1_000, opened: 5));
+        log.Merge(Spot(1010, 9_000, taken: 5));
+        log.Merge(Spot(1010, 20_000));
+        log.Merge(Spot(1110, 1_000, opened: 5));
+
+        var stats = log.Stats();
+        Assert.Equal(new CubeStats(1010, 3, 1, 1), stats.Single(s => s.MapId == 1010));
+        Assert.Equal(new CubeStats(1110, 1, 1, 0), stats.Single(s => s.MapId == 1110));
+    }
 }

@@ -14,9 +14,11 @@ jobs:
   release:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # the previous tag, for the release notes
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
 
@@ -35,6 +37,25 @@ jobs:
         shell: pwsh
         run: ./tools/publish.ps1 -Version ${{ steps.version.outputs.version }} -Zip
 
+      - name: Release notes from the commits since the previous tag
+        shell: pwsh
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $previous = git describe --tags --abbrev=0 "$tag^" 2>$null
+          $range = if ($previous) { "$previous..$tag" } else { $tag }
+          # One bullet per change: commit subjects list several changes separated by "; "
+          $changes = git log --no-merges --pretty=format:%s $range |
+            ForEach-Object { $_ -split '; ' } |
+            Where-Object { $_.Trim() } |
+            ForEach-Object { $t = $_.Trim(); "- " + $t.Substring(0, 1).ToUpper() + $t.Substring(1) }
+          $notes = @('## What''s new', '') + $changes + @(
+            '',
+            '**Updating:** AVION2 shows an "Update now" banner on the home page; one click installs this version.',
+            '**New here?** Install [Npcap](https://npcap.com), download the zip below, unzip it and run `AVION2.exe`.')
+          if ($previous) { $notes += @('', "Changes since $previous: https://github.com/${{ github.repository }}/compare/$previous...$tag") }
+          $notes -join "`n" | Set-Content -Encoding utf8 release-notes.md
+          Get-Content release-notes.md
+
       - name: Create GitHub release
         shell: pwsh
         env:
@@ -42,4 +63,4 @@ jobs:
         run: |
           $v = '${{ steps.version.outputs.version }}'
           gh release create '${{ github.ref_name }}' "artifacts/AVION2-v$v-win-x64.zip" artifacts/SHA256SUMS.txt `
-            --title "AVION2 ${{ github.ref_name }}" --generate-notes
+            --title "AVION2 ${{ github.ref_name }}" --notes-file release-notes.md

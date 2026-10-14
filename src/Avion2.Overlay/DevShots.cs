@@ -84,6 +84,10 @@ internal static class DevShots
             {
                 mapPage.Preview("World_L_A", "Confused Ursus");
                 Shoot(home, "map", directory, "map-zoom.png");
+                mapPage.PreviewClose("Dawn Legion Base", 1.0);
+                Shoot(home, "map", directory, "map-close.png");
+                mapPage.PreviewSearch("kaira");
+                Shoot(home, "map", directory, "map-search.png");
                 mapPage.Preview("World_D_A", "Teleport");
                 Shoot(home, "map", directory, "map-altgard.png");
                 if (mapPage.PreviewExactCube())
@@ -124,6 +128,12 @@ internal static class DevShots
             }
 
             Shoot(home, "history", directory, "history.png");
+            if (home.CurrentPage is HistoryPage historyPage)
+            {
+                historyPage.ShowBest();
+                Shoot(home, "history", directory, "history-best.png");
+            }
+
             Shoot(home, "settings", directory, "settings.png");
             if (home.CurrentPage.Content is System.Windows.Controls.ScrollViewer settingsScroller)
             {

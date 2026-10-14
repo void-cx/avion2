@@ -45,6 +45,37 @@ public sealed class MapView : FrameworkElement
 
     public IReadOnlyList<LiveEntity> Live { get; private set; } = [];
 
+    /// <summary>Subtypes switched off inside a shown layer (e.g. one kind of ore).</summary>
+    public HashSet<string> HiddenSubtypes { get; set; } = [];
+
+    /// <summary>Monster ranks shown (normal, elite, named).</summary>
+    public HashSet<string> MonsterRanks { get; set; } = ["normal", "elite", "named"];
+
+    /// <summary>Monster level range shown (0 = no limit).</summary>
+    public int MinLevel { get; set; }
+    public int MaxLevel { get; set; }
+
+    /// <summary>Whether a marker passes the layers and filters.</summary>
+    public bool Shows(MapMarker marker)
+    {
+        if (!Layers.Contains(LayerOf(marker)) || HiddenSubtypes.Contains(marker.Subtype))
+        {
+            return false;
+        }
+
+        if (_map?.GroupOf(marker.Subtype) != "monster")
+        {
+            return true;
+        }
+
+        int level = marker.Level ?? 0;
+        return MonsterRanks.Contains(marker.Rank ?? "normal") &&
+               (MinLevel <= 0 || level >= MinLevel) && (MaxLevel <= 0 || level <= MaxLevel);
+    }
+
+    /// <summary>Decodes a marker icon by file name (from the map data); null = draw shapes.</summary>
+    public Func<string, ImageSource?>? IconSource { get; set; }
+
     /// <summary>Hidden cubes the game showed us on this map (exact positions; drawn when calibrated).</summary>
     public IReadOnlyList<CubeSighting> ExactCubes { get; set; } = [];
 
@@ -198,8 +229,8 @@ public sealed class MapView : FrameworkElement
             }
 
             var center = ToScreen(ring.Average(p => p[0]), ring.Average(p => p[1]));
-            var text = Text(Spaced(region.Name), 11, RegionBrush, FontWeights.SemiBold);
-            dc.DrawText(text, new Point(center.X - text.Width / 2, center.Y - text.Height / 2));
+            var text = Text(Spaced(region.Name), 12.5, RegionBrush, FontWeights.SemiBold);
+            DrawOutlined(dc, text, new Point(center.X - text.Width / 2, center.Y - text.Height / 2), RegionBrush, 3.2);
         }
     }
 
@@ -214,7 +245,7 @@ public sealed class MapView : FrameworkElement
             }
 
             string group = _map.GroupOf(marker.Subtype);
-            if (!Layers.Contains(LayerOf(marker)))
+            if (!Shows(marker) || _zoom < MinZoom(group, marker))
             {
                 continue;
             }
@@ -225,7 +256,14 @@ public sealed class MapView : FrameworkElement
             bool skipped = !found && IsSkipped(marker.Id, out _);
             double r = style.Radius * (_zoom < 0.2 ? 0.8 : 1);
             dc.PushOpacity(found ? 0.35 : skipped ? 0.5 : 1);
-            switch (style.Shape)
+            if (_zoom >= IconZoom(group, marker) &&
+                (_map.IconOf(marker.Subtype) is { } iconName ? IconSource?.Invoke(iconName) : Badge(group)) is { } icon)
+            {
+                // The game's own marker icon
+                r = IconSize(group, marker) / 2 * (_zoom < 0.2 ? 0.75 : 1);
+                dc.DrawImage(icon, new Rect(at.X - r, at.Y - r, r * 2, r * 2));
+            }
+            else switch (style.Shape)
             {
                 case Shape.Diamond:
                     dc.DrawGeometry(style.Fill, OutlinePen, Diamond(at, r + 1));
@@ -247,8 +285,8 @@ public sealed class MapView : FrameworkElement
 
             if (labels && style.Label)
             {
-                var text = Text(marker.Name, 10.5, LabelBrush);
-                dc.DrawText(text, new Point(at.X + r + 3, at.Y - text.Height / 2));
+                var text = Text(marker.Name, 11, LabelBrush, FontWeights.SemiBold);
+                DrawOutlined(dc, text, new Point(at.X + r + 3, at.Y - text.Height / 2), LabelBrush);
             }
         }
     }
@@ -317,16 +355,16 @@ public sealed class MapView : FrameworkElement
                 case LiveKind.Self:
                     dc.DrawEllipse(null, SelfRing, at, 11, 11);
                     dc.DrawEllipse(SelfFill, OutlinePen, at, 5.5, 5.5);
-                    var you = Text("You", 11, SelfFill, FontWeights.SemiBold);
-                    dc.DrawText(you, new Point(at.X - you.Width / 2, at.Y - 26));
+                    var you = Text("You", 11.5, SelfFill, FontWeights.SemiBold);
+                    DrawOutlined(dc, you, new Point(at.X - you.Width / 2, at.Y - 28), SelfFill);
                     break;
                 case LiveKind.Player:
                     var brush = Frozen(e.Class == GameClass.Unknown ? Color.FromRgb(0xC9, 0xD7, 0xE4) : OverlayViewModel.ClassColor(e.Class));
                     dc.DrawEllipse(brush, OutlinePen, at, 4.5, 4.5);
                     if (_zoom >= 0.3)
                     {
-                        var name = Text(e.Name, 10, brush);
-                        dc.DrawText(name, new Point(at.X + 7, at.Y - name.Height / 2));
+                        var name = Text(e.Name, 10.5, brush, FontWeights.SemiBold);
+                        DrawOutlined(dc, name, new Point(at.X + 7, at.Y - name.Height / 2), brush, 2.6);
                     }
 
                     break;
@@ -599,7 +637,7 @@ public sealed class MapView : FrameworkElement
         }
 
         return _map.Markers
-            .Where(m => Layers.Contains(LayerOf(m)))
+            .Where(Shows)
             .Select(m => (Marker: m, Distance: (ToScreen(m.X, m.Y) - screen).Length))
             .Where(x => x.Distance <= reach)
             .OrderBy(x => x.Distance)
@@ -636,6 +674,88 @@ public sealed class MapView : FrameworkElement
         _ => new MarkerStyle(LocationBrush, 3, Shape.Dot, false),
     };
 
+    private static readonly Dictionary<string, ImageSource?> Badges = new();
+
+    /// <summary>
+    /// Our own icon where the game has none: a coloured disc with a dark rim and a white symbol from the Windows icon
+    /// font (vector, sharp at any zoom).
+    /// </summary>
+    public static ImageSource? Badge(string group)
+    {
+        if (Badges.TryGetValue(group, out var cached))
+        {
+            return cached;
+        }
+
+        (Color fill, string glyph)? look = group switch
+        {
+            "npc" => (Color.FromRgb(0xE8, 0xB9, 0x3A), "\uE77B"),     // person
+            "location" => (Color.FromRgb(0x4F, 0xB8, 0xD8), "\uE707"), // map pin
+            "gathering" => (Color.FromRgb(0x5C, 0xB8, 0x5C), "\uE8D4"),
+            "collection" => (Color.FromRgb(0xB0, 0x5C, 0xD8), "\uE7B8"),
+            _ => null,
+        };
+        if (look is not { } badge)
+        {
+            Badges[group] = null;
+            return null;
+        }
+
+        var drawing = new DrawingGroup();
+        using (var dc = drawing.Open())
+        {
+            var fill = new SolidColorBrush(badge.fill);
+            dc.DrawEllipse(fill, new Pen(new SolidColorBrush(Color.FromArgb(0xE6, 0x12, 0x14, 0x1A)), 2.2), new Point(16, 16), 14, 14);
+            var glyph = new FormattedText(badge.glyph, CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
+                new Typeface(new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal),
+                15, Brushes.White, 1.0);
+            dc.DrawText(glyph, new Point(16 - glyph.Width / 2, 16 - glyph.Height / 2));
+        }
+
+        drawing.Freeze();
+        var image = new DrawingImage(drawing);
+        image.Freeze();
+        Badges[group] = image;
+        return image;
+    }
+
+    /// <summary>Ordinary monsters and NPCs only appear once zoomed in a bit (thousands of them would hide the map).</summary>
+    private static double MinZoom(string group, MapMarker marker) =>
+        group is "monster" && marker.Rank != "named" || group is "npc" ? 0.18 : 0;
+
+    /// <summary>
+    /// From which zoom a kind gets its icon (below: a small dot), so thousands of monsters and gathering spots do not
+    /// cover the map when zoomed out. Places, world bosses, named monsters and cubes always show their icon.
+    /// </summary>
+    private static double IconZoom(string group, MapMarker marker) => group switch
+    {
+        "location" or "creature" => 0,
+        "collection" => marker.Subtype == "hiddenCube" ? 0 : 0.35,
+        "gathering" => 0.35,
+        "monster" => marker.Rank == "named" ? 0.2 : 0.6,
+        _ => 0.6,
+    };
+
+    /// <summary>Icon size (px at normal zoom) by kind: places and bosses large, monsters and gathering small.</summary>
+    private static double IconSize(string group, MapMarker marker) => group switch
+    {
+        "location" => 24,
+        "creature" => 30,
+        "collection" => marker.Subtype == "hiddenCube" ? 20 : 15,
+        "gathering" => 17,
+        "npc" => 15,
+        "monster" => marker.Rank switch { "named" => 22, "elite" => 15, _ => 11 },
+        _ => 14,
+    };
+
+    /// <summary>Light text with a dark outline: readable on parchment and on dark terrain alike.</summary>
+    private static void DrawOutlined(DrawingContext dc, FormattedText text, Point at, Brush fill, double outline = 3)
+    {
+        var geometry = text.BuildGeometry(at);
+        dc.DrawGeometry(null, new Pen(HaloBrush, outline) { LineJoin = PenLineJoin.Round }, geometry);
+        dc.DrawGeometry(fill, null, geometry);
+    }
+
     private static Geometry Diamond(Point at, double r)
     {
         var g = new StreamGeometry();
@@ -671,8 +791,7 @@ public sealed class MapView : FrameworkElement
         : $"{Math.Max(1, (int)Math.Ceiling(left.TotalMinutes))} min";
 
     /// <summary>"EllunRiverMarsh" → "Ellun River Marsh" (region keys come without spaces).</summary>
-    private static string Spaced(string name) =>
-        name.Contains(' ') ? name : string.Concat(name.Select((c, i) => i > 0 && char.IsUpper(c) && !char.IsUpper(name[i - 1]) ? " " + c : c.ToString()));
+    private static string Spaced(string name) => WorldMap.Readable(name);
 
     private static string Capitalize(string s) => s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s[1..];
 
@@ -719,8 +838,9 @@ public sealed class MapView : FrameworkElement
     private static readonly Pen SearchPen = FrozenPen(Color.FromArgb(0xC0, 0xE6, 0xC2, 0x5A), 1.5);
     private static readonly Pen ExactRingPen = FrozenPen(Color.FromArgb(0xC0, 0x5B, 0xD4, 0x8A), 1.5);
     private static readonly Brush FacingBrush = Frozen(Color.FromRgb(0x4F, 0xD8, 0xF0));
-    private static readonly Brush LabelBrush = Frozen(Color.FromRgb(0x20, 0x1A, 0x10));
-    private static readonly Brush RegionBrush = Frozen(Color.FromArgb(0xC0, 0x30, 0x24, 0x16));
+    private static readonly Brush LabelBrush = Frozen(Color.FromRgb(0xF4, 0xF1, 0xEA));
+    private static readonly Brush RegionBrush = Frozen(Color.FromRgb(0xF2, 0xE2, 0xB4));
+    private static readonly Brush HaloBrush = Frozen(Color.FromArgb(0xE0, 0x0E, 0x10, 0x16));
     private static readonly Brush TitleBrush = Frozen(Color.FromRgb(0xF4, 0xF1, 0xEA));
     private static readonly Brush BodyBrush = Frozen(Color.FromRgb(0xB8, 0xC2, 0xD0));
     private static readonly Brush CardBrush = Frozen(Color.FromArgb(0xEE, 0x10, 0x16, 0x22));
