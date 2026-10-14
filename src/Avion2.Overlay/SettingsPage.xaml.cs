@@ -39,6 +39,7 @@ public partial class SettingsPage : UserControl
         };
         VersionText.Text = $"Version {Avion2.Engine.UpdateChecker.CurrentVersion}";
         SetUpStorage();
+        CubeFinderBox.IsChecked = state.Stored.CubeFinder;
         ThemeBox.ItemsSource = ThemeManager.Themes;
         ThemeBox.SelectedItem = ThemeManager.Current;
         ThemeManager.Changed += () =>
@@ -267,5 +268,27 @@ public partial class SettingsPage : UserControl
     {
         System.IO.Directory.CreateDirectory(Recordings.Directory);
         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", Recordings.Directory) { UseShellExecute = true });
+    }
+
+    /// <summary>Switching "Find My Cube" on needs an explicit yes after reading what it means.</summary>
+    private void CubeFinder_Click(object sender, RoutedEventArgs e)
+    {
+        if (CubeFinderBox.IsChecked != true)
+        {
+            _state.SetCubeFinder(false);
+            return;
+        }
+
+        const string warning =
+            "Find My Cube leads you to hidden cubes with a compass. To do that it uses cube positions that the game " +
+            "sends to your PC before the cube is visible on your screen, and remembers where cubes were.\n\n" +
+            "This gives you an advantage over other players. NCSOFT may consider it unfair or against the game's rules, " +
+            "and using it could put your account at risk (for example a warning or a suspension). AVION2 only reads " +
+            "network traffic and never touches the game, but it cannot rule that out.\n\n" +
+            "You use this feature at your own risk. Switch it on?";
+        bool yes = MessageBox.Show(Window.GetWindow(this)!, warning, "Find My Cube: are you sure?",
+            MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes;
+        CubeFinderBox.IsChecked = yes;
+        _state.SetCubeFinder(yes);
     }
 }

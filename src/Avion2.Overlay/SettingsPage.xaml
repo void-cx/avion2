@@ -128,6 +128,16 @@
                 </StackPanel>
             </Border>
 
+            <!-- Find My Cube (opt-in) -->
+            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Find My Cube" Style="{StaticResource Heading}" />
+                    <CheckBox x:Name="CubeFinderBox" Content="Lead me to hidden cubes (compass and exact cube positions)" Click="CubeFinder_Click" />
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="Off by default. It uses cube positions the game sends to your PC before the cube is on your screen, which can be seen as an unfair advantage. You are asked to confirm before it is switched on." />
+                </StackPanel>
+            </Border>
+
             <!-- Storage -->
             <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
                 <StackPanel>

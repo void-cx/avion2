@@ -17,8 +17,8 @@ It is passive: it never touches the game, its files or its memory, and sends not
 - **Timers and notices** for Spacetime Rifts, Beritra air raids, PvP events, resets, Reshanta world bosses and
   field boss respawns.
 - **Map** of every zone with teleports, gathering spots, monsters (with drops) and NPCs; you and the players around
-  you live on it. A compass overlay finds hidden cubes: it leads you to a search area, then to the exact cube once the
-  game shows it, and remembers which ones you (or others) opened.
+  you live on it. Optional, off by default: a compass that finds hidden cubes (it uses
+  cube positions the game sends before you can see them, which may count as an unfair advantage).
 - **Gear Forge**: average and unlucky cost (materials, Kinah, attempts) to enchant or amplify any item.
 - **Low-HP alert** with its own sound.
 - **Server lag warning** when the game server freezes, also marked in each fight.

@@ -384,6 +384,16 @@ public sealed class AppState
     /// <summary>Every hidden cube the game showed us (exact positions), and the ones we opened.</summary>
     public Avion2.Analysis.CubeLog CubeLog { get; } = LoadCubes();
 
+    /// <summary>Raised when "Find My Cube" was switched on or off.</summary>
+    public event Action? CubeFinderChanged;
+
+    public void SetCubeFinder(bool enabled)
+    {
+        Stored.CubeFinder = enabled;
+        SaveSettings();
+        CubeFinderChanged?.Invoke();
+    }
+
     /// <summary>Raised on the UI thread when a cube was seen or opened (and found markers may have changed).</summary>
     public event Action<Avion2.Analysis.CubeSighting>? CubeUpdated;
 
@@ -410,6 +420,11 @@ public sealed class AppState
     /// <summary>A cube came into range, or was opened by us or someone else: keep the spot and what happened there.</summary>
     private void OnCube(Avion2.Analysis.CubeSighting cube, MeterEngine engine)
     {
+        if (!Stored.CubeFinder)
+        {
+            return; // opted out: no cube positions are kept
+        }
+
         var stored = CubeLog.Merge(cube);
         CubeLog.Codes = engine.CubeCodes().ToList();
 

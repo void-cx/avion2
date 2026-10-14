@@ -67,8 +67,8 @@
                     <Button Content="Whole map" Click="Fit_Click" />
                 </StackPanel>
 
-                <!-- Hidden cubes: a small card on the map -->
-                <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Padding="12,9,12,10" CornerRadius="8" Width="240"
+                <!-- Hidden cubes: a small card on the map (only with Find My Cube switched on) -->
+                <Border x:Name="CubeCard" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Padding="12,9,12,10" CornerRadius="8" Width="240"
                         Background="{DynamicResource NoticeBackground}" BorderBrush="{DynamicResource NoticeBorderBrush}" BorderThickness="1">
                     <StackPanel>
                         <DockPanel>

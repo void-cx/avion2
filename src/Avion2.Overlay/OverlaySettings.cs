@@ -37,6 +37,12 @@ public sealed class OverlaySettings
     /// <summary>Skipped hidden cubes (hub marker id → until when, UTC) and how long a skip lasts (0 = until un-skipped).</summary>
     public Dictionary<string, DateTime> SkippedCubes { get; set; } = [];
     public int CubeSkipMinutes { get; set; } = 30;
+    /// <summary>
+    /// "Find My Cube" (exact cube positions from game data, the compass, the cube log): off until the player opts in,
+    /// because it can be seen as an unfair advantage.
+    /// </summary>
+    public bool CubeFinder { get; set; }
+
     public double? CompassLeft { get; set; }
     public double? CompassTop { get; set; }
 

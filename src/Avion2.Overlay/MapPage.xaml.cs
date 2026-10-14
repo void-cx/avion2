@@ -81,6 +81,7 @@ public partial class MapPage : UserControl
         SkipBox.ItemsSource = skips;
         SkipBox.SelectedItem = skips.FirstOrDefault(s => s.Minutes == state.Stored.CubeSkipMinutes) ?? skips[1];
         state.CubeUpdated += OnCube;
+        state.CubeFinderChanged += ApplyCubeFinder;
 
         FollowBox.IsChecked = state.Stored.MapFollow;
         _loading = true;
@@ -118,8 +119,8 @@ public partial class MapPage : UserControl
 
         View.Show(map, Image(key));
         BuildLayerPanel(map);
+        ApplyCubeFinder();
         View.Transform = TransformFor(map);
-        View.ExactCubes = _state.CubeLog.OnMap(map.MapId).ToList();
         RefreshCubes();
         Find(FindBox.Text);
     }
@@ -463,7 +464,7 @@ public partial class MapPage : UserControl
             _state.SaveSettings();
         }
 
-        if (View.Map is { } map)
+        if (View.Map is { } map && _state.Stored.CubeFinder)
         {
             View.ExactCubes = _state.CubeLog.OnMap(map.MapId).ToList();
         }
@@ -523,7 +524,7 @@ public partial class MapPage : UserControl
     /// </summary>
     private void FollowRenderedCube()
     {
-        if (_compass?.Target is not { } target || View.Map is not { } map || NearestRendered() is not { } nearest)
+        if (!_state.Stored.CubeFinder || _compass?.Target is not { } target || View.Map is not { } map || NearestRendered() is not { } nearest)
         {
             return;
         }
@@ -565,6 +566,20 @@ public partial class MapPage : UserControl
             : $"{spots.Count} spots seen here · {_state.CubeLog.OpenedCount()} opened on all maps";
         NextCube.IsEnabled = spots.Count > 0 || Areas.Any();
         RefreshCubeStats();
+    }
+
+    /// <summary>Find My Cube is opt-in: without it, no cube card, compass or exact cube positions.</summary>
+    private void ApplyCubeFinder()
+    {
+        bool on = _state.Stored.CubeFinder;
+        CubeCard.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+        View.ExactCubes = on && View.Map is { } map ? _state.CubeLog.OnMap(map.MapId).ToList() : [];
+        if (!on)
+        {
+            _compass?.Close();
+        }
+
+        View.InvalidateVisual();
     }
 
     private void CubeStats_Click(object sender, RoutedEventArgs e)
@@ -710,6 +725,12 @@ public partial class MapPage : UserControl
 
     private void GoToNextCube()
     {
+        if (!_state.Stored.CubeFinder)
+        {
+            _compass?.Close();
+            return;
+        }
+
         if (NextTarget() is not { } next || View.Map is not { } map)
         {
             _compass?.Close();
