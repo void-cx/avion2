@@ -13,8 +13,20 @@ public static class Opcodes
     public const ushort BuffAdded = 0x2A38;
     public const ushort BuffChanged = 0x2B38;
     public const ushort BuffRemoved = 0x2C38;
+    public const ushort SkillCast = 0x0238;
+
+    // Movement (37 family). Positions are world units (≈ cm), z up.
+    public const ushort MoveRelative = 0x1A37;
+    public const ushort MoveSteer = 0x1B37;
+    public const ushort Move = 0x1C37;
+    public const ushort MoveVelocity = 0x1D37;
+    public const ushort Dash = 0x2F37;
+    public const ushort Relocate = 0x3C37;
 
     public const ushort Ping = 0x0336;
+
+    /// <summary>Server clock, u64 ms, sent 20 times a second.</summary>
+    public const ushort ServerClock = 0x0036;
     public const ushort MapLoad = 0x2136;
     public const ushort Position = 0x2336;
     public const ushort SelfIdentity = 0x3336;
@@ -29,6 +41,12 @@ public static class Opcodes
     public const ushort Ownership = 0x048D;
     public const ushort HpUpdate = 0x1B92;
     public const ushort PartyRoster = 0x0297;
+    public const ushort FieldBossTable = 0x0191;
+
+    // Legion (8A family)
+    public const ushort LegionDetails = 0x038A;
+    public const ushort LegionRoster = 0x058A;
+    public const ushort LegionTag = 0x338A;
 
     public static ushort Read(ReadOnlySpan<byte> payload) => (ushort)((payload[0] << 8) | payload[1]);
 

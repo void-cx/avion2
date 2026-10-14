@@ -13,8 +13,11 @@ public sealed class EngineOptions
 
     public string? EventLogPath { get; init; }
 
-    /// <summary>Directory with skills.json / npcs.json; null = auto-detect.</summary>
+    /// <summary>Directory whose skills.json / npcs.json / field_bosses.json / maps.json override the built-in tables; null = %AppData%\AVION2\data if it has any.</summary>
     public string? DataDirectory { get; init; }
+
+    /// <summary>Language of the built-in name tables (see <see cref="BundledGameData.Languages"/>).</summary>
+    public string DataLanguage { get; init; } = "en";
 
     public TrackerOptions Tracker { get; init; } = new();
 
@@ -46,7 +49,8 @@ public sealed record EngineStatus(
     long Recorded,
     bool InCombat,
     uint SelfHp,
-    uint SelfMaxHp);
+    uint SelfMaxHp,
+    long ServerSilenceMs = 0);
 
 /// <summary>
 /// Live capture → pipeline → <see cref="GameSession"/>, on a background consumer.
@@ -71,8 +75,9 @@ public sealed class MeterEngine : IDisposable
     public MeterEngine(EngineOptions? options = null)
     {
         _options = options ?? new EngineOptions();
-        var (gameData, dataDirectory) = FindGameData(_options.DataDirectory);
-        DataDirectory = dataDirectory;
+        ErrorLog.Install();
+        var (gameData, dataSource) = FindGameData(_options.DataDirectory, _options.DataLanguage);
+        DataSource = dataSource;
         _session = new GameSession(gameData, _options.Tracker);
         var characters = _characters = new CharacterStore(_options.CharacterStorePath);
         _historyStore = new HistoryStore(_options.HistoryDirectory);
@@ -85,6 +90,13 @@ public sealed class MeterEngine : IDisposable
             }
 
             var entry = (_options.SaveHistory ? _historyStore.Save(final) : null) ?? new HistoryEntry(string.Empty, final);
+            var trace = _session.Trace(encounter);
+            _traces.AddOrUpdate(entry, trace);
+            if (_options.SaveHistory)
+            {
+                _historyStore.SaveTrace(entry, trace);
+            }
+
             _history.Insert(0, entry);
             FightSaved?.Invoke(entry);
         };
@@ -103,16 +115,43 @@ public sealed class MeterEngine : IDisposable
         _recorder = _options.RecordPath is { } recordPath ? new PcapRecorder(recordPath) : null;
         _pipeline = new GameCapturePipeline(e =>
         {
+            // A replay at another speed than 1× compresses arrival times against the server clock: its delays and
+            // freezes would be fiction, so such replays carry no connection data.
+            if (e is ServerClockEvent && _options.ReplayPath is not null && _options.ReplaySpeed != 1.0)
+            {
+                return;
+            }
+
             _session.Apply(e);
-            _log?.Write(e);
+            if (e is ServerClockEvent)
+            {
+                _lastServerTick = System.Diagnostics.Stopwatch.GetTimestamp();
+            }
+            else
+            {
+                _log?.Write(e); // 20 clock ticks a second would swamp the event log
+            }
+
+            if (e is FieldBossTableEvent table)
+            {
+                FieldBossTable?.Invoke(table);
+            }
+            else if (e is LegionDetailsEvent or LegionRosterEvent)
+            {
+                LegionChanged?.Invoke();
+            }
+            else if (e is SkillCastEvent cast && Cast is { } onCast)
+            {
+                onCast(cast, _session.Registry.Find(cast.ActorId));
+            }
         });
         _pipeline.StatusChanged += message => _message = message;
     }
 
     public bool HasGameData => _session.Registry.Data.Skills.Count > 0;
 
-    /// <summary>Where the name tables were loaded from; null if none were found.</summary>
-    public string? DataDirectory { get; private set; }
+    /// <summary>Where the name tables in use came from.</summary>
+    public GameDataSource DataSource { get; private set; }
 
     public (int Skills, int Npcs) GameDataCounts
     {
@@ -125,14 +164,14 @@ public sealed class MeterEngine : IDisposable
         }
     }
 
-    /// <summary>Loads the name tables from <paramref name="directory"/> (e.g. after an import) without restarting.</summary>
-    public void ReloadGameData(string directory)
+    /// <summary>Switches the name tables (other language or override directory) without restarting.</summary>
+    public void ReloadGameData(string language, string? directory = null)
     {
-        var data = GameData.Load(directory);
+        var (data, source) = FindGameData(directory, language);
         lock (_sync)
         {
             _session.Registry.SetData(data);
-            DataDirectory = directory;
+            DataSource = source;
         }
     }
 
@@ -157,6 +196,9 @@ public sealed class MeterEngine : IDisposable
     }
 
     public string HistoryDirectory => _historyStore.Directory;
+
+    /// <summary>Raised on the capture thread for every field boss table (about once a second on field maps).</summary>
+    public event Action<FieldBossTableEvent>? FieldBossTable;
 
     /// <summary>Raised on the capture thread when an encounter ends (and was saved, if saving is on).</summary>
     public event Action<HistoryEntry>? FightSaved;
@@ -190,9 +232,59 @@ public sealed class MeterEngine : IDisposable
                 _recorder?.Written ?? 0,
                 _session.Tracker.Current is not null,
                 registry.SelfHp,
-                registry.SelfMaxHp);
+                registry.SelfMaxHp,
+                _pipeline.Detector.Locked is not null && _lastServerTick != 0
+                    ? (long)System.Diagnostics.Stopwatch.GetElapsedTime(_lastServerTick).TotalMilliseconds
+                    : 0);
         }
     }
+
+    /// <summary>When the last server clock tick arrived (Stopwatch ticks); 0 before the first.</summary>
+    private long _lastServerTick;
+
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<HistoryEntry, FightTrace> _traces = new();
+
+    /// <summary>The trace (timeline, buffs, positions) of a saved fight; null if it has none.</summary>
+    public FightTrace? Trace(HistoryEntry entry)
+    {
+        lock (_sync)
+        {
+            if (_traces.TryGetValue(entry, out var cached))
+            {
+                return cached;
+            }
+        }
+
+        return _historyStore.LoadTrace(entry);
+    }
+
+    /// <summary>The trace of the running encounter, or of the last finished one.</summary>
+    public FightTrace? LiveTrace()
+    {
+        lock (_sync)
+        {
+            var encounter = _session.Tracker.Current ?? _session.Tracker.History.LastOrDefault();
+            return encounter is null ? null : _session.Trace(encounter);
+        }
+    }
+
+    /// <summary>Our legion as seen this session (a copy).</summary>
+    public LegionState? Legion()
+    {
+        lock (_sync)
+        {
+            var legion = _session.Legion;
+            return legion.IsKnown || legion.Members.Count > 0
+                ? new LegionState { Name = legion.Name, Leader = legion.Leader, Texts = legion.Texts.ToList(), Members = legion.Members, UpdatedMs = legion.UpdatedMs }
+                : null;
+        }
+    }
+
+    /// <summary>Raised on the capture thread when legion details or members arrive.</summary>
+    public event Action? LegionChanged;
+
+    /// <summary>Raised on the capture thread for every skill cast (boss cast warnings).</summary>
+    public event Action<SkillCastEvent, EntityInfo?>? Cast;
 
     /// <summary>Finished encounters of this session, oldest first.</summary>
     public IReadOnlyList<MeterSnapshot> History()
@@ -270,37 +362,30 @@ public sealed class MeterEngine : IDisposable
         }
     }
 
-    public static GameData LoadGameData(string? directory) => FindGameData(directory).Data;
+    public static GameData LoadGameData(string? directory, string language = "en") => FindGameData(directory, language).Data;
 
-    /// <summary>Finds the name tables: the given directory, else ./data, %AppData%\AVION2\data, or a parent's data/.</summary>
-    public static (GameData Data, string? Directory) FindGameData(string? directory)
+    /// <summary>
+    /// The built-in name tables, with single files overridden from <paramref name="directory"/> (or from
+    /// %AppData%\AVION2\data when that has tables in it).
+    /// </summary>
+    public static (GameData Data, GameDataSource Source) FindGameData(string? directory, string language = "en")
     {
-        var candidates = new List<string>();
-        if (directory is not null)
+        if (directory is null)
         {
-            candidates.Add(directory);
-        }
-        else
-        {
-            candidates.Add(Path.Combine(Environment.CurrentDirectory, "data"));
-            candidates.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AVION2", "data"));
-
-            // Development builds run from bin/<config>/<tfm>/: also look in parent folders (the repo's data/).
-            for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
+            string user = BundledGameData.UserDataDirectory;
+            string[] tables = ["skills.json", "npcs.json", "field_bosses.json", "maps.json"];
+            if (tables.Any(t => File.Exists(Path.Combine(user, t))))
             {
-                candidates.Add(Path.Combine(dir.FullName, "data"));
+                directory = user;
             }
         }
 
-        foreach (string candidate in candidates)
+        if (!BundledGameData.Languages.Contains(language))
         {
-            if (File.Exists(Path.Combine(candidate, "skills.json")) || File.Exists(Path.Combine(candidate, "npcs.json")))
-            {
-                return (GameData.Load(candidate), candidate);
-            }
+            language = "en";
         }
 
-        return (GameData.Empty, null);
+        return (BundledGameData.Load(language, directory), new GameDataSource(language, directory));
     }
 
     /// <summary>Feeds a recording with timestamps shifted to "now", paced by the original gaps.</summary>
@@ -346,8 +431,25 @@ public sealed class MeterEngine : IDisposable
             {
                 lock (_sync)
                 {
-                    _pipeline.Process(frame);
-                    _recorder?.Write(frame, _pipeline.Detector.Locked);
+                    // Never let one frame end the capture: before this guard, an exception here stopped the
+                    // meter silently (e.g. on entering a dungeon).
+                    try
+                    {
+                        _pipeline.Process(frame);
+                    }
+                    catch (Exception ex) when (ex is not OutOfMemoryException)
+                    {
+                        ErrorLog.Write("frame", ex, frame.Data);
+                    }
+
+                    try
+                    {
+                        _recorder?.Write(frame, _pipeline.Detector.Locked);
+                    }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+                    {
+                        ErrorLog.Write("recorder", ex, null);
+                    }
                 }
             }
         }

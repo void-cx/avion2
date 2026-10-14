@@ -1,7 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
+using System.Windows.Shapes;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Avion2.Protocol;
@@ -11,10 +11,6 @@ namespace Avion2.Overlay;
 /// <summary>The app's main window: start/stop the meter, browse past fights, change settings.</summary>
 public partial class HomeWindow : Window
 {
-    private static readonly Brush Idle = Frozen(0x6B, 0x72, 0x80);
-    private static readonly Brush Searching = Frozen(0xF5, 0x9E, 0x0B);
-    private static readonly Brush Connected = Frozen(0x4A, 0xDE, 0x80);
-
     private readonly AppState _state;
     private readonly HomePage _home;
     private readonly HistoryPage _history;
@@ -28,7 +24,8 @@ public partial class HomeWindow : Window
     {
         _state = state;
         InitializeComponent();
-        AionTheme.Apply(this);
+        ThemeManager.Attach(this);
+        ThemeManager.Changed += UpdateBackdrop;
         _home = new HomePage(state, row => ShowPage("history", row));
         _history = new HistoryPage(state);
         _settings = new SettingsPage(state);
@@ -112,7 +109,7 @@ public partial class HomeWindow : Window
     private void UpdateBackdrop()
     {
         string? path = _state.BackgroundVideo;
-        bool wanted = path is not null && File.Exists(path) && !_gameConnected &&
+        bool wanted = ThemeManager.Current.VideoBackdrop && path is not null && File.Exists(path) && !_gameConnected &&
                       _page == "home" && WindowState != WindowState.Minimized && IsVisible;
 
         if (!wanted)
@@ -160,7 +157,7 @@ public partial class HomeWindow : Window
 
         if (_state.Engine is not { } engine)
         {
-            NavDot.Fill = Idle;
+            NavDot.SetResourceReference(Shape.FillProperty, "IdleBrush");
             NavStatus.Text = "Meter stopped";
             return;
         }
@@ -168,22 +165,15 @@ public partial class HomeWindow : Window
         var status = engine.Status();
         if (!status.Locked)
         {
-            NavDot.Fill = Searching;
+            NavDot.SetResourceReference(Shape.FillProperty, "WarnBrush");
             NavStatus.Text = "Searching for AION2…";
             return;
         }
 
-        NavDot.Fill = Connected;
+        NavDot.SetResourceReference(Shape.FillProperty, "LiveBrush");
         string who = status.SelfName ?? (status.SelfClass != GameClass.Unknown ? status.SelfClass.ToString() : "connected");
         NavStatus.Text = status.InCombat ? $"{who} · in combat" : who;
     }
 
     internal UserControl CurrentPage => (UserControl)Page.Content;
-
-    private static Brush Frozen(byte r, byte g, byte b)
-    {
-        var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
-        brush.Freeze();
-        return brush;
-    }
 }

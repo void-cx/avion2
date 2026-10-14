@@ -197,6 +197,9 @@ public sealed class PcapRecorder : IDisposable
     private CaptureFileWriterDevice? _writer;
     private int _device = -1;
 
+    /// <summary>Game connections locked so far (both directions); only their frames are written.</summary>
+    private readonly HashSet<FlowKey> _flows = new();
+
     public PcapRecorder(string path)
     {
         _path = path;
@@ -204,8 +207,17 @@ public sealed class PcapRecorder : IDisposable
 
     public long Written { get; private set; }
 
+    /// <summary>
+    /// Records the game connection only: frames of other connections on the same adapter (browsers, voice chat, …)
+    /// are never written, so a recording holds nothing but AION2 traffic.
+    /// </summary>
     public void Write(in RawFrame frame, LockedFlow? locked)
     {
+        if (locked is not null && _flows.Add(locked.Flow))
+        {
+            _flows.Add(new FlowKey(locked.Flow.Destination, locked.Flow.Source));
+        }
+
         if (_writer is null)
         {
             if (locked is null)
@@ -217,11 +229,14 @@ public sealed class PcapRecorder : IDisposable
             Open(locked.DeviceIndex, frame);
         }
 
-        if (frame.DeviceIndex == _device)
+        if (frame.DeviceIndex == _device && IsGame(frame))
         {
             WriteFrame(frame);
         }
     }
+
+    private bool IsGame(in RawFrame frame) =>
+        PacketDissector.TryParse(frame.LinkType, frame.Data, out var segment, out _) && _flows.Contains(segment.Flow);
 
     private void Buffer(in RawFrame frame)
     {
@@ -256,7 +271,10 @@ public sealed class PcapRecorder : IDisposable
         {
             foreach (var buffered in queue)
             {
-                WriteFrame(buffered);
+                if (IsGame(buffered))
+                {
+                    WriteFrame(buffered);
+                }
             }
         }
 

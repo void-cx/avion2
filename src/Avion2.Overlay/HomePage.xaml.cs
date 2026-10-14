@@ -12,12 +12,13 @@ public sealed record DeviceOption(int? Index, string Label);
 
 public sealed record EventLine(string Category, string Name, string At, string In);
 
+public sealed record LegionLine(string Name, string Seen);
+
+public sealed record FieldBossLine(string Name, string When, Brush Dot, Brush WhenBrush, string Detail);
+
 /// <summary>Start/stop the meter, see what's going on, jump to recent fights.</summary>
 public partial class HomePage : UserControl
 {
-    private static readonly Brush Idle = Freeze(new SolidColorBrush(Color.FromRgb(0x6B, 0x72, 0x80)));
-    private static readonly Brush Searching = Freeze(new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B)));
-    private static readonly Brush Connected = Freeze(new SolidColorBrush(Color.FromRgb(0x4A, 0xDE, 0x80)));
 
     private readonly AppState _state;
     private readonly Action<HistoryRow?> _openHistory;
@@ -40,10 +41,12 @@ public partial class HomePage : UserControl
         RecordBox.Click += (_, _) => state.Stored.RecordSessions = RecordBox.IsChecked == true;
 
         state.MeterStateChanged += Refresh;
+        state.LegionUpdated += RefreshLegion;
         state.Fights.CollectionChanged += (_, _) => RefreshRecent();
         _timer.Tick += (_, _) => Refresh();
         Loaded += (_, _) =>
         {
+            RefreshLegion();
             Refresh();
             RefreshRecent();
             _timer.Start();
@@ -63,6 +66,7 @@ public partial class HomePage : UserControl
         RiftAt.Text = $"Opens at {rifts[0].ToLocalTime():HH:mm} your time";
         RiftList.Text = "Then " + string.Join(" · ", rifts.Skip(1).Select(r => r.ToLocalTime().ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture)));
 
+        RefreshFieldBosses(now);
         EventList.ItemsSource = _state.Timers.Upcoming(now)
             .Where(o => o.Event.Category != Avion2.Analysis.ScheduleCategory.Rift)
             .Select(o => new EventLine(
@@ -71,6 +75,28 @@ public partial class HomePage : UserControl
                 o.StartsAt.ToLocalTime().ToString(o.StartsAt - now > TimeSpan.FromHours(20) ? "ddd HH:mm" : "HH:mm", System.Globalization.CultureInfo.InvariantCulture),
                 "in " + Countdown(o.StartsAt - now)))
             .ToList();
+    }
+
+
+    private void RefreshFieldBosses(DateTimeOffset now)
+    {
+        var rows = _state.FieldBosses.Rows(_state.Data, now);
+        NoFieldBosses.Visibility = rows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        var newest = _state.FieldBosses.Maps.Select(m => m.ReceivedAtMs).DefaultIfEmpty(0).Max();
+        FieldBossSeen.Text = newest == 0 ? string.Empty
+            : $"Updated {DateTimeOffset.FromUnixTimeMilliseconds(newest).ToLocalTime():HH:mm} · {string.Join(", ", _state.FieldBosses.Maps.Select(m => _state.Data.MapName(m.MapId)))}";
+
+        FieldBossList.ItemsSource = rows.Take(16).Select(r => r.Status switch
+        {
+            Avion2.Analysis.FieldBossStatus.Respawning => new FieldBossLine(r.Name,
+                $"{r.At.ToLocalTime():HH:mm} · in {Countdown(r.At - now)}", Theme("IdleBrush"), Theme("HighlightBrush"),
+                $"Respawns at {r.At.ToLocalTime():HH:mm} ({_state.Data.MapName(r.MapId)})"),
+            Avion2.Analysis.FieldBossStatus.Due => new FieldBossLine(r.Name,
+                $"due since {r.At.ToLocalTime():HH:mm}", Theme("WarnBrush"), Theme("WarnBrush"),
+                $"Respawn was due at {r.At.ToLocalTime():HH:mm}; probably up ({_state.Data.MapName(r.MapId)})"),
+            _ => new FieldBossLine(r.Name, $"up since {r.At.ToLocalTime():HH:mm}", Theme("LiveBrush"), Theme("MutedBrush"),
+                $"Spawned at {r.At.ToLocalTime():HH:mm} ({_state.Data.MapName(r.MapId)})"),
+        }).ToList();
     }
 
     private static string Countdown(TimeSpan span) => span.TotalHours >= 24
@@ -96,7 +122,7 @@ public partial class HomePage : UserControl
 
         if (_state.Engine is not { } engine)
         {
-            StatusDot.Fill = Idle;
+            StatusDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, "IdleBrush");
             StatusTitle.Text = "Meter stopped";
             StatusDetail.Text = "Start the meter, then play: the overlay appears and finds the game connection by itself.";
             LiveLine.Visibility = Visibility.Collapsed;
@@ -106,13 +132,13 @@ public partial class HomePage : UserControl
         var status = engine.Status();
         if (!status.Locked)
         {
-            StatusDot.Fill = Searching;
+            StatusDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, "WarnBrush");
             StatusTitle.Text = "Meter running · searching for AION2";
             StatusDetail.Text = status.Message;
         }
         else
         {
-            StatusDot.Fill = Connected;
+            StatusDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, "LiveBrush");
             StatusTitle.Text = "Meter running · connected";
             string who = status.SelfName is { } name
                 ? $"{name} · {status.SelfClass}"
@@ -166,9 +192,42 @@ public partial class HomePage : UserControl
         }
     }
 
-    private static Brush Freeze(SolidColorBrush brush)
+    /// <summary>Our legion: name, leader, introduction and who logged in last (saved between sessions).</summary>
+    private void RefreshLegion()
     {
-        brush.Freeze();
-        return brush;
+        if (_state.Legion is not { IsKnown: true } legion)
+        {
+            LegionCard.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        var now = DateTimeOffset.Now;
+        LegionCard.Visibility = Visibility.Visible;
+        LegionName.Text = legion.Name;
+        var members = legion.Members;
+        LegionMeta.Text = string.Join(" · ", new[]
+        {
+            legion.Leader is { } leader ? $"Leader {leader}" : null,
+            members.Count > 0 ? $"{members.Count} members seen" : null,
+        }.OfType<string>());
+        LegionIntro.Text = legion.Texts.FirstOrDefault() ?? string.Empty;
+        LegionIntro.Visibility = LegionIntro.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        LegionMembers.ItemsSource = members.Take(15).Select(m => new LegionLine(m.Name, Seen(m.LastOnlineMs, now))).ToList();
     }
+
+    private static string Seen(long? lastOnlineMs, DateTimeOffset now)
+    {
+        if (lastOnlineMs is not { } ms)
+        {
+            return string.Empty;
+        }
+
+        var ago = now - DateTimeOffset.FromUnixTimeMilliseconds(ms);
+        return ago.TotalMinutes < 60 ? $"{Math.Max(1, (int)ago.TotalMinutes)} min ago"
+            : ago.TotalHours < 24 ? $"{(int)ago.TotalHours} h ago"
+            : $"{(int)ago.TotalDays} d ago";
+    }
+
+    /// <summary>A brush of the current theme (looked up on every refresh, so theme switches apply).</summary>
+    private Brush Theme(string key) => (Brush)FindResource(key);
 }

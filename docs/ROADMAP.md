@@ -4,7 +4,7 @@
 - Npcap capture, automatic game-connection detection, TCP reassembly, framing/LZ4, resync
 - Damage, DoT/HoT, identity, spawns, deaths, HP decoding (damage verified 1:1 against Combat Analysis:
   180,002 vs. 180.00K on a Training Scarecrow)
-- Console meter, pcap record/replay, hex dump for reverse engineering, name tables via `import-data`
+- Console meter, pcap record/replay, hex dump for reverse engineering, built-in name tables
 
 ## Done (milestone 2)
 - WPF overlay: click-through lock, global hotkeys, my/all targets, skill breakdown, target HP bar,
@@ -21,11 +21,19 @@
 - Player cards in the overlay (class emblem, combat power, Dbl/Perf/Crit/Front/Back), boss HP numbers,
   timer box, party DPS, 10 Hz updates with eased bars; compact rows option
 - Rift and event timetable with notifications in a free-floating, click-through notification area, per region
-- Official class emblems fetched from the AION2 armory CDN
-  (`assets.playnccdn.com/static-aion2/characters/img/class/class_icon_<class>.png`) into %AppData%, never bundled
+- Field boss board: who is up and when the dead ones respawn (from the game's own `01 91` table), saved across
+  restarts, with respawn notifications
+- Official class emblems (from the AION2 armory CDN), built in
+- All game data built in (names in 10 languages, field bosses, zone names, emblems); no runtime downloads
+- Theme engine with live switching: AION2 and VOID (Enter The Void design manual)
+- Separate built-in sounds and volumes for low HP (warning beeps) and notifications (bell)
+- Movement, skill casts, buffs, ownership and legion records decoded (docs/PROTOCOL.md)
+- Fight traces saved with every fight: **Timeline** (every cast per player), **Buffs** (uptime), **Replay**
+  (top-down positions, attack lines, damage numbers, skill names; play/scrub/zoom)
+- Legion tags on player cards, legion card on Home (introduction, members by last login)
+- Boss skill cast notices; summons/effects linked to their owner via `04 8D`
 
 ## Next
-- **Field boss timers**: decode the `01 91` table fully (spawn point → boss, respawn interval); needs game data
 - **Per-target view** (the game's "Metric: <target>"): pick one target instead of "my targets".
 
 ## Ideas

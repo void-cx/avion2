@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 
 namespace Avion2.Engine;
 
-public sealed record ImportResult(int Skills, int Npcs, int Bosses, int Dummies, string Directory);
+public sealed record ImportResult(int Skills, int Npcs, int Bosses, int Dummies, string Directory, int FieldBosses = 0);
 
 /// <summary>
 /// Imports skill and NPC name tables from taengu/A2Tools-DPS-Meter (extracted from the game client).
@@ -15,11 +15,7 @@ public static class GameDataImporter
     public const string Repository = "https://github.com/taengu/A2Tools-DPS-Meter";
     private const string RawBase = "https://raw.githubusercontent.com/taengu/A2Tools-DPS-Meter/main/src/data/i18n";
 
-    public static readonly string[] Languages = ["en", "de", "fr", "es", "pt", "ru", "ja", "ko", "zh-Hans", "zh-Hant"];
-
-    /// <summary>Per-user data directory, used by the overlay (the CLI defaults to ./data).</summary>
-    public static string UserDataDirectory =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AVION2", "data");
+    public static string[] Languages => BundledGameData.Languages;
 
     /// <param name="source">Local A2Tools clone (or its i18n folder); null downloads from GitHub.</param>
     public static async Task<ImportResult> ImportAsync(string language, string targetDirectory, string? source = null, CancellationToken cancellationToken = default)
@@ -61,6 +57,7 @@ public static class GameDataImporter
         int dummies = npcs.Count(kv => kv.Value?["isDummy"]?.GetValue<bool>() == true);
 
         Directory.CreateDirectory(targetDirectory);
+        int fieldBosses = await ImportFieldBossesAsync(targetDirectory, cancellationToken);
         await File.WriteAllTextAsync(Path.Combine(targetDirectory, "skills.json"), skillsJson, cancellationToken);
         await File.WriteAllTextAsync(Path.Combine(targetDirectory, "npcs.json"), npcsJson, cancellationToken);
         await File.WriteAllTextAsync(Path.Combine(targetDirectory, "source.json"), JsonSerializer.Serialize(new
@@ -72,7 +69,50 @@ public static class GameDataImporter
             importedAt = DateTimeOffset.UtcNow,
         }, new JsonSerializerOptions { WriteIndented = true }), cancellationToken);
 
-        return new ImportResult(skills.Count, npcs.Count, bosses, dummies, Path.GetFullPath(targetDirectory));
+        return new ImportResult(skills.Count, npcs.Count, bosses, dummies, Path.GetFullPath(targetDirectory), fieldBosses);
+    }
+
+    private const string FieldBossSource =
+        "https://raw.githubusercontent.com/ZDYoung0519/NOIA2/main/src-tauri/src/dps_meter/capture/parser/field_boss_timer.rs";
+
+    /// <summary>
+    /// The field boss spawn table (spawn code → NPC code) published in NOIA2's source (GPL-3.0). It is parsed
+    /// into data/field_bosses.json locally and never committed. Failure only means unnamed field bosses.
+    /// </summary>
+    public static async Task<int> ImportFieldBossesAsync(string targetDirectory, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            http.DefaultRequestHeaders.UserAgent.ParseAdd("avion2-data-import");
+            string source = await http.GetStringAsync(FieldBossSource, cancellationToken);
+            int start = source.IndexOf("FIELD_BOSS_CODES", StringComparison.Ordinal);
+            int end = start < 0 ? -1 : source.IndexOf("];", start, StringComparison.Ordinal);
+            if (start < 0 || end < 0)
+            {
+                return 0;
+            }
+
+            var table = new SortedDictionary<string, uint>(StringComparer.Ordinal);
+            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(
+                         source[start..end], @"\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)"))
+            {
+                table[m.Groups[2].Value] = uint.Parse(m.Groups[3].Value, System.Globalization.CultureInfo.InvariantCulture);
+            }
+
+            if (table.Count == 0)
+            {
+                return 0;
+            }
+
+            await File.WriteAllTextAsync(Path.Combine(targetDirectory, "field_bosses.json"),
+                JsonSerializer.Serialize(table, new JsonSerializerOptions { WriteIndented = true }), cancellationToken);
+            return table.Count;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException)
+        {
+            return 0;
+        }
     }
 
     /// <summary>Language of the installed tables, from source.json; null if none.</summary>

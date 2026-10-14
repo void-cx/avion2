@@ -42,7 +42,7 @@ public partial class HistoryPage : UserControl
         {
             Detail.Visibility = Visibility.Visible;
             Empty.Visibility = Visibility.Collapsed;
-            Detail.ShowSaved(row.Entry);
+            Detail.ShowSaved(row.Entry, trace: _state.LoadTrace(row.Entry));
         }
         else
         {

@@ -214,4 +214,22 @@ public class KnownCharacterTests
         Assert.False(registry.SelfNameIsGuess);
         Assert.Equal("NewChar", reported?.Name);
     }
+
+    [Fact]
+    public void PlaceholderNpcNamesAreNeverShown()
+    {
+        var data = new GameData(new Dictionary<uint, string>(), new Dictionary<uint, NpcData>
+        {
+            [2090012] = new("???", false),
+            [2000002] = new("Draconute Ranger", false),
+        });
+        var registry = new EntityRegistry(data);
+        registry.Apply(new NpcSpawnEvent(0, 100, 0x5F, 2090012, null, null));
+        registry.Apply(new NpcSpawnEvent(0, 101, 0x0C, 2090012, null, null));
+        registry.Apply(new NpcSpawnEvent(0, 102, 0x0C, 2000002, null, null));
+
+        Assert.Equal("Summon 2090012", registry.DisplayName(100));
+        Assert.Equal("NPC 2090012", registry.DisplayName(101));
+        Assert.Equal("Draconute Ranger", registry.DisplayName(102));
+    }
 }

@@ -35,6 +35,7 @@ public partial class MainWindow : Window
         _engine = engine;
         _vm = state.Settings;
         InitializeComponent();
+        ThemeManager.Attach(this);
         DataContext = _vm;
         PlaceWindow();
         _alertSound = new AlertSound(_vm.LowHpSound, _vm.AlertVolume);

@@ -39,14 +39,16 @@ internal static class Commands
               avion2 live   [options]                Live DPS meter
               avion2 replay <file.pcap> [options]    Decode a recorded capture and print encounters
               avion2 dump   <file.pcap> [options]    Hex-dump decoded packets (reverse engineering)
-              avion2 import-data [--lang de] [--source <dir>]
-                                                     Fetch skill/NPC names (A2Tools tables) into ./data
+              avion2 import-data [--lang de] [--source <dir>] [--data <dir>]
+                                                     Optional: refresh the names from A2Tools into an
+                                                     override folder (default %AppData%\AVION2\data)
 
             Options:
               --device 3,5        Only capture on these devices (default: all with an address + loopback)
               --record <file>     live: also record the game device to a .pcap
               --log <file>        Write decoded events as JSON lines
-              --data <dir>        Directory with skills.json / npcs.json (default: ./data)
+              --lang <code>       Language of the built-in names: en, de, fr, es, pt, ru, ja, ko, zh-Hans, zh-Hant
+              --data <dir>        Override folder with skills.json / npcs.json / field_bosses.json / maps.json
               --idle <seconds>    Idle gap that ends an encounter (default 15)
               --duration <sec>    live: stop automatically after this many seconds
               --all-targets       live: include damage on targets you did not hit yourself
@@ -62,7 +64,7 @@ internal static class Commands
     public static async Task<int> ImportData(CliArgs cli)
     {
         string lang = cli.Get("lang") ?? "en";
-        string target = cli.Get("data") ?? Path.Combine(Environment.CurrentDirectory, "data");
+        string target = cli.Get("data") ?? BundledGameData.UserDataDirectory;
         if (cli.Get("source") is null)
         {
             Console.WriteLine($"Downloading {lang} tables from {GameDataImporter.Repository} …");
@@ -103,6 +105,7 @@ internal static class Commands
             RecordPath = cli.Get("record"),
             EventLogPath = cli.Get("log"),
             DataDirectory = cli.Get("data"),
+            DataLanguage = cli.Get("lang") ?? "en",
             Tracker = TrackerOptions(cli),
         });
 
@@ -224,6 +227,13 @@ internal static class Commands
         using var log = cli.Get("log") is { } logPath ? new EventLog(logPath) : null;
         var eventCounts = new Dictionary<string, int>();
 
+        // Traces are cut when each fight ends (as the app does): later zone changes clear the recorder.
+        var traces = new List<FightTrace>();
+        if (cli.Has("trace"))
+        {
+            tracker.EncounterEnded += encounter => traces.Add(session.Trace(encounter));
+        }
+
         var pipeline = new GameCapturePipeline(e =>
         {
             session.Apply(e);
@@ -243,6 +253,10 @@ internal static class Commands
 
         tracker.Tick(lastTs + long.MaxValue / 4);
         PrintHistory(tracker);
+        foreach (var trace in traces)
+        {
+            PrintTrace(trace, registry.Data);
+        }
 
         var stats = pipeline.Decoder.Stats;
         Console.WriteLine($"Frames {pipeline.Stats.Frames:N0}, TCP {pipeline.Stats.TcpSegments:N0}, game segments {pipeline.Stats.GameSegments:N0}, locks {pipeline.Stats.Locks}");
@@ -310,6 +324,34 @@ internal static class Commands
         return 0;
     }
 
+    /// <summary>replay --trace: what a fight's trace holds (who has positions, casts, buff uptime).</summary>
+    private static void PrintTrace(FightTrace trace, GameData data)
+    {
+        Console.WriteLine();
+        Console.WriteLine($"── Trace: {trace.Title} · {trace.DurationMs / 1000.0:0.0}s · {trace.Entities.Count} entities · " +
+                          $"{trace.Casts.Count} casts · {trace.Hits.Count} hits · {trace.Buffs.Count} buffs · {trace.Hp.Count} HP samples");
+        foreach (var e in trace.Entities.OrderBy(e => e.Kind).ThenByDescending(e => e.Track.Count).Take(14))
+        {
+            var sources = string.Join(" ", e.Track.GroupBy(p => p.Source).Select(g => $"{g.Key}:{g.Count()}"));
+            int casts = trace.Casts.Count(c => c.ActorId == e.Id);
+            Console.WriteLine($"   {e.Kind,-8} {e.Name,-28} positions {e.Track.Count,4} ({sources})  casts {casts}");
+        }
+
+        if (trace.NetSummary is { } net)
+        {
+            Console.WriteLine($"   {net}" + string.Concat(trace.Lags.Select(l => $" · froze at {l.Start / 1000.0:0.0}s for {l.Length / 1000.0:0.0}s")));
+        }
+
+        if (trace.SelfId is { } self)
+        {
+            Console.WriteLine("   Your buffs: " + string.Join(", ",
+                trace.Uptime(self, data).Take(8).Select(u => $"{u.Name} {u.Uptime:P0}")));
+            Console.WriteLine("   Your casts: " + string.Join(", ",
+                trace.Casts.Where(c => c.ActorId == self).GroupBy(c => c.SkillId).OrderByDescending(g => g.Count())
+                    .Take(8).Select(g => $"{data.SkillName(g.Key)} ×{g.Count()}")));
+        }
+    }
+
     private static void PrintHistory(CombatTracker tracker)
     {
         foreach (var encounter in tracker.History)
@@ -340,7 +382,7 @@ internal static class Commands
         Console.Write(sb.ToString());
     }
 
-    private static GameData LoadData(CliArgs cli) => MeterEngine.LoadGameData(cli.Get("data"));
+    private static GameData LoadData(CliArgs cli) => MeterEngine.LoadGameData(cli.Get("data"), cli.Get("lang") ?? "en");
 
     private static TrackerOptions TrackerOptions(CliArgs cli) => new()
     {

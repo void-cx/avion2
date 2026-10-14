@@ -16,6 +16,16 @@ namespace Avion2.Protocol;
 [JsonDerivedType(typeof(HpUpdateEvent), "hp")]
 [JsonDerivedType(typeof(SelfHintEvent), "selfHint")]
 [JsonDerivedType(typeof(CombatStateEvent), "combat")]
+[JsonDerivedType(typeof(FieldBossTableEvent), "fieldBosses")]
+[JsonDerivedType(typeof(SkillCastEvent), "cast")]
+[JsonDerivedType(typeof(PositionEvent), "position")]
+[JsonDerivedType(typeof(BuffEvent), "buff")]
+[JsonDerivedType(typeof(BuffRemovedEvent), "buffRemoved")]
+[JsonDerivedType(typeof(LegionTagEvent), "legionTag")]
+[JsonDerivedType(typeof(OwnershipEvent), "ownership")]
+[JsonDerivedType(typeof(ServerClockEvent), "clock")]
+[JsonDerivedType(typeof(LegionDetailsEvent), "legion")]
+[JsonDerivedType(typeof(LegionRosterEvent), "legionRoster")]
 public abstract record GameEvent(long TimestampMs);
 
 public enum HitType : byte
@@ -93,7 +103,24 @@ public sealed record PlayerSpawnEvent(
     string Name,
     ushort? ServerId,
     GameClass Class = GameClass.Unknown,
-    uint? CombatPower = null) : GameEvent(TimestampMs);
+    uint? CombatPower = null,
+    Vec3? Position = null) : GameEvent(TimestampMs);
+
+/// <summary>A world position (≈ cm; z is height).</summary>
+public readonly record struct Vec3(float X, float Y, float Z)
+{
+    /// <summary>Plausible world coordinates (filters out the floats that turn up when scanning a record).</summary>
+    public bool IsPlausible =>
+        float.IsFinite(X) && float.IsFinite(Y) && float.IsFinite(Z) &&
+        Math.Abs(X) < 1_000_000 && Math.Abs(Y) < 1_000_000 && Z is > -50_000 and < 200_000 &&
+        (Math.Abs(X) > 100 || Math.Abs(Y) > 100) && Math.Abs(Z) > 10;
+
+    public float DistanceTo(Vec3 other)
+    {
+        float dx = X - other.X, dy = Y - other.Y;
+        return MathF.Sqrt(dx * dx + dy * dy);
+    }
+}
 
 /// <param name="Kind">Low byte of the spawn mask: 0x0C/0x0D NPC, 0x5F summon, 0x1C effect, 0x1D/0x1F/0x5D spirit/ground spell.</param>
 /// <param name="InlineName">For summons this is the owner's name.</param>
@@ -103,7 +130,8 @@ public sealed record NpcSpawnEvent(
     byte Kind,
     uint? NpcCode,
     uint? MaxHp,
-    string? InlineName) : GameEvent(TimestampMs);
+    string? InlineName,
+    Vec3? Position = null) : GameEvent(TimestampMs);
 
 public enum DeathKind : byte
 {
@@ -130,3 +158,83 @@ public sealed record SelfHintEvent(long TimestampMs, uint EntityId) : GameEvent(
 /// <summary><c>21 8D</c>: an entity entered or left combat. For us this matches the game's Combat Analysis clock
 /// (on ~0.2 s before the first hit, off 3–5 s after the last).</summary>
 public sealed record CombatStateEvent(long TimestampMs, uint EntityId, bool InCombat) : GameEvent(TimestampMs);
+
+/// <summary>One field boss spawn point from <c>01 91</c>.</summary>
+/// <param name="SpawnCode">Map × 100 + index, e.g. 101005.</param>
+/// <param name="Alive">Alive: <paramref name="TimestampMs"/> is when it spawned. Dead: when it respawns.</param>
+public sealed record FieldBossEntry(uint SpawnCode, bool Alive, long TimestampMs, float? X, float? Y, float? Z);
+
+/// <summary><c>01 91</c>: the field boss table of the current map (sent about once a second).</summary>
+public sealed record FieldBossTableEvent(long TimestampMs, uint MapId, IReadOnlyList<FieldBossEntry> Entries) : GameEvent(TimestampMs);
+
+/// <summary>
+/// <c>00 36</c>: the server's clock, 20 times a second. <see cref="GameEvent.TimestampMs"/> is when it arrived, so
+/// arrival − server time shows the delivery delay, and a gap between ticks a freeze.
+/// </summary>
+public sealed record ServerClockEvent(long TimestampMs, long ServerMs) : GameEvent(TimestampMs);
+
+/// <summary><c>02 38</c>: a skill cast (any entity in range, including buffs and heals that deal no damage).</summary>
+/// <param name="SkillId">Base skill id (specialisation digits stripped).</param>
+/// <param name="TargetId">The cast's target (the caster itself for self buffs).</param>
+/// <param name="TargetPosition">Where the target stood (kind 2 records only).</param>
+public sealed record SkillCastEvent(
+    long TimestampMs,
+    uint ActorId,
+    uint SkillId,
+    uint RawSkillId,
+    uint? TargetId,
+    Vec3? TargetPosition) : GameEvent(TimestampMs);
+
+public enum PositionSource : byte
+{
+    /// <summary><c>1C 37</c>: the server's absolute fix (about once a second per moving entity).</summary>
+    Move,
+    /// <summary><c>1A</c>/<c>1B 37</c>: movement with a position.</summary>
+    Steer,
+    /// <summary><c>2F</c>/<c>3C 37</c>: dash, leap or relocation (also sent for us).</summary>
+    Dash,
+    /// <summary>Spawn records.</summary>
+    Spawn,
+    /// <summary>Where a buff landed on the entity (<c>2A 38</c>); our own position comes mostly from these.</summary>
+    Buff,
+}
+
+/// <summary>Where an entity is. The server does not echo our own movement; we get fixes from buffs, dashes and spawns.</summary>
+/// <param name="Heading">Degrees (0..360), if the record has one.</param>
+public sealed record PositionEvent(long TimestampMs, uint EntityId, Vec3 Position, float? Heading, PositionSource Source) : GameEvent(TimestampMs);
+
+/// <summary><c>2A 38</c> / <c>2B 38</c>: an abnormal (buff or debuff) was applied or refreshed on an entity.</summary>
+/// <param name="Instance">Per-entity instance id, used by <see cref="BuffRemovedEvent"/>.</param>
+/// <param name="AbnormalId">Effect id; <paramref name="SkillId"/> names it when present.</param>
+/// <param name="DurationMs">Total length; null = permanent.</param>
+public sealed record BuffEvent(
+    long TimestampMs,
+    uint EntityId,
+    uint Instance,
+    uint AbnormalId,
+    uint? SkillId,
+    uint CasterId,
+    long? DurationMs,
+    bool Added,
+    Vec3? Position) : GameEvent(TimestampMs);
+
+/// <summary><c>2C 38</c>: abnormals ended on an entity.</summary>
+public sealed record BuffRemovedEvent(long TimestampMs, uint EntityId, IReadOnlyList<uint> Instances) : GameEvent(TimestampMs);
+
+/// <summary>
+/// <c>04 8D</c>: an entity is claimed by a player. Sent for that player's summons and effects, but also for monsters
+/// (looks like loot/first-hit ownership), so it only links entities that spawned as summons.
+/// </summary>
+public sealed record OwnershipEvent(long TimestampMs, uint EntityId, uint OwnerId) : GameEvent(TimestampMs);
+
+/// <summary><c>33 8A</c> (and the owner part of <c>04 8D</c>): an entity's legion.</summary>
+public sealed record LegionTagEvent(long TimestampMs, uint EntityId, ushort ServerId, string Legion) : GameEvent(TimestampMs);
+
+/// <summary><c>03 8A</c>: our own legion: name, leader and its texts (introduction, notice, …).</summary>
+public sealed record LegionDetailsEvent(long TimestampMs, string Name, string? Leader, IReadOnlyList<string> Texts) : GameEvent(TimestampMs);
+
+/// <param name="LastOnlineMs">Unix ms of the member's last login, if present.</param>
+public sealed record LegionMember(string Name, int? Level, long? LastOnlineMs);
+
+/// <summary><c>05 8A</c>: a page of our legion's member list.</summary>
+public sealed record LegionRosterEvent(long TimestampMs, IReadOnlyList<LegionMember> Members) : GameEvent(TimestampMs);

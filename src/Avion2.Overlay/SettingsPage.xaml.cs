@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using Avion2.Engine;
@@ -22,8 +21,31 @@ public partial class SettingsPage : UserControl
         DataContext = state.Settings;
 
         RegionBox.ItemsSource = Enum.GetValues<Avion2.Analysis.ServerRegion>();
-        LanguageBox.ItemsSource = GameDataImporter.Languages;
-        LanguageBox.SelectedItem = (state.DataDirectory is { } dir ? GameDataImporter.InstalledLanguage(dir) : null) ?? "en";
+        LanguageBox.ItemsSource = BundledGameData.Languages;
+        LanguageBox.SelectedItem = state.Stored.DataLanguage;
+        LanguageBox.SelectionChanged += (_, _) =>
+        {
+            if (LanguageBox.SelectedItem is string language && language != _state.Stored.DataLanguage)
+            {
+                _state.SetDataLanguage(language);
+                UpdateStatus();
+            }
+        };
+        ThemeBox.ItemsSource = ThemeManager.Themes;
+        ThemeBox.SelectedItem = ThemeManager.Current;
+        ThemeManager.Changed += () =>
+        {
+            ThemeBox.SelectedItem = ThemeManager.Current;
+            UpdateStatus();
+        };
+        ThemeBox.SelectionChanged += (_, _) =>
+        {
+            if (ThemeBox.SelectedItem is ThemeDefinition theme && theme != ThemeManager.Current)
+            {
+                _state.SetTheme(theme.Id);
+                UpdateStatus();
+            }
+        };
         state.Settings.PropertyChanged += OnSettingChanged;
         state.Fights.CollectionChanged += (_, _) => UpdateStatus();
         Unloaded += (_, _) => _state.SaveSettings();
@@ -45,16 +67,16 @@ public partial class SettingsPage : UserControl
 
     private void UpdateStatus()
     {
-        DataStatus.Text = _state.SkillNames == 0
-            ? "No name tables installed: skills and mobs are shown by id."
-            : $"{_state.SkillNames:N0} skills · {_state.NpcNames:N0} NPCs · {_state.DataDirectory}";
+        DataStatus.Text = $"{_state.SkillNames:N0} skills · {_state.NpcNames:N0} NPCs · {_state.Data.FieldBosses.Count} field bosses · {_state.DataSource}";
         HistoryStatus.Text = $"{_state.Fights.Count} fights saved in {_state.History.Directory}";
         int icons = Enum.GetValues<Avion2.Protocol.GameClass>().Count(c => ClassIcons.For(c) is not null);
-        IconStatus.Text = icons == 0
-            ? "Drawn emblems (official icons not downloaded)"
-            : $"{icons} official class icons in use (stored locally, not bundled)";
+        IconStatus.Text = $"{icons} official class icons (built in; PNGs in the folder override them)";
         VideoName.Text = _state.BackgroundVideo is { } video ? Path.GetFileName(video) : "None (drawn backdrop)";
-        SoundName.Text = string.IsNullOrWhiteSpace(_state.Settings.LowHpSound) ? "Built-in chime" : Path.GetFileName(_state.Settings.LowHpSound);
+        ThemeHint.Text = ThemeManager.Current.VideoBackdrop
+            ? "Key-art backdrop, serif display type"
+            : "Enter The Void design: no background video";
+        SoundName.Text = string.IsNullOrWhiteSpace(_state.Settings.LowHpSound) ? "Built-in warning beeps" : Path.GetFileName(_state.Settings.LowHpSound);
+        NoticeSoundName.Text = string.IsNullOrWhiteSpace(_state.Settings.NoticeSound) ? "Built-in bell" : Path.GetFileName(_state.Settings.NoticeSound);
     }
 
     private void PlayPreview()
@@ -70,9 +92,33 @@ public partial class SettingsPage : UserControl
     {
         var next = _state.Timers.NextRifts(DateTimeOffset.Now, 1)[0];
         _state.Notices.Notify($"Spacetime Rift at {next.ToLocalTime():HH:mm} (test)", "Spacetime Rift");
+        if (_state.Settings.NotifySound)
+        {
+            _state.NoticeSound().Play();
+        }
     }
 
     private void MoveNotifications_Click(object sender, RoutedEventArgs e) => _state.Notices.SetPositioning(true);
+
+    private void TestNoticeSound_Click(object sender, RoutedEventArgs e) => _state.NoticeSound().Play();
+
+    private void BrowseNoticeSound_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog { Filter = "Sound files (*.wav;*.mp3)|*.wav;*.mp3", Title = "Notification sound" };
+        if (dialog.ShowDialog(Window.GetWindow(this)) == true)
+        {
+            _state.Settings.NoticeSound = dialog.FileName;
+            UpdateStatus();
+            _state.NoticeSound().Play();
+        }
+    }
+
+    private void DefaultNoticeSound_Click(object sender, RoutedEventArgs e)
+    {
+        _state.Settings.NoticeSound = null;
+        UpdateStatus();
+        _state.NoticeSound().Play();
+    }
 
     private void BrowseSound_Click(object sender, RoutedEventArgs e)
     {
@@ -90,30 +136,6 @@ public partial class SettingsPage : UserControl
         _state.Settings.LowHpSound = null;
         UpdateStatus();
         PlayPreview();
-    }
-
-    private async void Import_Click(object sender, RoutedEventArgs e)
-    {
-        string language = LanguageBox.SelectedItem as string ?? "en";
-
-        // Update the tables in use; fresh installs go to %AppData%\AVION2\data.
-        string target = _state.DataDirectory ?? GameDataImporter.UserDataDirectory;
-        ImportButton.IsEnabled = false;
-        DataStatus.Text = $"Downloading {language} tables…";
-        try
-        {
-            var result = await GameDataImporter.ImportAsync(language, target);
-            _state.ReloadGameData(result.Directory);
-            UpdateStatus();
-        }
-        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or TaskCanceledException or UnauthorizedAccessException)
-        {
-            DataStatus.Text = $"Import failed: {ex.Message}";
-        }
-        finally
-        {
-            ImportButton.IsEnabled = true;
-        }
     }
 
     private void BrowseVideo_Click(object sender, RoutedEventArgs e)
@@ -136,15 +158,6 @@ public partial class SettingsPage : UserControl
     {
         _state.SetBackgroundVideo(string.Empty);
         UpdateStatus();
-    }
-
-    private async void DownloadIcons_Click(object sender, RoutedEventArgs e)
-    {
-        IconButton.IsEnabled = false;
-        IconStatus.Text = "Downloading…";
-        int saved = await ClassIconDownloader.DownloadAsync(overwrite: true);
-        IconStatus.Text = saved == 0 ? "Download failed — keeping the drawn emblems" : $"Downloaded {saved} official class icons";
-        IconButton.IsEnabled = true;
     }
 
     private void ClassIcons_Click(object sender, RoutedEventArgs e)

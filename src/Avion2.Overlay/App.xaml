@@ -3,21 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Avion2.Overlay"
              ShutdownMode="OnMainWindowClose">
+    <!-- The theme dictionary (Theme/*.xaml) is merged in at startup by ThemeManager, so it can be swapped later. -->
     <Application.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Theme/AionTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
         <local:NotNullConverter x:Key="NotNull" />
         <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
-        <SolidColorBrush x:Key="TextBrush" Color="#F2F4F8" />
-        <SolidColorBrush x:Key="MutedBrush" Color="#9AA3B2" />
-        <SolidColorBrush x:Key="AccentBrush" Color="#E8B04B" />
-        <SolidColorBrush x:Key="HpBrush" Color="#D9534F" />
-        <SolidColorBrush x:Key="RowHoverBrush" Color="#1FFFFFFF" />
 
         <Style x:Key="HeaderButton" TargetType="Button">
-            <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource MutedBrush}" />
             <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Width" Value="24" />
@@ -32,8 +25,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="{StaticResource RowHoverBrush}" />
-                                <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource RowHoverBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

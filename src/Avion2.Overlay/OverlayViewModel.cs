@@ -58,6 +58,11 @@ public sealed class PlayerCard(uint actorId) : Bindable
     public bool IsSelf { get => _isSelf; set => Set(ref _isSelf, value); }
     public string CombatPower { get => _combatPower; set => Set(ref _combatPower, value); }
     public bool HasCombatPower => _combatPower.Length > 0;
+
+    private string _legion = string.Empty;
+
+    /// <summary>"‹Legion›", or empty.</summary>
+    public string Legion { get => _legion; set => Set(ref _legion, value); }
     public string Value { get => _value; set => Set(ref _value, value); }
     public string Share { get => _share; set => Set(ref _share, value); }
     public string Stats { get => _stats; set => Set(ref _stats, value); }
@@ -82,6 +87,9 @@ public sealed class PlayerCard(uint actorId) : Bindable
 /// </summary>
 public sealed class OverlayViewModel : Bindable
 {
+    /// <summary>The colour a class is drawn in (cards, bars, replay).</summary>
+    public static Color ClassColor(GameClass cls) => ClassColors.GetValueOrDefault(cls, ClassColors[GameClass.Unknown]);
+
     private static readonly Dictionary<GameClass, Color> ClassColors = new()
     {
         [GameClass.Gladiator] = Color.FromRgb(0xC8, 0x7B, 0x3E),
@@ -134,6 +142,8 @@ public sealed class OverlayViewModel : Bindable
     private double _alertVolume = 0.6;
     private double _lowHpThreshold = 0.3;
     private string? _lowHpSound;
+    private string? _noticeSound;
+    private double _noticeVolume = 0.5;
     private bool _autoStart;
     private bool _compactRows;
     private ServerRegion _region = ServerRegion.Europe;
@@ -143,6 +153,7 @@ public sealed class OverlayViewModel : Bindable
     private bool _notifyFieldEvents;
     private bool _notifyPvp = true;
     private bool _notifyReset;
+    private bool _notifyFieldBoss = true;
     private bool _notifySound = true;
 
     private bool _alerting;
@@ -269,7 +280,18 @@ public sealed class OverlayViewModel : Bindable
     public bool NotifyFieldEvents { get => _notifyFieldEvents; set => Set(ref _notifyFieldEvents, value); }
     public bool NotifyPvp { get => _notifyPvp; set => Set(ref _notifyPvp, value); }
     public bool NotifyReset { get => _notifyReset; set => Set(ref _notifyReset, value); }
+    public bool NotifyFieldBoss { get => _notifyFieldBoss; set => Set(ref _notifyFieldBoss, value); }
+
+    private bool _notifyBossCasts = true;
+
+    public bool NotifyBossCasts { get => _notifyBossCasts; set => Set(ref _notifyBossCasts, value); }
     public bool NotifySound { get => _notifySound; set => Set(ref _notifySound, value); }
+
+    /// <summary>Custom .wav/.mp3 for notifications; null = built-in bell.</summary>
+    public string? NoticeSound { get => _noticeSound; set => Set(ref _noticeSound, value); }
+
+    /// <summary>0..1.</summary>
+    public double NoticeVolume { get => _noticeVolume; set => Set(ref _noticeVolume, Math.Round(Math.Clamp(value, 0, 1), 2)); }
 
     public bool Notifies(ScheduleCategory category) => category switch
     {
@@ -278,6 +300,7 @@ public sealed class OverlayViewModel : Bindable
         ScheduleCategory.FieldEvent => _notifyFieldEvents,
         ScheduleCategory.Pvp => _notifyPvp,
         ScheduleCategory.Reset => _notifyReset,
+        ScheduleCategory.FieldBoss => _notifyFieldBoss,
         _ => false,
     };
 
@@ -297,9 +320,39 @@ public sealed class OverlayViewModel : Bindable
 
     public MeterScope Scope => _allTargets ? MeterScope.AllTargets : MeterScope.MyTargets;
 
+    private string _lagText = string.Empty;
+    private long _lagWorstMs;
+    private long _lagShownUntil;
+
+    /// <summary>"Server lag 3.2 s" while the game server is silent; "Server froze 7.0 s" for a few seconds after.</summary>
+    public string LagText { get => _lagText; private set { if (Set(ref _lagText, value)) OnPropertyChanged(nameof(HasLag)); } }
+
+    public bool HasLag => _lagText.Length > 0;
+
+    private void UpdateLag(long silenceMs)
+    {
+        long now = Environment.TickCount64;
+        if (silenceMs > 1_000)
+        {
+            _lagWorstMs = Math.Max(_lagWorstMs, silenceMs);
+            _lagShownUntil = now + 5_000;
+            LagText = Invariant($"⚠ Server lag {silenceMs / 1000.0:0.0} s");
+        }
+        else if (_lagWorstMs > 0 && now < _lagShownUntil)
+        {
+            LagText = Invariant($"⚠ Server froze {_lagWorstMs / 1000.0:0.0} s");
+        }
+        else
+        {
+            _lagWorstMs = 0;
+            LagText = string.Empty;
+        }
+    }
+
     public void Update(MeterSnapshot? snapshot, EngineStatus status)
     {
         Status = status.Locked ? (status.InCombat ? "LIVE" : "IDLE") : "SEARCHING";
+        UpdateLag(status.ServerSilenceMs);
         string self = status.SelfName is { } name
             ? $"{name} · {status.SelfClass}" + (status.SelfNameIsGuess ? " (last session)" : string.Empty)
             : status.SelfClass != GameClass.Unknown ? $"You · {status.SelfClass} (teleport once to show your name)"
@@ -370,6 +423,7 @@ public sealed class OverlayViewModel : Bindable
         {
             var row = snapshot.Rows[i];
             Fill(card, row.Name, row.Class, row.IsSelf, row.CombatPower);
+            card.Legion = row.Legion is { Length: > 0 } legion ? $"‹{legion}›" : string.Empty;
             card.Value = Big(row.Dps);
             card.Share = Invariant($"{row.Share * 100:0.0}%");
             card.Stats = Invariant($"Dbl {row.DoubleRate * 100:0}%  Perf {row.PerfectRate * 100:0}%  Crit {row.CritRate * 100:0}%  Front {row.FrontRate * 100:0}%  Back {row.BackRate * 100:0}%");

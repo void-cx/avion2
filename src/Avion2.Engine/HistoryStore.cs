@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -49,6 +50,54 @@ public sealed class HistoryStore
         }
     }
 
+    /// <summary>The trace file of a saved fight (timeline, buffs, positions): gzipped JSON next to the snapshot.</summary>
+    public static string TracePath(string snapshotPath) => System.IO.Path.ChangeExtension(snapshotPath, ".trace");
+
+    public void SaveTrace(HistoryEntry entry, FightTrace trace)
+    {
+        if (entry.Path.Length == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            using var file = File.Create(TracePath(entry.Path));
+            using var zip = new GZipStream(file, CompressionLevel.Optimal);
+            JsonSerializer.Serialize(zip, trace, TraceOptions);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // the fight itself is saved; it just has no replay
+        }
+    }
+
+    /// <summary>The trace of a saved fight; null for fights saved before traces existed.</summary>
+    public FightTrace? LoadTrace(HistoryEntry entry)
+    {
+        string path = entry.Path.Length == 0 ? string.Empty : TracePath(entry.Path);
+        if (path.Length == 0 || !File.Exists(path))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var file = File.OpenRead(path);
+            using var zip = new GZipStream(file, CompressionMode.Decompress);
+            return JsonSerializer.Deserialize<FightTrace>(zip, TraceOptions);
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or InvalidDataException or NotSupportedException)
+        {
+            return null;
+        }
+    }
+
+    private static readonly JsonSerializerOptions TraceOptions = new()
+    {
+        Converters = { new JsonStringEnumConverter() },
+    };
+
     public bool Delete(HistoryEntry entry)
     {
         try
@@ -56,6 +105,11 @@ public sealed class HistoryStore
             if (entry.Path.Length > 0 && File.Exists(entry.Path))
             {
                 File.Delete(entry.Path);
+                if (File.Exists(TracePath(entry.Path)))
+                {
+                    File.Delete(TracePath(entry.Path));
+                }
+
                 return true;
             }
         }
@@ -130,6 +184,10 @@ public sealed class HistoryStore
         foreach (string old in files)
         {
             File.Delete(old);
+            if (File.Exists(TracePath(old)))
+            {
+                File.Delete(TracePath(old));
+            }
         }
     }
 

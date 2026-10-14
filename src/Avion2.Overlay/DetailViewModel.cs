@@ -106,6 +106,9 @@ public sealed class DetailViewModel : Bindable
     private IReadOnlyList<StatTile> _takenTiles = [];
     private int _tabIndex;
     private bool _hasPlayer;
+    private uint? _selectedActorId;
+    private FightTrace? _trace;
+    private IReadOnlyList<BuffUptime> _buffLines = [];
 
     public string Target { get => _target; private set => Set(ref _target, value); }
 
@@ -135,11 +138,47 @@ public sealed class DetailViewModel : Bindable
     /// </summary>
     public event Action? PlayerChanged;
 
-    public uint? SelectedActorId { get; set; }
+    public uint? SelectedActorId
+    {
+        get => _selectedActorId;
+        set
+        {
+            if (Set(ref _selectedActorId, value))
+            {
+                UpdateBuffs();
+            }
+        }
+    }
+
+    /// <summary>Timeline, buffs and positions of the shown fight (null for fights saved before traces existed).</summary>
+    public FightTrace? Trace
+    {
+        get => _trace;
+        set
+        {
+            if (Set(ref _trace, value))
+            {
+                OnPropertyChanged(nameof(TraceLength));
+                UpdateBuffs();
+            }
+        }
+    }
+
+    /// <summary>Length of the trace in ms (the replay slider's range).</summary>
+    public double TraceLength => _trace?.DurationMs ?? 0;
+
+    /// <summary>The selected player's buffs and debuffs by uptime.</summary>
+    public IReadOnlyList<BuffUptime> BuffLines { get => _buffLines; private set => Set(ref _buffLines, value); }
+
+    /// <summary>Name tables for skill and buff names.</summary>
+    public GameData Data { get; set; } = GameData.Empty;
+
+    private void UpdateBuffs() =>
+        BuffLines = _trace is { } trace && _selectedActorId is { } id ? trace.Uptime(id, Data) : [];
 
     public bool HasPlayer { get => _hasPlayer; private set => Set(ref _hasPlayer, value); }
 
-    /// <summary>0 = damage dealt, 1 = damage taken.</summary>
+    /// <summary>0 = damage dealt, 1 = damage taken, 2 = timeline, 3 = buffs, 4 = replay.</summary>
     public int TabIndex { get => _tabIndex; set => Set(ref _tabIndex, value); }
 
     public IReadOnlyList<StatTile> Tiles { get => _tiles; private set => Set(ref _tiles, value); }

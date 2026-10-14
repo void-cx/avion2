@@ -28,9 +28,28 @@ public sealed class AppState
         }
 
         RefreshGameDataInfo();
-        Timers = new TimerService(Settings);
+        FieldBosses = Avion2.Analysis.FieldBossBoard.Load(FieldBossFile);
+        Timers = new TimerService(Settings, FieldBossOccurrences);
         Timers.Due += OnEventDue;
     }
+
+    private static string FieldBossFile =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "field_bosses.json");
+
+    /// <summary>Latest field boss table per map; saved, so respawn times survive restarts.</summary>
+    public Avion2.Analysis.FieldBossBoard FieldBosses { get; }
+
+    /// <summary>Name tables (skills, NPCs, field bosses) for views that work without a running meter.</summary>
+    public Avion2.Analysis.GameData Data { get; private set; } = Avion2.Analysis.GameData.Empty;
+
+    /// <summary>Upcoming respawns as timetable occurrences, so they share the notification path.</summary>
+    private IEnumerable<Avion2.Analysis.Occurrence> FieldBossOccurrences(DateTimeOffset now) =>
+        FieldBosses.Rows(Data, now)
+            .Where(r => r.Status == Avion2.Analysis.FieldBossStatus.Respawning)
+            .Select(r => new Avion2.Analysis.Occurrence(
+                new Avion2.Analysis.ScheduledEvent($"fieldboss:{r.SpawnCode}", $"{r.Name} respawns",
+                    Avion2.Analysis.ScheduleCategory.FieldBoss, [], 0, []),
+                r.At));
 
     /// <summary>Rift/event timetable and its notifications.</summary>
     public TimerService Timers { get; }
@@ -44,9 +63,7 @@ public sealed class AppState
 
         if (Settings.NotifySound)
         {
-            _notifySound ??= new AlertSound(Settings.LowHpSound, Settings.AlertVolume);
-            _notifySound.Volume = Settings.AlertVolume;
-            _notifySound.Play();
+            NoticeSound().Play();
         }
 
         Notices.Notify(text, CategoryLabel(occurrence.Event.Category));
@@ -59,12 +76,29 @@ public sealed class AppState
 
     private AlertSound? _notifySound;
 
+    /// <summary>The notification sound, rebuilt when its file changed (separate from the low-HP alert).</summary>
+    public AlertSound NoticeSound()
+    {
+        string? wanted = string.IsNullOrWhiteSpace(Settings.NoticeSound) || !File.Exists(Settings.NoticeSound)
+            ? null
+            : Path.GetFullPath(Settings.NoticeSound);
+        if (_notifySound is null || _notifySound.CustomPath != wanted)
+        {
+            _notifySound?.Dispose();
+            _notifySound = new AlertSound(Settings.NoticeSound, Settings.NoticeVolume, SoundKind.Notice);
+        }
+
+        _notifySound.Volume = Settings.NoticeVolume;
+        return _notifySound;
+    }
+
     public static string CategoryLabel(Avion2.Analysis.ScheduleCategory category) => category switch
     {
         Avion2.Analysis.ScheduleCategory.Rift => "Spacetime Rift",
         Avion2.Analysis.ScheduleCategory.BossRaid => "Boss raid",
         Avion2.Analysis.ScheduleCategory.FieldEvent => "Field event",
         Avion2.Analysis.ScheduleCategory.Pvp => "PvP",
+        Avion2.Analysis.ScheduleCategory.FieldBoss => "Field boss",
         _ => "Reset",
     };
 
@@ -87,7 +121,8 @@ public sealed class AppState
 
     public bool IsReplay => _baseOptions.ReplayPath is not null;
 
-    public string? DataDirectory { get; private set; }
+    /// <summary>Where the name tables in use came from (built in, or an override folder).</summary>
+    public GameDataSource? DataSource { get; private set; }
 
     public int SkillNames { get; private set; }
 
@@ -164,12 +199,32 @@ public sealed class AppState
             RecordPath = record,
             EventLogPath = _baseOptions.EventLogPath,
             DataDirectory = _baseOptions.DataDirectory,
+            DataLanguage = Stored.DataLanguage,
             HistoryDirectory = _baseOptions.HistoryDirectory,
             SaveHistory = _baseOptions.SaveHistory,
             ReplayPath = _baseOptions.ReplayPath,
             ReplaySpeed = _baseOptions.ReplaySpeed,
         });
         engine.FightSaved += entry => Application.Current.Dispatcher.BeginInvoke(() => Fights.Insert(0, new HistoryRow(entry)));
+        engine.LegionChanged += () =>
+        {
+            var legion = engine.Legion();
+            Application.Current.Dispatcher.BeginInvoke(() => UpdateLegion(legion));
+        };
+        engine.Cast += (cast, info) =>
+        {
+            if (info is { IsBoss: true, IsDummy: false } && Settings.NotifyBossCasts)
+            {
+                Application.Current.Dispatcher.BeginInvoke(() => OnBossCast(cast, info));
+            }
+        };
+        engine.FieldBossTable += table => Application.Current.Dispatcher.BeginInvoke(() =>
+        {
+            if (FieldBosses.Apply(table) && PersistSettings)
+            {
+                FieldBosses.Save(FieldBossFile);
+            }
+        });
 
         Engine = engine;
         Overlay = new MainWindow(this, engine) { StartTab = startTab };
@@ -212,20 +267,120 @@ public sealed class AppState
         Fights.Remove(row);
     }
 
-    /// <summary>Loads freshly imported name tables (into the running meter too).</summary>
-    public void ReloadGameData(string directory)
+    private static string LegionFile =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "legion.json");
+
+    /// <summary>Our legion (name, leader, texts, members with last login); saved, so Home shows it between sessions.</summary>
+    public Avion2.Analysis.LegionState? Legion { get; private set; } = LoadLegion();
+
+    /// <summary>Raised on the UI thread when <see cref="Legion"/> changed.</summary>
+    public event Action? LegionUpdated;
+
+    private static Avion2.Analysis.LegionState? LoadLegion()
     {
-        Engine?.ReloadGameData(directory);
-        _dataOverride = directory;
+        try
+        {
+            return File.Exists(LegionFile)
+                ? System.Text.Json.JsonSerializer.Deserialize<Avion2.Analysis.LegionState>(File.ReadAllText(LegionFile))
+                : null;
+        }
+        catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    private void UpdateLegion(Avion2.Analysis.LegionState? legion)
+    {
+        if (legion is null)
+        {
+            return;
+        }
+
+        // Keep what we knew if this session only sent part of it (e.g. a member page but no details).
+        if (Legion is { } old)
+        {
+            legion.Name ??= old.Name;
+            legion.Leader ??= old.Leader;
+            if (legion.Texts.Count == 0)
+            {
+                legion.Texts = old.Texts;
+            }
+
+            var members = old.Members.ToDictionary(m => m.Name);
+            foreach (var member in legion.Members)
+            {
+                members[member.Name] = member;
+            }
+
+            legion.Members = members.Values.ToList();
+        }
+
+        Legion = legion;
+        LegionUpdated?.Invoke();
+        if (PersistSettings)
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(LegionFile)!);
+                File.WriteAllText(LegionFile, System.Text.Json.JsonSerializer.Serialize(legion));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // shown again next session once the game resends it
+            }
+        }
+    }
+
+    private readonly Dictionary<(uint Boss, uint Skill), DateTime> _bossCasts = new();
+
+    /// <summary>A boss started a named skill: a notice (no sound), at most once per skill per 10 s.</summary>
+    private void OnBossCast(Avion2.Protocol.SkillCastEvent cast, Avion2.Analysis.EntityInfo boss)
+    {
+        string skill = Data.SkillName(cast.SkillId);
+        if (skill.StartsWith("Skill ", StringComparison.Ordinal) || skill.Contains("Basic Attack", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var key = (cast.ActorId, cast.SkillId);
+        if (_bossCasts.TryGetValue(key, out var last) && DateTime.UtcNow - last < TimeSpan.FromSeconds(10))
+        {
+            return;
+        }
+
+        _bossCasts[key] = DateTime.UtcNow;
+        string name = boss.NpcCode is { } code && Data.Npcs.TryGetValue(code, out var npc) ? npc.Name : "Boss";
+        Notices.Notify($"{name}: {skill}", "Boss skill");
+    }
+
+    /// <summary>The trace (timeline, buffs, replay) of a saved fight, from memory if this session saved it.</summary>
+    public Avion2.Analysis.FightTrace? LoadTrace(HistoryEntry entry) => Engine?.Trace(entry) ?? History.LoadTrace(entry);
+
+    /// <summary>Switches the app theme for every open window and remembers it.</summary>
+    public void SetTheme(string id)
+    {
+        Stored.Theme = ThemeManager.Find(id).Id;
+        SaveSettings();
+        ThemeManager.Apply(Stored.Theme);
+        BackdropChanged?.Invoke(); // the VOID theme has no video backdrop
+    }
+
+    /// <summary>Switches the language of the built-in names (in the running meter too).</summary>
+    public void SetDataLanguage(string language)
+    {
+        Stored.DataLanguage = language;
+        SaveSettings();
+        Engine?.ReloadGameData(language, _baseOptions.DataDirectory);
         RefreshGameDataInfo();
     }
 
-    private string? _dataOverride;
-
     private void RefreshGameDataInfo()
     {
-        var (data, dir) = MeterEngine.FindGameData(_dataOverride ?? _baseOptions.DataDirectory);
-        DataDirectory = dir;
+        var (data, source) = MeterEngine.FindGameData(_baseOptions.DataDirectory, Stored.DataLanguage);
+        DataSource = source;
+        Data = data;
+        DetailView.Names = data;
         SkillNames = data.Skills.Count;
         NpcNames = data.Npcs.Count;
     }
@@ -249,7 +404,11 @@ public sealed class AppState
         Settings.NotifyFieldEvents = s.NotifyFieldEvents;
         Settings.NotifyPvp = s.NotifyPvp;
         Settings.NotifyReset = s.NotifyReset;
+        Settings.NotifyFieldBoss = s.NotifyFieldBoss;
+        Settings.NotifyBossCasts = s.NotifyBossCasts;
         Settings.NotifySound = s.NotifySound;
+        Settings.NoticeSound = string.IsNullOrWhiteSpace(s.NoticeSound) ? null : s.NoticeSound;
+        Settings.NoticeVolume = s.NoticeVolume;
     }
 
     /// <summary>False for developer render runs, so they never overwrite the user's settings.</summary>
@@ -279,7 +438,11 @@ public sealed class AppState
         s.NotifyFieldEvents = Settings.NotifyFieldEvents;
         s.NotifyPvp = Settings.NotifyPvp;
         s.NotifyReset = Settings.NotifyReset;
+        s.NotifyFieldBoss = Settings.NotifyFieldBoss;
+        s.NotifyBossCasts = Settings.NotifyBossCasts;
         s.NotifySound = Settings.NotifySound;
+        s.NoticeSound = Settings.NoticeSound;
+        s.NoticeVolume = Settings.NoticeVolume;
         s.Save();
     }
 }

@@ -25,6 +25,9 @@ public sealed class EntityInfo(uint id)
     public bool IsBoss { get; set; }
     public bool IsDummy { get; set; }
     public uint? CombatPower { get; set; }
+
+    /// <summary>Legion name (<c>33 8A</c> / <c>04 8D</c>).</summary>
+    public string? Legion { get; set; }
 }
 
 /// <summary>
@@ -179,6 +182,24 @@ public sealed class EntityRegistry
                 ApplyNpcSpawn(npc);
                 break;
 
+            case SkillCastEvent cast when Find(cast.ActorId)?.Kind is EntityKind.Player || cast.ActorId == SelfId:
+                // Remembered so a summon that appears right after (e.g. Explosion Trap) can be credited to its caster.
+                _recentCasts[_data.SkillName(cast.SkillId)] = (cast.ActorId, cast.TimestampMs);
+                break;
+
+            case OwnershipEvent claim:
+                // Only summons/effects belong to the claimant; monsters are claimed too (loot/first hit).
+                if (Find(claim.EntityId) is { Kind: EntityKind.Summon } summon)
+                {
+                    summon.OwnerId ??= claim.OwnerId;
+                }
+                else if (Find(claim.EntityId) is null or { Kind: EntityKind.Unknown })
+                {
+                    _claims[claim.EntityId] = claim.OwnerId; // applied if it turns out to be a summon
+                }
+
+                break;
+
             case SummonLinkEvent link when link.SummonId != link.OwnerId:
             {
                 var info = GetOrAdd(link.SummonId);
@@ -203,6 +224,10 @@ public sealed class EntityRegistry
 
             case DamageEvent damage:
                 InferFromDamage(damage);
+                break;
+
+            case LegionTagEvent tag:
+                GetOrAdd(tag.EntityId).Legion = tag.Legion;
                 break;
 
             case MapLoadEvent map:
@@ -246,19 +271,20 @@ public sealed class EntityRegistry
     {
         if (_entities.TryGetValue(id, out var info))
         {
-            if (info.Name is { Length: > 0 } name)
+            if (info.Name is { Length: > 0 } name && !IsPlaceholder(name))
             {
                 return name;
             }
 
-            if (info.NpcCode is { } code && _data.Npcs.TryGetValue(code, out var npc))
+            // The client tables use "???" as the name of most summons (spirits, totems, pets) and helper NPCs.
+            if (info.NpcCode is { } code && _data.Npcs.TryGetValue(code, out var npc) && !IsPlaceholder(npc.Name))
             {
                 return npc.Name;
             }
 
             if (info.NpcCode is { } unknownCode)
             {
-                return $"NPC {unknownCode}";
+                return info.Kind == EntityKind.Summon ? $"Summon {unknownCode}" : $"NPC {unknownCode}";
             }
         }
 
@@ -269,6 +295,8 @@ public sealed class EntityRegistry
 
         return info?.Kind == EntityKind.Npc ? "Unknown target" : $"#{id}";
     }
+
+    private static bool IsPlaceholder(string name) => string.IsNullOrWhiteSpace(name) || name.Trim('?', ' ').Length == 0;
 
     /// <summary>Like <see cref="DisplayName"/>, but never a bare id: mobs that spawned before capture started are unnamed.</summary>
     public string TargetName(uint id, string fallback = "Unknown target")
@@ -299,6 +327,25 @@ public sealed class EntityRegistry
         }
     }
 
+    /// <summary>Ownership claims for entities not spawned yet; used only if they spawn as summons.</summary>
+    private readonly Dictionary<uint, uint> _claims = new();
+
+    /// <summary>Last player to cast each skill (by name), for crediting summons that spawn without an owner.</summary>
+    private readonly Dictionary<string, (uint Actor, long At)> _recentCasts = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Summons such as a Ranger's Explosion Trap spawn without an owner record, about 0.4 s after their owner
+    /// cast the skill of the same name (6/6 in a dungeon capture). Credit them to that caster.
+    /// </summary>
+    private void CreditToCaster(EntityInfo info, NpcSpawnEvent npc)
+    {
+        if (info.OwnerId is null && npc.NpcCode is { } code && _data.Npcs.TryGetValue(code, out var data) &&
+            _recentCasts.TryGetValue(data.Name, out var cast) && npc.TimestampMs - cast.At is >= 0 and <= 3_000)
+        {
+            info.OwnerId = cast.Actor;
+        }
+    }
+
     private void ApplyNpcSpawn(NpcSpawnEvent npc)
     {
         var info = GetOrAdd(npc.EntityId);
@@ -310,6 +357,12 @@ public sealed class EntityRegistry
             case 0x5F or 0x1C or 0x1D or 0x1F or 0x5D:
                 info.Kind = EntityKind.Summon;
                 info.OwnerName = npc.InlineName ?? info.OwnerName;
+                if (info.OwnerId is null && _claims.Remove(npc.EntityId, out uint claimant))
+                {
+                    info.OwnerId = claimant;
+                }
+
+                CreditToCaster(info, npc);
                 break;
             default:
                 if (info.Kind == EntityKind.Unknown)

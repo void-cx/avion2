@@ -126,7 +126,12 @@ public static class RecordParsers
 
         // Live captures: the class code follows the name directly (e.g. 19 00 00 00 = 25 = Sorcerer).
         var cls = r.TryU32(out uint classCode) ? GameClasses.FromRosterCode(classCode) : GameClass.Unknown;
-        emit(new PlayerSpawnEvent(ts, id, name, null, cls, FindPlayerCombatPower(body)));
+        var position = WorldParsers.FindPosition(body, r.Position, 32);
+        emit(new PlayerSpawnEvent(ts, id, name, null, cls, FindPlayerCombatPower(body), position));
+        if (position is { } p)
+        {
+            emit(new PositionEvent(ts, id, p, null, PositionSource.Spawn));
+        }
         return true;
     }
 
@@ -173,7 +178,15 @@ public static class RecordParsers
             maxHp = FindMaxHp(body, scanFrom + marker + 3);
         }
 
-        emit(new NpcSpawnEvent(ts, id, (byte)(mask & 0xFF), npcCode, maxHp, inlineName));
+        // Position: 9 bytes after the id for plain NPCs (checked against their movement tracks); after the name otherwise.
+        var position = inlineName is null ? WorldParsers.FindPosition(body, afterId + 9, 1) : null;
+        position ??= WorldParsers.FindPosition(body, inlineName is null ? afterId + 9 : scanFrom, 40);
+        emit(new NpcSpawnEvent(ts, id, (byte)(mask & 0xFF), npcCode, maxHp, inlineName, position));
+        if (position is { } p)
+        {
+            emit(new PositionEvent(ts, id, p, null, PositionSource.Spawn));
+        }
+
         return true;
     }
 
@@ -256,6 +269,70 @@ public static class RecordParsers
         }
 
         emit(new HpUpdateEvent(ts, id, hp, MaxHp: 0));
+        return true;
+    }
+
+    /// <summary>
+    /// <c>01 91</c> field boss table: <c>00 00, map u32, count u8</c>, then per boss
+    /// <c>state u8, spawn code varint, [state 1: x f32, y f32, z f32], [0–1 extra byte], timestamp u64 ms</c>.
+    /// Alive bosses carry their spawn time, dead ones their respawn time (verified on live captures).
+    /// </summary>
+    public static bool ParseFieldBossTable(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryU16(out ushort zero) || zero != 0 || !r.TryU32(out uint mapId) || !r.TryU8(out byte count) || count == 0)
+        {
+            return false;
+        }
+
+        var entries = new List<FieldBossEntry>(count);
+        for (int i = 0; i < count; i++)
+        {
+            if (!r.TryU8(out byte state) || state > 1 || !r.TryVarint(out uint code))
+            {
+                break;
+            }
+
+            float? x = null, y = null, z = null;
+            if (state == 1)
+            {
+                if (r.Remaining < 12)
+                {
+                    break;
+                }
+
+                x = System.Buffers.Binary.BinaryPrimitives.ReadSingleLittleEndian(r.Rest);
+                y = System.Buffers.Binary.BinaryPrimitives.ReadSingleLittleEndian(r.Rest[4..]);
+                z = System.Buffers.Binary.BinaryPrimitives.ReadSingleLittleEndian(r.Rest[8..]);
+                r.Position += 12;
+            }
+
+            // Some entries carry one extra byte before the timestamp; accept the first plausible epoch-ms value.
+            long? when = null;
+            for (int skip = 0; skip <= 2 && when is null; skip++)
+            {
+                var probe = new SpanReader(r.Data, r.Position + skip);
+                if (probe.TryI64(out long value) && value is > 1_600_000_000_000 and < 2_500_000_000_000)
+                {
+                    when = value;
+                    r.Position += skip + 8;
+                }
+            }
+
+            if (when is null)
+            {
+                break;
+            }
+
+            entries.Add(new FieldBossEntry(code, state == 1, when.Value, x, y, z));
+        }
+
+        if (entries.Count == 0)
+        {
+            return false;
+        }
+
+        emit(new FieldBossTableEvent(ts, mapId, entries));
         return true;
     }
 

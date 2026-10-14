@@ -10,7 +10,7 @@
         </Grid.ColumnDefinitions>
 
         <DockPanel>
-            <TextBlock DockPanel.Dock="Top" Text="Fight History" Style="{StaticResource AionHeading}" FontSize="28" />
+            <TextBlock DockPanel.Dock="Top" Text="Fight History" Style="{DynamicResource CardHeading}" FontSize="28" />
             <TextBlock x:Name="Hint" DockPanel.Dock="Top" Opacity="0.7" FontSize="11" Margin="0,2,0,8" TextWrapping="Wrap" />
             <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
                 <Button Content="Copy summary" Margin="0,0,6,0" Click="Copy_Click" IsEnabled="{Binding SelectedItem, ElementName=Grid, Converter={StaticResource NotNull}}"
@@ -18,7 +18,7 @@
                 <Button Content="Delete" Margin="0,0,6,0" Click="Delete_Click" IsEnabled="{Binding SelectedItem, ElementName=Grid, Converter={StaticResource NotNull}}" />
                 <Button Content="Open folder" Click="Folder_Click" />
             </WrapPanel>
-            <DataGrid x:Name="Grid" Background="#E6161A21" BorderBrush="#2E3642" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="None"
+            <DataGrid x:Name="Grid" Background="{DynamicResource GridBackgroundBrush}" BorderBrush="{DynamicResource GridBorderBrush}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="None"
                       SelectionMode="Single" RowHeight="28" SelectionChanged="Grid_SelectionChanged">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="When" Binding="{Binding When}" SortMemberPath="StartedAtMs" Width="112" />
@@ -31,7 +31,7 @@
 
         <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch" Background="Transparent" />
 
-        <Border Grid.Column="2" Margin="8,0,0,0" Style="{StaticResource ArmoryPanel}">
+        <Border Grid.Column="2" Margin="8,0,0,0" Style="{DynamicResource Panel}">
         <Grid>
             <TextBlock x:Name="Empty" Text="Select a fight to see its details." Opacity="0.6"
                        HorizontalAlignment="Center" VerticalAlignment="Center" />

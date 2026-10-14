@@ -287,8 +287,9 @@ public class RecordParserTests
     [Fact]
     public void ParsesLiveNpcSpawn()
     {
-        var npc = Assert.IsType<NpcSpawnEvent>(Assert.Single(Parse(
-            "4136 a0ea03042000110e20000002ba672f47912cd047000ab8460e5b9d43cbdf0194a70794a707640000006400000000000000000000000000000000000000640000006400000001000000000000000000000000000000000000000600010021000000acb6a39c00")));
+        var npc = Assert.Single(Parse(
+            "4136 a0ea03042000110e20000002ba672f47912cd047000ab8460e5b9d43cbdf0194a70794a707640000006400000000000000000000000000000000000000640000006400000001000000000000000000000000000000000000000600010021000000acb6a39c00")
+            .OfType<NpcSpawnEvent>());
         Assert.Equal(62752u, npc.EntityId);
         Assert.Equal(2100753u, npc.NpcCode); // Highland Odyle Sparkie
         Assert.Equal(119700u, npc.MaxHp);

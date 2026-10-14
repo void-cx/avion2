@@ -11,14 +11,9 @@ public partial class App : Application
         base.OnStartup(e);
         string[] args = e.Args;
         var state = new AppState(ParseArgs(args));
+        ThemeManager.Apply(Get(args, "theme") ?? state.Stored.Theme); // --theme previews without saving
         var home = new HomeWindow(state);
         MainWindow = home;
-
-        // Official class icons are fetched once into %AppData% (never bundled); drawn emblems until then.
-        if (!ClassIconDownloader.AllPresent)
-        {
-            _ = ClassIconDownloader.DownloadAsync();
-        }
 
         var tab = Get(args, "tab") is { } t && Enum.TryParse<OverlayTab>(t, ignoreCase: true, out var parsed) ? parsed : OverlayTab.Damage;
         if (Get(args, "render-shots") is { } shots)

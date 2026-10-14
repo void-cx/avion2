@@ -2,13 +2,11 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.Resources>
-        <Style x:Key="Section" TargetType="Border" BasedOn="{StaticResource ArmoryPanel}">
-            <Setter Property="Margin" Value="0,0,0,12" />
-        </Style>
         <Style x:Key="Heading" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource AionDisplayFont}" />
+            <Setter Property="FontFamily" Value="{DynamicResource DisplayFont}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="FontSize" Value="16" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Foreground" Value="{DynamicResource TitleBrush}" />
             <Setter Property="Margin" Value="0,0,0,10" />
         </Style>
         <Style x:Key="Hint" TargetType="TextBlock">
@@ -21,10 +19,10 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="16" MaxWidth="720" HorizontalAlignment="Left">
-            <TextBlock Text="Settings" Style="{StaticResource AionHeading}" FontSize="28" Margin="0,0,0,16" />
+            <TextBlock Text="Settings" Style="{DynamicResource CardHeading}" FontSize="28" Margin="0,0,0,16" />
 
             <!-- General -->
-            <Border Style="{StaticResource Section}">
+            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="General" Style="{StaticResource Heading}" />
                     <CheckBox Content="Start the meter automatically when AVION2 opens" IsChecked="{Binding AutoStart}" />
@@ -32,7 +30,7 @@
             </Border>
 
             <!-- Timers -->
-            <Border Style="{StaticResource Section}">
+            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Timers &amp; notifications" Style="{StaticResource Heading}" />
                     <DockPanel>
@@ -48,24 +46,46 @@
                     <WrapPanel Margin="150,8,0,0">
                         <CheckBox Content="Spacetime Rifts" IsChecked="{Binding NotifyRift}" Margin="0,0,16,4" />
                         <CheckBox Content="Beritra Air Raid" IsChecked="{Binding NotifyBossRaid}" Margin="0,0,16,4" />
+                        <CheckBox Content="Field boss respawns" IsChecked="{Binding NotifyFieldBoss}" Margin="0,0,16,4" />
+                        <CheckBox Content="Boss skill casts" IsChecked="{Binding NotifyBossCasts}" Margin="0,0,16,4"
+                                  ToolTip="While the meter runs: a notice when a boss starts a named skill (no sound)." />
                         <CheckBox Content="Hourly field events" IsChecked="{Binding NotifyFieldEvents}" Margin="0,0,16,4" />
                         <CheckBox Content="PvP events" IsChecked="{Binding NotifyPvp}" Margin="0,0,16,4" />
                         <CheckBox Content="Resets" IsChecked="{Binding NotifyReset}" Margin="0,0,16,4" />
-                        <CheckBox Content="Play the alert sound" IsChecked="{Binding NotifySound}" Margin="0,0,16,4" />
+                        <CheckBox Content="Play a sound" IsChecked="{Binding NotifySound}" Margin="0,0,16,4" />
                     </WrapPanel>
+                    <DockPanel Margin="0,8,0,0">
+                        <Button DockPanel.Dock="Right" Content="Built-in" Margin="6,0,0,0" Click="DefaultNoticeSound_Click" />
+                        <Button DockPanel.Dock="Right" Content="Browse…" Margin="6,0,0,0" Click="BrowseNoticeSound_Click" />
+                        <Button DockPanel.Dock="Right" Content="▶ Test" Margin="6,0,0,0" Click="TestNoticeSound_Click" />
+                        <TextBlock Text="Notification sound" Width="150" VerticalAlignment="Center" />
+                        <TextBlock x:Name="NoticeSoundName" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    </DockPanel>
+                    <DockPanel Margin="0,8,0,0">
+                        <TextBlock DockPanel.Dock="Right" Width="44" TextAlignment="Right" VerticalAlignment="Center"
+                                   Text="{Binding NoticeVolume, StringFormat={}{0:P0}}" />
+                        <TextBlock Text="Notification volume" Width="150" VerticalAlignment="Center" />
+                        <Slider Minimum="0" Maximum="1" Value="{Binding NoticeVolume}" SmallChange="0.05" LargeChange="0.1"
+                                TickFrequency="0.05" IsSnapToTickEnabled="True" />
+                    </DockPanel>
                     <StackPanel Orientation="Horizontal" Margin="150,6,0,0">
                         <Button Content="Show a test notification" Margin="0,0,6,0" Click="TestNotification_Click" />
                         <Button Content="Move notification area" Click="MoveNotifications_Click" />
                     </StackPanel>
                     <TextBlock Style="{StaticResource Hint}"
-                               Text="Notices appear in their own transparent, click-through area on top of the game; place it with &quot;Move notification area&quot;. Timetable from aion2hub.com (Global client of 2026-09-19); field boss timers come later." />
+                               Text="Notices appear in their own transparent, click-through area on top of the game; place it with &quot;Move notification area&quot;. Timetable from aion2hub.com (Global client of 2026-09-19). Field boss respawns come from the game itself (for the maps you visited with the meter running)." />
                 </StackPanel>
             </Border>
 
             <!-- Appearance -->
-            <Border Style="{StaticResource Section}">
+            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Appearance" Style="{StaticResource Heading}" />
+                    <DockPanel Margin="0,0,0,8">
+                        <TextBlock Text="Theme" Width="150" VerticalAlignment="Center" />
+                        <ComboBox x:Name="ThemeBox" Width="180" HorizontalAlignment="Left" />
+                        <TextBlock x:Name="ThemeHint" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.7" FontSize="11" TextWrapping="Wrap" />
+                    </DockPanel>
                     <DockPanel>
                         <Button DockPanel.Dock="Right" Content="None" Margin="6,0,0,0" Click="NoVideo_Click" />
                         <Button DockPanel.Dock="Right" Content="Default" Margin="6,0,0,0" Click="DefaultVideo_Click" />
@@ -75,7 +95,6 @@
                     </DockPanel>
                     <DockPanel Margin="0,8,0,0">
                         <Button DockPanel.Dock="Right" Content="Open folder" Margin="6,0,0,0" Click="ClassIcons_Click" />
-                        <Button x:Name="IconButton" DockPanel.Dock="Right" Content="Download official icons" Margin="6,0,0,0" Click="DownloadIcons_Click" />
                         <TextBlock Text="Class icons" Width="150" VerticalAlignment="Center" />
                         <TextBlock x:Name="IconStatus" TextWrapping="Wrap" Opacity="0.85" VerticalAlignment="Center" />
                     </DockPanel>
@@ -85,7 +104,7 @@
             </Border>
 
             <!-- Overlay -->
-            <Border Style="{StaticResource Section}">
+            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Overlay" Style="{StaticResource Heading}" />
                     <DockPanel>
@@ -102,7 +121,7 @@
             </Border>
 
             <!-- Low HP alert -->
-            <Border Style="{StaticResource Section}">
+            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Low-HP alert" Style="{StaticResource Heading}" />
                     <CheckBox Content="Play a sound and flash the overlay when my HP is low" IsChecked="{Binding LowHpAlert}" />
@@ -124,7 +143,7 @@
                         <Button DockPanel.Dock="Right" Content="Built-in" Margin="6,0,0,0" Click="DefaultSound_Click" />
                         <Button DockPanel.Dock="Right" Content="Browse…" Margin="6,0,0,0" Click="BrowseSound_Click" />
                         <Button DockPanel.Dock="Right" Content="▶ Test" Margin="6,0,0,0" Click="TestSound_Click" />
-                        <TextBlock Text="Sound" Width="150" VerticalAlignment="Center" />
+                        <TextBlock Text="Alert sound" Width="150" VerticalAlignment="Center" />
                         <TextBlock x:Name="SoundName" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                     </DockPanel>
                     <TextBlock Style="{StaticResource Hint}"
@@ -133,22 +152,21 @@
             </Border>
 
             <!-- Game data -->
-            <Border Style="{StaticResource Section}">
+            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Skill and NPC names" Style="{StaticResource Heading}" />
                     <TextBlock x:Name="DataStatus" TextWrapping="Wrap" />
                     <DockPanel Margin="0,8,0,0">
-                        <Button x:Name="ImportButton" DockPanel.Dock="Right" Content="Download / update" Margin="6,0,0,0" Click="Import_Click" />
                         <TextBlock Text="Language" Width="150" VerticalAlignment="Center" />
                         <ComboBox x:Name="LanguageBox" Width="120" HorizontalAlignment="Left" />
                     </DockPanel>
                     <TextBlock Style="{StaticResource Hint}"
-                               Text="Names are NCSoft game data, taken from the A2Tools project (GPL-3.0). They are stored locally only. Re-run after game patches." />
+                               Text="Built into the app: names from the A2Tools project (GPL-3.0), field bosses from NOIA2 (GPL-3.0); see licenses\ next to the exe. Advanced: skills.json / npcs.json / field_bosses.json / maps.json in %AppData%\AVION2\data override single tables." />
                 </StackPanel>
             </Border>
 
             <!-- History -->
-            <Border Style="{StaticResource Section}">
+            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Fight history" Style="{StaticResource Heading}" />
                     <DockPanel>
@@ -161,7 +179,7 @@
             </Border>
 
             <!-- Hotkeys -->
-            <Border Style="{StaticResource Section}">
+            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Hotkeys" Style="{StaticResource Heading}" />
                     <Grid>

@@ -39,6 +39,9 @@ public sealed record MeterRow(
     public int FrontHits { get; init; }
     public uint? CombatPower { get; init; }
 
+    /// <summary>The player's legion, if the game told us.</summary>
+    public string? Legion { get; init; }
+
     public double FrontRate => Hits == 0 ? 0 : (double)FrontHits / Hits;
 
     public double DoubleRate => Hits == 0 ? 0 : (double)Doubles / Hits;
@@ -122,6 +125,15 @@ public static class MeterView
             foreach (var (actorId, stats) in target.Actors)
             {
                 uint owner = registry.ResolveOwner(actorId);
+                if (owner != self && registry.Find(owner) is { } info &&
+                    (info.Kind == EntityKind.Npc || (info.Kind == EntityKind.Summon && info.OwnerId is null && info.OwnerName is null)))
+                {
+                    // Rows are players. Monsters (a boss hitting its own adds, dungeon NPCs) and summons/effects nobody
+                    // owns (boss mechanics, other players' unlinked spirits) are left out; linked summons resolved to
+                    // their owner above.
+                    continue;
+                }
+
                 if (!merged.TryGetValue(owner, out var row))
                 {
                     row = new ActorStats(owner);
@@ -238,6 +250,7 @@ public static class MeterView
                 MultiHits = actor.MultiHits,
                 FrontHits = actor.FrontHits,
                 CombatPower = info?.CombatPower,
+                Legion = info?.Legion,
             });
         }
 

@@ -28,6 +28,12 @@ public sealed class OverlaySettings
     /// <summary>Server region for the rift/event timetable.</summary>
     public Avion2.Analysis.ServerRegion Region { get; set; } = Avion2.Analysis.ServerRegion.Europe;
 
+    /// <summary>App theme id (<see cref="ThemeManager.Themes"/>): "aion2" or "void".</summary>
+    public string Theme { get; set; } = "aion2";
+
+    /// <summary>Language of the built-in skill/NPC/map names.</summary>
+    public string DataLanguage { get; set; } = "en";
+
     /// <summary>Minutes before an event to notify.</summary>
     public int NotifyLeadMinutes { get; set; } = 5;
 
@@ -36,7 +42,17 @@ public sealed class OverlaySettings
     public bool NotifyFieldEvents { get; set; }
     public bool NotifyPvp { get; set; } = true;
     public bool NotifyReset { get; set; }
+    public bool NotifyFieldBoss { get; set; } = true;
+
+    /// <summary>Show the skill a boss starts casting (named skills only).</summary>
+    public bool NotifyBossCasts { get; set; } = true;
     public bool NotifySound { get; set; } = true;
+
+    /// <summary>Optional custom .wav/.mp3 for notifications; empty = built-in bell.</summary>
+    public string? NoticeSound { get; set; }
+
+    /// <summary>0..1, independent of the low-HP alert.</summary>
+    public double NoticeVolume { get; set; } = 0.5;
 
     /// <summary>Position of the free-floating notification area; null = top centre.</summary>
     public double? NoticeLeft { get; set; }

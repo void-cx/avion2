@@ -15,14 +15,14 @@ public partial class DetailWindow : Window
         _engine = engine;
         _scope = scope;
         InitializeComponent();
-        AionTheme.Apply(this);
+        ThemeManager.Attach(this);
         View.CanPin = true;
         View.PinChanged += pinned => Topmost = pinned;
     }
 
     public void Open(uint? actorId, int tabIndex)
     {
-        View.ShowLive(() => _engine.Snapshot(_scope()), () => _engine.Status().InCombat, actorId, tabIndex);
+        View.ShowLive(() => _engine.Snapshot(_scope()), () => _engine.Status().InCombat, actorId, tabIndex, _engine.LiveTrace);
         if (!IsVisible)
         {
             Show();

@@ -17,6 +17,7 @@ public enum ScheduleCategory
     FieldEvent,
     Pvp,
     Reset,
+    FieldBoss,
 }
 
 /// <summary>A recurring in-game event. Times are server-local (see <see cref="GameSchedule.ServerOffset"/>).</summary>

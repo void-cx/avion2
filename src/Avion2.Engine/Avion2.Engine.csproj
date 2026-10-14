@@ -1,11 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Avion2.Capture\Avion2.Capture.csproj" />
     <ProjectReference Include="..\Avion2.Analysis\Avion2.Analysis.csproj" />
   </ItemGroup>
 
-  <PropertyGroup>
-  </PropertyGroup>
+  <!-- Name tables shipped inside the binary (see assets/gamedata/PROVENANCE.md); no downloads at runtime. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\assets\gamedata\skills\*.json" LogicalName="gamedata/skills/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\assets\gamedata\npcs\*.json" LogicalName="gamedata/npcs/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\assets\gamedata\maps\*.json" LogicalName="gamedata/maps/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\assets\gamedata\field_bosses.json" LogicalName="gamedata/field_bosses.json" />
+  </ItemGroup>
 
 </Project>

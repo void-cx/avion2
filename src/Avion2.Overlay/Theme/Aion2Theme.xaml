@@ -1,0 +1,313 @@
+<!--
+    Theme "AION2" (inspired by the official site and the in-game armory): night-navy backdrops, aether-cyan glow,
+    violet secondary, silver serif display type, pill buttons with diamond end caps, thin glowing card borders
+    with a star ornament.
+
+    Every theme defines the same keys (see Theme/README.md); views use them as DynamicResource so the theme can be
+    switched while the app runs.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Type -->
+    <FontFamily x:Key="DisplayFont">pack://application:,,,/AVION2;component/Fonts/#Cinzel, Palatino Linotype, Georgia, Serif</FontFamily>
+    <FontFamily x:Key="BodyFont">Segoe UI</FontFamily>
+    <FontFamily x:Key="MonoFont">Consolas</FontFamily>
+
+    <!-- Text -->
+    <SolidColorBrush x:Key="TextBrush" Color="#F2F4F8" />
+    <SolidColorBrush x:Key="TitleBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#C9D7E4" />
+    <SolidColorBrush x:Key="MutedBrush" Color="#8FA3B8" />
+    <SolidColorBrush x:Key="ChipTextBrush" Color="#B8C8D8" />
+    <SolidColorBrush x:Key="HighlightBrush" Color="#D9C08A" />
+    <SolidColorBrush x:Key="SelfBrush" Color="#7FD8FF" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#E8B04B" />
+    <SolidColorBrush x:Key="EyebrowBrush" Color="#CFEFFF" />
+
+    <!-- Status dots -->
+    <SolidColorBrush x:Key="LiveBrush" Color="#4ADE80" />
+    <SolidColorBrush x:Key="WarnBrush" Color="#F59E0B" />
+    <SolidColorBrush x:Key="IdleBrush" Color="#6B7280" />
+
+    <!-- Surfaces -->
+    <SolidColorBrush x:Key="BackdropBrush" Color="#070D18" />
+    <SolidColorBrush x:Key="DimBrush" Color="#070D18" />
+    <SolidColorBrush x:Key="HairlineBrush" Color="#1FFFFFFF" />
+    <SolidColorBrush x:Key="HoverBrush" Color="#1A7FD8FF" />
+    <SolidColorBrush x:Key="RowHoverBrush" Color="#1FFFFFFF" />
+    <SolidColorBrush x:Key="TileBackgroundBrush" Color="#CC1B2028" />
+    <SolidColorBrush x:Key="TileBorderBrush" Color="#2E3642" />
+    <SolidColorBrush x:Key="GridBackgroundBrush" Color="#E6161A21" />
+    <SolidColorBrush x:Key="GridBorderBrush" Color="#2E3642" />
+    <SolidColorBrush x:Key="SourceChipBackground" Color="#2660A5FA" />
+    <SolidColorBrush x:Key="SourceChipText" Color="#93C5FD" />
+
+    <!-- Divider: hairline fading out at both ends -->
+    <LinearGradientBrush x:Key="DividerBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#007FD8FF" Offset="0" />
+        <GradientStop Color="#AA9FDFFF" Offset="0.5" />
+        <GradientStop Color="#007FD8FF" Offset="1" />
+    </LinearGradientBrush>
+
+    <!-- Top navigation -->
+    <LinearGradientBrush x:Key="NavBarBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#CC050A13" Offset="0" />
+        <GradientStop Color="#80050A13" Offset="1" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="NavTextBrush" Color="#D6E2EE" />
+    <SolidColorBrush x:Key="StatusPillBackground" Color="#99050A13" />
+    <SolidColorBrush x:Key="StatusPillBorder" Color="#334A6E91" />
+
+    <!-- Glow -->
+    <DropShadowEffect x:Key="Glow" Color="#7FD8FF" BlurRadius="18" ShadowDepth="0" Opacity="0.75" />
+    <DropShadowEffect x:Key="SoftGlow" Color="#7FD8FF" BlurRadius="10" ShadowDepth="0" Opacity="0.45" />
+    <DropShadowEffect x:Key="IconGlow" Color="#D9C08A" BlurRadius="6" ShadowDepth="0" Opacity="0.55" />
+    <DropShadowEffect x:Key="PillGlow" Color="#7FD8FF" BlurRadius="16" ShadowDepth="0" Opacity="0.55" />
+    <DropShadowEffect x:Key="PillGlowHover" Color="#9ADFFF" BlurRadius="26" ShadowDepth="0" Opacity="0.95" />
+
+    <!-- Overlay -->
+    <LinearGradientBrush x:Key="OverlayBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#142A44" Offset="0" />
+        <GradientStop Color="#0A1626" Offset="0.35" />
+        <GradientStop Color="#070D18" Offset="1" />
+    </LinearGradientBrush>
+    <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
+    <SolidColorBrush x:Key="OverlayCardBrush" Color="#1AFFFFFF" />
+    <SolidColorBrush x:Key="OverlayCardBorderBrush" Color="#14FFFFFF" />
+    <SolidColorBrush x:Key="OverlaySelfBrush" Color="#267FD8FF" />
+    <SolidColorBrush x:Key="OverlaySelfBorderBrush" Color="#807FD8FF" />
+    <SolidColorBrush x:Key="StatTextBrush" Color="#9FB2C4" />
+    <SolidColorBrush x:Key="TimerBoxBackground" Color="#80050A13" />
+    <SolidColorBrush x:Key="TimerBoxBorder" Color="#4D7FD8FF" />
+    <SolidColorBrush x:Key="EmblemFillBrush" Color="#CC0B1727" />
+    <SolidColorBrush x:Key="HpTrackBrush" Color="#33FFFFFF" />
+    <LinearGradientBrush x:Key="HpBarBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#B3262B" Offset="0" />
+        <GradientStop Color="#F0584F" Offset="1" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="AlertBorderBrush" Color="#E5484D" />
+
+    <!-- Notifications -->
+    <LinearGradientBrush x:Key="NoticeBackground" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#E6261F10" Offset="0" />
+        <GradientStop Color="#F00A1626" Offset="1" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="NoticeBorderBrush" Color="#E6D9C08A" />
+    <SolidColorBrush x:Key="NoticeChipBrush" Color="#D9C08A" />
+    <DropShadowEffect x:Key="NoticeGlow" Color="#D9C08A" BlurRadius="18" ShadowDepth="0" Opacity="0.45" />
+    <SolidColorBrush x:Key="PlaceholderBackground" Color="#99050A13" />
+    <SolidColorBrush x:Key="PlaceholderStripeBrush" Color="#CC7FD8FF" />
+
+    <!-- Home backdrop (behind the optional key-art video) and the vignette over it -->
+    <ControlTemplate x:Key="BackdropTemplate" TargetType="ContentControl">
+        <Grid>
+            <Rectangle>
+                <Rectangle.Fill>
+                    <RadialGradientBrush Center="0.5,0.35" GradientOrigin="0.5,0.3" RadiusX="0.75" RadiusY="0.9">
+                        <GradientStop Color="#2A6F96" Offset="0" />
+                        <GradientStop Color="#123A55" Offset="0.35" />
+                        <GradientStop Color="#0B1727" Offset="0.75" />
+                        <GradientStop Color="#070D18" Offset="1" />
+                    </RadialGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Ellipse Width="220" Height="220" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,140,0,0" Opacity="0.35">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#9ADFFF" Offset="0" />
+                        <GradientStop Color="#007FD8FF" Offset="1" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Grid>
+    </ControlTemplate>
+    <LinearGradientBrush x:Key="VignetteBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#E6070D18" Offset="0" />
+        <GradientStop Color="#40070D18" Offset="0.18" />
+        <GradientStop Color="#33070D18" Offset="0.45" />
+        <GradientStop Color="#D9070D18" Offset="0.78" />
+        <GradientStop Color="#FA070D18" Offset="1" />
+    </LinearGradientBrush>
+
+    <!-- Brand in the top navigation: star + serif name -->
+    <ControlTemplate x:Key="BrandTemplate" TargetType="ContentControl">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <Path Data="M 10,0 L 12,8 L 20,10 L 12,12 L 10,20 L 8,12 L 0,10 L 8,8 Z" Fill="#EAF7FF" Width="14" Height="14"
+                  Stretch="Uniform" Margin="0,0,10,0" Effect="{StaticResource Glow}" VerticalAlignment="Center" />
+            <TextBlock Text="AVION2" FontFamily="{StaticResource DisplayFont}" FontSize="22" Foreground="White"
+                       Effect="{StaticResource Glow}" VerticalAlignment="Center" />
+        </StackPanel>
+    </ControlTemplate>
+
+    <!-- Hero -->
+    <Style x:Key="HeroEyebrow" TargetType="TextBlock">
+        <Setter Property="Text" Value="◇   ✦   ◇" />
+        <Setter Property="Foreground" Value="#CFEFFF" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Opacity" Value="0.8" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="HeroTitle" TargetType="TextBlock">
+        <Setter Property="Text" Value="YOUR DAMAGE TAKES FLIGHT" />
+        <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+        <Setter Property="FontSize" Value="52" />
+        <Setter Property="Foreground" Value="#E9F1F8" />
+        <Setter Property="Effect" Value="{StaticResource Glow}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="CardHeading" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="Foreground" Value="#E9F1F8" />
+        <Setter Property="Effect" Value="{StaticResource SoftGlow}" />
+    </Style>
+
+    <!-- Card: thin light top edge fading into a dark frame -->
+    <LinearGradientBrush x:Key="CardBorderBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#C8E6FF" Offset="0" />
+        <GradientStop Color="#4A6E91" Offset="0.25" />
+        <GradientStop Color="#1C324A" Offset="1" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="CardBackground" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#D9142A44" Offset="0" />
+        <GradientStop Color="#E60A1626" Offset="1" />
+    </LinearGradientBrush>
+    <Style x:Key="Card" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource CardBackground}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Padding" Value="18,14" />
+    </Style>
+
+    <!-- Panel (inner pages): armory charcoal with a hairline border -->
+    <Style x:Key="Panel" TargetType="Border">
+        <Setter Property="Background" Value="#E6161A21" />
+        <Setter Property="BorderBrush" Value="#2E3642" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="Padding" Value="16,12" />
+    </Style>
+
+    <!-- Four-pointed star ornament (card tops) -->
+    <Style x:Key="Ornament" TargetType="Path">
+        <Setter Property="Data" Value="M 10,0 L 12,8 L 20,10 L 12,12 L 10,20 L 8,12 L 0,10 L 8,8 Z" />
+        <Setter Property="Fill" Value="#EAF7FF" />
+        <Setter Property="Width" Value="16" />
+        <Setter Property="Height" Value="16" />
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="Effect" Value="{StaticResource Glow}" />
+    </Style>
+
+    <!-- Pill button with diamond end caps (official "Play Now" style) -->
+    <ControlTemplate x:Key="PillTemplate" TargetType="Button">
+        <Grid x:Name="Root" MinHeight="44" Cursor="Hand" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Border x:Name="Pill" Grid.ColumnSpan="3" Margin="8,0" CornerRadius="22"
+                    Background="{TemplateBinding Background}" BorderBrush="#E6F6FF" BorderThickness="1.4"
+                    Effect="{StaticResource PillGlow}" />
+            <Border Grid.ColumnSpan="3" Margin="20,3,20,0" Height="14" VerticalAlignment="Top" CornerRadius="10" IsHitTestVisible="False">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#88FFFFFF" Offset="0" />
+                        <GradientStop Color="#00FFFFFF" Offset="1" />
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+            <Path Grid.Column="0" Width="14" Height="14" Margin="0,0,-2,0" Stretch="Uniform" Fill="#F4FBFF"
+                  Data="M 0,5 L 5,0 L 10,5 L 5,10 Z" VerticalAlignment="Center" />
+            <ContentPresenter Grid.Column="1" Margin="26,8" HorizontalAlignment="Center" VerticalAlignment="Center"
+                              TextElement.Foreground="White" TextElement.FontFamily="{StaticResource DisplayFont}"
+                              TextElement.FontSize="17" />
+            <Path Grid.Column="2" Width="14" Height="14" Margin="-2,0,0,0" Stretch="Uniform" Fill="#F4FBFF"
+                  Data="M 0,5 L 5,0 L 10,5 L 5,10 Z" VerticalAlignment="Center" />
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Pill" Property="BorderBrush" Value="White" />
+                <Setter TargetName="Pill" Property="Effect" Value="{StaticResource PillGlowHover}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="Root" Property="Opacity" Value="0.85" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Root" Property="Opacity" Value="0.45" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="PrimaryButton" TargetType="Button">
+        <Setter Property="Template" Value="{StaticResource PillTemplate}" />
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#9ADFFF" Offset="0" />
+                    <GradientStop Color="#3E8CF0" Offset="0.35" />
+                    <GradientStop Color="#2F6FE0" Offset="0.65" />
+                    <GradientStop Color="#9ADFFF" Offset="1" />
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="SecondaryButton" TargetType="Button">
+        <Setter Property="Template" Value="{StaticResource PillTemplate}" />
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#D2C4FF" Offset="0" />
+                    <GradientStop Color="#8F6CFF" Offset="0.35" />
+                    <GradientStop Color="#6A4CFF" Offset="0.65" />
+                    <GradientStop Color="#D2C4FF" Offset="1" />
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Small label chip -->
+    <Style x:Key="Chip" TargetType="Border">
+        <Setter Property="Background" Value="#CC0A111C" />
+        <Setter Property="BorderBrush" Value="#33FFFFFF" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="Padding" Value="7,2" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+    </Style>
+
+    <!-- Top navigation link: glowing aether underline when active -->
+    <Style x:Key="NavLink" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="#D6E2EE" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Margin" Value="0,0,26,0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Grid Background="Transparent">
+                        <ContentPresenter x:Name="Text" Margin="0,8" VerticalAlignment="Center" />
+                        <Border x:Name="Line" Height="2" VerticalAlignment="Bottom" Background="#7FD8FF" Opacity="0" CornerRadius="1">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#7FD8FF" BlurRadius="8" ShadowDepth="0" />
+                            </Border.Effect>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Line" Property="Opacity" Value="1" />
+                            <Setter Property="Foreground" Value="White" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="White" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

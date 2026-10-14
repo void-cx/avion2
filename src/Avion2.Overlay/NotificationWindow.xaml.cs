@@ -38,6 +38,7 @@ public partial class NotificationWindow : Window
     {
         _state = state;
         InitializeComponent();
+        ThemeManager.Attach(this);
         Notices.ItemsSource = _notices;
         PlaceWindow();
         _animate.Tick += (_, _) => Animate();

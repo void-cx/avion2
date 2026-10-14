@@ -132,11 +132,66 @@ Kinds seen live: 4, 5 (mobs), 0x0C (NPC). Prior art says the u32 after the id is
   (9,016 matched the HUD).
 - `21 8D` ✅ combat state: `entity varint, 00, 01|00` (entered/left combat). For us it brackets the in-game Combat
   Analysis clock (on ~0.2 s before the first hit, off 3–5 s after the last).
-- `01 91` field-boss table: `00 00, map u32 (e.g. 1010), count u8, then per entry 01, spawn-point u32 (431497…),
-  x/y/z f32, …, u64 ms timestamp`. The timestamps are in the past (last kill?). Boss names and respawn
-  intervals need game data; not used yet.
+- `01 91` ✅ field-boss table of the current map (repeats about once a second on field maps):
+  `00 00, map u32, count u8`, then per boss `state u8, spawn code varint (map × 100 + n, e.g. 101005),
+  [state 1: x f32, y f32, z f32], [0–1 extra byte], timestamp u64 ms`.
+  State 1 = alive (the timestamp is when it spawned); state 0 = dead (the timestamp is the announced respawn).
+  Verified: map 1010 had 24 entries (20 up, 4 dead with respawns 2–6 h ahead). Spawn code → NPC code comes from
+  NOIA2's published table (86 bosses on maps 1010/1110/1011/1111/20/22), built in as assets/gamedata/field_bosses.json.
+  Maps: 1010 Verteron, 1110 Altgard, 1011 Eltnen, 1111 Morheim, 20/22 Chaotic Lower/Middle Reshanta (assets/gamedata/maps).
 - `1B 92`: `actor varint, hp varint, hpMax varint`.
 - Scan: `8D <id varint> 02 01 00 <u32 LE curHP> 00 00 00 00` (NPC; `01 01 01` for local player).
+
+### Movement and positions ✅
+World units are about 1 cm (a melee fix lands 1.2 m from the dummy it hits; running is ~490 units/s), z is up.
+Positions were checked by comparing each record type against the same entity's `1C 37` track (median distance).
+```
+1C 37 move:      entity varint, mode u8 (4; 5 = one more byte follows), x f32, y f32, z f32,
+                 heading u16 (×360/65536), heading u16, 01            ~1/s per moving entity
+1D 37 steer:     entity varint, flags u8, i8 deltas …, heading u16 ×2  10 Hz velocity/steering, no position
+1A 37:           entity varint, 2 bytes, x, y, z                      (73 units from the 1C track)
+1B 37:           entity varint, [05] 03, x, y, z                       (106)
+2F 37 / 3C 37:   entity varint, u8, x, y, z     dash / leap / relocation; 3C is also sent for us (237)
+41 36 NPC spawn: position 9 bytes after the id (88); 45 36 player spawn: after the class code
+```
+**The server does not echo our own movement** (the client sends it, encrypted). Our position comes from
+`2A 38` buff applications (they carry where the entity is), `3C 37`, and spawn/identity records: about one fix
+every 1–3 s in combat. `2B 38` refreshes may repeat an older spot and are not used as fixes.
+
+### Skill casts ✅
+```
+02 38: actor varint, 00, skill u32 (raw), sequence u8, kind u8, target varint, facing f32,
+       [kind 2: target x f32, y f32, z f32], …
+```
+Every entity in range, including buffs and heals that deal no damage (269/278 records name a known skill).
+`06 38` (actor, skill u32, …) follows each cast; its meaning (cooldown/resolution) is open.
+
+### Ownership and legions ✅
+```
+04 8D long:  spawned varint, skill u32, owner varint, server u16, owner name (u8 len), legion (u8 len), …
+             links effects/spirits/summons to their owner; a 23-byte short form carries no owner
+33 8A:       entity varint, ~5–6 bytes, server u16, legion (u8 len), …   legion tag of nearby players
+03 8A:       00 00, legion (u8 len), leader (u8 len), counters, texts (u8/u16 len: introduction, notice, …)
+05 8A:       member entries: server u16, u32, name (u8 len), level u8, …, last login u64 ms
+```
+
+### Dungeons ✅
+- Instances run on **their own server**: entering a dungeon moves the game stream to a new TCP connection
+  (e.g. 193.202.112.231 → 87.232.75.237, both port 13328) and back on leaving. The detector follows both switches.
+- Matchmaking arrives just before: `00 92` / `0D 92` member records (GUID string, server, name, legion), `26`/`27 92`, `1F 93`.
+- **Bodyless packets** (opcode only, e.g. `19 93`, `3F 8D`) occur around the switch; scanning them for embedded
+  bundles used to throw and stopped the meter.
+- A Ranger's **Explosion Trap** spawns as a summon (`41 36` kind 0x5F) without owner name, ~0.4 s after its owner
+  casts the skill of the same name (6/6): credited to that caster.
+- Bosses spawn helper entities (kinds 0x14/0x1C, no owner) that deal damage; they are not player rows.
+
+### Party and group finder (not decoded yet)
+- `01 97`: group finder board (listings with names and recruitment texts, ~6 KB pages).
+- `02 97`: our party; `0B`/`0D 97`: a player joined.
+
+### Other
+- `00 36`: server clock, u64 ms, 20 Hz.
+- `0C 91`: per-map table next to `01 91` (empty in all captures so far).
 
 ### Buffs (abnormals)
 ```

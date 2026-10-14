@@ -202,3 +202,40 @@ public class PipelineTests
         Assert.True(pipeline.Detector.Locked?.IsLoopback);
     }
 }
+
+public class RecorderTests
+{
+    [Fact]
+    public void RecordsOnlyTheGameConnection()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"avion2-rec-{Guid.NewGuid():N}.pcap");
+        try
+        {
+            PacketDissector.TryParse(PacketDissector.DltEthernet, FrameBuilder.Server(1, [1], 0).Data, out var game, out _);
+            var locked = new LockedFlow(0, false, game.Flow, 0);
+            using (var recorder = new PcapRecorder(path))
+            {
+                // Before the lock (buffered), the game and a browser; after it, both directions of the game and the browser again.
+                recorder.Write(FrameBuilder.Server(1, [1, 2, 3], 1_000), null);
+                recorder.Write(Browser(1_100), null);
+                recorder.Write(FrameBuilder.Server(4, [4], 2_000), locked);
+                recorder.Write(new RawFrame(0, PacketDissector.DltEthernet, false, 2_100,
+                    FrameBuilder.Ethernet(FrameBuilder.ClientIp, 50000, FrameBuilder.ServerIp, 13328, 9, [7])), locked);
+                recorder.Write(Browser(2_200), locked);
+                Assert.Equal(3, recorder.Written);
+            }
+
+            var ports = PcapFile.Read(path)
+                .Select(f => PacketDissector.TryParse(f.LinkType, f.Data, out var s, out _) ? s.Flow.Source.Port : 0)
+                .ToList();
+            Assert.Equal([13328, 13328, 50000], ports);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    private static RawFrame Browser(long ts) =>
+        new(0, PacketDissector.DltEthernet, false, ts, FrameBuilder.Ethernet(0x68108A01, 443, FrameBuilder.ClientIp, 51515, 1, [0x17, 0x03, 0x03]));
+}

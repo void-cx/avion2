@@ -32,6 +32,14 @@ public static class PacketParser
                 return RecordParsers.ParsePlayerSpawn(body, timestampMs, emit);
             case Opcodes.NpcSpawn:
                 return RecordParsers.ParseNpcSpawn(body, timestampMs, emit);
+            case Opcodes.Ownership:
+                return WorldParsers.ParseOwnership(body, timestampMs, emit);
+            case Opcodes.LegionTag:
+                return WorldParsers.ParseLegionTag(body, timestampMs, emit);
+            case Opcodes.LegionDetails:
+                return WorldParsers.ParseLegionDetails(body, timestampMs, emit);
+            case Opcodes.LegionRoster:
+                return WorldParsers.ParseLegionRoster(body, timestampMs, emit);
         }
 
         if (scope == ParseScope.IdentityOnly)
@@ -50,6 +58,15 @@ public static class PacketParser
             Opcodes.RemainingHp => RecordParsers.ParseRemainingHp(body, timestampMs, emit),
             Opcodes.OwnStats => RecordParsers.ParseOwnStats(body, timestampMs, emit),
             Opcodes.CombatToggle => RecordParsers.ParseCombatState(body, timestampMs, emit),
+            Opcodes.FieldBossTable => RecordParsers.ParseFieldBossTable(body, timestampMs, emit),
+            Opcodes.SkillCast => WorldParsers.ParseSkillCast(body, timestampMs, emit),
+            Opcodes.ServerClock => WorldParsers.ParseServerClock(body, timestampMs, emit),
+            Opcodes.BuffAdded => WorldParsers.ParseBuff(body, timestampMs, emit, added: true),
+            Opcodes.BuffChanged => WorldParsers.ParseBuff(body, timestampMs, emit, added: false),
+            Opcodes.BuffRemoved => WorldParsers.ParseBuffRemoved(body, timestampMs, emit),
+            Opcodes.Move => WorldParsers.ParseMove(body, timestampMs, emit),
+            Opcodes.MoveRelative or Opcodes.MoveSteer or Opcodes.Dash or Opcodes.Relocate =>
+                WorldParsers.ParsePositionAt(body, timestampMs, emit, opcode),
             _ => false,
         };
     }

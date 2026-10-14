@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Avion2.Engine\Avion2.Engine.csproj" />
@@ -7,8 +7,20 @@
   <ItemGroup>
     <!-- Cinzel display font (SIL Open Font License 1.1, see Fonts/Cinzel-OFL.txt) -->
     <Resource Include="Fonts\Cinzel.ttf" />
+    <!-- VOID theme: Space Grotesk and JetBrains Mono (SIL Open Font License 1.1) and the VOID mark -->
+    <Resource Include="Fonts\SpaceGrotesk-*.ttf" />
+    <Resource Include="Fonts\JetBrainsMono-*.ttf" />
+    <Resource Include="Assets\void-mark.png" />
+    <None Include="Fonts\SpaceGrotesk-OFL.txt" Link="licenses\SpaceGrotesk-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Fonts\JetBrainsMono-OFL.txt" Link="licenses\JetBrainsMono-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
     <Resource Include="Assets\avion2.ico" />
     <None Include="Fonts\Cinzel-OFL.txt" Link="Cinzel-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Official class emblems, built in (assets/gamedata/PROVENANCE.md) -->
+    <Resource Include="..\..\assets\gamedata\classes\*.png" Link="Assets\classes\%(Filename)%(Extension)" />
+    <!-- AVION2's own license, and provenance/licenses of the built-in game data, shipped next to the exe -->
+    <None Include="..\..\LICENSE" Link="licenses\AVION2-LICENSE-GPL-3.0.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\assets\gamedata\PROVENANCE.md" Link="licenses\GAMEDATA-PROVENANCE.md" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\assets\gamedata\licenses\*.txt" Link="licenses\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <PropertyGroup>

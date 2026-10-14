@@ -47,10 +47,20 @@ The **home window** is the app's main window, styled after AION2's own site and 
   - Status cards: Npcap, name tables, and your known characters (with their learned max HP).
   - Your most recent fights.
 - **History**: every saved fight, with the selected fight's full breakdown next to it. Copy summary, delete, open folder.
+- **Fight details** (History, or click a player in the overlay) have five tabs: damage dealt, damage taken,
+  **Timeline** (every skill cast per player over the fight, the target's HP behind), **Buffs** (uptime per buff and
+  debuff) and **Replay** (a top-down replay: positions, attack lines, damage numbers and skill names; play, scrub,
+  zoom). The game doesn't send your own position continuously, so it is filled in from buffs and dashes and drawn
+  dashed where estimated. Fights saved before this version have no timeline or replay.
+- **Legion**: legion tags on player cards; a Home card with your legion's introduction and members by last login.
 - **Settings**:
   - Auto-start, overlay opacity and targets, lock.
-  - Low-HP alert: threshold, volume, custom sound, test.
-  - Skill/NPC names: download or update, with a language choice.
+  - Low-HP alert: threshold, volume, custom sound, test (built-in: urgent warning beeps).
+  - Notifications: their own sound and volume (built-in: a calm bell), so a timer never sounds like low HP.
+  - Boss skill casts: a notice when a boss starts a named skill.
+  - Theme: **AION2** (official site style, key-art video) or **VOID** (Enter The Void design). Switches instantly;
+    see [Theme/README.md](src/Avion2.Overlay/Theme/README.md).
+  - Language of the built-in skill, NPC and zone names.
   - History folder.
 
 While the meter runs, a compact **overlay** sits on top of the game (windowed or borderless mode):
@@ -68,7 +78,8 @@ While the meter runs, a compact **overlay** sits on top of the game (windowed or
 | Hide / show | **Ctrl+Shift+O** |
 | Low-HP alert | Sound + red border below the threshold. Speaker icon: click to mute, scroll for volume |
 | Event notices | Gold notice cards a few minutes before Spacetime Rifts, Beritra raids, PvP events and more, shown in their own transparent, click-through notification area. They appear even when the meter is stopped. Settings → Timers → "Move notification area" to place it |
-| Player cards | Class emblem, combat power, DPS and share, Dbl/Perf/Crit/Front/Back rates. Settings → compact rows for one line per player. The official class emblems are downloaded on first start from NCSoft's armory CDN into `%AppData%\AVION2\classes`; they are not bundled, and drawn emblems are used until they arrive |
+| Field bosses | Home page: which field bosses are up and when the dead ones respawn, for every map you visited with the meter running (the game sends the table of your current map). The board survives restarts. Respawn notices go to the notification area |
+| Player cards | Class emblem, combat power, DPS and share, Dbl/Perf/Crit/Front/Back rates. Settings → compact rows for one line per player. The official class emblems are built in; a PNG in `%AppData%\AVION2\classes` overrides one |
 | Stop the meter | ✕ (the running fight is saved) |
 
 Options: `--start` (start the meter right away), `--record captures/x.pcap`, `--log captures/x.jsonl`,
@@ -152,16 +163,19 @@ On a boss kill, total party damage should land at roughly 97–107% of the boss'
 
 ## Game data
 
-Skill and NPC names are NCSoft game data and are **not** committed. Fetch them into the gitignored
-`data/` folder:
+All game data ships **inside the app**: the exe makes no network requests for names or icons. The tables live in
+[assets/gamedata](assets/gamedata) and are compiled in. They are:
+- skills (9k+) and NPCs (9.7k, with boss and dummy flags) in 10 languages, from
+  [A2Tools](https://github.com/taengu/A2Tools-DPS-Meter);
+- the field boss spawn table from NOIA2;
+- zone names;
+- the official class emblems.
 
-```bash
-dotnet run --project src/Avion2.Cli -- import-data --lang en
-```
+Sources, commits and licenses are listed in [PROVENANCE.md](assets/gamedata/PROVENANCE.md). The license texts are
+also copied next to the published exe (`licenses/`). After a game patch, refresh the files there and rebuild.
 
-This pulls the tables that [A2Tools](https://github.com/taengu/A2Tools-DPS-Meter) extracts from the
-game client: 9k+ skills and 9.7k NPCs with boss and dummy flags, in 10 languages. Re-run it after
-game patches. Without the tables, the meter shows IDs. Format: [data/README.md](data/README.md).
+Optional overrides: `skills.json`, `npcs.json`, `field_bosses.json` and `maps.json` in `%AppData%\AVION2\data`
+(or `--data <dir>`) each replace one built-in table. Format: [data/README.md](data/README.md).
 
 ## Privacy
 
@@ -172,6 +186,16 @@ NCSoft has warned against publishing other players' damage records without conse
 
 Any future sharing feature must be opt-in and limited to your own character unless others consent.
 
+## License
+
+AVION2 is free software under the **GNU General Public License v3.0** (see [LICENSE](LICENSE)); the built-in name
+tables it ships come from GPL-3.0 projects (see below). Copyright © 2026 Maurice Schmitz and the Enter The Void
+community.
+
+AVION2 is a fan-made tool and is not affiliated with or endorsed by NCSoft. AION2, its skill, NPC and zone names and
+the class emblems are NCSoft's; they are included only so the meter can show them. The VOID mark belongs to
+Enter The Void.
+
 ## Prior art and licensing
 
 The protocol notes were compiled from public research by these projects:
@@ -179,8 +203,14 @@ The protocol notes were compiled from public research by these projects:
 - [taengu/A2Tools-DPS-Meter](https://github.com/taengu/A2Tools-DPS-Meter) (GPL-3.0)
 - [ZDYoung0519/NOIA2](https://github.com/ZDYoung0519/NOIA2) (GPL-3.0)
 
-No code was copied from the GPL projects; only protocol facts are used.
+No code was copied from the GPL projects; only protocol facts are used. The built-in name tables come from A2Tools
+and NOIA2 (GPL-3.0); see [assets/gamedata/PROVENANCE.md](assets/gamedata/PROVENANCE.md).
 
-Display font: [Cinzel](https://github.com/NDISCOVER/Cinzel) by the Cinzel Project Authors, bundled under the
-SIL Open Font License 1.1 (`src/Avion2.Overlay/Fonts/Cinzel-OFL.txt`). The app icon is generated by
+Fonts, all bundled under the SIL Open Font License 1.1 (license texts in `src/Avion2.Overlay/Fonts/`, shipped in
+`licenses/`):
+- [Cinzel](https://github.com/NDISCOVER/Cinzel) (AION2 theme);
+- [Space Grotesk](https://github.com/floriankarsten/space-grotesk) and
+  [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono) (VOID theme).
+
+The VOID theme follows the Enter The Void Corporate Design Manual v1.1 and uses the VOID mark. The app icon is generated by
 `tools/make-icon.ps1`.

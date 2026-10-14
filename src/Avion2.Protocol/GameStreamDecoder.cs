@@ -1,5 +1,8 @@
 namespace Avion2.Protocol;
 
+/// <summary>Called when decoding or handling one packet threw; the packet is skipped and decoding goes on.</summary>
+public delegate void PacketErrorHandler(Exception error, ReadOnlySpan<byte> payload, long timestampMs);
+
 /// <summary>Observes every decoded (decompressed) packet payload; for reverse-engineering and dumps.</summary>
 public delegate void PacketObserver(ReadOnlySpan<byte> payload, int bundleDepth, long timestampMs);
 
@@ -14,6 +17,9 @@ public sealed class DecoderStats
     public long ParsedPackets { get; internal set; }
     public long BufferOverflows { get; internal set; }
     public long Resyncs { get; internal set; }
+
+    /// <summary>Packets whose parser or event handler threw (they are skipped; see <see cref="GameStreamDecoder.PacketError"/>).</summary>
+    public long Errors { get; internal set; }
     public Dictionary<ushort, long> OpcodeCounts { get; } = new();
 }
 
@@ -28,6 +34,9 @@ public sealed class GameStreamDecoder
 
     private readonly Action<GameEvent> _emit;
     private readonly PacketObserver? _observer;
+
+    /// <summary>Process-wide hook for packets that threw (the engine logs them). One bad packet must never stop the meter.</summary>
+    public static PacketErrorHandler? PacketError { get; set; }
     private readonly FrameHandler _outerHandler;
     private byte[] _buffer = new byte[64 * 1024];
     private int _count;
@@ -94,12 +103,20 @@ public sealed class GameStreamDecoder
         Stats.OpcodeCounts[opcode] = Stats.OpcodeCounts.GetValueOrDefault(opcode) + 1;
         _observer?.Invoke(payload, depth, _now);
 
-        if (PacketParser.Parse(payload, _now, _emit, scope))
+        try
         {
-            Stats.ParsedPackets++;
-        }
+            if (PacketParser.Parse(payload, _now, _emit, scope))
+            {
+                Stats.ParsedPackets++;
+            }
 
-        ScanEmbeddedBundles(payload, depth);
+            ScanEmbeddedBundles(payload, depth);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            Stats.Errors++;
+            PacketError?.Invoke(ex, payload, _now);
+        }
     }
 
     private void HandleBundle(ReadOnlySpan<byte> payload, int depth, ParseScope scope)
@@ -132,8 +149,10 @@ public sealed class GameStreamDecoder
             return;
         }
 
+        // Bodyless packets (just an opcode, e.g. 19 93 / 3F 8D in dungeons) have nothing to scan; slicing past
+        // their end used to throw, which stopped the whole meter.
         int searchFrom = 3;
-        while (true)
+        while (searchFrom < payload.Length)
         {
             int idx = payload[searchFrom..].IndexOf((byte)0xFF);
             if (idx < 0)

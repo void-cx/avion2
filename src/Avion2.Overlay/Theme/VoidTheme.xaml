@@ -1,0 +1,287 @@
+<!--
+    Theme "VOID" after the Enter The Void Corporate Design Manual v1.1 (October 2026):
+    - Colours: VOID-Violett #B303F8 (primary buttons, glows; hover #9302CC), VOID-Blau #1141E4 (surfaces, graphics,
+      never text on dark), brand gradient 135° violet → blue, Void-Schwarz #07071A as ground; Surface #0F1024 (cards),
+      Raised #171936 (inputs), Line #262947, Ink #F2F3FA, Muted #A3A6C2, violet text #D27BFF, blue text #7C9BFF (live/info).
+    - Type: Space Grotesk (headlines, text, UI), JetBrains Mono (eyebrows, "//" motif). Headlines in sentence case.
+    - Depth through surface steps and violet glow, not shadows. Radii 6 · 10 · 16. Status always with a word;
+      live states in light blue with a dot.
+    - Third-party software keeps its name and is themed with VOID colours, the mark and the favicon (manual p. 11).
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Type -->
+    <FontFamily x:Key="DisplayFont">pack://application:,,,/AVION2;component/Fonts/#Space Grotesk, Segoe UI</FontFamily>
+    <FontFamily x:Key="BodyFont">pack://application:,,,/AVION2;component/Fonts/#Space Grotesk, Segoe UI</FontFamily>
+    <FontFamily x:Key="MonoFont">pack://application:,,,/AVION2;component/Fonts/#JetBrains Mono, Consolas</FontFamily>
+
+    <!-- Palette -->
+    <Color x:Key="VoidViolet">#B303F8</Color>
+    <Color x:Key="VoidBlue">#1141E4</Color>
+    <LinearGradientBrush x:Key="BrandGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#B303F8" Offset="0" />
+        <GradientStop Color="#1141E4" Offset="1" />
+    </LinearGradientBrush>
+
+    <!-- Text -->
+    <SolidColorBrush x:Key="TextBrush" Color="#F2F3FA" />
+    <SolidColorBrush x:Key="TitleBrush" Color="#F2F3FA" />
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#C9CBE0" />
+    <SolidColorBrush x:Key="MutedBrush" Color="#A3A6C2" />
+    <SolidColorBrush x:Key="ChipTextBrush" Color="#A3A6C2" />
+    <SolidColorBrush x:Key="HighlightBrush" Color="#D27BFF" />
+    <SolidColorBrush x:Key="SelfBrush" Color="#7C9BFF" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#B303F8" />
+    <SolidColorBrush x:Key="EyebrowBrush" Color="#D27BFF" />
+
+    <!-- Status dots -->
+    <SolidColorBrush x:Key="LiveBrush" Color="#7C9BFF" />
+    <SolidColorBrush x:Key="WarnBrush" Color="#F2C14E" />
+    <SolidColorBrush x:Key="IdleBrush" Color="#5B5E7A" />
+
+    <!-- Surfaces -->
+    <SolidColorBrush x:Key="BackdropBrush" Color="#07071A" />
+    <SolidColorBrush x:Key="DimBrush" Color="#07071A" />
+    <SolidColorBrush x:Key="HairlineBrush" Color="#262947" />
+    <SolidColorBrush x:Key="HoverBrush" Color="#1FB303F8" />
+    <SolidColorBrush x:Key="RowHoverBrush" Color="#26B303F8" />
+    <SolidColorBrush x:Key="TileBackgroundBrush" Color="#171936" />
+    <SolidColorBrush x:Key="TileBorderBrush" Color="#262947" />
+    <SolidColorBrush x:Key="GridBackgroundBrush" Color="#0F1024" />
+    <SolidColorBrush x:Key="GridBorderBrush" Color="#262947" />
+    <SolidColorBrush x:Key="SourceChipBackground" Color="#331141E4" />
+    <SolidColorBrush x:Key="SourceChipText" Color="#7C9BFF" />
+    <SolidColorBrush x:Key="DividerBrush" Color="#262947" />
+
+    <!-- Top navigation -->
+    <SolidColorBrush x:Key="NavBarBrush" Color="#F20F1024" />
+    <SolidColorBrush x:Key="NavTextBrush" Color="#F2F3FA" />
+    <SolidColorBrush x:Key="StatusPillBackground" Color="#171936" />
+    <SolidColorBrush x:Key="StatusPillBorder" Color="#262947" />
+
+    <!-- Glow: violet only, and only where it carries meaning (brand, primary action, hover) -->
+    <DropShadowEffect x:Key="Glow" Color="#B303F8" BlurRadius="28" ShadowDepth="0" Opacity="0.55" />
+    <x:Null x:Key="SoftGlow" />
+    <x:Null x:Key="IconGlow" />
+    <DropShadowEffect x:Key="CardGlow" Color="#B303F8" BlurRadius="22" ShadowDepth="0" Opacity="0.45" />
+
+    <!-- Overlay -->
+    <LinearGradientBrush x:Key="OverlayBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#0F1024" Offset="0" />
+        <GradientStop Color="#07071A" Offset="1" />
+    </LinearGradientBrush>
+    <CornerRadius x:Key="OverlayCornerRadius">10</CornerRadius>
+    <SolidColorBrush x:Key="OverlayCardBrush" Color="#171936" />
+    <SolidColorBrush x:Key="OverlayCardBorderBrush" Color="#262947" />
+    <SolidColorBrush x:Key="OverlaySelfBrush" Color="#2A1A0A3A" />
+    <SolidColorBrush x:Key="OverlaySelfBorderBrush" Color="#B303F8" />
+    <SolidColorBrush x:Key="StatTextBrush" Color="#A3A6C2" />
+    <SolidColorBrush x:Key="TimerBoxBackground" Color="#171936" />
+    <SolidColorBrush x:Key="TimerBoxBorder" Color="#262947" />
+    <SolidColorBrush x:Key="EmblemFillBrush" Color="#171936" />
+    <SolidColorBrush x:Key="HpTrackBrush" Color="#262947" />
+    <LinearGradientBrush x:Key="HpBarBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#B303F8" Offset="0" />
+        <GradientStop Color="#1141E4" Offset="1" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="AlertBorderBrush" Color="#E5484D" />
+
+    <!-- Notifications: surface card, violet edge + glow (the manual's "Karte · Hover") -->
+    <SolidColorBrush x:Key="NoticeBackground" Color="#F50F1024" />
+    <SolidColorBrush x:Key="NoticeBorderBrush" Color="#B303F8" />
+    <SolidColorBrush x:Key="NoticeChipBrush" Color="#D27BFF" />
+    <DropShadowEffect x:Key="NoticeGlow" Color="#B303F8" BlurRadius="22" ShadowDepth="0" Opacity="0.5" />
+    <SolidColorBrush x:Key="PlaceholderBackground" Color="#CC0F1024" />
+    <SolidColorBrush x:Key="PlaceholderStripeBrush" Color="#B303F8" />
+
+    <!-- Home backdrop: Void-Schwarz, the brand light falling in from the corners, a large "//" as graphic element -->
+    <ControlTemplate x:Key="BackdropTemplate" TargetType="ContentControl">
+        <Grid Background="#07071A" ClipToBounds="True">
+            <Ellipse Width="900" Height="700" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-380,-360,0,0" Opacity="0.40">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#B303F8" Offset="0" />
+                        <GradientStop Color="#00B303F8" Offset="1" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse Width="1000" Height="760" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-420,-420" Opacity="0.38">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#1141E4" Offset="0" />
+                        <GradientStop Color="#001141E4" Offset="1" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <!-- The // motif: two slanted bars in the brand gradient -->
+            <Canvas Width="300" Height="300" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,90,60,0" Opacity="0.10">
+                <Path Fill="{StaticResource BrandGradient}" Data="M 96,0 L 150,0 L 54,300 L 0,300 Z" />
+                <Path Canvas.Left="110" Fill="{StaticResource BrandGradient}" Data="M 96,0 L 150,0 L 54,300 L 0,300 Z" />
+            </Canvas>
+        </Grid>
+    </ControlTemplate>
+    <LinearGradientBrush x:Key="VignetteBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#9907071A" Offset="0" />
+        <GradientStop Color="#0007071A" Offset="0.25" />
+        <GradientStop Color="#0007071A" Offset="0.7" />
+        <GradientStop Color="#CC07071A" Offset="1" />
+    </LinearGradientBrush>
+
+    <!-- Brand in the top navigation: the VOID mark (Bildmarke), the app keeps its own name -->
+    <ControlTemplate x:Key="BrandTemplate" TargetType="ContentControl">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <Image Source="pack://application:,,,/AVION2;component/Assets/void-mark.png" Width="30" Height="30"
+                   RenderOptions.BitmapScalingMode="HighQuality" Margin="0,0,10,0" VerticalAlignment="Center" />
+            <TextBlock Text="AVION2" FontFamily="{StaticResource DisplayFont}" FontWeight="Bold" FontSize="20"
+                       Foreground="#F2F3FA" VerticalAlignment="Center" />
+        </StackPanel>
+    </ControlTemplate>
+
+    <!-- Hero: mono eyebrow with the // motif, sentence-case headline -->
+    <Style x:Key="HeroEyebrow" TargetType="TextBlock">
+        <Setter Property="Text" Value="// Enter The Void · damage meter for AION2" />
+        <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="#D27BFF" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="HeroTitle" TargetType="TextBlock">
+        <Setter Property="Text" Value="Every hit, counted." />
+        <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="56" />
+        <Setter Property="Foreground" Value="#F2F3FA" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="CardHeading" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="19" />
+        <Setter Property="Foreground" Value="#F2F3FA" />
+    </Style>
+
+    <!-- Card: surface + 1 px line at rest, violet edge on hover -->
+    <SolidColorBrush x:Key="CardBorderBrush" Color="#262947" />
+    <SolidColorBrush x:Key="CardBackground" Color="#E60F1024" />
+    <Style x:Key="Card" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource CardBackground}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="Padding" Value="20,16" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="BorderBrush" Value="#B303F8" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="Panel" TargetType="Border">
+        <Setter Property="Background" Value="#0F1024" />
+        <Setter Property="BorderBrush" Value="#262947" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="16,12" />
+    </Style>
+
+    <!-- No ornaments: VOID marks sections with the // eyebrow instead -->
+    <Style x:Key="Ornament" TargetType="Path">
+        <Setter Property="Visibility" Value="Collapsed" />
+    </Style>
+
+    <!-- Primary: violet, white text. One per surface; min. height 44 px; radius 10 -->
+    <Style x:Key="PrimaryButton" TargetType="Button">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="#B303F8" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bg" MinHeight="44" CornerRadius="10" Background="{TemplateBinding Background}" Padding="26,9">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          TextElement.FontFamily="{StaticResource DisplayFont}" TextElement.FontWeight="Bold"
+                                          TextElement.FontSize="16" TextElement.Foreground="White" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bg" Property="Background" Value="#9302CC" />
+                            <Setter TargetName="Bg" Property="Effect" Value="{StaticResource CardGlow}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bg" Property="Opacity" Value="0.85" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bg" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Secondary: outlined, ink text -->
+    <Style x:Key="SecondaryButton" TargetType="Button">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bg" MinHeight="44" CornerRadius="10" Background="Transparent" BorderBrush="#A3A6C2"
+                            BorderThickness="1" Padding="26,9">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          TextElement.FontFamily="{StaticResource DisplayFont}" TextElement.FontWeight="Bold"
+                                          TextElement.FontSize="16" TextElement.Foreground="#F2F3FA" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bg" Property="BorderBrush" Value="#D27BFF" />
+                            <Setter TargetName="Bg" Property="Background" Value="#1FB303F8" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bg" Property="Opacity" Value="0.85" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Chip: raised surface, radius 6 -->
+    <Style x:Key="Chip" TargetType="Border">
+        <Setter Property="Background" Value="#171936" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="8,3" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+    </Style>
+
+    <!-- Navigation: ink text, active = violet text with a violet line -->
+    <Style x:Key="NavLink" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="#C9CBE0" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Margin" Value="0,0,26,0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Grid Background="Transparent">
+                        <ContentPresenter Margin="0,8" VerticalAlignment="Center" />
+                        <Border x:Name="Line" Height="2" VerticalAlignment="Bottom" Background="#B303F8" Opacity="0" CornerRadius="1" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Line" Property="Opacity" Value="1" />
+                            <Setter Property="Foreground" Value="#D27BFF" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="#F2F3FA" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

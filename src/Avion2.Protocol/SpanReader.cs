@@ -85,6 +85,19 @@ public ref struct SpanReader
         return false;
     }
 
+    public bool TryF32(out float value)
+    {
+        value = 0;
+        if (Remaining < 4)
+        {
+            return false;
+        }
+
+        value = BinaryPrimitives.ReadSingleLittleEndian(_data[Position..]);
+        Position += 4;
+        return true;
+    }
+
     public bool TrySkip(int count)
     {
         if (count >= 0 && Remaining >= count)

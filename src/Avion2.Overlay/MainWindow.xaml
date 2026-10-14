@@ -1,7 +1,6 @@
 <Window x:Class="Avion2.Overlay.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Icon="pack://application:,,,/AVION2;component/Assets/avion2.ico"
         Title="AVION2 Overlay"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -11,9 +10,9 @@
         ResizeMode="CanResizeWithGrip"
         MinWidth="260"
         MinHeight="90"
-        FontFamily="Segoe UI"
+        FontFamily="{DynamicResource BodyFont}"
         FontSize="12"
-        Foreground="{StaticResource TextBrush}"
+        Foreground="{DynamicResource TextBrush}"
         UseLayoutRounding="True"
         TextOptions.TextFormattingMode="Display">
     <Window.Resources>
@@ -21,7 +20,7 @@
 
         <!-- Tab header: underlined when active -->
         <Style x:Key="TabButton" TargetType="Button">
-            <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource MutedBrush}" />
             <Setter Property="FontSize" Value="11" />
             <Setter Property="Margin" Value="0,0,12,0" />
             <Setter Property="Cursor" Value="Hand" />
@@ -34,11 +33,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" Value="True">
-                                <Setter TargetName="Line" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-                                <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                <Setter TargetName="Line" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
                             </DataTrigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -47,25 +46,22 @@
         </Style>
     </Window.Resources>
 
-    <Border CornerRadius="8" BorderThickness="1">
+    <Grid>
+    <!-- Background on its own layer: the theme's brush, faded by the opacity setting (Ctrl+wheel) -->
+    <Border CornerRadius="{DynamicResource OverlayCornerRadius}" Background="{DynamicResource OverlayBackgroundBrush}"
+            Opacity="{Binding BackgroundOpacity}" IsHitTestVisible="False" />
+    <Border CornerRadius="{DynamicResource OverlayCornerRadius}" BorderThickness="1" Background="#01000000">
         <Border.Style>
             <Style TargetType="Border">
-                <Setter Property="BorderBrush" Value="{StaticResource AionCardBorderBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding Alerting}" Value="True">
-                        <Setter Property="BorderBrush" Value="#FFE5484D" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource AlertBorderBrush}" />
                         <Setter Property="BorderThickness" Value="3" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
         </Border.Style>
-        <Border.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" Opacity="{Binding BackgroundOpacity}">
-                <GradientStop Color="#142A44" Offset="0" />
-                <GradientStop Color="#0A1626" Offset="0.35" />
-                <GradientStop Color="#070D18" Offset="1" />
-            </LinearGradientBrush>
-        </Border.Background>
 
         <DockPanel>
             <!-- Header: drag to move, Ctrl+wheel for opacity -->
@@ -82,26 +78,34 @@
                 <Ellipse Width="7" Height="7" Margin="10,0,7,0" VerticalAlignment="Center">
                     <Ellipse.Style>
                         <Style TargetType="Ellipse">
-                            <Setter Property="Fill" Value="#6B7280" />
+                            <Setter Property="Fill" Value="{DynamicResource IdleBrush}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Status}" Value="LIVE">
-                                    <Setter Property="Fill" Value="#4ADE80" />
+                                    <Setter Property="Fill" Value="{DynamicResource LiveBrush}" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding Status}" Value="SEARCHING">
-                                    <Setter Property="Fill" Value="#F59E0B" />
+                                    <Setter Property="Fill" Value="{DynamicResource WarnBrush}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Ellipse.Style>
                 </Ellipse>
 
-                <TextBlock Grid.Column="1" Text="{Binding Title}" FontFamily="{StaticResource AionDisplayFont}" FontSize="14"
-                           Foreground="White" Effect="{StaticResource AionSoftGlow}"
-                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                <DockPanel Grid.Column="1" LastChildFill="True">
+                    <Border DockPanel.Dock="Right" Margin="6,0,0,0" Padding="6,1" CornerRadius="3" VerticalAlignment="Center"
+                            Background="#33F59E0B" BorderBrush="#F59E0B" BorderThickness="1"
+                            Visibility="{Binding HasLag, Converter={StaticResource BoolToVis}}"
+                            ToolTip="The game server stopped sending data. Your connection is not the cause if this appears while everything else works.">
+                        <TextBlock Text="{Binding LagText}" FontSize="11" FontWeight="SemiBold" Foreground="#FCD34D" />
+                    </Border>
+                    <TextBlock Text="{Binding Title}" FontFamily="{DynamicResource DisplayFont}" FontSize="14"
+                               Foreground="{DynamicResource TitleBrush}" Effect="{DynamicResource SoftGlow}"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                </DockPanel>
 
                 <Border Grid.Column="2" Margin="8,0,4,0" Padding="8,1" VerticalAlignment="Center" CornerRadius="3"
-                        Background="#80050A13" BorderBrush="#4D7FD8FF" BorderThickness="1">
-                    <TextBlock Text="{Binding Duration}" FontFamily="{StaticResource AionDisplayFont}" FontSize="13" Foreground="White" />
+                        Background="{DynamicResource TimerBoxBackground}" BorderBrush="{DynamicResource TimerBoxBorder}" BorderThickness="1">
+                    <TextBlock Text="{Binding Duration}" FontFamily="{DynamicResource DisplayFont}" FontSize="13" Foreground="{DynamicResource TitleBrush}" />
                 </Border>
 
                 <!-- Buttons appear on hover so the boss name gets the full width during fights -->
@@ -138,16 +142,10 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="5" />
                 </Grid.RowDefinitions>
-                <TextBlock Text="{Binding HpText}" FontSize="10.5" Foreground="#C9D7E4" />
-                <TextBlock Text="{Binding HpPercent}" FontSize="10.5" Foreground="White" FontWeight="SemiBold" HorizontalAlignment="Right" />
-                <Border Grid.Row="1" Margin="0,1,0,0" Background="#33FFFFFF" CornerRadius="2" />
-                <Border Grid.Row="1" Margin="0,1,0,0" CornerRadius="2" RenderTransformOrigin="0,0.5">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                            <GradientStop Color="#B3262B" Offset="0" />
-                            <GradientStop Color="#F0584F" Offset="1" />
-                        </LinearGradientBrush>
-                    </Border.Background>
+                <TextBlock Text="{Binding HpText}" FontSize="10.5" Foreground="{DynamicResource SecondaryTextBrush}" />
+                <TextBlock Text="{Binding HpPercent}" FontSize="10.5" Foreground="{DynamicResource TitleBrush}" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                <Border Grid.Row="1" Margin="0,1,0,0" Background="{DynamicResource HpTrackBrush}" CornerRadius="2" />
+                <Border Grid.Row="1" Margin="0,1,0,0" CornerRadius="2" RenderTransformOrigin="0,0.5" Background="{DynamicResource HpBarBrush}">
                     <Border.RenderTransform>
                         <ScaleTransform ScaleX="{Binding HpRatio}" />
                     </Border.RenderTransform>
@@ -161,13 +159,13 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Footer}" Foreground="{StaticResource MutedBrush}" FontSize="10.5" TextTrimming="CharacterEllipsis" MaxWidth="190" />
-                    <TextBlock Text="{Binding SelfHp}" FontSize="10.5" Margin="8,0,0,0" Foreground="{StaticResource MutedBrush}"
+                    <TextBlock Text="{Binding Footer}" Foreground="{DynamicResource MutedBrush}" FontSize="10.5" TextTrimming="CharacterEllipsis" MaxWidth="190" />
+                    <TextBlock Text="{Binding SelfHp}" FontSize="10.5" Margin="8,0,0,0" Foreground="{DynamicResource MutedBrush}"
                                ToolTip="Your HP (max HP is learned from the highest value seen)" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding PartyLabel}" FontSize="10.5" Foreground="{StaticResource MutedBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding PartyValue}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource AionGoldBrush}" />
+                    <TextBlock Text="{Binding PartyLabel}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding PartyValue}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource HighlightBrush}" />
                 </StackPanel>
             </Grid>
 
@@ -178,15 +176,15 @@
                     <ItemsControl ItemsSource="{Binding Rows}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Margin="0,0,0,4" Padding="6,4,8,0" CornerRadius="4" Background="#1AFFFFFF" BorderThickness="1"
+                                <Border Margin="0,0,0,4" Padding="6,4,8,0" CornerRadius="4" Background="{DynamicResource OverlayCardBrush}" BorderThickness="1"
                                         Cursor="Hand" Tag="{Binding ActorId}" ToolTip="{Binding Detail}" MouseLeftButtonUp="Row_Click">
                                     <Border.Style>
                                         <Style TargetType="Border">
-                                            <Setter Property="BorderBrush" Value="#14FFFFFF" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource OverlayCardBorderBrush}" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsSelf}" Value="True">
-                                                    <Setter Property="BorderBrush" Value="#807FD8FF" />
-                                                    <Setter Property="Background" Value="#267FD8FF" />
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource OverlaySelfBorderBrush}" />
+                                                    <Setter Property="Background" Value="{DynamicResource OverlaySelfBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -215,28 +213,26 @@
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Grid.Style>
-                                                <Ellipse Fill="#CC0B1727" Stroke="{Binding ClassBrush}" StrokeThickness="1.6" />
-                                                <TextBlock Text="{Binding Emblem}" FontFamily="{StaticResource AionDisplayFont}" FontSize="10" Foreground="{Binding ClassBrush}"
+                                                <Ellipse Fill="{DynamicResource EmblemFillBrush}" Stroke="{Binding ClassBrush}" StrokeThickness="1.6" />
+                                                <TextBlock Text="{Binding Emblem}" FontFamily="{DynamicResource DisplayFont}" FontSize="10" Foreground="{Binding ClassBrush}"
                                                            HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" />
                                             </Grid>
                                             <Image Source="{Binding Icon}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"
-                                                   Visibility="{Binding HasIcon, Converter={StaticResource BoolToVis}}">
-                                                <Image.Effect>
-                                                    <DropShadowEffect Color="#D9C08A" BlurRadius="6" ShadowDepth="0" Opacity="0.55" />
-                                                </Image.Effect>
-                                            </Image>
+                                                   Visibility="{Binding HasIcon, Converter={StaticResource BoolToVis}}" Effect="{DynamicResource IconGlow}" />
                                         </Grid>
 
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="White" TextTrimming="CharacterEllipsis" MaxWidth="150" />
-                                            <TextBlock Text="{Binding CombatPower, StringFormat={}⚔ {0}}" FontSize="10.5" Foreground="#8FA3B8" Margin="7,0,0,1" VerticalAlignment="Bottom"
+                                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TitleBrush}" TextTrimming="CharacterEllipsis" MaxWidth="150" />
+                                            <TextBlock Text="{Binding Legion}" FontSize="10.5" Foreground="{DynamicResource HighlightBrush}" Margin="5,0,0,1" VerticalAlignment="Bottom"
+                                                       TextTrimming="CharacterEllipsis" MaxWidth="90" ToolTip="Legion" />
+                                            <TextBlock Text="{Binding CombatPower, StringFormat={}⚔ {0}}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" Margin="7,0,0,1" VerticalAlignment="Bottom"
                                                        Visibility="{Binding HasCombatPower, Converter={StaticResource BoolToVis}}" ToolTip="Combat power" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                                            <TextBlock Text="{Binding Value}" FontSize="16" FontWeight="Bold" Foreground="White" />
-                                            <TextBlock Text="{Binding Share}" FontSize="10.5" Foreground="#8FA3B8" Margin="6,0,0,2" VerticalAlignment="Bottom" MinWidth="36" TextAlignment="Right" />
+                                            <TextBlock Text="{Binding Value}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TitleBrush}" />
+                                            <TextBlock Text="{Binding Share}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" Margin="6,0,0,2" VerticalAlignment="Bottom" MinWidth="36" TextAlignment="Right" />
                                         </StackPanel>
-                                        <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Stats}" FontSize="10.5" Foreground="#9FB2C4"
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Stats}" FontSize="10.5" Foreground="{DynamicResource StatTextBrush}"
                                                    TextTrimming="CharacterEllipsis" Margin="0,1,0,0" />
 
                                         <!-- Share line in class colour -->
@@ -276,7 +272,7 @@
                                         <Grid.Effect>
                                             <DropShadowEffect BlurRadius="2" ShadowDepth="1" Opacity="0.8" Color="Black" />
                                         </Grid.Effect>
-                                        <TextBlock Text="{Binding Rank}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Rank}" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" />
                                         <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
@@ -289,7 +285,7 @@
                                             </TextBlock.Style>
                                         </TextBlock>
                                         <TextBlock Grid.Column="2" Text="{Binding Value}" FontWeight="SemiBold" TextAlignment="Right" VerticalAlignment="Center" />
-                                        <TextBlock Grid.Column="3" Text="{Binding Share}" Foreground="{StaticResource MutedBrush}" TextAlignment="Right" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="3" Text="{Binding Share}" Foreground="{DynamicResource MutedBrush}" TextAlignment="Right" VerticalAlignment="Center" />
                                     </Grid>
                                 </Grid>
                             </DataTemplate>
@@ -299,4 +295,5 @@
             </Grid>
         </DockPanel>
     </Border>
+    </Grid>
 </Window>

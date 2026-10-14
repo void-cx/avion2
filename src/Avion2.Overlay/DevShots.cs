@@ -32,6 +32,7 @@ internal static class DevShots
             if (state.Overlay is { } running)
             {
                 Save(running, Path.Combine(directory, "overlay.png"));
+                _ = state.NoticeSound(); // builds the notification sound (writes notice.wav) without playing it
                 state.Notices.Notify("Spacetime Rift in 5 min (14:00)", "Spacetime Rift");
                 state.Notices.Notify("Beritra Air Raid in 5 min (13:30)", "Boss raid");
                 state.Notices.Left = -20000;
@@ -48,10 +49,30 @@ internal static class DevShots
                     detail.Left = -20000;
                     Pump(TimeSpan.FromMilliseconds(1200));
                     Save(detail, Path.Combine(directory, "detail-live.png"));
+                    foreach (var (tab, name) in new[] { (2, "timeline"), (3, "buffs"), (4, "replay") })
+                    {
+                        detail.View.ViewModel.TabIndex = tab;
+                        Pump(TimeSpan.FromMilliseconds(1300));
+                        if (tab == 4)
+                        {
+                            detail.View.ReplaySlider.Value = detail.View.ReplaySlider.Maximum * 0.6;
+                            detail.View.Replay.Inspect(detail.View.ViewModel.Trace?.SelfId);
+                            Pump(TimeSpan.FromMilliseconds(400));
+                        }
+
+                        Save(detail, Path.Combine(directory, $"detail-{name}.png"));
+                    }
                 }
             }
 
             Shoot(home, "home", directory, "home.png");
+            if (home.CurrentPage.Content is System.Windows.Controls.ScrollViewer scroller)
+            {
+                scroller.ScrollToVerticalOffset(560);
+                Pump(TimeSpan.FromMilliseconds(500));
+                Save(home, Path.Combine(directory, "home-lower.png"));
+                scroller.ScrollToTop();
+            }
             if (state.Fights.FirstOrDefault() is { } fight)
             {
                 home.ShowPage("history", fight);
@@ -59,6 +80,17 @@ internal static class DevShots
 
             Shoot(home, "history", directory, "history.png");
             Shoot(home, "settings", directory, "settings.png");
+
+            // Switch the theme while everything is open: every window must restyle without a restart.
+            var other = ThemeManager.Themes.First(t => t != ThemeManager.Current);
+            ThemeManager.Apply(other.Id);
+            Shoot(home, "home", directory, $"switched-{other.Id}-home.png");
+            Shoot(home, "settings", directory, $"switched-{other.Id}-settings.png");
+            if (state.Overlay is { } switched)
+            {
+                Save(switched, Path.Combine(directory, $"switched-{other.Id}-overlay.png"));
+            }
+
             Application.Current.Shutdown();
         };
         timer.Start();
