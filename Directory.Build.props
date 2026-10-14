@@ -4,6 +4,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
+    <!-- Releases pass -p:Version=1.2.3 (from the git tag); local builds are dev builds and never self-update. -->
+    <Version Condition="'$(Version)' == ''">0.0.0-dev</Version>
   </PropertyGroup>
   <!-- `dotnet publish`: no debug symbols next to the single-file exe -->
   <PropertyGroup Condition="'$(_IsPublishing)' == 'true'">

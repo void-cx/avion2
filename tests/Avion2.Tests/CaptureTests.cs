@@ -137,6 +137,7 @@ public class PipelineTests
     }
 
     [Fact]
+    [Trait("Category", "Npcap")] // needs wpcap.dll (not on CI runners)
     public void RecordsAndReplaysPcapEndToEnd()
     {
         string path = Path.Combine(Path.GetTempPath(), $"avion2-test-{Guid.NewGuid():N}.pcap");
@@ -206,6 +207,7 @@ public class PipelineTests
 public class RecorderTests
 {
     [Fact]
+    [Trait("Category", "Npcap")] // needs wpcap.dll (not on CI runners)
     public void RecordsOnlyTheGameConnection()
     {
         string path = Path.Combine(Path.GetTempPath(), $"avion2-rec-{Guid.NewGuid():N}.pcap");

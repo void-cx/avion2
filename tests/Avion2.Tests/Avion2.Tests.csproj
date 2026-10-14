@@ -20,6 +20,7 @@
     <ProjectReference Include="..\..\src\Avion2.Capture\Avion2.Capture.csproj" />
     <ProjectReference Include="..\..\src\Avion2.Analysis\Avion2.Analysis.csproj" />
     <ProjectReference Include="..\..\src\Avion2.Engine\Avion2.Engine.csproj" />
+    <ProjectReference Include="..\..\src\Avion2.Updater\Avion2.Updater.csproj" />
   </ItemGroup>
 
 </Project>

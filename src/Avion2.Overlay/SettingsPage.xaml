@@ -26,6 +26,13 @@
                 <StackPanel>
                     <TextBlock Text="General" Style="{StaticResource Heading}" />
                     <CheckBox Content="Start the meter automatically when AVION2 opens" IsChecked="{Binding AutoStart}" />
+                    <CheckBox x:Name="UpdateCheckBox" Content="Check for updates when AVION2 starts" Margin="0,8,0,0" />
+                    <DockPanel Margin="0,8,0,0">
+                        <Button x:Name="CheckNowButton" DockPanel.Dock="Right" Content="Check now" Click="CheckNow_Click" />
+                        <TextBlock x:Name="VersionText" VerticalAlignment="Center" TextWrapping="Wrap" />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="One request to the GitHub releases of void-cx/avion2. Nothing is downloaded until you choose &quot;Update now&quot;; AVION2-Updater.exe then installs the release and restarts AVION2." />
                 </StackPanel>
             </Border>
 

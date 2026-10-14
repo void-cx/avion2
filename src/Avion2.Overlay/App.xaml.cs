@@ -16,6 +16,7 @@ public partial class App : Application
         MainWindow = home;
 
         var tab = Get(args, "tab") is { } t && Enum.TryParse<OverlayTab>(t, ignoreCase: true, out var parsed) ? parsed : OverlayTab.Damage;
+        AppState.CleanUpAfterUpdate();
         if (Get(args, "render-shots") is { } shots)
         {
             double delay = double.TryParse(Get(args, "shot-delay"), CultureInfo.InvariantCulture, out double d) ? d : 9;
@@ -24,6 +25,11 @@ public partial class App : Application
         }
 
         home.Show();
+        if (state.Stored.CheckForUpdates && !state.IsReplay)
+        {
+            _ = state.CheckForUpdatesAsync();
+        }
+
         if (state.IsReplay || args.Contains("--start") || state.Settings.AutoStart)
         {
             if (state.StartMeter(tab) is { } error)

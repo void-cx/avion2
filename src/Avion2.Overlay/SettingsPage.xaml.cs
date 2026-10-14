@@ -31,6 +31,13 @@ public partial class SettingsPage : UserControl
                 UpdateStatus();
             }
         };
+        UpdateCheckBox.IsChecked = state.Stored.CheckForUpdates;
+        UpdateCheckBox.Click += (_, _) =>
+        {
+            _state.Stored.CheckForUpdates = UpdateCheckBox.IsChecked == true;
+            _state.SaveSettings();
+        };
+        VersionText.Text = $"Version {Avion2.Engine.UpdateChecker.CurrentVersion}";
         ThemeBox.ItemsSource = ThemeManager.Themes;
         ThemeBox.SelectedItem = ThemeManager.Current;
         ThemeManager.Changed += () =>
@@ -99,6 +106,16 @@ public partial class SettingsPage : UserControl
     }
 
     private void MoveNotifications_Click(object sender, RoutedEventArgs e) => _state.Notices.SetPositioning(true);
+
+    private async void CheckNow_Click(object sender, RoutedEventArgs e)
+    {
+        CheckNowButton.IsEnabled = false;
+        VersionText.Text = "Checking…";
+        string status = await _state.CheckForUpdatesAsync();
+        VersionText.Text = $"Version {Avion2.Engine.UpdateChecker.CurrentVersion} · {status}" +
+                           (_state.AvailableUpdate is not null ? " See the Home page to update." : string.Empty);
+        CheckNowButton.IsEnabled = true;
+    }
 
     private void TestNoticeSound_Click(object sender, RoutedEventArgs e) => _state.NoticeSound().Play();
 

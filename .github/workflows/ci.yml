@@ -1,0 +1,38 @@
+name: CI
+
+# Every push to main and every pull request: build, test, and the portable folder as a download.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        run: dotnet build Avion2.sln -c Release
+
+      # Tests that read/write real .pcap files need Npcap (wpcap.dll), which the runners don't have.
+      - name: Test
+        run: dotnet test tests/Avion2.Tests -c Release --no-build --filter "Category!=Npcap"
+
+      - name: Publish portable build
+        shell: pwsh
+        run: ./tools/publish.ps1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AVION2-${{ github.sha }}
+          path: artifacts/AVION2
+          retention-days: 14

@@ -354,6 +354,97 @@ public sealed class AppState
         Notices.Notify($"{name}: {skill}", "Boss skill");
     }
 
+    /// <summary>A newer release than this build, once found (null: none, not checked, or a dev build).</summary>
+    public ReleaseInfo? AvailableUpdate { get; private set; }
+
+    /// <summary>Raised on the UI thread when <see cref="AvailableUpdate"/> changed.</summary>
+    public event Action? UpdateAvailableChanged;
+
+    /// <summary>Asks GitHub for the latest release. Returns a short status for "Check now".</summary>
+    public async Task<string> CheckForUpdatesAsync()
+    {
+        string current = UpdateChecker.CurrentVersion;
+        if (UpdateChecker.IsDevBuild(current))
+        {
+            return $"This is a development build ({current}); it does not update itself.";
+        }
+
+        var latest = await UpdateChecker.LatestAsync();
+        if (latest is null)
+        {
+            return "Could not reach GitHub (or no release yet).";
+        }
+
+        if (!UpdateChecker.IsNewer(latest, current))
+        {
+            return $"Up to date (v{current}).";
+        }
+
+        AvailableUpdate = latest;
+        UpdateAvailableChanged?.Invoke();
+        return $"{latest.Tag} is available.";
+    }
+
+    /// <summary>
+    /// Hands over to AVION2-Updater.exe (next to this exe) and closes AVION2: the updater waits for us to exit,
+    /// installs the release and restarts AVION2. Returns an error message, or null when the update started.
+    /// </summary>
+    public string? StartUpdate()
+    {
+        if (AvailableUpdate is not { } release)
+        {
+            return "No update available.";
+        }
+
+        string dir = AppContext.BaseDirectory;
+        string updater = Path.Combine(dir, "AVION2-Updater.exe");
+        if (!File.Exists(updater))
+        {
+            return "AVION2-Updater.exe is missing next to AVION2.exe. Download the release from GitHub instead.";
+        }
+
+        SaveSettings();
+        StopMeter();
+        var start = new System.Diagnostics.ProcessStartInfo(updater) { UseShellExecute = false };
+        foreach (string arg in new[] { "--dir", dir.TrimEnd(Path.DirectorySeparatorChar), "--zip", release.ZipUrl, "--version", release.Tag,
+                     "--pid", Environment.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture) })
+        {
+            start.ArgumentList.Add(arg);
+        }
+
+        if (release.ChecksumsUrl is { } sums)
+        {
+            start.ArgumentList.Add("--sums");
+            start.ArgumentList.Add(sums);
+        }
+
+        System.Diagnostics.Process.Start(start);
+        Application.Current.Shutdown();
+        return null;
+    }
+
+    /// <summary>Removes the *.old files an update leaves behind (they were still in use while it ran).</summary>
+    public static void CleanUpAfterUpdate()
+    {
+        try
+        {
+            foreach (string old in Directory.EnumerateFiles(AppContext.BaseDirectory, "*.old", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    File.Delete(old);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // still locked; next start
+                }
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
+
     /// <summary>The trace (timeline, buffs, replay) of a saved fight, from memory if this session saved it.</summary>
     public Avion2.Analysis.FightTrace? LoadTrace(HistoryEntry entry) => Engine?.Trace(entry) ?? History.LoadTrace(entry);
 

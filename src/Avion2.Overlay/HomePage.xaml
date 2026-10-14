@@ -17,6 +17,21 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="32,28,32,32">
+            <!-- Update available -->
+            <Border x:Name="UpdateBanner" Style="{DynamicResource Card}" MaxWidth="984" Margin="8,0,8,8" Visibility="Collapsed">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="What's new" Margin="0,0,8,0" Click="ReleaseNotes_Click" />
+                        <Button Content="Later" Margin="0,0,8,0" Click="UpdateLater_Click" />
+                        <Button x:Name="UpdateNow" Content="Update now" Style="{DynamicResource PrimaryButton}" Click="UpdateNow_Click" />
+                    </StackPanel>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="UpdateTitle" Style="{DynamicResource CardHeading}" FontSize="16" />
+                        <TextBlock x:Name="UpdateDetail" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,2,12,0" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
             <!-- Hero -->
             <TextBlock Style="{DynamicResource HeroEyebrow}" Margin="0,24,0,6" />
             <TextBlock Style="{DynamicResource HeroTitle}" />

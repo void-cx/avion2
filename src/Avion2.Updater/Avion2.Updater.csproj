@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    AVION2-Updater.exe: replaces a portable AVION2 folder with a newer GitHub release, then restarts AVION2.
+    Separate from AVION2.exe because a running program cannot replace itself. Trimmed console app (no WPF), so the
+    self-contained single file stays small.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>AVION2-Updater</AssemblyName>
+    <ApplicationIcon>..\Avion2.Overlay\Assets\avion2.ico</ApplicationIcon>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Avion2.Tests" />
+  </ItemGroup>
+
+</Project>

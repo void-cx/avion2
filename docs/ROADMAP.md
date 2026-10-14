@@ -32,6 +32,8 @@
   (top-down positions, attack lines, damage numbers, skill names; play/scrub/zoom)
 - Legion tags on player cards, legion card on Home (introduction, members by last login)
 - Boss skill cast notices; summons/effects linked to their owner via `04 8D`
+- Server lag: live overlay warning, freeze bands in Timeline/Replay, connection summary per fight
+- CI (build + test on every push) and tagged releases; self-update via AVION2-Updater.exe from GitHub releases
 
 ## Next
 - **Per-target view** (the game's "Metric: <target>"): pick one target instead of "my targets".

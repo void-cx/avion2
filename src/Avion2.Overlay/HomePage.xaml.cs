@@ -42,11 +42,13 @@ public partial class HomePage : UserControl
 
         state.MeterStateChanged += Refresh;
         state.LegionUpdated += RefreshLegion;
+        state.UpdateAvailableChanged += RefreshUpdate;
         state.Fights.CollectionChanged += (_, _) => RefreshRecent();
         _timer.Tick += (_, _) => Refresh();
         Loaded += (_, _) =>
         {
             RefreshLegion();
+            RefreshUpdate();
             Refresh();
             RefreshRecent();
             _timer.Start();
@@ -190,6 +192,42 @@ public partial class HomePage : UserControl
         {
             _openHistory(row);
         }
+    }
+
+    private bool _updateDismissed;
+
+    private void RefreshUpdate()
+    {
+        if (_state.AvailableUpdate is not { } release || _updateDismissed)
+        {
+            UpdateBanner.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        UpdateBanner.Visibility = Visibility.Visible;
+        UpdateTitle.Text = $"AVION2 {release.Tag} is available";
+        string size = release.ZipSize > 0 ? $" · {release.ZipSize / 1_048_576.0:0} MB download" : string.Empty;
+        UpdateDetail.Text = $"You have v{Avion2.Engine.UpdateChecker.CurrentVersion}{size}. Updating closes AVION2, installs the release and starts it again; your settings and fights stay.";
+    }
+
+    private void UpdateNow_Click(object sender, RoutedEventArgs e)
+    {
+        if (_state.StartUpdate() is { } error)
+        {
+            MessageBox.Show(Window.GetWindow(this), error, "AVION2 update", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void UpdateLater_Click(object sender, RoutedEventArgs e)
+    {
+        _updateDismissed = true;
+        RefreshUpdate();
+    }
+
+    private void ReleaseNotes_Click(object sender, RoutedEventArgs e)
+    {
+        string url = _state.AvailableUpdate?.PageUrl ?? Avion2.Engine.UpdateChecker.ReleasesPage;
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
     }
 
     /// <summary>Our legion: name, leader, introduction and who logged in last (saved between sessions).</summary>

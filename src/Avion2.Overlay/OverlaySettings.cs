@@ -28,6 +28,9 @@ public sealed class OverlaySettings
     /// <summary>Server region for the rift/event timetable.</summary>
     public Avion2.Analysis.ServerRegion Region { get; set; } = Avion2.Analysis.ServerRegion.Europe;
 
+    /// <summary>Look for a newer release on GitHub at start (one small request; dev builds never do).</summary>
+    public bool CheckForUpdates { get; set; } = true;
+
     /// <summary>App theme id (<see cref="ThemeManager.Themes"/>): "aion2" or "void".</summary>
     public string Theme { get; set; } = "aion2";
 

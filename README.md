@@ -1,216 +1,68 @@
 # AVION2
 
-A gameplay analyzer for **AION2**. It passively reads the game's network traffic with
-[Npcap](https://npcap.com/) and decodes combat into a DPS meter, skill breakdowns and encounter logs.
+A damage meter and fight analyzer for **AION2**. AVION2 reads the game's network traffic on your PC and shows who
+did how much damage, live and after every fight.
 
-- **Passive only.** It never touches the game process or memory and never injects or sends anything.
-  It sees the same packets your network card does.
-- **Local first.** Captures and logs stay on your machine. See [Privacy](#privacy).
+It is passive: it never touches the game, its files or its memory, and sends nothing anywhere.
 
-> Status: **milestone 2**: capture → decoder → console meter and overlay. Damage is verified 1:1
-> against the in-game Combat Analysis. The protocol notes come from public
-> research and **still have to be checked against real captures** (see [Validating](#validating-against-the-game)).
+## Features
 
-## Requirements
+- **Live overlay** on top of the game: damage per player (DPS, share, crit, back attacks and more), damage taken,
+  boss HP, fight timer.
+- **Fight history** with the full breakdown of every fight: skills, hits, crits, damage taken by source.
+- **Timeline** of every skill cast per player, **buff uptime**, and a **replay** of the fight on a map.
+- **Timers and notices** for Spacetime Rifts, Beritra air raids, PvP events, resets and field boss respawns.
+- **Low-HP alert** with its own sound.
+- **Server lag warning** when the game server freezes, also marked in each fight.
+- **Legion** tags on players and a legion card with your members.
+- Two themes: **AION2** and **VOID**. Skill and NPC names in 10 languages.
 
-- Windows 10/11
-- [Npcap](https://npcap.com/). WinPcap-compatible mode is optional. Turn on "Support loopback traffic"
-  if you use a ping reducer (ExitLag, GearUP, …).
-- .NET 10 SDK
-- Admin rights may be needed, depending on how Npcap was installed.
+## Install
 
-## Download-free build (single exe)
+1. Install [Npcap](https://npcap.com/) once. If you use a ping reducer (ExitLag, GearUP, …), enable
+   "Support loopback traffic" during setup.
+2. Download `AVION2-vX.Y.Z-win-x64.zip` from [Releases](https://github.com/void-cx/avion2/releases) and unzip it
+   anywhere. There is no installer.
+3. Run `AVION2.exe` and click **Start Meter**, then play. The overlay appears and finds the game by itself.
 
-```bash
-dotnet publish src/Avion2.Overlay -p:PublishProfile=Portable
-```
+Requires Windows 10 or 11. Run AION2 in windowed or borderless mode so the overlay can sit on top.
+After starting the meter, **teleport or change zone once** so AVION2 learns which character is you.
 
-This produces `artifacts/AVION2/AVION2.exe`, about 65 MB with the .NET runtime inside. It needs no installer and no
-.NET install: copy it anywhere and run it. Npcap still has to be installed once per PC. Settings, name tables and
-saved fights live in `%AppData%` / `%LocalAppData%\AVION2`.
-
-## Usage
-
-### App
-
-```bash
-dotnet run --project src/Avion2.Overlay -c Release
-```
-
-The **home window** is the app's main window, styled after AION2's own site and armory:
-- The key-art video plays behind the home page. Copy a video to `%AppData%\AVION2\background.mp4`, or pick one under Settings → Appearance. It stays local: NCSoft artwork is never committed. To save resources, the video only plays on the Home page while the meter is not connected to the game. Once AION2 is connected, or the window is minimized or on another page, the video is unloaded and a drawn backdrop shows instead.
-- Glowing serif display type, aether-blue and violet pill buttons, and star-topped cards.
-- Charcoal "armory" panels on the inner pages.
-
-- **Home**:
-  - **Start / Stop meter**, plus the capture device (automatic by default) and the option to record the session as a `.pcap`.
-  - Status cards: Npcap, name tables, and your known characters (with their learned max HP).
-  - Your most recent fights.
-- **History**: every saved fight, with the selected fight's full breakdown next to it. Copy summary, delete, open folder.
-- **Fight details** (History, or click a player in the overlay) have five tabs: damage dealt, damage taken,
-  **Timeline** (every skill cast per player over the fight, the target's HP behind), **Buffs** (uptime per buff and
-  debuff) and **Replay** (a top-down replay: positions, attack lines, damage numbers and skill names; play, scrub,
-  zoom). The game doesn't send your own position continuously, so it is filled in from buffs and dashes and drawn
-  dashed where estimated. Fights saved before this version have no timeline or replay.
-- **Legion**: legion tags on player cards; a Home card with your legion's introduction and members by last login.
-- **Settings**:
-  - Auto-start, overlay opacity and targets, lock.
-  - Low-HP alert: threshold, volume, custom sound, test (built-in: urgent warning beeps).
-  - Notifications: their own sound and volume (built-in: a calm bell), so a timer never sounds like low HP.
-  - Boss skill casts: a notice when a boss starts a named skill.
-  - Theme: **AION2** (official site style, key-art video) or **VOID** (Enter The Void design). Switches instantly;
-    see [Theme/README.md](src/Avion2.Overlay/Theme/README.md).
-  - Language of the built-in skill, NPC and zone names.
-  - History folder.
-
-While the meter runs, a compact **overlay** sits on top of the game (windowed or borderless mode):
+## Using the overlay
 
 | Action | How |
 |---|---|
-| Move / resize | Drag the header / the grip in the bottom-right corner |
+| Move / resize | Drag the header / the corner grip |
 | Opacity | Ctrl + mouse wheel over the header |
-| Damage / Taken | Tabs under the header |
-| Details | Click a player: the live **detail window** (stat tiles, skill table with spec, crit/back/double/perfect/parry/multi rates, avg/min/max; damage taken by mob and skill). 📌 keeps it on top |
-| History / Settings | Clock / gear icon: opens the home window on that page |
-| My targets / all targets | Person icon |
-| Reset the encounter | ⟲ or **Ctrl+Shift+R** |
-| Lock (click-through) | Lock icon; unlock with **Ctrl+Shift+L** |
+| Fight details | Click a player |
+| Reset the fight | ⟲ or **Ctrl+Shift+R** |
+| Click-through (lock) | Lock icon; unlock with **Ctrl+Shift+L** |
 | Hide / show | **Ctrl+Shift+O** |
-| Low-HP alert | Sound + red border below the threshold. Speaker icon: click to mute, scroll for volume |
-| Event notices | Gold notice cards a few minutes before Spacetime Rifts, Beritra raids, PvP events and more, shown in their own transparent, click-through notification area. They appear even when the meter is stopped. Settings → Timers → "Move notification area" to place it |
-| Field bosses | Home page: which field bosses are up and when the dead ones respawn, for every map you visited with the meter running (the game sends the table of your current map). The board survives restarts. Respawn notices go to the notification area |
-| Player cards | Class emblem, combat power, DPS and share, Dbl/Perf/Crit/Front/Back rates. Settings → compact rows for one line per player. The official class emblems are built in; a PNG in `%AppData%\AVION2\classes` overrides one |
-| Stop the meter | ✕ (the running fight is saved) |
+| My targets / all targets | Person icon |
+| Low-HP alert volume | Scroll over the speaker icon; click to mute |
 
-Options: `--start` (start the meter right away), `--record captures/x.pcap`, `--log captures/x.jsonl`,
-`--device 7`, `--data dir`. For UI work: `--replay captures/x.pcap [--speed 2] [--history-dir dir]`,
-and `--render-shots dir` renders every window off-screen to PNGs and exits.
+In the **Replay**, click a dot to see who or what it is. Your own position is estimated between updates (the game
+doesn't send it continuously), so you are drawn dashed then.
 
-Settings live in `%AppData%\AVION2\overlay.json`, characters in `characters.json` next to it, and saved fights in
-`%LocalAppData%\AVION2\history` (newest 300). The fight timer follows the game's own combat state, like Combat
-Analysis. Max HP is never sent by the game, so it is learned from the highest HP seen.
+## Updates
 
-### Console
-
-```bash
-dotnet run --project src/Avion2.Cli -- live
-```
-
-| Command | Purpose |
-|---|---|
-| `avion2 devices` | List capture devices |
-| `avion2 live [--device 7,9] [--record captures/run.pcap] [--log captures/run.jsonl]` | Live console meter. Keys: `R` reset, `Q` quit |
-| `avion2 replay <file.pcap> [--log events.jsonl]` | Decode a recording and print every encounter |
-| `avion2 dump <file.pcap> [--opcode 0438] [--limit 200] [--summary]` | Hex-dump decoded packets and show an opcode histogram (for reverse engineering) |
-
-Common options: `--data <dir>` (skill/NPC name tables) and `--idle <seconds>` (gap that ends an encounter, default 15).
-
-To find your own character, the game must send its identity record. **Teleport or change zone once**
-after starting the meter.
-
-## Architecture
-
-```
-src/
-  Avion2.Protocol   pure decoding, no I/O
-    Varint, SpanReader             LEB128 varints, little-endian fields
-    Framing                        length-prefixed frames, resync, LZ4 bundles (nested)
-    GameStreamDecoder              byte stream → frames → bundles → parsers → GameEvents
-    Parsers/                       04 38 damage, 05 38 DoT/HoT, 33 36 self, 45 36 players,
-                                   41 36 NPC/summon spawn, 42 36 death, 21 36 map, 23 36 zone, 1B 92 HP
-  Avion2.Capture    Npcap capture and transport
-    PacketDissector                Ethernet/loopback/raw → IPv4/IPv6 → TCP (trims NIC padding)
-    TcpReassembler                 seq ordering, retransmits, overlaps, wraparound, gap skip
-    GameConnectionDetector         finds the game stream by its record signature (no hard-coded IPs)
-    GameCapturePipeline            ties it together
-    LiveCapture / PcapFile / PcapRecorder
-  Avion2.Analysis   game semantics
-    EntityRegistry                 names, classes, NPC codes, summon → owner
-    CombatTracker                  encounters, per-actor/per-skill/per-target stats
-    MeterView                      UI-agnostic snapshot rows (shared by the console and a future overlay)
-  Avion2.Engine     live capture loop shared by the console and the overlay (also replays recordings)
-  Avion2.Overlay    WPF app: home window (Home / History / Settings), compact click-through overlay,
-                    live detail window (Fluent dark theme)
-  Avion2.Cli        console meter, replay, dump, import-data
-tests/Avion2.Tests  protocol vectors, framing/resync, reassembly, detection, pcap round-trip, DPS math
-docs/PROTOCOL.md    wire-format notes (start here for protocol work)
-```
-
-### Design notes
-
-- **Detection.** Server→client game traffic contains `0E 00 36` many times per second even when idle.
-  A flow locks after 12 hits in 3 s. Loopback flows (from ping reducers) win over the physical NIC.
-  Connections that open with a TLS record are excluded.
-- **Resync.** The stream is joined mid-way and may have capture gaps. Until the decoder has locked
-  onto frame boundaries, it accepts a frame only if its opcode is in a known family and the next length
-  prefix is also plausible. Without this, a bogus length can swallow real frames.
-- **Damage records** are located by the `01 00 00 00` + power-scalar anchor rather than fixed offsets,
-  because some records carry unexplained extra bytes.
-- **DPS** = an actor's damage ÷ encounter duration (first to last player hit, minimum 1 s). Summon damage
-  is credited to the owner. Monster hits on players count as *damage taken*.
-
-## Validating against the game
-
-The game has a personal damage meter, *Combat Analysis*, since the 2026-04-01 patch. Use it as ground truth:
-
-1. `avion2 live --record captures/dummy.pcap --log captures/dummy.jsonl`
-2. Teleport once, then hit a training dummy or a boss for a minute.
-3. Compare your total and per-skill damage with Combat Analysis.
-4. If they differ, run `avion2 dump captures/dummy.pcap --opcode 0438` and look at the raw records.
-   Add the failing hex as a test vector in `tests/Avion2.Tests/ProtocolTests.cs`.
-
-On a boss kill, total party damage should land at roughly 97–107% of the boss's max HP.
-
-## Game data
-
-All game data ships **inside the app**: the exe makes no network requests for names or icons. The tables live in
-[assets/gamedata](assets/gamedata) and are compiled in. They are:
-- skills (9k+) and NPCs (9.7k, with boss and dummy flags) in 10 languages, from
-  [A2Tools](https://github.com/taengu/A2Tools-DPS-Meter);
-- the field boss spawn table from NOIA2;
-- zone names;
-- the official class emblems.
-
-Sources, commits and licenses are listed in [PROVENANCE.md](assets/gamedata/PROVENANCE.md). The license texts are
-also copied next to the published exe (`licenses/`). After a game patch, refresh the files there and rebuild.
-
-Optional overrides: `skills.json`, `npcs.json`, `field_bosses.json` and `maps.json` in `%AppData%\AVION2\data`
-(or `--data <dir>`) each replace one built-in table. Format: [data/README.md](data/README.md).
+AVION2 checks for a new release when it starts (Settings → General). When there is one, the Home page offers
+**Update now**: AVION2 closes, `AVION2-Updater.exe` installs the new version and starts AVION2 again. Your settings
+and fights stay.
 
 ## Privacy
 
-NCSoft has warned against publishing other players' damage records without consent. AVION2 therefore:
-
-- keeps everything local; there are no uploads;
-- ignores `captures/`, `*.pcap` and `*.jsonl` in git, because recordings contain other players' names.
-
-Any future sharing feature must be opt-in and limited to your own character unless others consent.
+Everything stays on your PC: fights, settings and recordings. Nothing is uploaded. Fights and recordings contain
+other players' names, so ask before sharing them.
 
 ## License
 
-AVION2 is free software under the **GNU General Public License v3.0** (see [LICENSE](LICENSE)); the built-in name
-tables it ships come from GPL-3.0 projects (see below). Copyright © 2026 Maurice Schmitz and the Enter The Void
-community.
+AVION2 is free software under the [GNU General Public License v3.0](LICENSE). Copyright © 2026 Maurice Schmitz and
+the Enter The Void community.
 
-AVION2 is a fan-made tool and is not affiliated with or endorsed by NCSoft. AION2, its skill, NPC and zone names and
-the class emblems are NCSoft's; they are included only so the meter can show them. The VOID mark belongs to
-Enter The Void.
+AVION2 is a fan-made tool and is not affiliated with or endorsed by NCSoft. AION2 and its names and class emblems
+belong to NCSoft. The VOID mark belongs to Enter The Void. Skill and NPC names come from
+[A2Tools](https://github.com/taengu/A2Tools-DPS-Meter) and [NOIA2](https://github.com/ZDYoung0519/NOIA2) (GPL-3.0);
+fonts are under the SIL Open Font License. Details: [PROVENANCE.md](assets/gamedata/PROVENANCE.md).
 
-## Prior art and licensing
-
-The protocol notes were compiled from public research by these projects:
-- [TK-open-public/Aion2-Dps-Meter](https://github.com/TK-open-public/Aion2-Dps-Meter) (MIT)
-- [taengu/A2Tools-DPS-Meter](https://github.com/taengu/A2Tools-DPS-Meter) (GPL-3.0)
-- [ZDYoung0519/NOIA2](https://github.com/ZDYoung0519/NOIA2) (GPL-3.0)
-
-No code was copied from the GPL projects; only protocol facts are used. The built-in name tables come from A2Tools
-and NOIA2 (GPL-3.0); see [assets/gamedata/PROVENANCE.md](assets/gamedata/PROVENANCE.md).
-
-Fonts, all bundled under the SIL Open Font License 1.1 (license texts in `src/Avion2.Overlay/Fonts/`, shipped in
-`licenses/`):
-- [Cinzel](https://github.com/NDISCOVER/Cinzel) (AION2 theme);
-- [Space Grotesk](https://github.com/floriankarsten/space-grotesk) and
-  [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono) (VOID theme).
-
-The VOID theme follows the Enter The Void Corporate Design Manual v1.1 and uses the VOID mark. The app icon is generated by
-`tools/make-icon.ps1`.
+Building from source, the command-line tool and how it works: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
