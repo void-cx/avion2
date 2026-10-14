@@ -22,6 +22,11 @@ public sealed class AppState
         Settings = new OverlayViewModel();
         LoadSettings();
         History = new HistoryStore(baseOptions.HistoryDirectory);
+        if (baseOptions.ReplayPath is null)
+        {
+            CleanUpStorage();
+        }
+
         foreach (var entry in History.Load(300))
         {
             Fights.Add(new HistoryRow(entry));
@@ -190,10 +195,10 @@ public sealed class AppState
         string? record = _baseOptions.RecordPath;
         if (record is null && Stored.RecordSessions)
         {
-            string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "captures");
-            record = Path.Combine(dir, $"session-{DateTime.Now:yyyyMMdd-HHmmss}.pcap");
+            record = Path.Combine(Recordings.Directory, $"session-{DateTime.Now:yyyyMMdd-HHmmss}.pcap");
         }
 
+        CurrentRecording = record;
         var engine = new MeterEngine(new EngineOptions
         {
             Devices = _baseOptions.Devices ?? (Stored.Device is { } device ? [device] : null),
@@ -275,6 +280,38 @@ public sealed class AppState
         History.Delete(row.Entry);
         Fights.Remove(row);
     }
+
+    /// <summary>The .pcap being written by the running meter (never deleted), or null.</summary>
+    public string? CurrentRecording { get; private set; }
+
+    /// <summary>The automatic cleanup at start: fights and recordings older than the kept number of days.</summary>
+    private void CleanUpStorage()
+    {
+        if (Stored.KeepFightsDays > 0)
+        {
+            History.DeleteOlderThan(DateTime.Now.AddDays(-Stored.KeepFightsDays));
+        }
+
+        if (Stored.KeepRecordingsDays > 0)
+        {
+            Recordings.Delete(DateTime.Now.AddDays(-Stored.KeepRecordingsDays));
+        }
+    }
+
+    /// <summary>Deletes saved fights (with replays) older than <paramref name="days"/> days; returns how many.</summary>
+    public int DeleteFightsOlderThan(int days)
+    {
+        int deleted = History.DeleteOlderThan(DateTime.Now.AddDays(-days));
+        foreach (var gone in Fights.Where(f => f.Entry.Path.Length > 0 && !File.Exists(f.Entry.Path)).ToList())
+        {
+            Fights.Remove(gone);
+        }
+
+        return deleted;
+    }
+
+    /// <summary>Deletes all recordings except the one being written; returns how many.</summary>
+    public int DeleteRecordings() => Recordings.Delete(inUse: Engine is not null ? CurrentRecording : null);
 
     private static string LegionFile =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "legion.json");

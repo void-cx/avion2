@@ -38,6 +38,7 @@ public partial class NotificationWindow : Window
     {
         _state = state;
         InitializeComponent();
+        TopmostKeeper.Keep(this);
         ThemeManager.Attach(this);
         Notices.ItemsSource = _notices;
         PlaceWindow();
@@ -66,6 +67,7 @@ public partial class NotificationWindow : Window
             Show();
         }
 
+        TopmostKeeper.Raise(this); // a new notice must be seen, even if the game came to the front
         _animate.Start();
     }
 

@@ -189,4 +189,34 @@ public class HistoryStoreTests
             Directory.Delete(dir, recursive: true);
         }
     }
+
+    [Fact]
+    public void DeletesFightsOlderThanACutoffWithTheirReplays()
+    {
+        string dir = Directory.CreateTempSubdirectory("avion2-history").FullName;
+        try
+        {
+            var store = new HistoryStore(dir);
+            MeterSnapshot Fight(string title, long startMs) => new(
+                1, title, 30, 1000, 33, null, null,
+                [new MeterRow(1, "TestDaeva", GameClass.Chanter, true, 1000, 33, 1, 0, 0, 1, 0, 0, 0, 0, [])],
+                StartedAtMs: startMs, End: EncounterEnd.Idle);
+
+            var old = store.Save(Fight("Old fight", 1_000_000))!;
+            var recent = store.Save(Fight("Recent fight", 2_000_000))!;
+            File.WriteAllText(HistoryStore.TracePath(old.Path), "{}");
+            File.SetLastWriteTime(old.Path, DateTime.Now.AddDays(-40));
+
+            Assert.Equal(2, store.Usage().Fights);
+            Assert.Equal(1, store.DeleteOlderThan(DateTime.Now.AddDays(-30)));
+            Assert.False(File.Exists(old.Path));
+            Assert.False(File.Exists(HistoryStore.TracePath(old.Path)));
+            Assert.True(File.Exists(recent.Path));
+            Assert.Equal("Recent fight", Assert.Single(store.Load()).Snapshot.Title);
+        }
+        finally
+        {
+            Directory.Delete(dir, recursive: true);
+        }
+    }
 }

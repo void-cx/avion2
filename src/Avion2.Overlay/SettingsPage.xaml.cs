@@ -38,6 +38,7 @@ public partial class SettingsPage : UserControl
             _state.SaveSettings();
         };
         VersionText.Text = $"Version {Avion2.Engine.UpdateChecker.CurrentVersion}";
+        SetUpStorage();
         ThemeBox.ItemsSource = ThemeManager.Themes;
         ThemeBox.SelectedItem = ThemeManager.Current;
         ThemeManager.Changed += () =>
@@ -187,5 +188,84 @@ public partial class SettingsPage : UserControl
     {
         Directory.CreateDirectory(_state.History.Directory);
         Process.Start(new ProcessStartInfo("explorer.exe", _state.History.Directory) { UseShellExecute = true });
+    }
+
+    private sealed record KeepChoice(int Days, string Label);
+
+    private void SetUpStorage()
+    {
+        var fights = new List<KeepChoice> { new(0, "Keep all"), new(90, "Delete after 90 days"), new(30, "Delete after 30 days"), new(7, "Delete after 7 days") };
+        var recordings = new List<KeepChoice> { new(0, "Keep all"), new(30, "Delete after 30 days"), new(7, "Delete after 7 days"), new(1, "Delete after 1 day") };
+        KeepFightsBox.ItemsSource = fights;
+        KeepFightsBox.SelectedItem = fights.FirstOrDefault(f => f.Days == _state.Stored.KeepFightsDays) ?? fights[0];
+        KeepRecordingsBox.ItemsSource = recordings;
+        KeepRecordingsBox.SelectedItem = recordings.FirstOrDefault(r => r.Days == _state.Stored.KeepRecordingsDays) ?? recordings[0];
+
+        KeepFightsBox.SelectionChanged += (_, _) =>
+        {
+            if (KeepFightsBox.SelectedItem is not KeepChoice choice || choice.Days == _state.Stored.KeepFightsDays)
+            {
+                return;
+            }
+
+            _state.Stored.KeepFightsDays = choice.Days;
+            _state.SaveSettings();
+            if (choice.Days > 0 && Ask($"Delete saved fights older than {choice.Days} days now?"))
+            {
+                _state.DeleteFightsOlderThan(choice.Days);
+            }
+
+            UpdateStorage();
+        };
+        KeepRecordingsBox.SelectionChanged += (_, _) =>
+        {
+            if (KeepRecordingsBox.SelectedItem is not KeepChoice choice || choice.Days == _state.Stored.KeepRecordingsDays)
+            {
+                return;
+            }
+
+            _state.Stored.KeepRecordingsDays = choice.Days;
+            _state.SaveSettings();
+            if (choice.Days > 0 && Ask($"Delete recordings older than {choice.Days} day{(choice.Days == 1 ? "" : "s")} now?"))
+            {
+                Recordings.Delete(DateTime.Now.AddDays(-choice.Days), _state.Engine is not null ? _state.CurrentRecording : null);
+            }
+
+            UpdateStorage();
+        };
+        Loaded += (_, _) => UpdateStorage();
+    }
+
+    private bool Ask(string question) =>
+        MessageBox.Show(Window.GetWindow(this)!, question, "AVION2", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+
+    private void UpdateStorage()
+    {
+        var (fights, fightBytes) = _state.History.Usage();
+        var (files, recordingBytes) = Recordings.Usage();
+        FightsUsage.Text = $"{fights:N0} fights · {Size(fightBytes)}";
+        RecordingsUsage.Text = files == 0 ? "none" : $"{files:N0} files · {Size(recordingBytes)}";
+        DeleteRecordingsButton.IsEnabled = files > 0;
+    }
+
+    private static string Size(long bytes) =>
+        bytes >= 1L << 30 ? $"{bytes / (double)(1L << 30):0.0} GB"
+        : bytes >= 1 << 20 ? $"{bytes / (double)(1 << 20):0.0} MB"
+        : $"{Math.Max(1, bytes / 1024):N0} KB";
+
+    private void DeleteRecordings_Click(object sender, RoutedEventArgs e)
+    {
+        var (files, bytes) = Recordings.Usage();
+        if (files > 0 && Ask($"Delete all {files} recordings ({Size(bytes)})? The one being recorded right now is kept."))
+        {
+            _state.DeleteRecordings();
+            UpdateStorage();
+        }
+    }
+
+    private void RecordingsFolder_Click(object sender, RoutedEventArgs e)
+    {
+        System.IO.Directory.CreateDirectory(Recordings.Directory);
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", Recordings.Directory) { UseShellExecute = true });
     }
 }

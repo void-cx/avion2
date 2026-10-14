@@ -125,6 +125,13 @@ internal static class DevShots
 
             Shoot(home, "history", directory, "history.png");
             Shoot(home, "settings", directory, "settings.png");
+            if (home.CurrentPage.Content is System.Windows.Controls.ScrollViewer settingsScroller)
+            {
+                settingsScroller.ScrollToVerticalOffset(700);
+                Pump(TimeSpan.FromMilliseconds(500));
+                Save(home, Path.Combine(directory, "settings-lower.png"));
+                settingsScroller.ScrollToTop();
+            }
 
             // Switch the theme while everything is open: every window must restyle without a restart.
             var other = ThemeManager.Themes.First(t => t != ThemeManager.Current);

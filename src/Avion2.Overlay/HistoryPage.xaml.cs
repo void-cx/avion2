@@ -71,11 +71,20 @@ public partial class HistoryPage : UserControl
 
     private void Delete_Click(object sender, RoutedEventArgs e)
     {
-        if (Selected is { } row &&
-            MessageBox.Show(Window.GetWindow(this)!, $"Delete the saved fight \"{row.Title}\" ({row.When})?", "AVION2",
+        var rows = Grid.SelectedItems.OfType<HistoryRow>().ToList();
+        if (rows.Count == 0)
+        {
+            return;
+        }
+
+        string what = rows.Count == 1 ? $"the saved fight \"{rows[0].Title}\" ({rows[0].When})" : $"{rows.Count} saved fights";
+        if (MessageBox.Show(Window.GetWindow(this)!, $"Delete {what} and its replay?", "AVION2",
                 MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
         {
-            _state.DeleteFight(row);
+            foreach (var row in rows)
+            {
+                _state.DeleteFight(row);
+            }
         }
     }
 

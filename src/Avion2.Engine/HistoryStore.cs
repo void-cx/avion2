@@ -121,6 +121,48 @@ public sealed class HistoryStore
         return false;
     }
 
+    /// <summary>Saved fights on disk (all of them, not only the ones loaded) and the bytes they and their replays take.</summary>
+    public (int Fights, long Bytes) Usage()
+    {
+        if (!System.IO.Directory.Exists(Directory))
+        {
+            return (0, 0);
+        }
+
+        var files = new DirectoryInfo(Directory).GetFiles("*.*").Where(f => f.Extension is ".json" or ".trace").ToList();
+        return (files.Count(f => f.Extension == ".json"), files.Sum(f => f.Length));
+    }
+
+    /// <summary>Deletes every saved fight (and its replay) last written before <paramref name="cutoff"/>; returns how many.</summary>
+    public int DeleteOlderThan(DateTime cutoff)
+    {
+        if (!System.IO.Directory.Exists(Directory))
+        {
+            return 0;
+        }
+
+        int deleted = 0;
+        foreach (var file in new DirectoryInfo(Directory).GetFiles("*.json").Where(f => f.LastWriteTimeUtc < cutoff.ToUniversalTime()))
+        {
+            try
+            {
+                file.Delete();
+                if (File.Exists(TracePath(file.FullName)))
+                {
+                    File.Delete(TracePath(file.FullName));
+                }
+
+                deleted++;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // locked; next time
+            }
+        }
+
+        return deleted;
+    }
+
     /// <summary>Most recent encounters first.</summary>
     public List<HistoryEntry> Load(int max = 50)
     {

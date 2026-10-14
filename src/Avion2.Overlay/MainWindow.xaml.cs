@@ -35,6 +35,7 @@ public partial class MainWindow : Window
         _engine = engine;
         _vm = state.Settings;
         InitializeComponent();
+        TopmostKeeper.Keep(this);
         ThemeManager.Attach(this);
         DataContext = _vm;
         PlaceWindow();

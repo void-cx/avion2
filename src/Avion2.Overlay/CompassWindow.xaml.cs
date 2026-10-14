@@ -44,6 +44,7 @@ public partial class CompassWindow : Window
     {
         _state = state;
         InitializeComponent();
+        TopmostKeeper.Keep(this);
         ThemeManager.Attach(this);
         Left = state.Stored.CompassLeft ?? SystemParameters.WorkArea.Right - 330;
         Top = state.Stored.CompassTop ?? SystemParameters.WorkArea.Top + 220;

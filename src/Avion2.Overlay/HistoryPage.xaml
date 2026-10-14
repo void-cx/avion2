@@ -19,7 +19,7 @@
                 <Button Content="Open folder" Click="Folder_Click" />
             </WrapPanel>
             <DataGrid x:Name="Grid" Background="{DynamicResource GridBackgroundBrush}" BorderBrush="{DynamicResource GridBorderBrush}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="None"
-                      SelectionMode="Single" RowHeight="28" SelectionChanged="Grid_SelectionChanged">
+                      SelectionMode="Extended" RowHeight="28" SelectionChanged="Grid_SelectionChanged">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="When" Binding="{Binding When}" SortMemberPath="StartedAtMs" Width="112" />
                     <DataGridTextColumn Header="Fight" Binding="{Binding Title}" Width="*" />

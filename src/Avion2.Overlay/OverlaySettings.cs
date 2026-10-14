@@ -83,6 +83,10 @@ public sealed class OverlaySettings
     /// <summary>Record each meter session to a .pcap (for troubleshooting).</summary>
     public bool RecordSessions { get; set; }
 
+    /// <summary>Delete saved fights / recordings older than this many days when AVION2 starts (0 = keep).</summary>
+    public int KeepFightsDays { get; set; }
+    public int KeepRecordingsDays { get; set; }
+
     /// <summary>Fraction of max HP below which the alert fires (0.3 = 30%).</summary>
     public double LowHpThreshold { get; set; } = 0.3;
 
