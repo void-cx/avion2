@@ -79,11 +79,48 @@ internal static class DevShots
             }
 
             Shoot(home, "timers", directory, "timers.png");
+            Shoot(home, "map", directory, "map.png");
+            if (home.CurrentPage is MapPage mapPage)
+            {
+                mapPage.Preview("World_L_A", "Confused Ursus");
+                Shoot(home, "map", directory, "map-zoom.png");
+                mapPage.Preview("World_D_A", "Teleport");
+                Shoot(home, "map", directory, "map-altgard.png");
+                if (mapPage.PreviewExactCube())
+                {
+                    Shoot(home, "map", directory, "map-exact.png");
+                }
+
+                mapPage.Preview("World_L_A", "Confused Ursus");
+                if (mapPage.OpenCompass() is { } compass)
+                {
+                    compass.Left = -20000;
+                    Shoot(home, "map", directory, "map-cube.png");
+                    Save(compass, Path.Combine(directory, "compass.png"));
+                    foreach (var (name, angle, meters, north, turn, exact, searching, detail) in new[]
+                    {
+                        ("far", 38.0, 240.0, false, "Turn right 38°", false, false, "Dawn Legion Base · position now"),
+                        ("search", 0.0, 45.0, false, "Walk or fly around here", false, true, "The cube is somewhere within ~80 m. The compass turns green once the game shows it."),
+                        ("near", -6.0, 17.0, false, "Straight ahead", true, false, "↑ 4 m above you · Dawn Legion Base"),
+                        ("here", 0.0, 4.0, false, "You're here", true, false, "same height · Dawn Legion Base"),
+                    })
+                    {
+                        compass.Demo(angle, meters, north, turn, detail, exact, searching);
+                        Pump(TimeSpan.FromMilliseconds(300));
+                        Save(compass, Path.Combine(directory, $"compass-{name}.png"));
+                    }
+
+                    compass.Close();
+                }
+            }
+
             Shoot(home, "forge", directory, "forge.png");
             if (home.CurrentPage is ForgePage forge)
             {
                 forge.Pick("ludra blade");
                 Shoot(home, "forge", directory, "forge-plan.png");
+                forge.PickMine("Spiritforged Staff");
+                Shoot(home, "forge", directory, "forge-mine.png");
             }
 
             Shoot(home, "history", directory, "history.png");

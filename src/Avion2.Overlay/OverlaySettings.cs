@@ -25,6 +25,17 @@ public sealed class OverlaySettings
     /// <summary>Single-line overlay rows instead of player cards.</summary>
     public bool CompactRows { get; set; }
 
+    /// <summary>Map tab: last map shown, whether it follows the map you are on, layers, collectibles found.</summary>
+    public string? MapKey { get; set; }
+    public bool MapFollow { get; set; } = true;
+    public List<string>? MapLayers { get; set; }
+    public List<string> FoundCollectibles { get; set; } = [];
+    /// <summary>Skipped hidden cubes (hub marker id → until when, UTC) and how long a skip lasts (0 = until un-skipped).</summary>
+    public Dictionary<string, DateTime> SkippedCubes { get; set; } = [];
+    public int CubeSkipMinutes { get; set; } = 30;
+    public double? CompassLeft { get; set; }
+    public double? CompassTop { get; set; }
+
     /// <summary>Server region for the rift/event timetable.</summary>
     public Avion2.Analysis.ServerRegion Region { get; set; } = Avion2.Analysis.ServerRegion.Europe;
 

@@ -100,6 +100,7 @@ public sealed class MeterEngine : IDisposable
             _history.Insert(0, entry);
             FightSaved?.Invoke(entry);
         };
+        _session.Cubes.Changed += cube => CubeSeen?.Invoke(cube);
         _session.Registry.SetKnownCharacters(characters.Characters);
         _session.Registry.CharacterIdentified += character =>
         {
@@ -139,6 +140,10 @@ public sealed class MeterEngine : IDisposable
             else if (e is LegionDetailsEvent or LegionRosterEvent)
             {
                 LegionChanged?.Invoke();
+            }
+            else if (e is InventoryListEvent or InventoryItemEvent)
+            {
+                InventoryChanged?.Invoke();
             }
             else if (e is SkillCastEvent cast && Cast is { } onCast)
             {
@@ -268,6 +273,15 @@ public sealed class MeterEngine : IDisposable
         }
     }
 
+    /// <summary>The current map and everyone's latest position on it, for the live map.</summary>
+    public (uint? MapId, IReadOnlyList<LiveEntity> Entities) LiveMap()
+    {
+        lock (_sync)
+        {
+            return (_session.Positions.MapId ?? _session.Registry.MapId, _session.Positions.Snapshot(_session.Registry));
+        }
+    }
+
     /// <summary>Our legion as seen this session (a copy).</summary>
     public LegionState? Legion()
     {
@@ -282,6 +296,39 @@ public sealed class MeterEngine : IDisposable
 
     /// <summary>Raised on the capture thread when legion details or members arrive.</summary>
     public event Action? LegionChanged;
+
+    /// <summary>Raised on the capture thread when a hidden cube came into range or was opened.</summary>
+    public event Action<CubeSighting>? CubeSeen;
+
+    /// <summary>Cube object codes learned this session (to keep them between sessions).</summary>
+    public IReadOnlyCollection<uint> CubeCodes()
+    {
+        lock (_sync)
+        {
+            return _session.Cubes.CubeCodes.ToList();
+        }
+    }
+
+    /// <summary>Codes known from earlier sessions.</summary>
+    public void TeachCubeCodes(IEnumerable<uint> codes)
+    {
+        lock (_sync)
+        {
+            _session.Cubes.CubeCodes.UnionWith(codes);
+        }
+    }
+
+    /// <summary>Raised on the capture thread when our inventory changed (<see cref="Inventory"/> has it).</summary>
+    public event Action? InventoryChanged;
+
+    /// <summary>Our inventory as seen this session (a copy).</summary>
+    public InventoryState Inventory()
+    {
+        lock (_sync)
+        {
+            return _session.Inventory.Copy();
+        }
+    }
 
     /// <summary>Raised on the capture thread for every skill cast (boss cast warnings).</summary>
     public event Action<SkillCastEvent, EntityInfo?>? Cast;

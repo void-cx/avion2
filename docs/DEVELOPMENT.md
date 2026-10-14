@@ -56,7 +56,7 @@ src/
   Avion2.Capture    Npcap capture, TCP reassembly, game-connection detection, pcap read/record
   Avion2.Analysis   entities, encounters and stats, fight traces (timeline, buffs, positions, lag), timers
   Avion2.Engine     capture loop shared by app and CLI, history, built-in game data, update check
-  Avion2.Overlay    WPF app: home, timers, gear forge, history, overlay, details (Timeline/Buffs/Replay), themes
+  Avion2.Overlay    WPF app: home, timers, map + compass, gear forge, history, overlay, details, themes
   Avion2.Updater    AVION2-Updater.exe
   Avion2.Cli        console meter and tools
 tests/Avion2.Tests  protocol vectors, reassembly, detection, analysis, traces, updater
@@ -84,9 +84,11 @@ On a boss kill, total party damage should be roughly 97–107% of the boss's max
 
 ## Game data
 
-Skill/NPC names (10 languages), field bosses, zone names, enchant ladders and class emblems are compiled in from
+Skill/NPC names (10 languages), field bosses, zone names, enchant ladders, zone maps and class emblems are compiled in from
 [assets/gamedata](../assets/gamedata) (sources in its PROVENANCE.md). `skills.json`, `npcs.json`, `field_bosses.json`
 or `maps.json` in `%AppData%\AVION2\data` replace single tables ([format](../data/README.md)).
+Enchant ladders and zone maps are rebuilt from aion2hub's pages with `tools/build_forge.py` and `tools/build_maps.py`
+(the latter needs Pillow; usage in each script's header).
 
 ## Prior art
 

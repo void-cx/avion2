@@ -212,6 +212,13 @@ public sealed class AppState
             var legion = engine.Legion();
             Application.Current.Dispatcher.BeginInvoke(() => UpdateLegion(legion));
         };
+        engine.TeachCubeCodes(CubeLog.Codes);
+        engine.CubeSeen += cube => Application.Current.Dispatcher.BeginInvoke(() => OnCube(cube, engine));
+        engine.InventoryChanged += () =>
+        {
+            var inventory = engine.Inventory();
+            Application.Current.Dispatcher.BeginInvoke(() => UpdateInventory(inventory));
+        };
         engine.Cast += (cast, info) =>
         {
             if (info is { IsBoss: true, IsDummy: false } && Settings.NotifyBossCasts)
@@ -330,6 +337,133 @@ public sealed class AppState
             {
                 // shown again next session once the game resends it
             }
+        }
+    }
+
+    private static string CubeFile =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "cubes.json");
+
+    /// <summary>Every hidden cube the game showed us (exact positions), and the ones we opened.</summary>
+    public Avion2.Analysis.CubeLog CubeLog { get; } = LoadCubes();
+
+    /// <summary>Raised on the UI thread when a cube was seen or opened (and found markers may have changed).</summary>
+    public event Action<Avion2.Analysis.CubeSighting>? CubeUpdated;
+
+    private static Avion2.Analysis.CubeLog LoadCubes()
+    {
+        try
+        {
+            var log = File.Exists(CubeFile)
+                ? System.Text.Json.JsonSerializer.Deserialize<Avion2.Analysis.CubeLog>(File.ReadAllText(CubeFile)) ?? new()
+                : new();
+
+            // Entries from before spot ids existed
+            log.Cubes = log.Cubes
+                .Select(c => c.Id is null ? c with { Id = Avion2.Analysis.CubeSighting.SpotId(c.MapId, c.Position) } : c)
+                .ToList();
+            return log;
+        }
+        catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException or UnauthorizedAccessException)
+        {
+            return new();
+        }
+    }
+
+    /// <summary>A cube came into range, or was opened by us or someone else: keep the spot and what happened there.</summary>
+    private void OnCube(Avion2.Analysis.CubeSighting cube, MeterEngine engine)
+    {
+        var stored = CubeLog.Merge(cube);
+        CubeLog.Codes = engine.CubeCodes().ToList();
+
+        if (PersistSettings)
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(CubeFile)!);
+                File.WriteAllText(CubeFile, System.Text.Json.JsonSerializer.Serialize(CubeLog));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // kept in memory; the next cube saves again
+            }
+        }
+
+        CubeUpdated?.Invoke(stored);
+    }
+
+    private static string InventoryFile =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "inventory.json");
+
+    /// <summary>Our inventory: live while the meter runs, otherwise as last seen (saved between sessions).</summary>
+    public Avion2.Analysis.InventoryState? Inventory { get; private set; } = LoadInventory();
+
+    /// <summary>Raised on the UI thread when <see cref="Inventory"/> changed.</summary>
+    public event Action? InventoryUpdated;
+
+    private static Avion2.Analysis.InventoryState? LoadInventory()
+    {
+        try
+        {
+            return File.Exists(InventoryFile)
+                ? System.Text.Json.JsonSerializer.Deserialize<Avion2.Analysis.InventoryState>(File.ReadAllText(InventoryFile))
+                : null;
+        }
+        catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    private DateTime _inventorySaved;
+    private bool _inventoryDirty;
+
+    private void UpdateInventory(Avion2.Analysis.InventoryState inventory)
+    {
+        // Slot updates before this session's full list only make sense on top of the saved one
+        if (!inventory.IsKnown)
+        {
+            if (Inventory is null)
+            {
+                return;
+            }
+
+            var merged = Inventory.Copy();
+            foreach (var item in inventory.Items)
+            {
+                merged.Apply(new Avion2.Protocol.InventoryItemEvent(inventory.UpdatedMs, item));
+            }
+
+            inventory = merged;
+        }
+
+        Inventory = inventory;
+        InventoryUpdated?.Invoke();
+
+        // Loot changes counts every few seconds: write at most every 10 s (SaveSettings writes the rest on exit)
+        _inventoryDirty = true;
+        if (DateTime.UtcNow - _inventorySaved > TimeSpan.FromSeconds(10))
+        {
+            SaveInventory();
+        }
+    }
+
+    private void SaveInventory()
+    {
+        if (!PersistSettings || !_inventoryDirty || Inventory is null)
+        {
+            return;
+        }
+
+        _inventorySaved = DateTime.UtcNow;
+        _inventoryDirty = false;
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(InventoryFile)!);
+            File.WriteAllText(InventoryFile, System.Text.Json.JsonSerializer.Serialize(Inventory));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _inventoryDirty = true; // next change tries again
         }
     }
 
@@ -514,6 +648,7 @@ public sealed class AppState
             return;
         }
 
+        SaveInventory();
         var s = Stored;
         s.BackgroundOpacity = Settings.BackgroundOpacity;
         s.AllTargets = Settings.AllTargets;

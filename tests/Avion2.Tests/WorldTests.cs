@@ -63,6 +63,19 @@ public class WorldTests
     }
 
     [Fact]
+    public void OnlySelfCastBuffsPlaceTheEntity()
+    {
+        // Refresh (2B 38) of a mantra the Chanter keeps on himself: a position fix, once a second while it ticks
+        var refresh = Parse("2B38 e725132d0bffd20a600900000000000029f61b3aa1010000e72501811915010297ef924766f7884700a8da46");
+        Assert.IsType<BuffEvent>(refresh[0]);
+        Assert.Equal(PositionSource.Buff, Assert.IsType<PositionEvent>(refresh[1]).Source);
+
+        // The same buff from another caster carries the caster's spot: no fix for the target
+        var fromOther = Parse("2A38 e173 01 11 c802 c8000000 2c01000000000000 1cfc3a34a1010000 9921 01 00 ce305a47 2a4da646 00baf546");
+        Assert.IsType<BuffEvent>(Assert.Single(fromOther));
+    }
+
+    [Fact]
     public void BuffRemovedListsInstances()
     {
         var removed = Assert.IsType<BuffRemovedEvent>(Assert.Single(Parse("2C38 e173 01 00 c802 07")));

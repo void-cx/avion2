@@ -34,6 +34,7 @@
                 <StackPanel x:Name="NavLinks" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <RadioButton Style="{DynamicResource NavLink}" Content="Home" Tag="home" GroupName="Nav" Checked="Nav_Checked" />
                     <RadioButton Style="{DynamicResource NavLink}" Content="Timers" Tag="timers" GroupName="Nav" Checked="Nav_Checked" />
+                    <RadioButton Style="{DynamicResource NavLink}" Content="Map" Tag="map" GroupName="Nav" Checked="Nav_Checked" />
                     <RadioButton Style="{DynamicResource NavLink}" Content="Gear Forge" Tag="forge" GroupName="Nav" Checked="Nav_Checked" />
                     <RadioButton Style="{DynamicResource NavLink}" Content="History" Tag="history" GroupName="Nav" Checked="Nav_Checked" />
                     <RadioButton Style="{DynamicResource NavLink}" Content="Settings" Tag="settings" GroupName="Nav" Checked="Nav_Checked" />

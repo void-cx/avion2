@@ -33,6 +33,28 @@
         <Border Style="{DynamicResource Card}" Margin="8,8,8,0">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Top" Text="Gear Forge" Style="{DynamicResource CardHeading}" Margin="0,4,0,8" />
+                <StackPanel x:Name="MyGearPanel" DockPanel.Dock="Top" Visibility="Collapsed" Margin="0,0,0,10">
+                    <TextBlock x:Name="MyGearTitle" Foreground="{DynamicResource ChipTextBrush}" FontSize="11" Margin="0,0,0,4" />
+                    <ListBox x:Name="MyGear" MaxHeight="230" Background="Transparent" BorderThickness="0" SelectionChanged="MyGear_SelectionChanged"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                <Setter Property="Padding" Value="10,2" />
+                                <Setter Property="MinHeight" Value="0" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding Level}" Foreground="{DynamicResource HighlightBrush}" Margin="8,0,0,0" />
+                                    <TextBlock Text="{Binding Name}" Foreground="{Binding Brush}" TextTrimming="CharacterEllipsis" />
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock Text="All items" Foreground="{DynamicResource ChipTextBrush}" FontSize="11" Margin="0,10,0,0" />
+                </StackPanel>
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
                     <TextBox x:Name="SearchBox" TextChanged="SearchBox_TextChanged" />
                     <TextBlock x:Name="SearchHint" Text="Search: item name or type, e.g. unique bow" IsHitTestVisible="False"
@@ -67,6 +89,7 @@
                         <TextBlock x:Name="ItemName" Style="{DynamicResource CardHeading}" FontSize="20" Text="Pick an item" />
                         <TextBlock x:Name="ItemMeta" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,2,0,0"
                                    Text="Search your gear on the left: the Forge loads its enchant and amplify ladders from the game data." TextWrapping="Wrap" />
+                        <TextBlock x:Name="HaveLine" Foreground="{DynamicResource MutedBrush}" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap" Visibility="Collapsed" />
 
                         <WrapPanel x:Name="Controls" Margin="0,14,0,0" IsEnabled="False">
                             <RadioButton x:Name="EnchantMode" Content="Enchant" GroupName="Mode" IsChecked="True" Checked="Mode_Checked" Margin="0,0,14,0" VerticalAlignment="Center" />
@@ -98,6 +121,8 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
+                    <TextBlock x:Name="ReachLine" Foreground="{DynamicResource TitleBrush}" FontFamily="{DynamicResource DisplayFont}" FontSize="15"
+                               Margin="4,0,0,12" TextWrapping="Wrap" Visibility="Collapsed" />
                     <Border Style="{DynamicResource Card}" Margin="0,0,10,0">
                         <StackPanel>
                             <TextBlock Text="Per Level" Style="{DynamicResource CardHeading}" Margin="0,0,0,8" />

@@ -26,6 +26,10 @@ namespace Avion2.Protocol;
 [JsonDerivedType(typeof(ServerClockEvent), "clock")]
 [JsonDerivedType(typeof(LegionDetailsEvent), "legion")]
 [JsonDerivedType(typeof(LegionRosterEvent), "legionRoster")]
+[JsonDerivedType(typeof(InventoryListEvent), "inventory")]
+[JsonDerivedType(typeof(WorldObjectEvent), "worldObject")]
+[JsonDerivedType(typeof(InteractionDoneEvent), "interactionDone")]
+[JsonDerivedType(typeof(InventoryItemEvent), "inventoryItem")]
 public abstract record GameEvent(long TimestampMs);
 
 public enum HitType : byte
@@ -183,7 +187,8 @@ public sealed record SkillCastEvent(
     uint SkillId,
     uint RawSkillId,
     uint? TargetId,
-    Vec3? TargetPosition) : GameEvent(TimestampMs);
+    Vec3? TargetPosition,
+    float? Facing = null) : GameEvent(TimestampMs);
 
 public enum PositionSource : byte
 {
@@ -238,3 +243,26 @@ public sealed record LegionMember(string Name, int? Level, long? LastOnlineMs);
 
 /// <summary><c>05 8A</c>: a page of our legion's member list.</summary>
 public sealed record LegionRosterEvent(long TimestampMs, IReadOnlyList<LegionMember> Members) : GameEvent(TimestampMs);
+
+/// <summary>One inventory slot of our character.</summary>
+/// <param name="Container">01 cube (bag), 0B equipped, 0F warehouse; 04 seen for quest items.</param>
+/// <param name="Enchant">Enchant level of gear (+0…+15), null for stackables.</param>
+public sealed record InventoryItem(uint ItemId, ulong Count, byte Container, byte Slot, byte? Enchant = null)
+{
+    public const byte Cube = 0x01;
+    public const byte Equipped = 0x0B;
+    public const byte Warehouse = 0x0F;
+}
+
+/// <summary><c>11 56</c>: our whole inventory (sent when entering the world).</summary>
+public sealed record InventoryListEvent(long TimestampMs, IReadOnlyList<InventoryItem> Items) : GameEvent(TimestampMs);
+
+/// <summary><c>1B 56</c>: one slot changed; <see cref="InventoryItem.Count"/> is the new total.</summary>
+public sealed record InventoryItemEvent(long TimestampMs, InventoryItem Item) : GameEvent(TimestampMs);
+
+/// <summary><c>34 36</c>: an interactable world object came into range (hidden cube, gather node, …) with its exact position.</summary>
+/// <param name="Code">Object type; 1200039 was a hidden cube both times one was seen.</param>
+public sealed record WorldObjectEvent(long TimestampMs, uint EntityId, byte Kind, uint Code, Vec3 Position) : GameEvent(TimestampMs);
+
+/// <summary><c>3A 36</c>: an interaction finished — <paramref name="ItemId"/> is the item it used up (a Hidden Cube key when opening a cube).</summary>
+public sealed record InteractionDoneEvent(long TimestampMs, uint ObjectId, uint ActorId, uint? ItemId) : GameEvent(TimestampMs);

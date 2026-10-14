@@ -14,6 +14,15 @@ public sealed class GameSession
     /// <summary>Recent positions, casts, hits and buffs, for fight traces (timeline, buff uptime, replay).</summary>
     public TraceRecorder Recorder { get; } = new();
 
+    /// <summary>Our inventory (from entering the world, kept current by slot updates).</summary>
+    public InventoryState Inventory { get; } = new();
+
+    /// <summary>Hidden cubes in range and the ones we open.</summary>
+    public CubeTracker Cubes { get; } = new();
+
+    /// <summary>Latest position per entity, for the live map.</summary>
+    public LivePositions Positions { get; } = new();
+
     /// <summary>Our own legion, as far as the game has told us this session.</summary>
     public LegionState Legion { get; } = new();
 
@@ -33,6 +42,8 @@ public sealed class GameSession
             Tracker.Apply(e);
             Registry.Apply(e);
             Recorder.Apply(e);
+            Positions.Apply(e);
+            Cubes.Apply(e, Registry.SelfId, Positions.MapId ?? Registry.MapId, Registry.DisplayName);
             return;
         }
 
@@ -40,6 +51,12 @@ public sealed class GameSession
         Tracker.Apply(e);
         Recorder.Apply(e);
         Legion.Apply(e);
+        Positions.Apply(e);
+        Cubes.Apply(e, Registry.SelfId, Positions.MapId ?? Registry.MapId, Registry.DisplayName);
+        if (Inventory.Apply(e))
+        {
+            Inventory.Character = Registry.SelfId is { } self ? Registry.Find(self)?.Name ?? Inventory.Character : Inventory.Character;
+        }
     }
 
     /// <summary>The running encounter, or the last finished one.</summary>

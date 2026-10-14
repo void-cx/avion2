@@ -10,6 +10,8 @@ public sealed record ForgeItemLine(ForgeItem Item, string Name, string Detail, B
 
 public sealed record ForgeTile(string Label, string Average, string Note);
 
+public sealed record MyGearLine(ForgeItem Item, string Name, string Level, Brush Brush, int Enchant);
+
 public sealed record ForgeStepLine(string Step, string Chance, string Pity, string Attempts, string Materials, string Gold, string Detail);
 
 /// <summary>Enchant/amplify cost calculator: pick an item, a level range, see average and unlucky costs.</summary>
@@ -18,19 +20,83 @@ public partial class ForgePage : UserControl
     private const int MaxResults = 300;
 
     private readonly GearForge _forge = BundledGameData.Forge;
+    private readonly AppState _state;
     private ForgeItem? _item;
+    private MyGearLine? _mine;
     private bool _updating;
 
-    public ForgePage()
+    public ForgePage(AppState state)
     {
+        _state = state;
         InitializeComponent();
+        state.InventoryUpdated += () =>
+        {
+            RefreshMyGear();
+            RefreshHave();
+            if (Results.Visibility == Visibility.Visible)
+            {
+                Calculate();
+            }
+        };
         Loaded += (_, _) =>
         {
             if (ItemList.ItemsSource is null)
             {
                 Search(string.Empty);
             }
+
+            RefreshMyGear();
+            RefreshHave();
         };
+    }
+
+    /// <summary>Equipped gear the Forge knows, at its current levels (from the inventory the game sent).</summary>
+    private void RefreshMyGear()
+    {
+        var lines = (_state.Inventory?.Equipped ?? [])
+            .Select(i => (Slot: i, Item: _forge.Find(i.ItemId)))
+            .Where(x => x.Item is not null)
+            .Select(x => new MyGearLine(x.Item!, x.Item!.Name, $"+{x.Slot.Enchant ?? 0}", GradeBrush(x.Item!.Kind), x.Slot.Enchant ?? 0))
+            .ToList();
+        MyGear.ItemsSource = lines;
+        MyGearPanel.Visibility = lines.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        MyGearTitle.Text = _state.Inventory?.Character is { } who ? $"Your gear ({who})" : "Your gear";
+    }
+
+    private void RefreshHave()
+    {
+        if (_state.Inventory is not { IsKnown: true } inventory)
+        {
+            HaveLine.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        var seen = DateTimeOffset.FromUnixTimeMilliseconds(inventory.UpdatedMs).ToLocalTime();
+        string who = inventory.Character is { } name ? $", {name}" : string.Empty;
+        ulong stored = inventory.InWarehouse(ItemIds.EnhanceStone);
+        string warehouse = stored > 0 ? $" (+{stored:N0} in the warehouse)" : string.Empty;
+        HaveLine.Text = $"In your cube: {inventory.Count(ItemIds.EnhanceStone):N0} Enhance Stones{warehouse} and {inventory.Kinah:N0} Kinah" +
+                        $" · as of {seen:dd.MM. HH:mm}{who}";
+        HaveLine.Visibility = Visibility.Visible;
+    }
+
+    private void MyGear_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (MyGear.SelectedItem is not MyGearLine line)
+        {
+            return;
+        }
+
+        ItemList.SelectedItem = null;
+        _mine = line;
+        Select(line.Item, line.Brush);
+    }
+
+    /// <summary>Selects one of your equipped items (render shots).</summary>
+    internal void PickMine(string name)
+    {
+        RefreshMyGear();
+        MyGear.SelectedItem = (MyGear.ItemsSource as IEnumerable<MyGearLine>)?.FirstOrDefault(l => l.Name == name);
     }
 
     /// <summary>Searches and selects the first match (render shots).</summary>
@@ -76,10 +142,17 @@ public partial class ForgePage : UserControl
             return;
         }
 
-        _item = line.Item;
+        MyGear.SelectedItem = null;
+        _mine = null;
+        Select(line.Item, line.Brush);
+    }
+
+    private void Select(ForgeItem item, Brush brush)
+    {
+        _item = item;
         ItemName.Text = _item.Name;
-        ItemName.Foreground = line.Brush;
-        ItemMeta.Text = line.Detail;
+        ItemName.Foreground = brush;
+        ItemMeta.Text = Detail(item) + (_mine is { } mine ? $" · yours is +{mine.Enchant}" : string.Empty);
         Controls.IsEnabled = true;
 
         _updating = true;
@@ -121,7 +194,8 @@ public partial class ForgePage : UserControl
         var levels = Enumerable.Range(0, ladder.MaxLevel + 1).Select(l => $"+{l}").ToList();
         FromBox.ItemsSource = levels;
         ToBox.ItemsSource = levels;
-        FromBox.SelectedIndex = 0;
+        int current = _mine is null || Mode == ForgeMode.Amplify ? 0 : _mine.Enchant;
+        FromBox.SelectedIndex = Math.Min(current, Math.Max(0, ladder.MaxLevel - 1));
         ToBox.SelectedIndex = ladder.MaxLevel;
         _updating = false;
         Calculate();
@@ -150,6 +224,7 @@ public partial class ForgePage : UserControl
             Summary.Text = "Pick a target level above the current one.";
             Tiles.ItemsSource = null;
             StepList.ItemsSource = null;
+            ReachLine.Visibility = Visibility.Collapsed;
             return;
         }
 
@@ -173,6 +248,20 @@ public partial class ForgePage : UserControl
             Number(s.ExpectedAttempts * s.Step.Gold),
             "Per attempt: " + string.Join(", ", s.Step.Materials.Select(m => $"{m.Count:N0} {m.Name}").Append($"{s.Step.Gold:N0} Kinah")))).ToList();
         Results.Visibility = Visibility.Visible;
+
+        // What the inventory covers (on average)
+        if (_state.Inventory is { IsKnown: true } inventory)
+        {
+            int reach = GearForge.Reach(ladder, from, inventory.Kinah, inventory.Count);
+            ReachLine.Text = reach >= to ? $"You have enough for +{to} on average."
+                : reach == from ? $"What you have is not enough for +{from + 1} on average."
+                : $"What you have covers +{reach} on average.";
+            ReachLine.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            ReachLine.Visibility = Visibility.Collapsed;
+        }
     }
 
     private static string Number(double value) => value >= 100 ? Math.Round(value).ToString("N0") : value.ToString("0.#");

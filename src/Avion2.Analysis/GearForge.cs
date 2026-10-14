@@ -14,7 +14,8 @@ public enum ForgeMode
 
 public sealed record ForgeMaterial(
     [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("count")] long Count);
+    [property: JsonPropertyName("count")] long Count,
+    [property: JsonPropertyName("id")] uint? Id = null);
 
 /// <summary>One upgrade step: from <see cref="Level"/> to the next.</summary>
 /// <param name="Chance">Base success chance in percent.</param>
@@ -96,11 +97,13 @@ public sealed class GearForge
 
     private readonly Dictionary<string, ForgeLadder> _enchant;
     private readonly Dictionary<string, ForgeLadder> _amplify;
+    private readonly Dictionary<long, ForgeItem> _byId;
 
     public GearForge(IReadOnlyList<ForgeItem> items, IReadOnlyDictionary<string, ForgeLadder> enchant, IReadOnlyDictionary<string, ForgeLadder> amplify)
     {
         _enchant = new Dictionary<string, ForgeLadder>(enchant);
         _amplify = new Dictionary<string, ForgeLadder>(amplify);
+        _byId = items.GroupBy(i => i.Id).ToDictionary(g => g.Key, g => g.First());
 
         // The game has several ids per item (e.g. per faction); one entry per name + ladder is enough here.
         Items = items
@@ -111,6 +114,50 @@ public sealed class GearForge
     }
 
     public IReadOnlyList<ForgeItem> Items { get; }
+
+    /// <summary>An item by game id (every id, also the ones merged in <see cref="Items"/>).</summary>
+    public ForgeItem? Find(long id) => _byId.GetValueOrDefault(id);
+
+    /// <summary>
+    /// The highest level reachable from <paramref name="from"/> with what you have, on average: every step's
+    /// expected Kinah and materials must fit. <paramref name="have"/> gives the count of a material id.
+    /// </summary>
+    public static int Reach(ForgeLadder ladder, int from, ulong kinah, Func<uint, ulong> have)
+    {
+        double gold = 0;
+        var used = new Dictionary<uint, double>();
+        int level = from;
+        foreach (var step in ladder.Steps.Where(s => s.Level >= from).OrderBy(s => s.Level))
+        {
+            double attempts = step.ExpectedAttempts;
+            gold += attempts * step.Gold;
+            if (gold > kinah)
+            {
+                break;
+            }
+
+            bool enough = true;
+            foreach (var material in step.Materials)
+            {
+                if (material.Id is not { } id)
+                {
+                    continue; // unknown id: cannot tell, do not block on it
+                }
+
+                used[id] = used.GetValueOrDefault(id) + attempts * material.Count;
+                enough &= used[id] <= have(id);
+            }
+
+            if (!enough)
+            {
+                break;
+            }
+
+            level = step.Level + 1;
+        }
+
+        return level;
+    }
 
     public static GearForge Parse(string? json)
     {

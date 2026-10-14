@@ -84,16 +84,50 @@ public static class WorldParsers
 
         uint? target = null;
         Vec3? at = null;
+        float? facing = null;
         if (r.TryU8(out _) && r.TryU8(out byte kind) && r.TryVarint(out uint t))
         {
             target = t == 0 ? null : t;
-            if (kind == 2 && r.TrySkip(4) && TryVec3(ref r, out var position))
+            if (r.TryF32(out float f) && float.IsFinite(f) && Math.Abs(f) <= 720)
+            {
+                facing = ((f % 360) + 360) % 360;
+            }
+
+            if (kind == 2 && TryVec3(ref r, out var position))
             {
                 at = position;
             }
         }
 
-        emit(new SkillCastEvent(ts, actor, raw - raw % 10_000, raw, target, at));
+        emit(new SkillCastEvent(ts, actor, raw - raw % 10_000, raw, target, at, facing));
+        return true;
+    }
+
+    /// <summary><c>34 36</c>: entity varint, kind u8, u8, code u32, x f32, y f32, z f32, ….</summary>
+    public static bool ParseWorldObject(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryVarint(out uint entity) || !r.TryU8(out byte kind) || !r.TryU8(out _) || !r.TryU32(out uint code) ||
+            !TryVec3(ref r, out var position) || !position.IsPlausible)
+        {
+            return false;
+        }
+
+        emit(new WorldObjectEvent(ts, entity, kind, code, position));
+        return true;
+    }
+
+    /// <summary><c>3A 36</c>: object varint, actor varint, u8, …, item u32 (the last four bytes; 0 = none).</summary>
+    public static bool ParseInteractionDone(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryVarint(out uint obj) || !r.TryVarint(out uint actor) || body.Length - r.Position < 4)
+        {
+            return false;
+        }
+
+        uint item = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(body[^4..]);
+        emit(new InteractionDoneEvent(ts, obj, actor, item is >= 100_000_000 and <= 999_999_999 ? item : null));
         return true;
     }
 
@@ -126,9 +160,11 @@ public static class WorldParsers
         Vec3? position = r.TryU8(out _) && TryVec3(ref r, out var p) ? p : null;
         long? duration = length <= 0 || end >= NeverEnds ? null : length;
         emit(new BuffEvent(ts, entity, instance, abnormal, skill, caster, duration, added, position));
-        if (added && position is { } fix)
+        if (caster == entity && position is { } fix)
         {
-            // Fresh applications carry where the entity is now; refreshes (2B) may repeat an older spot.
+            // Only self-cast buffs carry where the entity is (within ~0.6 m of the server's move fixes, added or
+            // refreshed). With another caster the position is 5–25 m off — the caster's spot. Ticking self buffs
+            // (e.g. Chanter mantras, once a second) are what tells us our own position while we move.
             emit(new PositionEvent(ts, entity, fix, null, PositionSource.Buff));
         }
 

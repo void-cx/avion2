@@ -155,8 +155,11 @@ Positions were checked by comparing each record type against the same entity's `
 41 36 NPC spawn: position 9 bytes after the id (88); 45 36 player spawn: after the class code
 ```
 **The server does not echo our own movement** (the client sends it, encrypted). Our position comes from
-`2A 38` buff applications (they carry where the entity is), `3C 37`, and spawn/identity records: about one fix
-every 1–3 s in combat. `2B 38` refreshes may repeat an older spot and are not used as fixes.
+self-cast buffs, `3C 37`, and spawn/identity records. A buff's x/y/z (`2A 38` added and `2B 38` refreshed) is where
+the target is only when the target cast it itself: within ~0.6 m of the server's `1C 37` fixes (median), against
+5–25 m off when someone else cast it (the caster's spot). Ticking self buffs give a fix every second — e.g. Chanter
+mantras (Undefeated / Sprint Mantra), whose casts (`02 38`) also carry our facing (median 0.2° from the direction of
+travel). Without such a buff: a fix every 1–3 s in combat, few outside it.
 
 ### Skill casts ✅
 ```
@@ -164,6 +167,8 @@ every 1–3 s in combat. `2B 38` refreshes may repeat an older spot and are not 
        [kind 2: target x f32, y f32, z f32], …
 ```
 Every entity in range, including buffs and heals that deal no damage (269/278 records name a known skill).
+Facing is in degrees, 0 = +X turning toward +Y (= `atan2(dy, dx)`; matches the bearing to the targeted ground
+position within 1° when our position fix is fresh). Our own casts are sent too, so this is our facing at each cast.
 `06 38` (actor, skill u32, …) follows each cast; its meaning (cooldown/resolution) is open.
 
 ### Ownership and legions ✅
@@ -184,6 +189,33 @@ Every entity in range, including buffs and heals that deal no damage (269/278 re
 - A Ranger's **Explosion Trap** spawns as a summon (`41 36` kind 0x5F) without owner name, ~0.4 s after its owner
   casts the skill of the same name (6/6): credited to that caster.
 - Bosses spawn helper entities (kinds 0x14/0x1C, no owner) that deal damage; they are not player rows.
+
+### Inventory ✅ verified 2026-10-14 (login capture against the in-game cube)
+Our own character only. Item record: `item u32, count u64, container u8, slot u8`, 11 zero bytes, then for gear the
+enchant level in one of the next two bytes (staff +10, belt/rune +2 in the first; boots +5 in the second). Containers: `01` cube (bag, currencies included), `0B` equipped,
+`0F` warehouse, `04` quest items (souls).
+```
+11 56: whole inventory when entering the world — records of different lengths (gear carries more), so scan for them
+1B 56: one slot changed — 01, u8, 00, u32, u32, then the item record at offset 11 (count = new total, 0 = emptied)
+```
+Kinah is two items, `930100001` Kina (Bound) and `930100031` Kina; the currency bar shows their sum (cube only).
+`930100023` Enhance Stone, `930100003` Abyss Points. `15 57` lists dungeon rewards (item, count pairs);
+`1E 56` is loot on the ground (entity, positions, item). `83 56` (≈40 KB at login) carries item ids too (not decoded).
+
+The inventory list arrives within the first second of the world connection, before the detector locks: the pipeline
+keeps the last 10 s of every unlocked connection and decodes it on lock.
+
+### World objects and hidden cubes ✅ verified 2026-10-14 (one cube opened, one more seen)
+```
+34 36: object in range — entity varint, kind u8, u8, code u32, x f32, y f32, z f32, …
+38 36 / 37 36: we start interacting (object, us)
+3A 36: interaction done — object varint, actor varint, u8, …, item u32 used up (last 4 bytes; 0 = none)
+35 36: object state changed (e.g. 04 03 after opening)
+```
+Hidden cubes are objects with code 1200039 (both sightings); opening one uses up item 630900003 (Key: Hidden Cube),
+then `1E 56` drops the loot from the cube's position. Measured: we stood 0.9 m from the cube while opening it; the
+nearest aion2hub cube markers were 70 m and 33 m off (their monsters match within 0.5 m, so their cube spots are
+approximate).
 
 ### Party and group finder (not decoded yet)
 - `01 97`: group finder board (listings with names and recruitment texts, ~6 KB pages).

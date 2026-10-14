@@ -137,6 +137,30 @@ public class PipelineTests
     }
 
     [Fact]
+    public void DecodesWhatTheConnectionSentBeforeTheLock()
+    {
+        // The game sends identity, map and inventory right after connecting, before enough signature hits to lock
+        var events = new List<GameEvent>();
+        var pipeline = new GameCapturePipeline(events.Add);
+        uint seq = 1000;
+        long ts = 0;
+
+        byte[] early = Frame("4236 ccc801 00 03");
+        pipeline.Process(FrameBuilder.Server(seq, early, ts));
+        seq += (uint)early.Length;
+        Assert.Null(pipeline.Detector.Locked);
+
+        for (int i = 0; i < 40; i++, ts += 100)
+        {
+            pipeline.Process(FrameBuilder.Server(seq, Idle, ts));
+            seq += (uint)Idle.Length;
+        }
+
+        Assert.NotNull(pipeline.Detector.Locked);
+        Assert.IsType<DeathEvent>(Assert.Single(events));
+    }
+
+    [Fact]
     [Trait("Category", "Npcap")] // needs wpcap.dll (not on CI runners)
     public void RecordsAndReplaysPcapEndToEnd()
     {

@@ -43,6 +43,14 @@ public static class Opcodes
     public const ushort PartyRoster = 0x0297;
     public const ushort FieldBossTable = 0x0191;
 
+    // World objects (hidden cubes, gather nodes, doors…)
+    public const ushort WorldObject = 0x3436;
+    public const ushort InteractionDone = 0x3A36;
+
+    // Inventory (56 family, our own character)
+    public const ushort InventoryList = 0x1156;
+    public const ushort InventoryItem = 0x1B56;
+
     // Legion (8A family)
     public const ushort LegionDetails = 0x038A;
     public const ushort LegionRoster = 0x058A;

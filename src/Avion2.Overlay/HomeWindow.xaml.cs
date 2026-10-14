@@ -15,6 +15,7 @@ public partial class HomeWindow : Window
     private readonly HomePage _home;
     private readonly TimersPage _timers;
     private readonly ForgePage _forge;
+    private MapPage? _map;
     private readonly HistoryPage _history;
     private readonly SettingsPage _settings;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(500) };
@@ -30,7 +31,7 @@ public partial class HomeWindow : Window
         ThemeManager.Changed += UpdateBackdrop;
         _home = new HomePage(state, row => ShowPage("history", row));
         _timers = new TimersPage(state);
-        _forge = new ForgePage();
+        _forge = new ForgePage(state);
         _history = new HistoryPage(state);
         _settings = new SettingsPage(state);
 
@@ -97,6 +98,7 @@ public partial class HomeWindow : Window
         {
             "timers" => _timers,
             "forge" => _forge,
+            "map" => _map ??= new MapPage(_state), // created on first visit: it loads the map pictures
             "history" => _history,
             "settings" => _settings,
             _ => _home,

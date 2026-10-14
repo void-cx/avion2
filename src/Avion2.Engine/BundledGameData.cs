@@ -34,6 +34,30 @@ public static class BundledGameData
         return reader.ReadToEnd();
     }
 
+    /// <summary>Zone maps in the order they are offered (key = aion2hub / game map asset name).</summary>
+    public static readonly string[] WorldMapKeys =
+        ["World_L_A", "World_L_B", "World_L_Starter", "World_D_A", "World_D_B", "World_D_Starter", "Abyss_Reshanta_A", "Abyss_Reshanta_B"];
+
+    private static readonly Dictionary<string, WorldMap> LoadedMaps = new();
+
+    /// <summary>A zone map's markers and regions (parsed on first use), or null.</summary>
+    public static WorldMap? WorldMap(string key)
+    {
+        lock (LoadedMaps)
+        {
+            if (!LoadedMaps.TryGetValue(key, out var map) && Read($"world/{key}.json") is { } json)
+            {
+                LoadedMaps[key] = map = Avion2.Analysis.WorldMap.Parse(json);
+            }
+
+            return map;
+        }
+    }
+
+    /// <summary>The map picture (JPEG, half the marker resolution).</summary>
+    public static Stream? WorldMapImage(string key) =>
+        typeof(BundledGameData).Assembly.GetManifestResourceStream($"gamedata/world/{key}.jpg");
+
     private static readonly Lazy<GearForge> ForgeTable = new(() => GearForge.Parse(Read("gear_forge.json")));
 
     /// <summary>Enchant/amplify ladders per item (English names), parsed on first use.</summary>
