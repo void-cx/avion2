@@ -205,6 +205,7 @@ public sealed class AppState
             SaveHistory = _baseOptions.SaveHistory,
             ReplayPath = _baseOptions.ReplayPath,
             ReplaySpeed = _baseOptions.ReplaySpeed,
+            AnonymizeNames = _baseOptions.AnonymizeNames,
         });
         engine.FightSaved += entry => Application.Current.Dispatcher.BeginInvoke(() => Fights.Insert(0, new HistoryRow(entry)));
         engine.LegionChanged += () =>

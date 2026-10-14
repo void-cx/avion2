@@ -149,6 +149,48 @@ internal static class DevShots
         Save(home, Path.Combine(directory, name));
     }
 
+    /// <summary>
+    /// Developer aid: <c>--replay-shot dir</c> renders the replay of the longest saved fight. Use it on a
+    /// history recorded with <c>--anonymize</c> (no real names) for screenshots that can be shared.
+    /// </summary>
+    public static void AnonymousReplay(AppState state, string directory)
+    {
+        Directory.CreateDirectory(directory);
+        state.PersistSettings = false;
+        var best = state.Fights
+            .Select(row => (Row: row, Trace: state.History.LoadTrace(row.Entry)))
+            .Where(x => x.Trace is not null)
+            .OrderByDescending(x => x.Row.Entry.Snapshot.DurationSeconds)
+            .FirstOrDefault();
+        if (best.Trace is not { } anonymous)
+        {
+            Application.Current.Shutdown();
+            return;
+        }
+
+        var view = new DetailView();
+        var window = new Window
+        {
+            Content = view,
+            Width = 1180,
+            Height = 700,
+            Left = -20000,
+            WindowStartupLocation = WindowStartupLocation.Manual,
+            ShowInTaskbar = false,
+            Background = (System.Windows.Media.Brush)Application.Current.FindResource("BackdropBrush"),
+        };
+        ThemeManager.Attach(window);
+        window.Show();
+        view.ShowSaved(best.Row.Entry, anonymous.SelfId, 4, anonymous);
+        Pump(TimeSpan.FromMilliseconds(1500));
+        view.ReplaySlider.Value = view.ReplaySlider.Maximum * 0.55;
+        view.Replay.Inspect(anonymous.SelfId);
+        Pump(TimeSpan.FromMilliseconds(800));
+        Save(window, Path.Combine(directory, "replay.png"));
+        File.WriteAllText(Path.Combine(directory, "replay.txt"), best.Row.Entry.Snapshot.Title);
+        Application.Current.Shutdown();
+    }
+
     private static void Save(Window window, string path)
     {
         var root = (FrameworkElement)window.Content;

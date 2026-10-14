@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AVION2 · Damage meter for AION2</title>
+  <meta name="description" content="AVION2 is a free, open-source damage meter and fight analyzer for AION2: live DPS overlay, fight replays, timers, a zone map with a hidden cube finder, and an enchant calculator.">
+  <meta property="og:title" content="AVION2 · Damage meter for AION2">
+  <meta property="og:description" content="Live DPS overlay, fight replays, timers, a zone map with Find My Cube, and an enchant calculator. Passive, local, open source.">
+  <meta property="og:image" content="img/compass.png">
+  <link rel="icon" href="img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="#">✦ AVION2</a>
+    <nav>
+      <a href="#cube">Find My Cube</a>
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/void-cx/avion2">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-text">
+        <p class="eyebrow">Damage meter &amp; fight analyzer for AION2</p>
+        <h1>Every hit, counted.</h1>
+        <p class="lede">See your party's damage live, replay every fight, never miss a rift or world boss, and find hidden cubes
+          with a compass. Passive, runs on your PC, open source.</p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/void-cx/avion2/releases/latest">Download for Windows</a>
+          <a class="button" href="https://github.com/void-cx/avion2">Source on GitHub</a>
+        </div>
+        <p class="fine">Windows 10/11 · needs <a href="https://npcap.com/">Npcap</a> · free, GPL-3.0 · updates itself</p>
+      </div>
+
+      <figure class="shot">
+        <img src="img/overlay.png" width="390" height="264" alt="The live overlay during a boss fight: damage per player with crits, back attacks and the boss's HP">
+        <figcaption>The overlay in a raid · player names hidden</figcaption>
+      </figure>
+    </section>
+
+    <section id="cube" class="band">
+      <div class="band-inner">
+        <p class="eyebrow">Only in AVION2</p>
+        <h2>Find My Cube</h2>
+        <p class="lede">Hidden cubes, found like a lost phone. AVION2 leads you to an area, and the moment the game shows a cube
+          near you it switches to precision finding: distance, height and which way to turn.</p>
+        <img class="compass" src="img/compass.png" width="992" height="346" alt="The cube compass: heading to an area, searching it, a spotted cube 17 m ahead and 4 m up, and arrival">
+        <ol class="steps">
+          <li><strong>Search the area.</strong> Reported cube spots are rough, so the compass gives you an area to walk or fly
+            around instead of a fake distance.</li>
+          <li><strong>Spotted.</strong> The game shows the cube: the compass turns green with the exact distance, how high it
+            is and whether to turn left or right.</li>
+          <li><strong>Opened.</strong> Opening it is detected by itself and the compass moves on to the next one. Cubes that
+            others open first are noted too.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="features" class="features">
+      <h2>Everything in one window</h2>
+
+      <article class="feature">
+        <div>
+          <h3>Live meter</h3>
+          <p>An overlay on top of the game with damage per player, crits, back attacks, damage taken and the boss's HP.
+            A low-HP alert with its own sound, and a warning when the game server freezes.</p>
+        </div>
+      </article>
+
+      <article class="feature">
+        <div>
+          <h3>Fight analysis</h3>
+          <p>Every fight is saved: damage and healing per skill, crits, back attacks, damage taken by source, a timeline of
+            each player's casts and buff uptime. Lag spikes are marked where they happened.</p>
+        </div>
+      </article>
+
+      <article class="feature wide">
+        <img src="img/replay.jpg" width="1148" height="508" alt="The replay of a raid boss fight: every player and monster on a map, with who hit whom" loading="lazy">
+        <div>
+          <h3>Fight replay</h3>
+          <p>Watch any fight again from above: where everyone stood, who hit whom, and what each player was doing at that
+            moment. Scrub through it, change the speed, click anyone for their HP and last skill.</p>
+        </div>
+      </article>
+
+      <article class="feature wide">
+        <img src="img/map.jpg" width="1264" height="761" alt="The map tab: Verteron with teleports, hidden cube areas and a monster card with its drops" loading="lazy">
+        <div>
+          <h3>Map</h3>
+          <p>Every zone with teleports, gathering spots, monsters with their drops and NPCs. You and the players around you
+            appear on it, with the way you face.</p>
+        </div>
+      </article>
+
+      <article class="feature wide">
+        <img src="img/timers.jpg" width="1264" height="560" alt="The timers tab: next Spacetime Rift, events, Reshanta world bosses and field boss respawns" loading="lazy">
+        <div>
+          <h3>Timers</h3>
+          <p>Spacetime Rifts, Beritra air raids, PvP events, resets, Reshanta world bosses and field boss respawns, in your time
+            zone, with notices before they start.</p>
+        </div>
+      </article>
+
+      <article class="feature wide">
+        <img src="img/forge.jpg" width="1264" height="560" alt="The Gear Forge: average and unlucky enchant costs per level" loading="lazy">
+        <div>
+          <h3>Gear Forge</h3>
+          <p>What it costs to enchant or amplify any item: average and unlucky materials, Kinah and attempts per level. It
+            knows your equipped gear and what your Enhance Stones and Kinah cover.</p>
+        </div>
+      </article>
+
+      <article class="feature wide">
+        <img src="img/home-void.jpg" width="1264" height="400" alt="The VOID theme" loading="lazy">
+        <div>
+          <h3>Two themes</h3>
+          <p>An AION2 look and the VOID theme. Skill and monster names in 10 languages.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="privacy">
+      <h2>Passive and private</h2>
+      <p>AVION2 only reads the game's network traffic on your PC, the way a network monitor does. It doesn't touch the game,
+        doesn't inject anything and doesn't send your data anywhere. Fights, recordings and settings stay on your PC.</p>
+    </section>
+
+    <section id="install" class="install">
+      <h2>Install</h2>
+      <ol>
+        <li>Install <a href="https://npcap.com/">Npcap</a> (the capture driver Wireshark uses).</li>
+        <li>Download the <a href="https://github.com/void-cx/avion2/releases/latest">latest release</a> and unzip it anywhere.</li>
+        <li>Run <code>AVION2.exe</code>, press <strong>Start Meter</strong>, play.</li>
+      </ol>
+      <p class="fine">New versions show up as a banner in the app and install with one click.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>AVION2 · <a href="https://github.com/void-cx/avion2">void-cx/avion2</a> · GPL-3.0</p>
+    <p class="fine">Not affiliated with NCSOFT. AION is a trademark of NCSOFT Corporation.</p>
+  </footer>
+</body>
+</html>

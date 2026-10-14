@@ -17,6 +17,12 @@ public partial class App : Application
 
         var tab = Get(args, "tab") is { } t && Enum.TryParse<OverlayTab>(t, ignoreCase: true, out var parsed) ? parsed : OverlayTab.Damage;
         AppState.CleanUpAfterUpdate();
+        if (Get(args, "replay-shot") is { } replayShot)
+        {
+            DevShots.AnonymousReplay(state, replayShot);
+            return;
+        }
+
         if (Get(args, "render-shots") is { } shots)
         {
             double delay = double.TryParse(Get(args, "shot-delay"), CultureInfo.InvariantCulture, out double d) ? d : 9;
@@ -57,6 +63,7 @@ public partial class App : Application
         DataDirectory = Get(args, "data"),
         ReplayPath = Get(args, "replay"),
         HistoryDirectory = Get(args, "history-dir"),
+        AnonymizeNames = args.Contains("--anonymize"),
         // Replays are for UI work: only save their fights when a history directory is given explicitly.
         SaveHistory = Get(args, "replay") is null || Get(args, "history-dir") is not null,
         ReplaySpeed = double.TryParse(Get(args, "speed"), CultureInfo.InvariantCulture, out double speed) && speed > 0 ? speed : 1.0,

@@ -33,6 +33,9 @@ public sealed class EngineOptions
     public string? ReplayPath { get; init; }
 
     public double ReplaySpeed { get; init; } = 1.0;
+
+    /// <summary>Developer aid: no real player or legion names anywhere (shareable screenshots, see <see cref="NameAnonymizer"/>).</summary>
+    public bool AnonymizeNames { get; init; }
 }
 
 /// <summary>What a UI needs besides the meter rows.</summary>
@@ -101,9 +104,19 @@ public sealed class MeterEngine : IDisposable
             FightSaved?.Invoke(entry);
         };
         _session.Cubes.Changed += cube => CubeSeen?.Invoke(cube);
-        _session.Registry.SetKnownCharacters(characters.Characters);
+        var anonymizer = _options.AnonymizeNames ? new NameAnonymizer() : null;
+        if (anonymizer is null)
+        {
+            _session.Registry.SetKnownCharacters(characters.Characters);
+        }
+
         _session.Registry.CharacterIdentified += character =>
         {
+            if (anonymizer is not null)
+            {
+                return; // never remember "You" as a character
+            }
+
             // Identity records repeat; only touch the file when something changed.
             var latest = characters.Characters.FirstOrDefault();
             if (latest is null || latest.Name != character.Name || latest.Class != character.Class ||
@@ -114,8 +127,13 @@ public sealed class MeterEngine : IDisposable
         };
         _log = _options.EventLogPath is { } logPath ? new EventLog(logPath) : null;
         _recorder = _options.RecordPath is { } recordPath ? new PcapRecorder(recordPath) : null;
-        _pipeline = new GameCapturePipeline(e =>
+        _pipeline = new GameCapturePipeline(raw =>
         {
+            if ((anonymizer is null ? raw : anonymizer.Rewrite(raw)) is not { } e)
+            {
+                return;
+            }
+
             // A replay at another speed than 1× compresses arrival times against the server clock: its delays and
             // freezes would be fiction, so such replays carry no connection data.
             if (e is ServerClockEvent && _options.ReplayPath is not null && _options.ReplaySpeed != 1.0)

@@ -14,6 +14,9 @@ tools/publish.ps1 -Version 0.2.0 -Zip                # + the release zip and SHA
 App options: `--start` (start the meter right away), `--record x.pcap`, `--log x.jsonl`, `--device 7`, `--data dir`,
 `--theme void`. For UI work: `--replay x.pcap [--speed 2] [--history-dir dir]`; `--render-shots dir` renders every
 window off-screen to PNGs and exits.
+For shareable screenshots add `--anonymize` (players become "You", "Player 2", …; no legions), then
+`--history-dir <that run's history> --replay-shot dir` renders the longest saved fight's replay. The website lives
+in `site/` and deploys to GitHub Pages on every push that changes it.
 
 ## CI and releases
 
