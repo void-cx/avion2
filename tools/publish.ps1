@@ -35,6 +35,7 @@ if ($Zip) {
     Compress-Archive -Path (Join-Path $out '*') -DestinationPath $zipPath
     $hash = (Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
     # Same format as sha256sum: "<hex>  <file name>" (AVION2-Updater checks it)
-    Set-Content -Path (Join-Path $root 'artifacts\SHA256SUMS.txt') -Value "$hash  $name" -Encoding ascii
+    # LF line ending, so `sha256sum -c SHA256SUMS.txt` works as well
+    [IO.File]::WriteAllText((Join-Path $root 'artifacts\SHA256SUMS.txt'), "$hash  $name`n")
     Write-Host "Zip: $zipPath ($hash)"
 }
