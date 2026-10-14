@@ -54,6 +54,7 @@
                         <CheckBox Content="Spacetime Rifts" IsChecked="{Binding NotifyRift}" Margin="0,0,16,4" />
                         <CheckBox Content="Beritra Air Raid" IsChecked="{Binding NotifyBossRaid}" Margin="0,0,16,4" />
                         <CheckBox Content="Field boss respawns" IsChecked="{Binding NotifyFieldBoss}" Margin="0,0,16,4" />
+                        <CheckBox Content="World bosses (Reshanta)" IsChecked="{Binding NotifyWorldBoss}" Margin="0,0,16,4" />
                         <CheckBox Content="Boss skill casts" IsChecked="{Binding NotifyBossCasts}" Margin="0,0,16,4"
                                   ToolTip="While the meter runs: a notice when a boss starts a named skill (no sound)." />
                         <CheckBox Content="Hourly field events" IsChecked="{Binding NotifyFieldEvents}" Margin="0,0,16,4" />

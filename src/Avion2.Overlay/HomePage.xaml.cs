@@ -10,11 +10,7 @@ namespace Avion2.Overlay;
 
 public sealed record DeviceOption(int? Index, string Label);
 
-public sealed record EventLine(string Category, string Name, string At, string In);
-
 public sealed record LegionLine(string Name, string Seen);
-
-public sealed record FieldBossLine(string Name, string When, Brush Dot, Brush WhenBrush, string Detail);
 
 /// <summary>Start/stop the meter, see what's going on, jump to recent fights.</summary>
 public partial class HomePage : UserControl
@@ -56,58 +52,38 @@ public partial class HomePage : UserControl
         Unloaded += (_, _) => _timer.Stop();
     }
 
-    private void RefreshTimers()
+    /// <summary>Next rift, next world boss and the next field boss respawn (or event when none is known).</summary>
+    private void RefreshComingUp()
     {
         var now = DateTimeOffset.Now;
-        var region = _state.Settings.Region;
-        var offset = Avion2.Analysis.GameSchedule.ServerOffset(region);
-        RegionChip.Text = $"{region} server · GMT+{offset.TotalHours:0}";
+        var upcoming = _state.Timers.Upcoming(now);
+        var lines = new List<EventLine>();
 
-        var rifts = _state.Timers.NextRifts(now, 5);
-        RiftCountdown.Text = Countdown(rifts[0] - now);
-        RiftAt.Text = $"Opens at {rifts[0].ToLocalTime():HH:mm} your time";
-        RiftList.Text = "Then " + string.Join(" · ", rifts.Skip(1).Select(r => r.ToLocalTime().ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture)));
+        void Add(string category, string name, DateTimeOffset at) =>
+            lines.Add(new EventLine(category, name, $"{at.ToLocalTime():HH:mm}", TimersPage.Countdown(at - now), string.Empty));
 
-        RefreshFieldBosses(now);
-        EventList.ItemsSource = _state.Timers.Upcoming(now)
-            .Where(o => o.Event.Category != Avion2.Analysis.ScheduleCategory.Rift)
-            .Select(o => new EventLine(
-                AppState.CategoryLabel(o.Event.Category),
-                o.Event.Name,
-                o.StartsAt.ToLocalTime().ToString(o.StartsAt - now > TimeSpan.FromHours(20) ? "ddd HH:mm" : "HH:mm", System.Globalization.CultureInfo.InvariantCulture),
-                "in " + Countdown(o.StartsAt - now)))
-            .ToList();
-    }
-
-
-    private void RefreshFieldBosses(DateTimeOffset now)
-    {
-        var rows = _state.FieldBosses.Rows(_state.Data, now);
-        NoFieldBosses.Visibility = rows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        var newest = _state.FieldBosses.Maps.Select(m => m.ReceivedAtMs).DefaultIfEmpty(0).Max();
-        FieldBossSeen.Text = newest == 0 ? string.Empty
-            : $"Updated {DateTimeOffset.FromUnixTimeMilliseconds(newest).ToLocalTime():HH:mm} · {string.Join(", ", _state.FieldBosses.Maps.Select(m => _state.Data.MapName(m.MapId)))}";
-
-        FieldBossList.ItemsSource = rows.Take(16).Select(r => r.Status switch
+        var rift = upcoming.First(o => o.Event.Category == Avion2.Analysis.ScheduleCategory.Rift);
+        Add("Spacetime Rift", $"{_state.Settings.Region} server", rift.StartsAt);
+        if (upcoming.FirstOrDefault(o => o.Event.Category == Avion2.Analysis.ScheduleCategory.WorldBoss) is { } boss)
         {
-            Avion2.Analysis.FieldBossStatus.Respawning => new FieldBossLine(r.Name,
-                $"{r.At.ToLocalTime():HH:mm} · in {Countdown(r.At - now)}", Theme("IdleBrush"), Theme("HighlightBrush"),
-                $"Respawns at {r.At.ToLocalTime():HH:mm} ({_state.Data.MapName(r.MapId)})"),
-            Avion2.Analysis.FieldBossStatus.Due => new FieldBossLine(r.Name,
-                $"due since {r.At.ToLocalTime():HH:mm}", Theme("WarnBrush"), Theme("WarnBrush"),
-                $"Respawn was due at {r.At.ToLocalTime():HH:mm}; probably up ({_state.Data.MapName(r.MapId)})"),
-            _ => new FieldBossLine(r.Name, $"up since {r.At.ToLocalTime():HH:mm}", Theme("LiveBrush"), Theme("MutedBrush"),
-                $"Spawned at {r.At.ToLocalTime():HH:mm} ({_state.Data.MapName(r.MapId)})"),
-        }).ToList();
-    }
+            Add("World boss", boss.Event.Name, boss.StartsAt);
+        }
 
-    private static string Countdown(TimeSpan span) => span.TotalHours >= 24
-        ? $"{(int)span.TotalDays}d {span.Hours}h {span.Minutes:00}m"
-        : $"{(int)span.TotalHours:00}:{span.Minutes:00}:{span.Seconds:00}";
+        if (_state.FieldBosses.Rows(_state.Data, now).FirstOrDefault(r => r.Status == Avion2.Analysis.FieldBossStatus.Respawning) is { } field)
+        {
+            Add("Field boss", field.Name, field.At);
+        }
+        else if (upcoming.FirstOrDefault(o => o.Event.Category == Avion2.Analysis.ScheduleCategory.BossRaid) is { } raid)
+        {
+            Add("Boss raid", raid.Event.Name, raid.StartsAt);
+        }
+
+        ComingUp.ItemsSource = lines;
+    }
 
     private void Refresh()
     {
-        RefreshTimers();
+        RefreshComingUp();
         NpcapValue.Text = AppState.NpcapInstalled ? "Installed ✓" : "Missing — install from npcap.com";
         NamesValue.Text = _state.SkillNames == 0
             ? "Not installed (Settings → download)"
@@ -185,6 +161,8 @@ public partial class HomePage : UserControl
     }
 
     private void AllFights_Click(object sender, RoutedEventArgs e) => _openHistory(null);
+
+    private void Timers_Click(object sender, RoutedEventArgs e) => _state.RequestPage("timers");
 
     private void Recent_Click(object sender, MouseButtonEventArgs e)
     {
@@ -265,7 +243,4 @@ public partial class HomePage : UserControl
             : ago.TotalHours < 24 ? $"{(int)ago.TotalHours} h ago"
             : $"{(int)ago.TotalDays} d ago";
     }
-
-    /// <summary>A brush of the current theme (looked up on every refresh, so theme switches apply).</summary>
-    private Brush Theme(string key) => (Brush)FindResource(key);
 }

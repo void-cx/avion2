@@ -154,6 +154,7 @@ public sealed class OverlayViewModel : Bindable
     private bool _notifyPvp = true;
     private bool _notifyReset;
     private bool _notifyFieldBoss = true;
+    private bool _notifyWorldBoss = true;
     private bool _notifySound = true;
 
     private bool _alerting;
@@ -281,6 +282,7 @@ public sealed class OverlayViewModel : Bindable
     public bool NotifyPvp { get => _notifyPvp; set => Set(ref _notifyPvp, value); }
     public bool NotifyReset { get => _notifyReset; set => Set(ref _notifyReset, value); }
     public bool NotifyFieldBoss { get => _notifyFieldBoss; set => Set(ref _notifyFieldBoss, value); }
+    public bool NotifyWorldBoss { get => _notifyWorldBoss; set => Set(ref _notifyWorldBoss, value); }
 
     private bool _notifyBossCasts = true;
 
@@ -301,6 +303,7 @@ public sealed class OverlayViewModel : Bindable
         ScheduleCategory.Pvp => _notifyPvp,
         ScheduleCategory.Reset => _notifyReset,
         ScheduleCategory.FieldBoss => _notifyFieldBoss,
+        ScheduleCategory.WorldBoss => _notifyWorldBoss,
         _ => false,
     };
 

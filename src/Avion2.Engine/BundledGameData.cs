@@ -34,6 +34,11 @@ public static class BundledGameData
         return reader.ReadToEnd();
     }
 
+    private static readonly Lazy<GearForge> ForgeTable = new(() => GearForge.Parse(Read("gear_forge.json")));
+
+    /// <summary>Enchant/amplify ladders per item (English names), parsed on first use.</summary>
+    public static GearForge Forge => ForgeTable.Value;
+
     /// <summary>
     /// The tables for <paramref name="language"/>: each file from <paramref name="overrideDirectory"/> when it
     /// exists there, otherwise built in (English when a table has no translation).

@@ -49,4 +49,29 @@ public class ScheduleTests
         var taiwan = GameSchedule.Next(Event(ServerRegion.Taiwan, "rift"), Now, ServerRegion.Taiwan);
         Assert.Equal(TimeSpan.FromHours(1), taiwan - korea);
     }
+
+    [Fact]
+    public void GlobalWorldBossesMatchAion2Hub()
+    {
+        // aion2hub world boss page, Wed 2026-10-14 11:53:02 Berlin, Europe server: Watcher Kaira at 12:00,
+        // the Executors Thu 14:30, the Abyss Siege Boss Fri 14:00 (local time).
+        var now = new DateTimeOffset(2026, 10, 14, 11, 53, 2, TimeSpan.FromHours(2));
+        var berlin = TimeSpan.FromHours(2);
+        DateTimeOffset Next(string key) => GameSchedule.Next(Event(ServerRegion.Europe, key), now, ServerRegion.Europe).ToOffset(berlin);
+
+        Assert.Equal(new DateTimeOffset(2026, 10, 14, 12, 0, 0, berlin), Next("wb-watcher-kaira"));
+        Assert.Equal(new DateTimeOffset(2026, 10, 15, 14, 30, 0, berlin), Next("wb-executors"));
+        Assert.Equal(new DateTimeOffset(2026, 10, 16, 14, 0, 0, berlin), Next("wb-siege"));
+        Assert.DoesNotContain(GameSchedule.Events(ServerRegion.Europe), e => e.Key == "wb-nahma");
+    }
+
+    [Fact]
+    public void KoreaWorldBossesUseTheirOwnSchedule()
+    {
+        var kaira = Event(ServerRegion.Korea, "wb-watcher-kaira");
+        Assert.Equal([1, 5, 9, 13, 17, 21], kaira.Hours);
+        Assert.Equal("Every 4 h from 01:00", GameSchedule.Describe(kaira));
+        Assert.Equal("Wed, Sat · 22:30", GameSchedule.Describe(Event(ServerRegion.Korea, "wb-executors")));
+        Assert.Contains(GameSchedule.Events(ServerRegion.Korea), e => e.Key == "wb-nahma" && e.Zone == "Chaotic Middle Reshanta");
+    }
 }

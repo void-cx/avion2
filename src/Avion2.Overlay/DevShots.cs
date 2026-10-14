@@ -78,6 +78,14 @@ internal static class DevShots
                 home.ShowPage("history", fight);
             }
 
+            Shoot(home, "timers", directory, "timers.png");
+            Shoot(home, "forge", directory, "forge.png");
+            if (home.CurrentPage is ForgePage forge)
+            {
+                forge.Pick("ludra blade");
+                Shoot(home, "forge", directory, "forge-plan.png");
+            }
+
             Shoot(home, "history", directory, "history.png");
             Shoot(home, "settings", directory, "settings.png");
 

@@ -46,6 +46,7 @@ public sealed class OverlaySettings
     public bool NotifyPvp { get; set; } = true;
     public bool NotifyReset { get; set; }
     public bool NotifyFieldBoss { get; set; } = true;
+    public bool NotifyWorldBoss { get; set; } = true;
 
     /// <summary>Show the skill a boss starts casting (named skills only).</summary>
     public bool NotifyBossCasts { get; set; } = true;

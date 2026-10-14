@@ -11,6 +11,7 @@
     <EmbeddedResource Include="..\..\assets\gamedata\npcs\*.json" LogicalName="gamedata/npcs/%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\assets\gamedata\maps\*.json" LogicalName="gamedata/maps/%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\assets\gamedata\field_bosses.json" LogicalName="gamedata/field_bosses.json" />
+    <EmbeddedResource Include="..\..\assets\gamedata\gear_forge.json" LogicalName="gamedata/gear_forge.json" />
   </ItemGroup>
 
 </Project>

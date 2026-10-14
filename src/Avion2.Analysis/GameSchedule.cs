@@ -18,18 +18,21 @@ public enum ScheduleCategory
     Pvp,
     Reset,
     FieldBoss,
+    WorldBoss,
 }
 
 /// <summary>A recurring in-game event. Times are server-local (see <see cref="GameSchedule.ServerOffset"/>).</summary>
 /// <param name="Hours">Server hours it starts at (for hourly events: every hour).</param>
 /// <param name="Days">Server weekdays it runs on; empty = every day.</param>
+/// <param name="Zone">Where it happens (world bosses), or null.</param>
 public sealed record ScheduledEvent(
     string Key,
     string Name,
     ScheduleCategory Category,
     int[] Hours,
     int Minute,
-    DayOfWeek[] Days)
+    DayOfWeek[] Days,
+    string? Zone = null)
 {
     public static int[] EveryHour { get; } = Enumerable.Range(0, 24).ToArray();
 }
@@ -37,8 +40,8 @@ public sealed record ScheduledEvent(
 public sealed record Occurrence(ScheduledEvent Event, DateTimeOffset StartsAt);
 
 /// <summary>
-/// The fixed AION2 event timetable per server region. Source: aion2hub.com's rift timer
-/// (Global data from the 2026-09-19 client; Korea/Taiwan extracted from their clients).
+/// The fixed AION2 event timetable per server region. Source: aion2hub.com's rift timer and world boss
+/// schedule (Global data from the 2026-09-19 client; Korea/Taiwan from client v110, 2026-09-09).
 /// Spacetime Rifts are a timetable, not packets: Global servers open them every 3 hours from 00:00
 /// server time (GMT+9), Korea/Taiwan from 02:00.
 /// </summary>
@@ -74,7 +77,48 @@ public static class GameSchedule
                 [DayOfWeek.Monday, DayOfWeek.Thursday, DayOfWeek.Saturday]));
         }
 
+        events.AddRange(WorldBosses(global));
         return events;
+    }
+
+    private const string LowerReshanta = "Chaotic Lower Reshanta";
+    private const string MiddleReshanta = "Chaotic Middle Reshanta";
+
+    /// <summary>
+    /// Reshanta world bosses. Watcher Kaira respawns on an interval (every 3 h from 01:00 server time on Global,
+    /// every 4 h on Korea/Taiwan); the others spawn on fixed weekdays. Middle Reshanta is Korea/Taiwan only.
+    /// </summary>
+    private static IEnumerable<ScheduledEvent> WorldBosses(bool global)
+    {
+        static int[] Every(int hours) => Enumerable.Range(0, 24 / hours).Select(i => 1 + i * hours).ToArray();
+        DayOfWeek[] executorDays = global ? [DayOfWeek.Monday, DayOfWeek.Thursday, DayOfWeek.Saturday] : [DayOfWeek.Wednesday, DayOfWeek.Saturday];
+        DayOfWeek[] siegeDays = [DayOfWeek.Sunday, DayOfWeek.Friday];
+        int executorHour = global ? 21 : 22;
+        int siegeHour = global ? 21 : 22;
+
+        yield return new("wb-watcher-kaira", "Watcher Kaira", ScheduleCategory.WorldBoss, Every(global ? 3 : 4), 0, Daily, LowerReshanta);
+        yield return new("wb-executors", "Executors Argo, Kaira & Tamasa", ScheduleCategory.WorldBoss, [executorHour], 30, executorDays, LowerReshanta);
+        yield return new("wb-siege", "Abyss Siege Boss", ScheduleCategory.WorldBoss, [siegeHour], 0, siegeDays, LowerReshanta);
+        if (!global)
+        {
+            yield return new("wb-nahma", "Enraged Guardian Lord Nahma", ScheduleCategory.WorldBoss, [22], 0, siegeDays, MiddleReshanta);
+            yield return new("wb-middle", "Dramos, Marakha & Ducal", ScheduleCategory.WorldBoss, [22], 30, executorDays, MiddleReshanta);
+        }
+    }
+
+    /// <summary>"Every 3 h from 01:00", "Mon, Thu, Sat · 21:30" — the rule behind an event, in server time.</summary>
+    public static string Describe(ScheduledEvent ev)
+    {
+        if (ev.Hours.Length == 24)
+        {
+            return $"Every hour at :{ev.Minute:00}";
+        }
+
+        string time(int hour) => $"{hour:00}:{ev.Minute:00}";
+        string hours = ev.Hours.Length > 2 && ev.Days.Length == 0 && ev.Hours.Zip(ev.Hours.Skip(1), (a, b) => b - a).Distinct().Count() == 1
+            ? $"Every {ev.Hours[1] - ev.Hours[0]} h from {time(ev.Hours[0])}"
+            : string.Join(", ", ev.Hours.Select(time));
+        return ev.Days.Length == 0 ? hours : $"{string.Join(", ", ev.Days.Select(d => d.ToString()[..3]))} · {hours}";
     }
 
     /// <summary>The next start of <paramref name="ev"/> strictly after <paramref name="now"/>.</summary>

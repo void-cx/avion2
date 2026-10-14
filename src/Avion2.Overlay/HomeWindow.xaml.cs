@@ -13,6 +13,8 @@ public partial class HomeWindow : Window
 {
     private readonly AppState _state;
     private readonly HomePage _home;
+    private readonly TimersPage _timers;
+    private readonly ForgePage _forge;
     private readonly HistoryPage _history;
     private readonly SettingsPage _settings;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(500) };
@@ -27,6 +29,8 @@ public partial class HomeWindow : Window
         ThemeManager.Attach(this);
         ThemeManager.Changed += UpdateBackdrop;
         _home = new HomePage(state, row => ShowPage("history", row));
+        _timers = new TimersPage(state);
+        _forge = new ForgePage();
         _history = new HistoryPage(state);
         _settings = new SettingsPage(state);
 
@@ -91,6 +95,8 @@ public partial class HomeWindow : Window
 
         Page.Content = tag switch
         {
+            "timers" => _timers,
+            "forge" => _forge,
             "history" => _history,
             "settings" => _settings,
             _ => _home,

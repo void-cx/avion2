@@ -99,6 +99,7 @@ public sealed class AppState
         Avion2.Analysis.ScheduleCategory.FieldEvent => "Field event",
         Avion2.Analysis.ScheduleCategory.Pvp => "PvP",
         Avion2.Analysis.ScheduleCategory.FieldBoss => "Field boss",
+        Avion2.Analysis.ScheduleCategory.WorldBoss => "World boss",
         _ => "Reset",
     };
 
@@ -496,6 +497,7 @@ public sealed class AppState
         Settings.NotifyPvp = s.NotifyPvp;
         Settings.NotifyReset = s.NotifyReset;
         Settings.NotifyFieldBoss = s.NotifyFieldBoss;
+        Settings.NotifyWorldBoss = s.NotifyWorldBoss;
         Settings.NotifyBossCasts = s.NotifyBossCasts;
         Settings.NotifySound = s.NotifySound;
         Settings.NoticeSound = string.IsNullOrWhiteSpace(s.NoticeSound) ? null : s.NoticeSound;
@@ -530,6 +532,7 @@ public sealed class AppState
         s.NotifyPvp = Settings.NotifyPvp;
         s.NotifyReset = Settings.NotifyReset;
         s.NotifyFieldBoss = Settings.NotifyFieldBoss;
+        s.NotifyWorldBoss = Settings.NotifyWorldBoss;
         s.NotifyBossCasts = Settings.NotifyBossCasts;
         s.NotifySound = Settings.NotifySound;
         s.NoticeSound = Settings.NoticeSound;

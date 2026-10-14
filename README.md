@@ -11,7 +11,9 @@ It is passive: it never touches the game, its files or its memory, and sends not
   boss HP, fight timer.
 - **Fight history** with the full breakdown of every fight: skills, hits, crits, damage taken by source.
 - **Timeline** of every skill cast per player, **buff uptime**, and a **replay** of the fight on a map.
-- **Timers and notices** for Spacetime Rifts, Beritra air raids, PvP events, resets and field boss respawns.
+- **Timers and notices** for Spacetime Rifts, Beritra air raids, PvP events, resets, Reshanta world bosses and
+  field boss respawns.
+- **Gear Forge**: average and unlucky cost (materials, Kinah, attempts) to enchant or amplify any item.
 - **Low-HP alert** with its own sound.
 - **Server lag warning** when the game server freezes, also marked in each fight.
 - **Legion** tags on players and a legion card with your members.

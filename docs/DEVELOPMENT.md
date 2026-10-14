@@ -56,7 +56,7 @@ src/
   Avion2.Capture    Npcap capture, TCP reassembly, game-connection detection, pcap read/record
   Avion2.Analysis   entities, encounters and stats, fight traces (timeline, buffs, positions, lag), timers
   Avion2.Engine     capture loop shared by app and CLI, history, built-in game data, update check
-  Avion2.Overlay    WPF app: home window, overlay, details (Timeline/Buffs/Replay), themes (Theme/README.md)
+  Avion2.Overlay    WPF app: home, timers, gear forge, history, overlay, details (Timeline/Buffs/Replay), themes
   Avion2.Updater    AVION2-Updater.exe
   Avion2.Cli        console meter and tools
 tests/Avion2.Tests  protocol vectors, reassembly, detection, analysis, traces, updater
@@ -84,7 +84,7 @@ On a boss kill, total party damage should be roughly 97–107% of the boss's max
 
 ## Game data
 
-Skill/NPC names (10 languages), field bosses, zone names and class emblems are compiled in from
+Skill/NPC names (10 languages), field bosses, zone names, enchant ladders and class emblems are compiled in from
 [assets/gamedata](../assets/gamedata) (sources in its PROVENANCE.md). `skills.json`, `npcs.json`, `field_bosses.json`
 or `maps.json` in `%AppData%\AVION2\data` replace single tables ([format](../data/README.md)).
 
