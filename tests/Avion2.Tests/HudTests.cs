@@ -49,7 +49,7 @@ public class HudTests
     public void FindsThePartyFramesAndTheTargetBar()
     {
         // Like the game at 1280×720 (measured at 2560×1440, halved): five party rows top left, 26.5 px apart, each
-        // a red HP bar over a cyan MP bar; the target's HP bar under the minimap.
+        // a red HP bar over a cyan MP bar; the boss frame at the top centre.
         var frame = Frame();
         int[] rows = [99, 126, 152, 179, 206];
         foreach (int row in rows)
@@ -58,7 +58,14 @@ public class HudTests
             Fill(frame, 31, row + 4, 104, 2, 10, 200, 235);
         }
 
-        Fill(frame, 1126, 178, 100, 5, 230, 40, 40);
+        // Boss frame at the top centre: gold rims around a dark track with a shrinking yellow fill
+        foreach (int rim in new[] { 31, 33, 39, 41, 44 })
+        {
+            Fill(frame, 522, rim, 234, 1, 201, 207, 154);
+        }
+
+        Fill(frame, 539, 34, 200, 5, 72, 76, 40);
+        Fill(frame, 539, 34, 50, 5, 255, 255, 100);
         Fill(frame, 486, 649, 134, 7, 214, 20, 26); // own HP bar: not part of the party
 
         var party = HudDetector.FindPartyBars(frame, Width, Height, Width * 4);
@@ -73,10 +80,29 @@ public class HudTests
         var target = HudDetector.FindTargetBar(frame, Width, Height, Width * 4);
         Assert.NotNull(target);
         var (tx, ty, tw, th) = target!.ToPixels(Width, Height);
-        Assert.Equal(1126, tx, 1);
-        Assert.Equal(178, ty, 1);
-        Assert.Equal(100, tw, 1);
-        Assert.Equal(5, th, 1);
+        Assert.Equal(522, tx, 1);
+        Assert.Equal(31, ty, 1);
+        Assert.Equal(234, tw, 1);
+        Assert.Equal(14, th, 1);
+    }
+
+    [Fact]
+    public void PartyRowsSurviveTintedDamagedAndGreyedBars()
+    {
+        // Row 2 tinted (not red), row 3 damaged (short), row 5 greyed out (dim red)
+        var frame = Frame();
+        Fill(frame, 31, 99, 104, 3, 240, 50, 77);
+        Fill(frame, 31, 126, 104, 3, 200, 90, 200);
+        Fill(frame, 31, 152, 60, 3, 240, 50, 77);
+        Fill(frame, 31, 179, 104, 3, 240, 50, 77);
+        Fill(frame, 31, 206, 104, 3, 149, 26, 44);
+
+        var party = HudDetector.FindPartyBars(frame, Width, Height, Width * 4);
+
+        Assert.NotNull(party);
+        Assert.Equal(5, party!.Value.Rows);
+        Assert.Equal(104, party.Value.First.ToPixels(Width, Height).W, 1);
+        Assert.InRange(party.Value.Pitch * Height, 26, 27.5);
     }
 
     [Fact]

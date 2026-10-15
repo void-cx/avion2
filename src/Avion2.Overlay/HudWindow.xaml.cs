@@ -137,7 +137,8 @@ public partial class HudWindow : Window
         // Centred under the boss bar, kept on screen when the bar is near an edge
         double bannerWidth = CastBanner.DesiredSize.Width;
         Canvas.SetLeft(CastBanner, Math.Clamp(target.X + target.W / 2 - bannerWidth / 2, 8, Math.Max(8, w - bannerWidth - 8)));
-        Canvas.SetTop(CastBanner, target.Y + target.H + 8);
+        // Below the boss's status pills and buff icons under the bar
+        Canvas.SetTop(CastBanner, target.Y + target.H + h * 0.06);
     }
 
     private void UpdateLowHp(EngineStatus? status)

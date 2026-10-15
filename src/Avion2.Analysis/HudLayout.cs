@@ -15,7 +15,7 @@ public static class HudAnchors
     /// <summary>Your own HP bar (low-HP blink).</summary>
     public const string SelfHp = "selfHp";
 
-    /// <summary>The target / boss frame (boss skill warnings under it).</summary>
+    /// <summary>The boss frame at the top centre (boss skill warnings centred under it).</summary>
     public const string Target = "target";
 
     /// <summary>The party frames.</summary>
@@ -26,7 +26,7 @@ public static class HudAnchors
     public static string Label(string id) => id switch
     {
         SelfHp => "Your HP bar",
-        Target => "Target frame",
+        Target => "Boss HP bar",
         Party => "Party HP bars",
         _ => id,
     };
@@ -35,7 +35,7 @@ public static class HudAnchors
     public static HudBox Default(string id) => id switch
     {
         SelfHp => new HudBox(0.38, 0.901, 0.104, 0.01),
-        Target => new HudBox(0.88, 0.247, 0.078, 0.008),
+        Target => new HudBox(0.408, 0.043, 0.182, 0.019),
         Party => new HudBox(0.024, 0.138, 0.081, 0.15),
         _ => new HudBox(0.45, 0.45, 0.1, 0.05),
     };

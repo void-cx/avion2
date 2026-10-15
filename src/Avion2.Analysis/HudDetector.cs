@@ -82,76 +82,135 @@ public static class HudDetector
     }
 
     /// <summary>
-    /// The target's HP bar: a red bar in the upper right quarter (under the minimap), wider than tall.
-    /// Only present while something is targeted.
+    /// The boss frame at the top centre: its HP bar sits in an ornate frame whose gold rims draw several long,
+    /// light-gold lines across the middle of the screen. The rims are found (not the fill, which shrinks with the
+    /// boss's HP); the box covers the whole frame. Only present during a boss fight.
     /// </summary>
     public static HudBox? FindTargetBar(ReadOnlySpan<byte> pixels, int width, int height, int stride)
     {
-        var bars = Bars(pixels, width, height, stride, width * 55 / 100, width, 0, height * 35 / 100, Math.Max(30, width / 30));
-        var best = bars
-            .Where(b => b.H >= 4 && b.H <= height / 50 && b.W >= b.H * 8 && b.W <= width / 6)
-            .OrderByDescending(b => b.W)
-            .FirstOrDefault();
-        return best.W == 0 ? null : HudBox.FromPixels(best.X, best.Y, best.W, best.H, width, height);
-    }
-
-    /// <summary>
-    /// The party frames: two or more thin red HP bars on the left, aligned at the same x, with the same width, one
-    /// below the other at an even spacing. Returns the first (top) bar and the row pitch as a fraction of the height.
-    /// </summary>
-    public static (HudBox First, double Pitch, int Rows)? FindPartyBars(ReadOnlySpan<byte> pixels, int width, int height, int stride)
-    {
-        var bars = Bars(pixels, width, height, stride, 0, width / 4, 0, height * 70 / 100, Math.Max(30, width / 30))
-            .Where(b => b.H >= 3 && b.H <= height / 90 && b.W >= b.H * 10 && b.W <= width / 6)
-            .ToList();
-
-        // Longest run of equally spaced, aligned bars
-        (int Start, int Count, int Pitch) best = default;
-        for (int i = 0; i < bars.Count; i++)
+        var rows = new List<(int Y, int X0, int X1)>();
+        for (int y = height * 2 / 100; y < height * 15 / 100; y++)
         {
-            for (int j = i + 1; j < bars.Count; j++)
+            var row = pixels.Slice(y * stride, width * 4);
+            int bestStart = -1, bestEnd = -1, start = -1, last = -1;
+            for (int x = width / 4; x < width * 3 / 4; x++)
             {
-                int pitch = bars[j].Y - bars[i].Y;
-                if (!Aligned(bars[i], bars[j]) || pitch < bars[i].H * 3)
+                byte b = row[x * 4], g = row[x * 4 + 1], r = row[x * 4 + 2];
+                if (!(r > 140 && g > 130 && b < 175 && r - b > 30 && g - b > 20))
                 {
                     continue;
                 }
 
-                int count = 2;
-                var last = bars[j];
-                foreach (var next in bars.Skip(j + 1))
+                if (start < 0 || x - last > 40)
                 {
-                    if (Aligned(bars[i], next) && Math.Abs(next.Y - last.Y - pitch) <= 2)
-                    {
-                        count++;
-                        last = next;
-                    }
+                    start = x;
                 }
 
-                if (count > best.Count)
+                last = x;
+                if (last - start > bestEnd - bestStart)
                 {
-                    best = (i, count, pitch);
+                    (bestStart, bestEnd) = (start, last);
                 }
+            }
+
+            if (bestStart >= 0 && bestEnd - bestStart + 1 >= width / 10 && Math.Abs((bestStart + bestEnd) / 2.0 - width / 2.0) < width * 0.08)
+            {
+                rows.Add((y, bestStart, bestEnd));
             }
         }
 
-        if (best.Count < 2)
+        // The rims of one frame: rows close together (a few px apart); the biggest group wins
+        List<(int Y, int X0, int X1)>? best = null;
+        var group = new List<(int Y, int X0, int X1)>();
+        foreach (var row in rows.Append<(int Y, int X0, int X1)>((int.MaxValue, 0, 0)))
+        {
+            if (group.Count > 0 && row.Y - group[^1].Y > height / 120)
+            {
+                if (best is null || group.Count > best.Count)
+                {
+                    best = group;
+                }
+
+                group = new();
+            }
+
+            group.Add(row);
+        }
+
+        if (best is not { Count: >= 3 })
         {
             return null;
         }
 
-        var first = bars[best.Start];
-        return (HudBox.FromPixels(first.X, first.Y, first.W, first.H, width, height), best.Pitch / (double)height, best.Count);
+        int x0 = Median(best.Select(r => r.X0)), x1 = Median(best.Select(r => r.X1));
+        return HudBox.FromPixels(x0, best[0].Y, x1 - x0 + 1, best[^1].Y - best[0].Y + 1, width, height);
 
-        static bool Aligned((int X, int Y, int W, int H) a, (int X, int Y, int W, int H) b) =>
-            Math.Abs(a.X - b.X) <= 4 && Math.Abs(a.W - b.W) <= Math.Max(6, a.W / 12);
+        static int Median(IEnumerable<int> values)
+        {
+            var sorted = values.OrderBy(v => v).ToList();
+            return sorted[sorted.Count / 2];
+        }
+    }
+
+    /// <summary>
+    /// The party frames: thin red HP bars on the left, starting at the same x, one below the other at an even
+    /// spacing. Rows can be missing from the picture (a tinted bar, an empty one); the spacing is then a whole
+    /// multiple. The width is the widest bar (a damaged member's bar is shorter). Returns the top bar, the row pitch
+    /// as a fraction of the height and the number of rows from the top bar to the bottom one.
+    /// </summary>
+    public static (HudBox First, double Pitch, int Rows)? FindPartyBars(ReadOnlySpan<byte> pixels, int width, int height, int stride)
+    {
+        var bars = Bars(pixels, width, height, stride, 0, width / 4, 0, height * 70 / 100, Math.Max(20, width / 50), dim: true, maxGap: 4) // no text on these bars; the buff icons beside them stay apart
+            .Where(b => b.H >= 3 && b.H <= height / 90 && b.W >= b.H * 4 && b.W <= width / 6)
+            .ToList();
+
+        (List<(int X, int Y, int W, int H)> Rows, double Pitch) best = (new(), 0);
+        foreach (var a in bars)
+        {
+            foreach (var b in bars.Where(b => b.Y > a.Y && Math.Abs(b.X - a.X) <= 4))
+            {
+                for (int k = 1; k <= 4; k++)
+                {
+                    double pitch = (b.Y - a.Y) / (double)k;
+                    if (pitch < a.H * 3 || pitch > height / 12.0)
+                    {
+                        continue;
+                    }
+
+                    double tolerance = Math.Max(3, pitch * 0.06);
+                    var rows = bars
+                        .Where(c => c.Y >= a.Y && Math.Abs(c.X - a.X) <= 4)
+                        .Where(c =>
+                        {
+                            double steps = (c.Y - a.Y) / pitch;
+                            return Math.Abs(steps - Math.Round(steps)) * pitch <= tolerance && Math.Round(steps) <= 8;
+                        })
+                        .ToList();
+                    if (rows.Count > best.Rows.Count || (rows.Count == best.Rows.Count && rows.Count > 0 && pitch > best.Pitch)) // a tie: the larger spacing (half of it fits too)
+                    {
+                        best = (rows, pitch);
+                    }
+                }
+            }
+        }
+
+        if (best.Rows.Count < 2)
+        {
+            return null;
+        }
+
+        var top = best.Rows[0];
+        var bottom = best.Rows[^1];
+        int count = (int)Math.Round((bottom.Y - top.Y) / best.Pitch) + 1;
+        double pitchExact = count > 1 ? (bottom.Y - top.Y) / (double)(count - 1) : best.Pitch;
+        int widest = best.Rows.Max(r => r.W);
+        return (HudBox.FromPixels(top.X, top.Y, widest, top.H, width, height), pitchExact / height, count);
     }
 
     /// <summary>Red horizontal bars (rows with a long red run, stacked) inside a region, top to bottom.</summary>
     private static List<(int X, int Y, int W, int H)> Bars(ReadOnlySpan<byte> pixels, int width, int height, int stride,
-        int left, int right, int top, int bottom, int minWidth)
+        int left, int right, int top, int bottom, int minWidth, bool dim = false, int maxGap = 40)
     {
-        const int maxGap = 40;
         var rows = new List<(int Y, int X0, int X1)>();
         for (int y = top; y < bottom; y++)
         {
@@ -159,7 +218,8 @@ public static class HudDetector
             int bestStart = -1, bestEnd = -1, start = -1, last = -1;
             for (int x = left; x < right; x++)
             {
-                if (!IsHpRed(row[x * 4 + 2], row[x * 4 + 1], row[x * 4]))
+                byte r = row[x * 4 + 2], g = row[x * 4 + 1], b = row[x * 4];
+                if (!(IsHpRed(r, g, b) || (dim && IsDimRed(r, g, b))))
                 {
                     continue;
                 }
@@ -201,6 +261,9 @@ public static class HudDetector
 
         return bars;
     }
+
+    /// <summary>A greyed-out (offline or far away) member's bar.</summary>
+    private static bool IsDimRed(byte r, byte g, byte b) => r > 115 && g < 70 && b < 80 && r - Math.Max(g, b) > 75;
 
     private static bool IsHpRed(byte r, byte g, byte b) => r > 150 && g < 80 && b < 80 && r - Math.Max(g, b) > 110;
 }

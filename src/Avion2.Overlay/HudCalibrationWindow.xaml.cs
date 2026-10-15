@@ -168,7 +168,7 @@ public partial class HudCalibrationWindow : Window
         Summary.Text = string.Join(" · ",
             $"{_picture.PixelWidth} × {_picture.PixelHeight}",
             Found(HudAnchors.SelfHp, "Your HP bar: not found (calibrate at full HP), drag the red box onto it"),
-            Found(HudAnchors.Target, "Target: not found (target something), drag the gold box onto its HP bar"),
+            Found(HudAnchors.Target, "Boss HP bar: not found (only shows in a boss fight), the gold box marks where it usually is"),
             _found.Contains(HudAnchors.Party) ? $"Party: {_partyRows} rows found" : Found(HudAnchors.Party, "Party: not found (needs a party)"));
     }
 
