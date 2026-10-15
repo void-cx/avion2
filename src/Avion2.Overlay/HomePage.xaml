@@ -58,7 +58,7 @@
                     <Button x:Name="StartStop" Style="{StaticResource AccentButton}" Content="Start capture" MinWidth="170" MinHeight="42" Click="StartStop_Click" />
                     <Button x:Name="OverlayToggle" Style="{StaticResource QuietButton}" Content="Hide overlay" MinHeight="42" Margin="10,0,0,0" Click="OverlayToggle_Click"
                             Background="{DynamicResource FloatingPanelBrush}" Visibility="Collapsed"
-                            ToolTip="Show or hide the DPS overlay (Ctrl+Shift+O). The capture, HUD effects and fight saving keep running either way. When it shows by itself: Settings → DPS overlay." />
+                            ToolTip="Show or hide the DPS overlay (Ctrl+Shift+O). The capture, HUD effects and fight saving keep running either way. When it shows by itself: Settings → Overlays." />
                     <Button Style="{StaticResource QuietButton}" Content="Fight history" MinHeight="42" Margin="10,0,0,0" Click="AllFights_Click"
                             Background="{DynamicResource FloatingPanelBrush}" />
                     <Border Style="{StaticResource FloatingPanel}" CornerRadius="17" Padding="14,0" Height="34" Margin="14,0,0,0" VerticalAlignment="Center">
@@ -209,11 +209,6 @@
                             <ComboBox x:Name="DeviceBox" DisplayMemberPath="Label" Margin="0,0,0,10"
                                       ToolTip="Automatic captures on every adapter and finds the game connection by itself (also through VPNs and ping reducers)." />
                             <CheckBox x:Name="RecordBox" Content="Record session (.pcap)" Foreground="{DynamicResource SecondaryTextBrush}" />
-                            <DockPanel Margin="0,12,0,0">
-                                <TextBlock Text="DPS overlay" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" Margin="0,0,10,0" />
-                                <ComboBox x:Name="OverlayModeBox" DisplayMemberPath="Label" SelectionChanged="OverlayMode_SelectionChanged"
-                                          ToolTip="When the DPS overlay shows by itself while capturing. You can always show or hide it (Ctrl+Shift+O)." />
-                            </DockPanel>
                         </StackPanel>
                     </Border>
                 </Grid>

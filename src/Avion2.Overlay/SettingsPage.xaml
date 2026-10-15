@@ -1,6 +1,7 @@
 <UserControl x:Class="Avion2.Overlay.SettingsPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Avion2.Overlay">
     <UserControl.Resources>
         <Style x:Key="Heading" TargetType="TextBlock">
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -16,14 +17,61 @@
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="28,26,28,28" MaxWidth="760" HorizontalAlignment="Left">
-            <TextBlock Text="Settings" Style="{StaticResource PageTitle}" Margin="0,0,0,18" />
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="236" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Sections -->
+        <Border Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="22,26,22,18">
+                    <TextBlock Style="{StaticResource BrandTitle}" />
+                    <TextBlock Text="Passive DPS meter for AION2" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,2,0,0" />
+                </StackPanel>
+                <local:SidebarFooter DockPanel.Dock="Bottom" />
+                <StackPanel x:Name="Sections" Margin="8,0">
+                    <RadioButton Style="{StaticResource SideItem}" Content="General" Tag="general" GroupName="SettingsSection" IsChecked="True"
+                                 local:Ui.Icon="{StaticResource IconSettings}" Checked="Section_Checked" />
+                    <RadioButton Style="{StaticResource SideItem}" Content="Overlays" Tag="overlay" GroupName="SettingsSection"
+                                 local:Ui.Icon="{StaticResource IconList}" Checked="Section_Checked" />
+                    <RadioButton Style="{StaticResource SideItem}" Content="HUD effects" Tag="hud" GroupName="SettingsSection"
+                                 local:Ui.Icon="{StaticResource IconFit}" Checked="Section_Checked" />
+                    <RadioButton Style="{StaticResource SideItem}" Content="Find My Cube" Tag="cubes" GroupName="SettingsSection"
+                                 local:Ui.Icon="{StaticResource IconMap}" Checked="Section_Checked" />
+                    <RadioButton Style="{StaticResource SideItem}" Content="Alerts &amp; timers" Tag="alerts" GroupName="SettingsSection"
+                                 local:Ui.Icon="{StaticResource IconBell}" Checked="Section_Checked" />
+                    <RadioButton Style="{StaticResource SideItem}" Content="Appearance" Tag="appearance" GroupName="SettingsSection"
+                                 local:Ui.Icon="{StaticResource IconStar}" Checked="Section_Checked" />
+                    <RadioButton Style="{StaticResource SideItem}" Content="Data &amp; storage" Tag="data" GroupName="SettingsSection"
+                                 local:Ui.Icon="{StaticResource IconFolder}" Checked="Section_Checked" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <ScrollViewer x:Name="Scroller" Grid.Column="1" VerticalScrollBarVisibility="Auto">
+        <StackPanel x:Name="Cards" Margin="28,26,28,28" MaxWidth="760" HorizontalAlignment="Left">
+            <TextBlock x:Name="SectionTitle" Text="General" Style="{StaticResource PageTitle}" />
+            <TextBlock x:Name="SectionHint" Style="{StaticResource PageSubtitle}" Margin="0,3,0,18" />
+
+            <!-- DPS overlay: when it shows -->
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="overlay">
+                <StackPanel>
+                    <TextBlock Text="DPS overlay" Style="{StaticResource Heading}" />
+                    <DockPanel>
+                        <TextBlock Text="Shows by itself" Width="150" VerticalAlignment="Center" />
+                        <ComboBox x:Name="OverlayModeBox" Width="280" HorizontalAlignment="Left" DisplayMemberPath="Label" SelectionChanged="OverlayMode_SelectionChanged" />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="The overlay is only a view: hiding it (✕, Ctrl+Shift+O or Hide overlay on the home page) leaves the capture, HUD effects, alerts and fight saving running. With &quot;connected&quot; or &quot;during fights&quot;, hiding it holds until the next connection or fight." />
+                </StackPanel>
+            </Border>
 
             <!-- General -->
-            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="general">
                 <StackPanel>
-                    <TextBlock Text="General" Style="{StaticResource Heading}" />
+                    <TextBlock Text="Start &amp; updates" Style="{StaticResource Heading}" />
                     <CheckBox Content="Start the capture automatically when AVION2 opens" IsChecked="{Binding AutoStart}" />
                     <CheckBox x:Name="UpdateCheckBox" Content="Check for updates when AVION2 starts" Margin="0,8,0,0" />
                     <DockPanel Margin="0,8,0,0">
@@ -36,7 +84,7 @@
             </Border>
 
             <!-- Timers -->
-            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="alerts">
                 <StackPanel>
                     <TextBlock Text="Timers &amp; notifications" Style="{StaticResource Heading}" />
                     <DockPanel>
@@ -85,7 +133,7 @@
             </Border>
 
             <!-- Appearance -->
-            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="appearance">
                 <StackPanel>
                     <TextBlock Text="Appearance" Style="{StaticResource Heading}" />
                     <DockPanel Margin="0,0,0,8">
@@ -111,9 +159,9 @@
             </Border>
 
             <!-- Overlay -->
-            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="overlay">
                 <StackPanel>
-                    <TextBlock Text="Overlay" Style="{StaticResource Heading}" />
+                    <TextBlock Text="Overlay look" Style="{StaticResource Heading}" />
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Right" Width="44" TextAlignment="Right" VerticalAlignment="Center"
                                    Text="{Binding BackgroundOpacity, StringFormat={}{0:P0}}" />
@@ -128,7 +176,7 @@
             </Border>
 
             <!-- HUD effects (beta) -->
-            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="hud">
                 <StackPanel>
                     <TextBlock Text="HUD effects (beta)" Style="{StaticResource Heading}" />
                     <CheckBox x:Name="HudBox" Content="Draw effects on the game's own HUD" Click="Hud_Click" />
@@ -152,17 +200,23 @@
             </Border>
 
             <!-- Find My Cube (opt-in) -->
-            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="cubes">
                 <StackPanel>
                     <TextBlock Text="Find My Cube" Style="{StaticResource Heading}" />
                     <CheckBox x:Name="CubeFinderBox" Content="Lead me to hidden cubes (compass and exact cube positions)" Click="CubeFinder_Click" />
+                    <DockPanel x:Name="CompassModePanel" Margin="0,10,0,0">
+                        <TextBlock Text="Compass shows by itself" Width="170" VerticalAlignment="Center" />
+                        <ComboBox x:Name="CompassModeBox" Width="300" HorizontalAlignment="Left" DisplayMemberPath="Label" SelectionChanged="CompassMode_SelectionChanged" />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="The compass runs with the capture, also without the Map page open. It turns green only for a cube the game has just sent you; spots from earlier are shown as &quot;last seen here&quot; areas to search." />
                     <TextBlock Style="{StaticResource Hint}"
                                Text="Off by default. It uses cube positions the game sends to your PC before the cube is on your screen, which can be seen as an unfair advantage. You are asked to confirm before it is switched on." />
                 </StackPanel>
             </Border>
 
             <!-- Storage -->
-            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="data">
                 <StackPanel>
                     <TextBlock Text="Storage" Style="{StaticResource Heading}" />
                     <DockPanel>
@@ -183,7 +237,7 @@
             </Border>
 
             <!-- Low HP alert -->
-            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="alerts">
                 <StackPanel>
                     <TextBlock Text="Low-HP alert" Style="{StaticResource Heading}" />
                     <CheckBox Content="Play a sound and flash the overlay when my HP is low" IsChecked="{Binding LowHpAlert}" />
@@ -214,7 +268,7 @@
             </Border>
 
             <!-- Game data -->
-            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="data">
                 <StackPanel>
                     <TextBlock Text="Skill and NPC names" Style="{StaticResource Heading}" />
                     <TextBlock x:Name="DataStatus" TextWrapping="Wrap" />
@@ -228,7 +282,7 @@
             </Border>
 
             <!-- History -->
-            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="data">
                 <StackPanel>
                     <TextBlock Text="Fight history" Style="{StaticResource Heading}" />
                     <DockPanel>
@@ -241,7 +295,7 @@
             </Border>
 
             <!-- Hotkeys -->
-            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="overlay">
                 <StackPanel>
                     <TextBlock Text="Hotkeys" Style="{StaticResource Heading}" />
                     <Grid>
@@ -266,5 +320,6 @@
                 </StackPanel>
             </Border>
         </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+    </Grid>
 </UserControl>

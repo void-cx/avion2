@@ -36,7 +36,11 @@ public sealed class AppState
         FieldBosses = Avion2.Analysis.FieldBossBoard.Load(FieldBossFile);
         Timers = new TimerService(Settings, FieldBossOccurrences);
         Timers.Due += OnEventDue;
+        Cubes = new CubeFinder(this);
     }
+
+    /// <summary>Find My Cube: the compass and what it leads to (runs with the capture, not with the Map page).</summary>
+    public CubeFinder Cubes { get; }
 
     private static string FieldBossFile =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "field_bosses.json");

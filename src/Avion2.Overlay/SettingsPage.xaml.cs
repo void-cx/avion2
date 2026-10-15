@@ -40,6 +40,13 @@ public partial class SettingsPage : UserControl
         VersionText.Text = $"Version {Avion2.Engine.UpdateChecker.CurrentVersion}";
         SetUpStorage();
         CubeFinderBox.IsChecked = state.Stored.CubeFinder;
+        OverlayModeBox.ItemsSource = OverlayModes;
+        OverlayModeBox.SelectedItem = OverlayModes.FirstOrDefault(m => m.Id == state.Stored.OverlayAutoShow) ?? OverlayModes[1];
+        CompassModeBox.ItemsSource = CompassModes;
+        CompassModeBox.SelectedItem = CompassModes.FirstOrDefault(m => m.Id == state.Stored.CompassAutoShow) ?? CompassModes[0];
+        CompassModePanel.IsEnabled = state.Stored.CubeFinder;
+        state.CubeFinderChanged += () => CompassModePanel.IsEnabled = state.Stored.CubeFinder;
+        ShowSection("general");
         HudBox.IsChecked = state.Stored.HudEffects;
         HudHpBox.IsChecked = state.Stored.HudHpBlink;
         HudCastBox.IsChecked = state.Stored.HudBossCasts;
@@ -277,6 +284,82 @@ public partial class SettingsPage : UserControl
     {
         System.IO.Directory.CreateDirectory(Recordings.Directory);
         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", Recordings.Directory) { UseShellExecute = true });
+    }
+
+    private static readonly OverlayModeOption[] OverlayModes =
+    [
+        new("start", "When the capture starts"),
+        new("connection", "When the game is connected"),
+        new("fight", "During fights (until 30 s after)"),
+        new("manual", "Only when I show it"),
+    ];
+
+    private static readonly OverlayModeOption[] CompassModes =
+    [
+        new("manual", "Only from \"Find a cube\" on the map"),
+        new("nearby", "When the game sends a cube near you"),
+    ];
+
+    private static readonly Dictionary<string, (string Title, string Hint)> SectionTexts = new()
+    {
+        ["general"] = ("General", "Starting AVION2 and updates."),
+        ["overlay"] = ("Overlays", "The DPS overlay: when it shows and how it looks, and the hotkeys."),
+        ["hud"] = ("HUD effects", "Effects drawn on the game's own HUD."),
+        ["cubes"] = ("Find My Cube", "The hidden cube compass. Optional, off by default."),
+        ["alerts"] = ("Alerts & timers", "Notifications for rifts, bosses and events, and the low-HP alert."),
+        ["appearance"] = ("Appearance", "Theme and home page background."),
+        ["data"] = ("Data & storage", "Skill and NPC names, saved fights and recordings."),
+    };
+
+    /// <summary>Shows one section's cards (the sidebar picks it).</summary>
+    internal void ShowSection(string section)
+    {
+        foreach (var card in Cards.Children.OfType<Border>())
+        {
+            card.Visibility = (string?)card.Tag == section ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        if (SectionTexts.TryGetValue(section, out var texts))
+        {
+            SectionTitle.Text = texts.Title;
+            SectionHint.Text = texts.Hint;
+        }
+
+        foreach (var item in Sections.Children.OfType<RadioButton>())
+        {
+            if ((string)item.Tag == section)
+            {
+                item.IsChecked = true;
+            }
+        }
+
+        Scroller.ScrollToTop();
+    }
+
+    private void Section_Checked(object sender, RoutedEventArgs e)
+    {
+        if (sender is RadioButton { Tag: string section } && IsInitialized && Cards is not null)
+        {
+            ShowSection(section);
+        }
+    }
+
+    private void OverlayMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (OverlayModeBox.SelectedItem is OverlayModeOption mode && _state is not null)
+        {
+            _state.Stored.OverlayAutoShow = mode.Id;
+            _state.SaveSettings();
+        }
+    }
+
+    private void CompassMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (CompassModeBox.SelectedItem is OverlayModeOption mode && _state is not null)
+        {
+            _state.Stored.CompassAutoShow = mode.Id;
+            _state.SaveSettings();
+        }
     }
 
     private void UpdateHudStatus()

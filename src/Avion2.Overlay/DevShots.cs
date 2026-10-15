@@ -164,12 +164,16 @@ internal static class DevShots
             }
 
             Shoot(home, "settings", directory, "settings.png");
-            if (home.CurrentPage.Content is System.Windows.Controls.ScrollViewer settingsScroller)
+            if (home.CurrentPage is SettingsPage settingsPage)
             {
-                settingsScroller.ScrollToVerticalOffset(700);
-                Pump(TimeSpan.FromMilliseconds(500));
-                Save(home, Path.Combine(directory, "settings-lower.png"));
-                settingsScroller.ScrollToTop();
+                foreach (string section in new[] { "overlay", "hud", "cubes", "alerts", "data" })
+                {
+                    settingsPage.ShowSection(section);
+                    Pump(TimeSpan.FromMilliseconds(500));
+                    Save(home, Path.Combine(directory, $"settings-{section}.png"));
+                }
+
+                settingsPage.ShowSection("general");
             }
 
             // Switch the theme while everything is open: every window must restyle without a restart.

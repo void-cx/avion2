@@ -42,8 +42,6 @@ public partial class HomePage : UserControl
         DeviceBox.SelectedItem = devices.FirstOrDefault(d => d.Index == state.Stored.Device) ?? devices[0];
         DeviceBox.SelectionChanged += (_, _) => state.Stored.Device = (DeviceBox.SelectedItem as DeviceOption)?.Index;
         RecordBox.IsChecked = state.Stored.RecordSessions;
-        OverlayModeBox.ItemsSource = OverlayModes;
-        OverlayModeBox.SelectedItem = OverlayModes.FirstOrDefault(m => m.Id == state.Stored.OverlayAutoShow) ?? OverlayModes[1];
         RecordBox.Click += (_, _) => state.Stored.RecordSessions = RecordBox.IsChecked == true;
 
         state.MeterStateChanged += Refresh;
@@ -220,22 +218,7 @@ public partial class HomePage : UserControl
 
     private void OverlayToggle_Click(object sender, RoutedEventArgs e) => _state.SetOverlayVisible(!_state.OverlayVisible);
 
-    private static readonly OverlayModeOption[] OverlayModes =
-    [
-        new("start", "Show when the capture starts"),
-        new("connection", "Show when the game is connected"),
-        new("fight", "Show during fights"),
-        new("manual", "Only when I show it"),
-    ];
 
-    private void OverlayMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (OverlayModeBox.SelectedItem is OverlayModeOption mode)
-        {
-            _state.Stored.OverlayAutoShow = mode.Id;
-            _state.SaveSettings();
-        }
-    }
 
     private void Timers_Click(object sender, RoutedEventArgs e) => _state.RequestPage("timers");
 

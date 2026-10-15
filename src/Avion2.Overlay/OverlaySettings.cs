@@ -77,6 +77,12 @@ public sealed class OverlaySettings
     /// <summary>Calibrated HUD positions per game resolution ("2560x1440").</summary>
     public Dictionary<string, Avion2.Analysis.HudLayout> HudLayouts { get; set; } = [];
 
+    /// <summary>
+    /// When the cube compass shows by itself (Find My Cube on, capturing): "manual" (only from Find a cube) or
+    /// "nearby" (when a cube packet arrives for a cube near you).
+    /// </summary>
+    public string CompassAutoShow { get; set; } = "manual";
+
     public double? CompassLeft { get; set; }
     public double? CompassTop { get; set; }
 
