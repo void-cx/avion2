@@ -127,6 +127,26 @@
                 </StackPanel>
             </Border>
 
+            <!-- HUD effects (beta) -->
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="HUD effects (beta)" Style="{StaticResource Heading}" />
+                    <CheckBox x:Name="HudBox" Content="Draw effects on the game's own HUD" Click="Hud_Click" />
+                    <StackPanel x:Name="HudOptions" Margin="26,6,0,0">
+                        <CheckBox x:Name="HudHpBox" Content="Your HP bar pulses red while your HP is low" Click="HudOption_Click" />
+                        <CheckBox x:Name="HudCastBox" Content="Boss skills appear under the target frame" Click="HudOption_Click" Margin="0,6,0,0" />
+                        <DockPanel Margin="0,10,0,0">
+                            <Button DockPanel.Dock="Right" Content="Preview" Click="HudPreview_Click" Margin="8,0,0,0"
+                                    ToolTip="Shows both effects on the game for a few seconds" />
+                            <Button DockPanel.Dock="Right" Content="Calibrate…" Click="HudCalibrate_Click" />
+                            <TextBlock x:Name="HudStatus" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,12,0" />
+                        </DockPanel>
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="Calibrate once per game resolution: AVION2 takes a single picture of the game window, finds your HP bar and lets you place the boxes. The picture is not saved. Needs borderless or windowed mode; the effects only show while the game is in front." />
+                </StackPanel>
+            </Border>
+
             <!-- Find My Cube (opt-in) -->
             <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
                 <StackPanel>

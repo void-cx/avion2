@@ -23,6 +23,12 @@ public partial class App : Application
             return;
         }
 
+        if (Get(args, "hud-shot") is { } hudShot && Get(args, "picture") is { } picture)
+        {
+            DevShots.HudCalibration(state, picture, hudShot);
+            return;
+        }
+
         if (Get(args, "render-shots") is { } shots)
         {
             double delay = double.TryParse(Get(args, "shot-delay"), CultureInfo.InvariantCulture, out double d) ? d : 9;

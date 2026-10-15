@@ -236,6 +236,31 @@ internal static class DevShots
         Application.Current.Shutdown();
     }
 
+    /// <summary>
+    /// Developer aid: <c>--picture game.png --hud-shot dir</c> opens the HUD calibration on a saved picture of the game
+    /// and renders it (detection check without the game).
+    /// </summary>
+    public static void HudCalibration(AppState state, string picture, string directory)
+    {
+        Directory.CreateDirectory(directory);
+        state.PersistSettings = false;
+        var bitmap = new BitmapImage();
+        bitmap.BeginInit();
+        bitmap.CacheOption = BitmapCacheOption.OnLoad;
+        bitmap.UriSource = new Uri(Path.GetFullPath(picture));
+        bitmap.EndInit();
+        var window = new HudCalibrationWindow(state, new FormatConvertedBitmap(bitmap, PixelFormats.Bgra32, null, 0))
+        {
+            WindowStartupLocation = WindowStartupLocation.Manual,
+            Left = -20000,
+            ShowInTaskbar = false,
+        };
+        window.Show();
+        Pump(TimeSpan.FromMilliseconds(1200));
+        Save(window, Path.Combine(directory, "hud-calibration.png"));
+        Application.Current.Shutdown();
+    }
+
     private static void Save(Window window, string path)
     {
         var root = (FrameworkElement)window.Content;

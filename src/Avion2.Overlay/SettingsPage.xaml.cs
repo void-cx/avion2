@@ -40,6 +40,11 @@ public partial class SettingsPage : UserControl
         VersionText.Text = $"Version {Avion2.Engine.UpdateChecker.CurrentVersion}";
         SetUpStorage();
         CubeFinderBox.IsChecked = state.Stored.CubeFinder;
+        HudBox.IsChecked = state.Stored.HudEffects;
+        HudHpBox.IsChecked = state.Stored.HudHpBlink;
+        HudCastBox.IsChecked = state.Stored.HudBossCasts;
+        state.HudChanged += UpdateHudStatus;
+        UpdateHudStatus();
         ThemeBox.ItemsSource = ThemeManager.Themes;
         ThemeBox.SelectedItem = ThemeManager.Current;
         ThemeManager.Changed += () =>
@@ -268,6 +273,39 @@ public partial class SettingsPage : UserControl
     {
         System.IO.Directory.CreateDirectory(Recordings.Directory);
         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", Recordings.Directory) { UseShellExecute = true });
+    }
+
+    private void UpdateHudStatus()
+    {
+        HudOptions.IsEnabled = _state.Stored.HudEffects;
+        var layouts = _state.Stored.HudLayouts.Values.OrderByDescending(l => l.CalibratedUtc).ToList();
+        HudStatus.Text = layouts.Count == 0
+            ? "Not calibrated yet."
+            : "Calibrated for " + string.Join(", ", layouts.Select(l => $"{l.Width} × {l.Height}")) +
+              $" · last {layouts[0].CalibratedUtc.ToLocalTime():dd MMM HH:mm}";
+    }
+
+    private void Hud_Click(object sender, RoutedEventArgs e) => _state.SetHudEffects(HudBox.IsChecked == true);
+
+    private void HudOption_Click(object sender, RoutedEventArgs e)
+    {
+        _state.Stored.HudHpBlink = HudHpBox.IsChecked == true;
+        _state.Stored.HudBossCasts = HudCastBox.IsChecked == true;
+        _state.SaveSettings();
+    }
+
+    private async void HudCalibrate_Click(object sender, RoutedEventArgs e) => await _state.CalibrateHudAsync(Window.GetWindow(this)!);
+
+    private void HudPreview_Click(object sender, RoutedEventArgs e)
+    {
+        if (_state.Hud is not { } hud)
+        {
+            MessageBox.Show(Window.GetWindow(this)!, "Start the meter first: the effects run with it.", "HUD effects",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        hud.Demo();
     }
 
     /// <summary>Switching "Find My Cube" on needs an explicit yes after reading what it means.</summary>

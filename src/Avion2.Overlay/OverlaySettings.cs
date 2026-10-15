@@ -43,6 +43,21 @@ public sealed class OverlaySettings
     /// </summary>
     public bool CubeFinder { get; set; }
 
+    /// <summary>
+    /// HUD effects (beta): effects drawn on the game's own HUD, placed by a one-off calibration picture. Off until
+    /// the player switches them on.
+    /// </summary>
+    public bool HudEffects { get; set; }
+
+    /// <summary>Your HP bar pulses red while your HP is below the low-HP threshold.</summary>
+    public bool HudHpBlink { get; set; } = true;
+
+    /// <summary>Boss skills appear under the target frame (instead of a notice).</summary>
+    public bool HudBossCasts { get; set; } = true;
+
+    /// <summary>Calibrated HUD positions per game resolution ("2560x1440").</summary>
+    public Dictionary<string, Avion2.Analysis.HudLayout> HudLayouts { get; set; } = [];
+
     public double? CompassLeft { get; set; }
     public double? CompassTop { get; set; }
 

@@ -243,6 +243,7 @@ public sealed class AppState
         Engine = engine;
         Overlay = new MainWindow(this, engine) { StartTab = startTab };
         Overlay.Show();
+        UpdateHud();
         MeterStateChanged?.Invoke();
         return null;
     }
@@ -259,6 +260,7 @@ public sealed class AppState
         Overlay = null;
         Engine = null;
         overlay?.Close(); // disposes the engine
+        UpdateHud();
         MeterStateChanged?.Invoke();
     }
 
@@ -383,6 +385,123 @@ public sealed class AppState
 
     /// <summary>Every hidden cube the game showed us (exact positions), and the ones we opened.</summary>
     public Avion2.Analysis.CubeLog CubeLog { get; } = LoadCubes();
+
+    /// <summary>The HUD effects window while the meter runs and HUD effects are on.</summary>
+    public HudWindow? Hud { get; private set; }
+
+    /// <summary>Raised after a HUD calibration was saved or HUD effects were switched on or off.</summary>
+    public event Action? HudChanged;
+
+    public void SetHudEffects(bool enabled)
+    {
+        Stored.HudEffects = enabled;
+        SaveSettings();
+        UpdateHud();
+        HudChanged?.Invoke();
+    }
+
+    /// <summary>Opens or closes the HUD effects window to match the settings and the meter.</summary>
+    private void UpdateHud()
+    {
+        bool wanted = Stored.HudEffects && Engine is not null;
+        if (wanted && Hud is null)
+        {
+            var engine = Engine!;
+            Hud = new HudWindow(this, () => Engine == engine ? engine.Status() : null);
+            Hud.Show();
+        }
+        else if (!wanted && Hud is not null)
+        {
+            Hud.Close();
+            Hud = null;
+        }
+    }
+
+    public void SaveHudLayout(Avion2.Analysis.HudLayout layout)
+    {
+        Stored.HudLayouts[Avion2.Analysis.HudLayout.Key(layout.Width, layout.Height)] = layout;
+        SaveSettings();
+        Hud?.Relayout();
+        HudChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// Takes one picture of the game for HUD calibration: waits (up to 20 s) until AION2 is in front, hides AVION2's
+    /// own overlays for a moment, copies the game's area of the screen and opens the calibration window.
+    /// </summary>
+    public async Task CalibrateHudAsync(Window owner)
+    {
+        if (GameWindow.Handle == 0)
+        {
+            MessageBox.Show(owner, "AION2 is not running. Start the game, log in, then calibrate.", "HUD calibration",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        if (MessageBox.Show(owner,
+                "Click OK, then switch to AION2. As soon as the game is in front, AVION2 takes one picture of it to find your HUD " +
+                "(you have 20 seconds). The picture is only used for the calibration and is not saved.\n\n" +
+                "Tip: do it at full HP and with nothing covering the bottom of the screen.",
+                "HUD calibration", MessageBoxButton.OKCancel, MessageBoxImage.Information) != MessageBoxResult.OK)
+        {
+            return;
+        }
+
+        var until = DateTime.UtcNow.AddSeconds(20);
+        while (!GameWindow.IsForeground && DateTime.UtcNow < until)
+        {
+            await Task.Delay(200);
+        }
+
+        if (!GameWindow.IsForeground)
+        {
+            MessageBox.Show(owner, "AION2 was not brought to the front within 20 seconds. Try again.", "HUD calibration",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        // Our own windows must not be in the picture
+        if (Hud is { } hud)
+        {
+            hud.Suspended = true;
+        }
+
+        var hidden = new List<Window>();
+        foreach (Window window in Application.Current.Windows)
+        {
+            if (window.IsVisible && window != owner && window.Topmost)
+            {
+                window.Hide();
+                hidden.Add(window);
+            }
+        }
+
+        await Task.Delay(700); // let the game redraw and the window animations finish
+        var picture = GameWindow.Capture();
+        foreach (var window in hidden)
+        {
+            if (window != Hud)
+            {
+                window.Show();
+            }
+        }
+
+        if (Hud is { } shown)
+        {
+            shown.Suspended = false;
+        }
+
+        if (picture is null)
+        {
+            MessageBox.Show(owner, "The game's picture could not be taken. Is AION2 in borderless or windowed mode?", "HUD calibration",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var calibration = new HudCalibrationWindow(this, picture);
+        calibration.Show();
+        calibration.Activate();
+    }
 
     /// <summary>Raised when "Find My Cube" was switched on or off.</summary>
     public event Action? CubeFinderChanged;
@@ -539,6 +658,11 @@ public sealed class AppState
 
         _bossCasts[key] = DateTime.UtcNow;
         string name = boss.NpcCode is { } code && Data.Npcs.TryGetValue(code, out var npc) ? npc.Name : "Boss";
+        if (Hud?.ShowCast(name, skill) == true)
+        {
+            return; // shown under the game's target frame
+        }
+
         Notices.Notify($"{name}: {skill}", "Boss skill");
     }
 
