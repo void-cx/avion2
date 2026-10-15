@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Avion2.Analysis;
 using Avion2.Engine;
@@ -23,6 +24,8 @@ public partial class HudWindow : Window
     private readonly Func<MeterSnapshot?> _snapshot;
     private readonly BigHitMonitor _bigHits = new();
     private DateTime _dpsUpdated;
+    private DateTime _partyUpdated;
+    private long _lastCombatMs = long.MinValue / 2;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(100) };
     private readonly DispatcherTimer _castTimer = new() { Interval = TimeSpan.FromSeconds(2.8) };
     private Int32Rect _placed;
@@ -98,6 +101,7 @@ public partial class HudWindow : Window
         UpdateLowHp(s);
         UpdateBigHit(s);
         UpdateDps(s);
+        UpdateParty(s);
     }
 
     /// <summary>Covers the game's client area exactly (pixels), above the game.</summary>
@@ -130,7 +134,9 @@ public partial class HudWindow : Window
 
         var target = layout.Box(HudAnchors.Target).ToPixels(w, h);
         CastBanner.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-        Canvas.SetLeft(CastBanner, target.X + target.W / 2 - CastBanner.DesiredSize.Width / 2);
+        // Centred under the boss bar, kept on screen when the bar is near an edge
+        double bannerWidth = CastBanner.DesiredSize.Width;
+        Canvas.SetLeft(CastBanner, Math.Clamp(target.X + target.W / 2 - bannerWidth / 2, 8, Math.Max(8, w - bannerWidth - 8)));
         Canvas.SetTop(CastBanner, target.Y + target.H + 8);
     }
 
@@ -223,6 +229,106 @@ public partial class HudWindow : Window
         }
     }
 
+    /// <summary>
+    /// The party's DPS right under the game's group list, in its style: class emblem, name, a thin bar (share of
+    /// the damage) at the game's row width and spacing, best first. Shows during a fight and for 30 s after it.
+    /// </summary>
+    private void UpdateParty(EngineStatus? status)
+    {
+        if (status is { InCombat: true })
+        {
+            _lastCombatMs = Environment.TickCount64;
+        }
+
+        var layout = _preview ?? (GameWindow.ClientArea is { } area ? Layout(area) : null);
+        bool wanted = (_demo || (_state.Stored.HudPartyMeter && Environment.TickCount64 - _lastCombatMs < 30_000)) &&
+                      layout is { PartyRows: > 0 } && layout.Boxes.ContainsKey(HudAnchors.Party);
+        if (!wanted)
+        {
+            PartyMeter.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        if (DateTime.UtcNow - _partyUpdated < TimeSpan.FromMilliseconds(500) && PartyMeter.Visibility == Visibility.Visible)
+        {
+            return;
+        }
+
+        _partyUpdated = DateTime.UtcNow;
+        var rows = _demo
+            ? [("You", Avion2.Protocol.GameClass.Chanter, 6279.0, 0.43, true), ("Party member", Avion2.Protocol.GameClass.Cleric, 4120.0, 0.28, false),
+               ("Party member", Avion2.Protocol.GameClass.Gladiator, 2980.0, 0.2, false), ("Party member", Avion2.Protocol.GameClass.Ranger, 1310.0, 0.09, false)]
+            : (_snapshot()?.Rows ?? []).Where(r => r.Total > 0).Take(8).Select(r => (r.IsSelf ? r.Name : r.Name, r.Class, r.Dps, r.Share, r.IsSelf)).ToList();
+        if (rows.Count == 0)
+        {
+            PartyMeter.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        // Geometry from the calibrated group list
+        double w = Stage.Width, h = Stage.Height;
+        var box = layout!.Box(HudAnchors.Party).ToPixels(w, h);
+        double barHeight = Math.Max(3, h * 0.0042);
+        double pitch = layout.PartyRows > 1 ? (box.H - barHeight) / (layout.PartyRows - 1) : h * 0.037;
+        double font = Math.Max(10, pitch * 0.29);
+        double emblem = pitch * 0.62;
+        double top = box.Y + box.H + pitch * 0.45;
+        double max = rows.Max(r => r.Item3);
+
+        PartyMeter.Children.Clear();
+        PartyMeter.Width = box.W + emblem + pitch * 0.2;
+        Canvas.SetLeft(PartyMeter, box.X - emblem - pitch * 0.2);
+        Canvas.SetTop(PartyMeter, top);
+        PartyMeter.Children.Add(new TextBlock
+        {
+            Text = _demo ? "DPS · 1:20" : $"DPS · {HistoryStore.Duration(_snapshot()?.DurationSeconds ?? 0)}",
+            Foreground = new SolidColorBrush(Color.FromRgb(0xE8, 0xC2, 0x7A)),
+            FontSize = font * 0.9,
+            FontWeight = FontWeights.SemiBold,
+            Margin = new Thickness(emblem + pitch * 0.2, 0, 0, pitch * 0.12),
+        });
+
+        foreach (var (name, cls, dps, share, self) in rows)
+        {
+            var row = new Grid { Height = pitch };
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(emblem + pitch * 0.2) });
+            row.ColumnDefinitions.Add(new ColumnDefinition());
+            if (ClassIcons.For(cls) is { } icon)
+            {
+                row.Children.Add(new Image { Source = icon, Width = emblem, Height = emblem, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center });
+            }
+
+            var text = new DockPanel { VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, pitch * 0.06, 0, 0) };
+            var value = new TextBlock { Text = $"{dps:N0}  {share:P0}", Foreground = Brushes.White, FontSize = font };
+            DockPanel.SetDock(value, Dock.Right);
+            text.Children.Add(value);
+            text.Children.Add(new TextBlock
+            {
+                Text = name,
+                FontSize = font,
+                Foreground = new SolidColorBrush(self ? Color.FromRgb(0xF3, 0xC7, 0x6E) : Color.FromRgb(0x7F, 0xD8, 0xFF)),
+                TextTrimming = TextTrimming.CharacterEllipsis,
+            });
+            Grid.SetColumn(text, 1);
+            row.Children.Add(text);
+
+            // Bar where the game draws its HP bar: dark track, gold fill for your share
+            var track = new Grid { Height = barHeight, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, pitch * 0.36, 0, 0) };
+            track.Children.Add(new Border { Background = new SolidColorBrush(Color.FromArgb(0xB0, 0x10, 0x16, 0x1E)) });
+            track.Children.Add(new Border
+            {
+                Background = new SolidColorBrush(self ? Color.FromRgb(0xF0, 0xB4, 0x48) : Color.FromRgb(0xE0, 0x8A, 0x3A)),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Width = box.W * Math.Clamp(dps / Math.Max(max, 1), 0, 1),
+            });
+            Grid.SetColumn(track, 1);
+            row.Children.Add(track);
+            PartyMeter.Children.Add(row);
+        }
+
+        PartyMeter.Visibility = Visibility.Visible;
+    }
+
     /// <summary>A boss skill under the target frame for a few seconds. Returns false when not shown (not calibrated, game not in front).</summary>
     public bool ShowCast(string boss, string skill)
     {
@@ -256,6 +362,48 @@ public partial class HudWindow : Window
             _demo = false;
         };
         stop.Start();
+    }
+
+    private HudLayout? _preview;
+
+    /// <summary>
+    /// Developer aid: every effect drawn over <paramref name="picture"/> with <paramref name="layout"/> (no game needed),
+    /// returned as an image.
+    /// </summary>
+    internal BitmapSource PreviewOn(BitmapSource picture, HudLayout layout)
+    {
+        _timer.Stop();
+        _preview = layout;
+        _demo = true;
+        Stage.Width = picture.PixelWidth;
+        Stage.Height = picture.PixelHeight;
+        EdgeFlash.Width = Stage.Width;
+        EdgeFlash.Height = Stage.Height;
+        CastBoss.Text = "Boss";
+        CastSkill.Text = "Skill name";
+        CastBanner.Visibility = Visibility.Visible;
+        CastBanner.Opacity = 1;
+        HpGlow.Visibility = Visibility.Visible;
+        HpGlow.Opacity = 1;
+        UpdateDps(null);
+        UpdateParty(null);
+        DpsLine.Visibility = Visibility.Visible;
+        Arrange(layout);
+        Stage.Measure(new Size(Stage.Width, Stage.Height));
+        Stage.Arrange(new Rect(0, 0, Stage.Width, Stage.Height));
+        Stage.UpdateLayout();
+
+        var background = new DrawingVisual();
+        using (var dc = background.RenderOpen())
+        {
+            dc.DrawImage(picture, new Rect(0, 0, picture.PixelWidth, picture.PixelHeight));
+        }
+
+        // The stage at its real coordinates over the picture (a VisualBrush would stretch it to its content)
+        var bitmap = new RenderTargetBitmap(picture.PixelWidth, picture.PixelHeight, 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(background);
+        bitmap.Render(Stage);
+        return bitmap;
     }
 
     /// <summary>Re-reads the layout (after calibration).</summary>

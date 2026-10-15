@@ -52,6 +52,13 @@
             </TextBlock>
         </Border>
 
+        <!-- Party DPS, styled like the game's group list, right under it -->
+        <StackPanel x:Name="PartyMeter" Visibility="Collapsed">
+            <StackPanel.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="5" ShadowDepth="0" Opacity="0.95" />
+            </StackPanel.Effect>
+        </StackPanel>
+
         <!-- Low HP: a pulsing red frame around your HP bar -->
         <Border x:Name="HpGlow" BorderBrush="#FFFF3B3B" BorderThickness="2.5" CornerRadius="4" Visibility="Collapsed" Opacity="0">
             <Border.Background>

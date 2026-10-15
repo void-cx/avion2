@@ -136,6 +136,7 @@
                         <CheckBox x:Name="HudHpBox" Content="Your HP bar pulses red while your HP is low" Click="HudOption_Click" />
                         <CheckBox x:Name="HudFlashBox" Content="The screen edges flash red when you lose 15 % of your HP or more at once" Click="HudOption_Click" Margin="0,6,0,0" />
                         <CheckBox x:Name="HudDpsBox" Content="Your DPS, crit and fight time above your HP bar while you fight" Click="HudOption_Click" Margin="0,6,0,0" />
+                        <CheckBox x:Name="HudPartyBox" Content="The party's DPS right under the game's group list (needs the party frames calibrated)" Click="HudOption_Click" Margin="0,6,0,0" />
                         <CheckBox x:Name="HudCastBox" Content="Boss skills appear under the target frame" Click="HudOption_Click" Margin="0,6,0,0" />
                         <DockPanel Margin="0,10,0,0">
                             <Button DockPanel.Dock="Right" Content="Preview" Click="HudPreview_Click" Margin="8,0,0,0"

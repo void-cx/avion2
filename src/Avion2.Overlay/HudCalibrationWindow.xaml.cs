@@ -182,6 +182,13 @@ public partial class HudCalibrationWindow : Window
 
     private void Save_Click(object sender, RoutedEventArgs e)
     {
+        _state.SaveHudLayout(CurrentLayout());
+        Close();
+    }
+
+    /// <summary>The boxes as they are now.</summary>
+    internal HudLayout CurrentLayout()
+    {
         int w = _picture.PixelWidth, h = _picture.PixelHeight;
         var layout = new HudLayout { Width = w, Height = h, CalibratedUtc = DateTime.UtcNow };
         foreach (var (id, marker) in _boxes)
@@ -190,8 +197,6 @@ public partial class HudCalibrationWindow : Window
         }
 
         layout.PartyRows = _partyRows;
-
-        _state.SaveHudLayout(layout);
-        Close();
+        return layout;
     }
 }

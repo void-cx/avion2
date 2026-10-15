@@ -259,6 +259,16 @@ internal static class DevShots
         window.Show();
         Pump(TimeSpan.FromMilliseconds(1200));
         Save(window, Path.Combine(directory, "hud-calibration.png"));
+
+        // Every effect on the picture, at the detected positions
+        var hud = new HudWindow(state, () => null, () => null);
+        var preview = hud.PreviewOn(new FormatConvertedBitmap(bitmap, PixelFormats.Bgra32, null, 0), window.CurrentLayout());
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(preview));
+        using (var stream = File.Create(Path.Combine(directory, "hud-effects.png")))
+        {
+            encoder.Save(stream);
+        }
         Application.Current.Shutdown();
     }
 
