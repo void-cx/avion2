@@ -13,7 +13,8 @@ It is passive: it never touches the game, its files or its memory, and sends not
   boss HP, fight timer.
 - **Fight history** with the full breakdown of every fight: skills, hits, crits, damage taken by source, and your
   best DPS per boss.
-- **Timeline** of every skill cast per player, **buff uptime**, and a **replay** of the fight on a map.
+- **Timeline** of every skill cast per player, **buff uptime**, and a **replay** of the fight: everyone's position,
+  facing, HP, hits, heals and deaths, with the key moments to jump to and a camera that follows you or the boss.
 - **Timers and notices** for Spacetime Rifts, Beritra air raids, PvP events, resets, Reshanta world bosses and
   field boss respawns.
 - **Map** of every zone with teleports, gathering spots, monsters (with drops) and NPCs; you and the players around
@@ -21,6 +22,10 @@ It is passive: it never touches the game, its files or its memory, and sends not
   cube positions the game sends before you can see them, which may count as an unfair advantage).
 - **Gear Forge**: average and unlucky cost (materials, Kinah, attempts) to enchant or amplify any item.
 - **Low-HP alert** with its own sound.
+- **HUD effects** (beta, off by default): after a one-off calibration picture of the game, AVION2 draws on the
+  game's own HUD: your HP bar pulses when low, the screen edges flash on big hits (with what hit you), boss HP and
+  time to kill under the boss bar, boss skills under it, your DPS above your HP bar and the party's DPS under the
+  group list.
 - **Server lag warning** when the game server freezes, also marked in each fight.
 - **Legion** tags on players and a legion card with your members.
 - Two themes: **AION2** and **VOID**. Skill and NPC names in 10 languages.
