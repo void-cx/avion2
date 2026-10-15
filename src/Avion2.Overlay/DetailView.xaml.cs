@@ -38,12 +38,23 @@ public partial class DetailView : UserControl
         {
             if (e.PropertyName == nameof(DetailViewModel.TabIndex))
             {
-                SyncTabLinks();
+                System.ComponentModel.DependencyPropertyDescriptor
+            .FromProperty(ReplayView.CameraProperty, typeof(ReplayView))
+            .AddValueChanged(Replay, (_, _) =>
+            {
+                // Dragging hands the camera back to the whole-fight view: keep the buttons in step
+                foreach (var button in Cameras.Children.OfType<RadioButton>())
+                {
+                    button.IsChecked = (string)button.Tag == Replay.Camera.ToString();
+                }
+            });
+        SyncTabLinks();
                 Refresh();
             }
             else if (e.PropertyName == nameof(DetailViewModel.Trace))
             {
-                _owners = _vm.Trace?.Entities.ToDictionary(x => x.Id, x => x.OwnerId ?? x.Id) ?? new();
+                _owners = _vm.Trace?.Entities.GroupBy(x => x.Id).ToDictionary(g => g.Key, g => g.First().OwnerId ?? g.Key) ?? new();
+                UpdateMoments();
                 UpdatePlayhead(force: true);
             }
         };
@@ -183,6 +194,43 @@ public partial class DetailView : UserControl
         return string.Join(" · ", parts);
     }
 
+    /// <summary>Key moments of the shown fight: marks on the scrubber and the list in the replay pane.</summary>
+    private void UpdateMoments()
+    {
+        var moments = _vm.Trace?.Moments(Names) ?? [];
+        _vm.Moments = moments;
+        _vm.MomentLines = moments.Select(m => new MomentLine(m.T, Format(m.T), m.Text, MomentBrush(m.Kind))).ToList();
+    }
+
+    private static System.Windows.Media.Brush MomentBrush(MomentKind kind)
+    {
+        var brush = new System.Windows.Media.SolidColorBrush(ScrubberView.MomentColor(kind));
+        brush.Freeze();
+        return brush;
+    }
+
+    private void MomentList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (MomentList.SelectedItem is MomentLine line)
+        {
+            PlayButton.IsChecked = false;
+            ReplaySlider.Value = Math.Clamp(line.T - 1_500, 0, ReplaySlider.Maximum);
+            MomentList.SelectedItem = null;
+        }
+    }
+
+    private void Camera_Checked(object sender, RoutedEventArgs e)
+    {
+        if (sender is RadioButton { Tag: string tag } && Enum.TryParse<ReplayCamera>(tag, out var camera) && Replay is not null)
+        {
+            Replay.Camera = camera;
+        }
+    }
+
+    private void ZoomIn_Click(object sender, RoutedEventArgs e) => Replay.ZoomBy(1.4);
+
+    private void ZoomOut_Click(object sender, RoutedEventArgs e) => Replay.ZoomBy(1 / 1.4);
+
     private void TabLink_Checked(object sender, RoutedEventArgs e)
     {
         if (sender is RadioButton { Tag: string tag })
@@ -287,7 +335,7 @@ public partial class DetailView : UserControl
 
         var critBrush = Brush(System.Windows.Media.Color.FromRgb(0xFF, 0xD1, 0x5C));
         var plain = (System.Windows.Media.Brush)FindResource("TextBrush");
-        _vm.RecentHits = recent.OrderByDescending(h => h.T).Take(7).Select(h =>
+        _vm.RecentHits = recent.OrderByDescending(h => h.T).Take(4).Select(h =>
         {
             var e = players[Owner(h.ActorId)];
             string skill = Names.SkillName(h.SkillId);

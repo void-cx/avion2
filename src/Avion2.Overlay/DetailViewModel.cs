@@ -37,6 +37,9 @@ public sealed record StatTile(string Label, string Value, string Tone = "");
 /// <param name="Share">Of all player damage so far (bar length).</param>
 public sealed record PlayheadRow(string Name, string Detail, string Dps, double Share, System.Windows.Media.Brush Color, System.Windows.Media.Brush Fill, bool IsSelf);
 
+/// <summary>A key moment in the replay's pane (click to jump).</summary>
+public sealed record MomentLine(int T, string Time, string Text, System.Windows.Media.Brush Color);
+
 /// <summary>A recent hit in the replay's pane.</summary>
 public sealed record HitLine(string Time, string Text, string Amount, System.Windows.Media.Brush Color, System.Windows.Media.Brush AmountBrush);
 
@@ -196,6 +199,13 @@ public sealed class DetailViewModel : Bindable
     private double _bossHp;
     private IReadOnlyList<PlayheadRow> _playheadRows = [];
     private IReadOnlyList<HitLine> _recentHits = [];
+    private IReadOnlyList<TraceMoment> _moments = [];
+    private IReadOnlyList<MomentLine> _momentLines = [];
+
+    /// <summary>The fight's key moments (scrubber marks and the replay pane's list).</summary>
+    public IReadOnlyList<TraceMoment> Moments { get => _moments; set => Set(ref _moments, value); }
+
+    public IReadOnlyList<MomentLine> MomentLines { get => _momentLines; set => Set(ref _momentLines, value); }
 
     /// <summary>"14 Oct · 23:11 · 1:20 · 2 players" under the fight's name.</summary>
     public string Subtitle { get => _subtitle; set => Set(ref _subtitle, value); }

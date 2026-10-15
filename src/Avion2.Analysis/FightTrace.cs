@@ -25,9 +25,24 @@ public sealed record TraceEntity(
     uint MaxHp,
     List<TracePoint> Track);
 
-public sealed record TraceCast(int T, uint ActorId, uint SkillId, uint? TargetId);
+/// <param name="Facing">Where the caster faced, degrees (0 = +X, turning toward +Y); null in older traces.</param>
+public sealed record TraceCast(int T, uint ActorId, uint SkillId, uint? TargetId, float? Facing = null);
 
-public sealed record TraceHit(int T, uint ActorId, uint TargetId, uint SkillId, long Amount, bool Critical);
+/// <param name="Back">A back attack (false in older traces).</param>
+public sealed record TraceHit(int T, uint ActorId, uint TargetId, uint SkillId, long Amount, bool Critical, bool Back = false);
+
+public sealed record TraceHeal(int T, uint ActorId, uint TargetId, uint SkillId, long Amount);
+
+public enum MomentKind
+{
+    BossSkill,
+    Death,
+    BigHit,
+    Freeze,
+}
+
+/// <summary>Something worth jumping to in a replay.</summary>
+public sealed record TraceMoment(int T, MomentKind Kind, string Text);
 
 /// <summary>An abnormal on an entity from <paramref name="Start"/> to <paramref name="End"/> (ms, clipped to the trace).</summary>
 public sealed record TraceBuff(uint EntityId, uint AbnormalId, uint? SkillId, uint CasterId, int Start, int End);
@@ -65,6 +80,9 @@ public sealed class FightTrace
     public List<TraceCast> Casts { get; init; } = new();
 
     public List<TraceHit> Hits { get; init; } = new();
+
+    /// <summary>Heals (empty in traces saved before heals were recorded).</summary>
+    public List<TraceHeal> Heals { get; init; } = new();
 
     public List<TraceBuff> Buffs { get; init; } = new();
 
@@ -164,6 +182,83 @@ public sealed class FightTrace
         float f = b.T == a.T ? 0 : (t - a.T) / (float)(b.T - a.T);
         bool estimated = Math.Min(t - a.T, b.T - t) > 3000;
         return (a.X + (b.X - a.X) * f, a.Y + (b.Y - a.Y) * f, estimated);
+    }
+
+    /// <summary>
+    /// Where an entity faces at <paramref name="t"/>, degrees (0 = +X, turning toward +Y): the direction it moved in
+    /// the last 0.8 s when it moved at least a metre, else its last cast's facing (within 4 s). Null when unknown.
+    /// </summary>
+    public float? FacingAt(uint id, int t)
+    {
+        if (PositionAt(id, t) is { } now && PositionAt(id, t - 800) is { } before)
+        {
+            double dx = now.X - before.X, dy = now.Y - before.Y;
+            if (dx * dx + dy * dy >= 100 * 100)
+            {
+                return (float)(Math.Atan2(dy, dx) * 180 / Math.PI);
+            }
+        }
+
+        return Casts.LastOrDefault(c => c.ActorId == id && c.T <= t && c.T > t - 4_000 && c.Facing is not null)?.Facing;
+    }
+
+    /// <summary>Buffs and debuffs on <paramref name="id"/> at <paramref name="t"/>.</summary>
+    public IEnumerable<TraceBuff> BuffsAt(uint id, int t) => Buffs.Where(b => b.EntityId == id && b.Start <= t && b.End > t);
+
+    /// <summary>
+    /// The moments worth jumping to: named boss skills (one per skill within 5 s), deaths of players and bosses,
+    /// big hits on players (a fifth of their max HP or more) and server freezes. In time order.
+    /// </summary>
+    public List<TraceMoment> Moments(GameData data)
+    {
+        var moments = new List<TraceMoment>();
+        var lastSkill = new Dictionary<(uint, uint), int>();
+        foreach (var cast in Casts)
+        {
+            if (Entity(cast.ActorId) is not { Kind: TraceEntityKind.Boss } boss)
+            {
+                continue;
+            }
+
+            string skill = data.SkillName(cast.SkillId);
+            if (skill.StartsWith("Skill ", StringComparison.Ordinal) || skill.Trim('?', ' ').Length == 0 || skill.Contains("Basic Attack", StringComparison.OrdinalIgnoreCase) ||
+                (lastSkill.TryGetValue((cast.ActorId, cast.SkillId), out int last) && cast.T - last < 5_000))
+            {
+                continue;
+            }
+
+            lastSkill[(cast.ActorId, cast.SkillId)] = cast.T;
+            moments.Add(new TraceMoment(cast.T, MomentKind.BossSkill, $"{boss.Name}: {skill}"));
+        }
+
+        foreach (var death in Deaths)
+        {
+            if (Entity(death.EntityId) is { Kind: TraceEntityKind.Self or TraceEntityKind.Player or TraceEntityKind.Boss } who)
+            {
+                moments.Add(new TraceMoment(death.T, MomentKind.Death, who.Kind == TraceEntityKind.Self ? "You died" : $"{who.Name} died"));
+            }
+        }
+
+        var lastBigHit = new Dictionary<uint, int>();
+        foreach (var hit in Hits)
+        {
+            // One mark per player and burst (big hits within 2 s of each other)
+            if (Entity(hit.TargetId) is { Kind: TraceEntityKind.Self or TraceEntityKind.Player, MaxHp: > 0 } victim && hit.Amount >= victim.MaxHp / 5 &&
+                !(lastBigHit.TryGetValue(hit.TargetId, out int previous) && hit.T - previous < 2_000))
+            {
+                lastBigHit[hit.TargetId] = hit.T;
+                string by = Entity(OwnerOf(hit.ActorId))?.Name ?? "?";
+                moments.Add(new TraceMoment(hit.T, MomentKind.BigHit,
+                    $"{(victim.Kind == TraceEntityKind.Self ? "You" : victim.Name)} took {hit.Amount:N0} ({data.SkillName(hit.SkillId)}, {by})"));
+            }
+        }
+
+        foreach (var lag in Lags)
+        {
+            moments.Add(new TraceMoment(lag.Start, MomentKind.Freeze, $"Server froze for {lag.Length / 1000.0:0.0} s"));
+        }
+
+        return moments.OrderBy(m => m.T).ToList();
     }
 
     /// <summary>The last known HP of an entity at <paramref name="t"/>.</summary>

@@ -232,6 +232,9 @@ internal static class DevShots
         view.Replay.Inspect(anonymous.SelfId);
         Pump(TimeSpan.FromMilliseconds(800));
         Save(window, Path.Combine(directory, "replay.png"));
+        view.Replay.Camera = ReplayCamera.Boss;
+        Pump(TimeSpan.FromMilliseconds(1200));
+        Save(window, Path.Combine(directory, "replay-boss.png"));
         File.WriteAllText(Path.Combine(directory, "replay.txt"), best.Row.Entry.Snapshot.Title);
         Application.Current.Shutdown();
     }

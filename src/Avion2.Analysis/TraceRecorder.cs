@@ -16,6 +16,7 @@ public sealed class TraceRecorder
     private readonly List<PositionEvent> _positions = new();
     private readonly List<SkillCastEvent> _casts = new();
     private readonly List<DamageEvent> _hits = new();
+    private readonly List<HealEvent> _heals = new();
     private readonly List<GameEvent> _buffs = new();
     private readonly List<HpUpdateEvent> _hp = new();
     private readonly List<ServerClockEvent> _clock = new();
@@ -37,6 +38,9 @@ public sealed class TraceRecorder
                 break;
             case DamageEvent damage:
                 _hits.Add(damage);
+                break;
+            case HealEvent heal:
+                _heals.Add(heal);
                 break;
             case BuffEvent or BuffRemovedEvent:
                 _buffs.Add(e);
@@ -68,6 +72,7 @@ public sealed class TraceRecorder
         _positions.Clear();
         _casts.Clear();
         _hits.Clear();
+        _heals.Clear();
         _buffs.Clear();
         _hp.Clear();
         _clock.Clear();
@@ -116,11 +121,16 @@ public sealed class TraceRecorder
             Entities = entities,
             Casts = InWindow(_casts, start, end)
                 .Where(c => ids.Contains(c.ActorId))
-                .Select(c => new TraceCast(T(c.TimestampMs), c.ActorId, c.SkillId, c.TargetId))
+                .Select(c => new TraceCast(T(c.TimestampMs), c.ActorId, c.SkillId, c.TargetId, c.Facing))
                 .ToList(),
             Hits = InWindow(_hits, start, end)
                 .Where(h => ids.Contains(h.ActorId) || ids.Contains(h.TargetId))
-                .Select(h => new TraceHit(T(h.TimestampMs), h.ActorId, h.TargetId, h.SkillId, h.Amount, (h.Flags & HitFlags.Critical) != 0))
+                .Select(h => new TraceHit(T(h.TimestampMs), h.ActorId, h.TargetId, h.SkillId, h.Amount, (h.Flags & HitFlags.Critical) != 0,
+                    (h.Flags & HitFlags.Back) != 0))
+                .ToList(),
+            Heals = InWindow(_heals, start, end)
+                .Where(h => h.Amount > 0 && (ids.Contains(h.TargetId) || ids.Contains(registry.ResolveOwner(h.ActorId))))
+                .Select(h => new TraceHeal(T(h.TimestampMs), h.ActorId, h.TargetId, h.SkillId, h.Amount))
                 .ToList(),
             Buffs = BuffIntervals(ids, start, end, T),
             Hp = InWindow(_hp, start, end)
@@ -328,6 +338,7 @@ public sealed class TraceRecorder
         _positions.RemoveAll(e => e.TimestampMs < before);
         _casts.RemoveAll(e => e.TimestampMs < before);
         _hits.RemoveAll(e => e.TimestampMs < before);
+        _heals.RemoveAll(e => e.TimestampMs < before);
         _buffs.RemoveAll(e => e.TimestampMs < before);
         _hp.RemoveAll(e => e.TimestampMs < before);
         _clock.RemoveAll(e => e.TimestampMs < before);

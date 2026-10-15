@@ -7,13 +7,16 @@ using Avion2.Analysis;
 namespace Avion2.Overlay;
 
 /// <summary>
-/// The replay's scrubber: one lane of cast marks per player (you first), the main target's HP behind them,
-/// server freezes as amber bands and the playhead. Click or drag to jump; casts after the playhead are faint.
+/// The replay's scrubber: key moments on top (boss skills, deaths, big hits, freezes; hover for what, click to jump
+/// just before), one lane of cast marks per player (you first), the main target's HP behind them, server freezes as
+/// amber bands and the playhead. Click or drag to jump; casts after the playhead are faint.
 /// </summary>
 public sealed class ScrubberView : FrameworkElement
 {
     private const double LabelWidth = 96;
     private const double AxisHeight = 16;
+    private const double MomentHeight = 16;
+    private readonly System.Windows.Controls.ToolTip _tip = new() { Placement = System.Windows.Controls.Primitives.PlacementMode.Relative };
     private const int MaxLanes = 5;
     private List<TraceEntity> _lanes = new();
 
@@ -24,6 +27,37 @@ public sealed class ScrubberView : FrameworkElement
     {
         ClipToBounds = true;
         Cursor = Cursors.Hand;
+        ToolTip = _tip;
+        System.Windows.Controls.ToolTipService.SetInitialShowDelay(this, 0);
+    }
+
+    public static readonly DependencyProperty MomentsProperty = DependencyProperty.Register(
+        nameof(Moments), typeof(IReadOnlyList<TraceMoment>), typeof(ScrubberView), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+
+    /// <summary>Key moments shown above the lanes.</summary>
+    public IReadOnlyList<TraceMoment>? Moments
+    {
+        get => (IReadOnlyList<TraceMoment>?)GetValue(MomentsProperty);
+        set => SetValue(MomentsProperty, value);
+    }
+
+    public static Color MomentColor(MomentKind kind) => kind switch
+    {
+        MomentKind.BossSkill => Color.FromRgb(0xE5, 0x48, 0x4D),
+        MomentKind.Death => Color.FromRgb(0xF2, 0xF4, 0xF8),
+        MomentKind.BigHit => Color.FromRgb(0xF5, 0x9E, 0x0B),
+        _ => Color.FromRgb(0xFC, 0xD3, 0x4D),
+    };
+
+    private TraceMoment? MomentAt(Point at)
+    {
+        if (Moments is not { Count: > 0 } moments || at.Y > AxisHeight + MomentHeight + 2)
+        {
+            return null;
+        }
+
+        var near = moments.MinBy(m => Math.Abs(X(m.T) - at.X));
+        return near is not null && Math.Abs(X(near.T) - at.X) <= 6 ? near : null;
     }
 
     public static readonly DependencyProperty TraceProperty = DependencyProperty.Register(
@@ -127,7 +161,34 @@ public sealed class ScrubberView : FrameworkElement
             return;
         }
 
-        double laneTop = AxisHeight + 4;
+        // Key moments
+        if (Moments is { Count: > 0 } moments)
+        {
+            double my = AxisHeight + MomentHeight / 2 + 1;
+            foreach (var moment in moments)
+            {
+                double x = X(moment.T);
+                var brush = new SolidColorBrush(MomentColor(moment.Kind));
+                switch (moment.Kind)
+                {
+                    case MomentKind.BossSkill:
+                        dc.DrawGeometry(brush, null, Diamond(new Point(x, my), 4.5));
+                        break;
+                    case MomentKind.Death:
+                        dc.DrawEllipse(brush, null, new Point(x, my - 1), 4, 3.6);
+                        dc.DrawRectangle(brush, null, new Rect(x - 2.4, my + 1.6, 4.8, 2.6));
+                        break;
+                    case MomentKind.BigHit:
+                        dc.DrawGeometry(brush, null, Triangle(new Point(x, my), 5));
+                        break;
+                    default:
+                        dc.DrawRectangle(brush, null, new Rect(x - 1, my - 5, 2, 10));
+                        break;
+                }
+            }
+        }
+
+        double laneTop = AxisHeight + MomentHeight + 6;
         int lanes = Math.Max(1, _lanes.Count);
         double laneHeight = Math.Clamp((size.Height - laneTop - 4) / lanes, 14, 30);
         double plotBottom = laneTop + lanes * laneHeight;
@@ -219,8 +280,45 @@ public sealed class ScrubberView : FrameworkElement
         dc.DrawLine(new Pen(line, 1), new Point(LabelWidth, plotBottom + 1), new Point(LabelWidth + PlotWidth, plotBottom + 1));
     }
 
+    private static Geometry Diamond(Point c, double r)
+    {
+        var g = new StreamGeometry();
+        using (var s = g.Open())
+        {
+            s.BeginFigure(new Point(c.X, c.Y - r), true, true);
+            s.LineTo(new Point(c.X + r, c.Y), true, false);
+            s.LineTo(new Point(c.X, c.Y + r), true, false);
+            s.LineTo(new Point(c.X - r, c.Y), true, false);
+        }
+
+        g.Freeze();
+        return g;
+    }
+
+    private static Geometry Triangle(Point c, double r)
+    {
+        var g = new StreamGeometry();
+        using (var s = g.Open())
+        {
+            s.BeginFigure(new Point(c.X, c.Y + r), true, true);
+            s.LineTo(new Point(c.X + r, c.Y - r * 0.7), true, false);
+            s.LineTo(new Point(c.X - r, c.Y - r * 0.7), true, false);
+        }
+
+        g.Freeze();
+        return g;
+    }
+
     private void Seek(Point at)
     {
+        // On a key moment: jump a second and a half before it, to see it coming
+        if (MomentAt(at) is { } moment)
+        {
+            Value = Math.Clamp(moment.T - 1_500, 0, Maximum);
+            Scrubbed?.Invoke();
+            return;
+        }
+
         double t = (at.X - LabelWidth) / PlotWidth * Maximum;
         Value = Math.Clamp(t, 0, Maximum);
         Scrubbed?.Invoke();
@@ -235,11 +333,32 @@ public sealed class ScrubberView : FrameworkElement
 
     protected override void OnMouseMove(MouseEventArgs e)
     {
+        var at = e.GetPosition(this);
         if (IsMouseCaptured)
         {
-            Seek(e.GetPosition(this));
+            if (MomentAt(at) is null)
+            {
+                Seek(at);
+            }
+
+            return;
+        }
+
+        if (MomentAt(at) is { } moment)
+        {
+            _tip.Content = $"{TimeSpan.FromMilliseconds(Math.Max(0, moment.T)):m\\:ss} · {moment.Text}";
+            _tip.PlacementTarget = this;
+            _tip.HorizontalOffset = at.X + 12;
+            _tip.VerticalOffset = at.Y + 12;
+            _tip.IsOpen = true;
+        }
+        else
+        {
+            _tip.IsOpen = false;
         }
     }
+
+    protected override void OnMouseLeave(MouseEventArgs e) => _tip.IsOpen = false;
 
     protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e) => ReleaseMouseCapture();
 }

@@ -43,6 +43,38 @@ public class TraceTests
     }
 
     [Fact]
+    public void RecordsFacingHealsAndBackAttacks()
+    {
+        var session = new GameSession(new GameData(
+            new Dictionary<uint, string> { [16040000] = "Combustion", [17010000] = "Healing Light", [99000000] = "Wave of Fury" },
+            new Dictionary<uint, NpcData> { [2100753] = new("Big Boss", IsBoss: true) }));
+        session.Apply(new SelfIdentityEvent(0, Me, "TestDaeva", 1304, GameClass.Elementalist, 30));
+        session.Apply(new PlayerSpawnEvent(0, Ally, "Friend", 1304, GameClass.Cleric));
+        session.Apply(new NpcSpawnEvent(0, Boss, 0x0C, 2100753, 100_000, null, new Vec3(10_000, 5_000, 2_000)));
+        session.Apply(new SkillCastEvent(1_000, Me, 16040000, 16040001, Boss, null, Facing: 90));
+        session.Apply(new DamageEvent(1_100, Me, Boss, 16040000, 16040001, 5_000, HitType.Critical, HitFlags.Critical | HitFlags.Back, 1, 0));
+        session.Apply(new SkillCastEvent(1_500, Boss, 99000000, 99000000, Me, null, Facing: 180));
+        session.Apply(new DamageEvent(1_600, Boss, Me, 99000000, 99000000, 3_000, HitType.Normal, HitFlags.None, 1, 0));
+        session.Apply(new SkillCastEvent(1_900, Boss, 99000000, 99000000, Me, null)); // the same skill again: one moment
+        session.Apply(new HealEvent(2_000, Ally, Me, 17010000, 2_500, false));
+        session.Apply(new DamageEvent(3_000, Me, Boss, 16040000, 16040001, 5_000, HitType.Normal, HitFlags.None, 1, 0));
+        session.Tracker.Tick(60_000);
+        var trace = session.Trace(Assert.Single(session.Tracker.History));
+
+        Assert.Equal(90f, trace.Casts.First(c => c.ActorId == Me).Facing);
+        Assert.Equal(90f, trace.FacingAt(Me, trace.Casts.First(c => c.ActorId == Me).T + 500));
+        var first = trace.Hits.First(h => h.ActorId == Me);
+        Assert.True(first.Critical);
+        Assert.True(first.Back);
+        var heal = Assert.Single(trace.Heals);
+        Assert.Equal((Ally, Me, 2_500L), (heal.ActorId, heal.TargetId, heal.Amount));
+
+        var moments = trace.Moments(session.Registry.Data);
+        var skill = Assert.Single(moments, m => m.Kind == MomentKind.BossSkill);
+        Assert.Equal("Big Boss: Wave of Fury", skill.Text);
+    }
+
+    [Fact]
     public void CollectsParticipantsWithKindsOwnersAndLegions()
     {
         var (_, trace) = Fight();
