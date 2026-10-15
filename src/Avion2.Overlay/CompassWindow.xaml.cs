@@ -153,6 +153,16 @@ public partial class CompassWindow : Window
             : exact is null ? $"{region}{(_target.Area?.Name == "Last seen here" ? "a cube was here earlier" : "approximate area")}" : height + region + age;
     }
 
+    /// <summary>The cube was picked up: "Got it" (us) or a red "Gone" (someone else) until the owner moves on.</summary>
+    public void ShowPickedUp(bool ours, string? by)
+    {
+        _timer.Stop();
+        Dial.ShowResult(ours);
+        Kind.Text = ours ? "Hidden cube · opened" : "Hidden cube · taken";
+        Turn.Text = ours ? "Got it" : "Gone";
+        Detail.Text = ours ? "Picked up." : by is { Length: > 0 } ? $"Taken by {by}." : "Someone else picked it up.";
+    }
+
     /// <summary>Render shots: a fixed state without the live update.</summary>
     internal void Demo(double angle, double meters, bool northUp, string turn, string detail, bool exact = false, bool searching = false)
     {

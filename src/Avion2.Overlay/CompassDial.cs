@@ -38,8 +38,19 @@ public sealed class CompassDial : FrameworkElement
     /// <summary>Inside an approximate target's area: no arrow or countdown, a search ring instead.</summary>
     public bool Searching { get; private set; }
 
+    /// <summary>The cube was picked up: null while leading; true = by us (green check), false = by someone else (red "Gone").</summary>
+    public bool? PickedByUs { get; private set; }
+
+    /// <summary>A full disc with the outcome instead of directions.</summary>
+    public void ShowResult(bool ours)
+    {
+        PickedByUs = ours;
+        InvalidateVisual();
+    }
+
     public void Update(double angle, double? meters, bool northUp, bool exact = false, bool searching = false)
     {
+        PickedByUs = null;
         Angle = angle;
         Meters = meters;
         NorthUp = northUp;
@@ -128,6 +139,38 @@ public sealed class CompassDial : FrameworkElement
         {
             var n = Text("N", 10, title, FontWeights.SemiBold);
             dc.DrawText(n, new Point(c.X - n.Width / 2, c.Y - ring - n.Height / 2));
+        }
+
+        // Picked up: the outcome fills the dial
+        if (PickedByUs is { } ours)
+        {
+            var color = ours ? ExactColor : Color.FromRgb(0xE5, 0x48, 0x4D);
+            var fill = new SolidColorBrush(Color.FromArgb(0xE0, color.R, color.G, color.B));
+            fill.Freeze();
+            dc.DrawEllipse(fill, null, c, ring - 14, ring - 14);
+            var ink = Theme("NoticeBackground", Colors.Black);
+            var mark = new StreamGeometry();
+            using (var g = mark.Open())
+            {
+                if (ours)
+                {
+                    g.BeginFigure(new Point(c.X - size * 0.13, c.Y - size * 0.02), false, false);
+                    g.LineTo(new Point(c.X - size * 0.035, c.Y + size * 0.08), true, true);
+                    g.LineTo(new Point(c.X + size * 0.15, c.Y - size * 0.12), true, true);
+                }
+                else
+                {
+                    double k = size * 0.09;
+                    g.BeginFigure(new Point(c.X - k, c.Y - k), false, false);
+                    g.LineTo(new Point(c.X + k, c.Y + k), true, false);
+                    g.BeginFigure(new Point(c.X + k, c.Y - k), false, false);
+                    g.LineTo(new Point(c.X - k, c.Y + k), true, false);
+                }
+            }
+
+            mark.Freeze();
+            dc.DrawGeometry(null, new Pen(ink, 8) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round }, mark);
+            return;
         }
 
         // Proximity disc

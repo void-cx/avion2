@@ -27,6 +27,9 @@ public sealed class CubeFinder
 
     private bool _closingOurselves;
 
+    /// <summary>Showing "Got it" / "Gone" after a pickup: leave the compass alone until then.</summary>
+    private DateTime _resultUntil;
+
     /// <summary>Cubes the game sent this session on this map and still near us: the only exact targets.</summary>
     private readonly HashSet<string> _live = new();
 
@@ -242,7 +245,7 @@ public sealed class CubeFinder
     /// </summary>
     private void Tick()
     {
-        if (!_state.Stored.CubeFinder || _state.Engine is not { } engine)
+        if (!_state.Stored.CubeFinder || _state.Engine is not { } engine || DateTime.UtcNow < _resultUntil)
         {
             return;
         }
@@ -309,6 +312,36 @@ public sealed class CubeFinder
     }
 
     /// <summary>
+    /// The cube we lead to was picked up, by us or anyone: show it for a moment ("Got it", or a red "Gone"), then
+    /// hide the compass when it opens by itself ("nearby"), or lead on to the next cube or area when it was asked for.
+    /// </summary>
+    private void PickedUp(CubeSighting cube)
+    {
+        _compass?.ShowPickedUp(cube.State == CubeState.Opened, cube.TakenBy);
+        _resultUntil = DateTime.UtcNow.AddSeconds(2.5);
+        var after = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2.5) };
+        after.Tick += (_, _) =>
+        {
+            after.Stop();
+            _resultUntil = default;
+            if (_compass is null)
+            {
+                return;
+            }
+
+            if (_state.Stored.CompassAutoShow == "nearby")
+            {
+                Close();
+            }
+            else
+            {
+                LeadToNext();
+            }
+        };
+        after.Start();
+    }
+
+    /// <summary>
     /// A cube packet: a cube the game sends now is rendered near us (the only exact kind); lift a skip on one that is
     /// back, hand over from one that was just opened or taken.
     /// </summary>
@@ -335,13 +368,9 @@ public sealed class CubeFinder
         }
 
         var latest = _state.CubeLog.Find(cube.Id) ?? cube;
-        if (target.Exact?.Id == latest.Id && latest.State == CubeState.Opened)
+        if (target.Exact?.Id == latest.Id && latest.State is CubeState.Opened or CubeState.Taken)
         {
-            Close(); // we picked it up: done (in "nearby" mode the next cube the game sends opens it again)
-        }
-        else if (target.Exact?.Id == latest.Id && latest.State == CubeState.Taken)
-        {
-            LeadToNext(); // someone else was faster: on to the next
+            PickedUp(latest);
         }
         else
         {

@@ -121,6 +121,13 @@ internal static class DevShots
                         Save(compass, Path.Combine(directory, $"compass-{name}.png"));
                     }
 
+                    foreach (var (name, ours) in new[] { ("got", true), ("gone", false) })
+                    {
+                        compass.ShowPickedUp(ours, "Party member");
+                        Pump(TimeSpan.FromMilliseconds(300));
+                        Save(compass, Path.Combine(directory, $"compass-{name}.png"));
+                    }
+
                     compass.Close();
                 }
             }
