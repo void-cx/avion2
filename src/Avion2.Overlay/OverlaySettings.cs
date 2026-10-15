@@ -19,8 +19,12 @@ public sealed class OverlaySettings
 
     public bool LowHpAlert { get; set; } = true;
 
-    /// <summary>The overlay was hidden: the next start keeps it hidden (the meter runs all the same).</summary>
-    public bool OverlayHidden { get; set; }
+    /// <summary>
+    /// When the DPS overlay shows by itself while capturing: "start" (with the capture), "connection" (when the game
+    /// connection is found, hidden again when it is lost), "fight" (from a fight's start until 30 s after it ends) or
+    /// "manual" (only when shown). It can always be hidden.
+    /// </summary>
+    public string OverlayAutoShow { get; set; } = "connection";
 
     /// <summary>Start the meter as soon as AVION2 opens.</summary>
     public bool AutoStart { get; set; }

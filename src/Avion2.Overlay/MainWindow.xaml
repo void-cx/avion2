@@ -126,7 +126,7 @@
                     <Button Style="{StaticResource HeaderButton}" Content="&#xE81C;" ToolTip="Fight history" Click="History_Click" />
                     <Button Style="{StaticResource HeaderButton}" Content="&#xE713;" ToolTip="Settings" Click="Settings_Click" />
                     <Button Style="{StaticResource HeaderButton}" Content="{Binding LockGlyph}" ToolTip="Lock: click-through (Ctrl+Shift+L to unlock)" Click="Lock_Click" />
-                    <Button Style="{StaticResource HeaderButton}" Content="&#xE711;" ToolTip="Hide the overlay (Ctrl+Shift+O). The meter keeps running; stop it on the home page." Click="Close_Click" />
+                    <Button Style="{StaticResource HeaderButton}" Content="&#xE711;" ToolTip="Hide the overlay (Ctrl+Shift+O). The capture keeps running; stop it on the home page." Click="Close_Click" />
                 </StackPanel>
             </Grid>
 

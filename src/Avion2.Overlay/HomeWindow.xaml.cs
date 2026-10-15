@@ -179,7 +179,7 @@ public partial class HomeWindow : Window
 
         if (_state.Engine is not { } engine)
         {
-            SetStatus("Meter stopped", "IdleBrush");
+            SetStatus("Capture stopped", "IdleBrush");
             return;
         }
 

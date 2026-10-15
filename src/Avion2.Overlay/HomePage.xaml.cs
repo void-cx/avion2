@@ -12,6 +12,8 @@ public sealed record DeviceOption(int? Index, string Label);
 
 public sealed record LegionLine(string Name, string Seen);
 
+public sealed record OverlayModeOption(string Id, string Label);
+
 /// <summary>Start/stop the meter, see what's going on, jump to recent fights.</summary>
 public partial class HomePage : UserControl
 {
@@ -40,6 +42,8 @@ public partial class HomePage : UserControl
         DeviceBox.SelectedItem = devices.FirstOrDefault(d => d.Index == state.Stored.Device) ?? devices[0];
         DeviceBox.SelectionChanged += (_, _) => state.Stored.Device = (DeviceBox.SelectedItem as DeviceOption)?.Index;
         RecordBox.IsChecked = state.Stored.RecordSessions;
+        OverlayModeBox.ItemsSource = OverlayModes;
+        OverlayModeBox.SelectedItem = OverlayModes.FirstOrDefault(m => m.Id == state.Stored.OverlayAutoShow) ?? OverlayModes[1];
         RecordBox.Click += (_, _) => state.Stored.RecordSessions = RecordBox.IsChecked == true;
 
         state.MeterStateChanged += Refresh;
@@ -100,16 +104,16 @@ public partial class HomePage : UserControl
             : $"{_state.SkillNames:N0} skills · {_state.NpcNames:N0} NPCs";
 
         bool running = _state.IsRunning;
-        StartStop.Content = running ? "Stop meter" : "Start meter";
+        StartStop.Content = running ? "Stop capture" : "Start capture";
         OverlayToggle.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
         OverlayToggle.Content = _state.OverlayVisible ? "Hide overlay" : "Show overlay";
-        Options.IsEnabled = !running;
+        DeviceBox.IsEnabled = RecordBox.IsEnabled = !running; // the overlay choice stays editable while capturing
 
         if (_state.Engine is not { } engine)
         {
             StatusDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, "IdleBrush");
-            StatusTitle.Text = "Meter stopped";
-            StatusDetail.Text = "Start the meter, then play: the overlay appears and finds the game connection by itself.";
+            StatusTitle.Text = "Capture stopped";
+            StatusDetail.Text = "Start the capture, then play: AVION2 finds the game connection by itself.";
             LiveLine.Visibility = Visibility.Collapsed;
             return;
         }
@@ -118,13 +122,13 @@ public partial class HomePage : UserControl
         if (!status.Locked)
         {
             StatusDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, "WarnBrush");
-            StatusTitle.Text = "Meter running · searching for AION2";
+            StatusTitle.Text = "Capturing · searching for AION2";
             StatusDetail.Text = status.Message;
         }
         else
         {
             StatusDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, "LiveBrush");
-            StatusTitle.Text = "Meter running · connected";
+            StatusTitle.Text = "Capturing · connected";
             string who = status.SelfName is { } name
                 ? $"{name} · {status.SelfClass}"
                 : status.SelfClass != GameClass.Unknown ? $"You · {status.SelfClass}" : "waiting for your character";
@@ -215,6 +219,23 @@ public partial class HomePage : UserControl
     private void AllFights_Click(object sender, RoutedEventArgs e) => _openHistory(null);
 
     private void OverlayToggle_Click(object sender, RoutedEventArgs e) => _state.SetOverlayVisible(!_state.OverlayVisible);
+
+    private static readonly OverlayModeOption[] OverlayModes =
+    [
+        new("start", "Show when the capture starts"),
+        new("connection", "Show when the game is connected"),
+        new("fight", "Show during fights"),
+        new("manual", "Only when I show it"),
+    ];
+
+    private void OverlayMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (OverlayModeBox.SelectedItem is OverlayModeOption mode)
+        {
+            _state.Stored.OverlayAutoShow = mode.Id;
+            _state.SaveSettings();
+        }
+    }
 
     private void Timers_Click(object sender, RoutedEventArgs e) => _state.RequestPage("timers");
 

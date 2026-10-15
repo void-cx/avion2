@@ -24,7 +24,7 @@
             <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="General" Style="{StaticResource Heading}" />
-                    <CheckBox Content="Start the meter automatically when AVION2 opens" IsChecked="{Binding AutoStart}" />
+                    <CheckBox Content="Start the capture automatically when AVION2 opens" IsChecked="{Binding AutoStart}" />
                     <CheckBox x:Name="UpdateCheckBox" Content="Check for updates when AVION2 starts" Margin="0,8,0,0" />
                     <DockPanel Margin="0,8,0,0">
                         <Button x:Name="CheckNowButton" DockPanel.Dock="Right" Content="Check now" Click="CheckNow_Click" />

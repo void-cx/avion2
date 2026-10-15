@@ -250,7 +250,7 @@ public sealed class AppState
         Engine = engine;
         Overlay = new MainWindow(this, engine) { StartTab = startTab };
         Overlay.Run();
-        if (!Stored.OverlayHidden)
+        if (Stored.OverlayAutoShow == "start")
         {
             Overlay.Show();
         }
@@ -279,11 +279,9 @@ public sealed class AppState
     /// <summary>The overlay is on screen (the meter may run with it hidden).</summary>
     public bool OverlayVisible => Overlay?.IsVisible == true;
 
-    /// <summary>Shows or hides the overlay while the meter keeps running; remembered for the next start.</summary>
+    /// <summary>Shows or hides the DPS overlay; the capture keeps running either way.</summary>
     public void SetOverlayVisible(bool visible)
     {
-        Stored.OverlayHidden = !visible;
-        SaveSettings();
         if (Overlay is { } overlay)
         {
             if (visible)

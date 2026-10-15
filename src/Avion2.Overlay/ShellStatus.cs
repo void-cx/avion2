@@ -3,10 +3,10 @@ using System.Windows.Media;
 
 namespace Avion2.Overlay;
 
-/// <summary>The meter's state in one line ("Meter running · Verteron"), shown at the foot of the sidebars.</summary>
+/// <summary>The capture's state in one line ("Doxylamin · Verteron"), shown at the foot of the sidebars.</summary>
 public sealed class ShellStatus : Bindable
 {
-    private string _text = "Meter stopped";
+    private string _text = "Capture stopped";
     private Brush _dot = Brushes.Gray;
 
     public static ShellStatus Current { get; } = new();

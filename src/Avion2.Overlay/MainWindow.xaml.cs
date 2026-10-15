@@ -30,6 +30,9 @@ public partial class MainWindow : Window
     private nint _hwnd;
     private string? _startupError;
     private bool _stopping;
+    private bool _wasConnected;
+    private bool _inFight;
+    private long _lastCombatMs;
 
     public MainWindow(AppState state, MeterEngine engine)
     {
@@ -119,6 +122,46 @@ public partial class MainWindow : Window
 
         _vm.Update(_engine.Snapshot(_vm.Scope), status);
         CheckLowHp(status);
+        AutoShow(status);
+    }
+
+    /// <summary>
+    /// The overlay showing by itself: "connection" when the game connection is found (gone when it is lost), "fight"
+    /// when a fight starts (gone 30 s after it ends). Hiding it by hand holds until the next connection or fight.
+    /// </summary>
+    private void AutoShow(EngineStatus status)
+    {
+        string mode = _state.Stored.OverlayAutoShow;
+        if (status.Locked != _wasConnected)
+        {
+            _wasConnected = status.Locked;
+            if (mode == "connection")
+            {
+                _state.SetOverlayVisible(status.Locked);
+            }
+        }
+
+        long now = Environment.TickCount64;
+        if (status.InCombat)
+        {
+            _lastCombatMs = now;
+            if (!_inFight)
+            {
+                _inFight = true;
+                if (mode == "fight")
+                {
+                    _state.SetOverlayVisible(true);
+                }
+            }
+        }
+        else if (_inFight && now - _lastCombatMs > 30_000)
+        {
+            _inFight = false;
+            if (mode == "fight")
+            {
+                _state.SetOverlayVisible(false);
+            }
+        }
     }
 
     private void CheckLowHp(EngineStatus status)
