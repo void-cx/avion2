@@ -244,6 +244,7 @@ internal static class DevShots
     {
         Directory.CreateDirectory(directory);
         state.PersistSettings = false;
+        state.Stored.HudLayouts.Clear(); // detection, not the saved boxes (nothing is saved in this run)
         var bitmap = new BitmapImage();
         bitmap.BeginInit();
         bitmap.CacheOption = BitmapCacheOption.OnLoad;

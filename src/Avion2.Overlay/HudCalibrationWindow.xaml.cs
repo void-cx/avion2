@@ -24,6 +24,7 @@ public partial class HudCalibrationWindow : Window
     private readonly BitmapSource _picture;
     private readonly Dictionary<string, Border> _boxes = new();
     private readonly HashSet<string> _found = new();
+    private int _partyRows;
 
     public HudCalibrationWindow(AppState state, BitmapSource picture)
     {
@@ -36,6 +37,7 @@ public partial class HudCalibrationWindow : Window
         Picture.Height = picture.PixelHeight;
 
         var saved = state.Stored.HudLayouts.GetValueOrDefault(HudLayout.Key(picture.PixelWidth, picture.PixelHeight));
+        _partyRows = saved?.PartyRows ?? 0;
         foreach (string id in HudAnchors.All)
         {
             AddMarker(id, saved?.Box(id) ?? HudAnchors.Default(id));
@@ -131,23 +133,43 @@ public partial class HudCalibrationWindow : Window
         bgra.CopyPixels(pixels, stride, 0);
         if (HudDetector.FindHpBar(pixels, bgra.PixelWidth, bgra.PixelHeight, stride) is { } hp)
         {
-            var (x, y, w, h) = hp.ToPixels(_picture.PixelWidth, _picture.PixelHeight);
-            var marker = _boxes[HudAnchors.SelfHp];
-            Canvas.SetLeft(marker, x);
-            Canvas.SetTop(marker, y);
-            marker.Width = w;
-            marker.Height = h;
-            PlaceLabel(marker);
-            _found.Add(HudAnchors.SelfHp);
+            Move(HudAnchors.SelfHp, hp);
         }
+
+        if (HudDetector.FindTargetBar(pixels, bgra.PixelWidth, bgra.PixelHeight, stride) is { } target)
+        {
+            Move(HudAnchors.Target, target);
+        }
+
+        if (HudDetector.FindPartyBars(pixels, bgra.PixelWidth, bgra.PixelHeight, stride) is { } party)
+        {
+            // One box from the top row's bar to the bottom row's bar
+            var first = party.First;
+            Move(HudAnchors.Party, first with { H = party.Pitch * (party.Rows - 1) + first.H });
+            _partyRows = party.Rows;
+        }
+    }
+
+    private void Move(string id, HudBox box)
+    {
+        var (x, y, w, h) = box.ToPixels(_picture.PixelWidth, _picture.PixelHeight);
+        var marker = _boxes[id];
+        Canvas.SetLeft(marker, x);
+        Canvas.SetTop(marker, y);
+        marker.Width = w;
+        marker.Height = h;
+        PlaceLabel(marker);
+        _found.Add(id);
     }
 
     private void UpdateSummary(bool saved)
     {
-        string hp = _found.Contains(HudAnchors.SelfHp) ? "Your HP bar was found automatically."
-            : saved ? "These are your saved positions."
-            : "Your HP bar was not found (calibrate at full HP); drag the red box onto it.";
-        Summary.Text = $"{_picture.PixelWidth} × {_picture.PixelHeight} · {hp} Put the gold box on the target frame (where boss skills appear below).";
+        string Found(string id, string missing) => _found.Contains(id) ? $"{HudAnchors.Label(id)}: found" : saved ? $"{HudAnchors.Label(id)}: saved" : missing;
+        Summary.Text = string.Join(" · ",
+            $"{_picture.PixelWidth} × {_picture.PixelHeight}",
+            Found(HudAnchors.SelfHp, "Your HP bar: not found (calibrate at full HP), drag the red box onto it"),
+            Found(HudAnchors.Target, "Target: not found (target something), drag the gold box onto its HP bar"),
+            _found.Contains(HudAnchors.Party) ? $"Party: {_partyRows} rows found" : Found(HudAnchors.Party, "Party: not found (needs a party)"));
     }
 
     private void Detect_Click(object sender, RoutedEventArgs e)
@@ -166,6 +188,8 @@ public partial class HudCalibrationWindow : Window
         {
             layout.Boxes[id] = HudBox.FromPixels(Canvas.GetLeft(marker), Canvas.GetTop(marker), marker.Width, marker.Height, w, h);
         }
+
+        layout.PartyRows = _partyRows;
 
         _state.SaveHudLayout(layout);
         Close();

@@ -46,6 +46,40 @@ public class HudTests
     }
 
     [Fact]
+    public void FindsThePartyFramesAndTheTargetBar()
+    {
+        // Like the game at 1280×720 (measured at 2560×1440, halved): five party rows top left, 26.5 px apart, each
+        // a red HP bar over a cyan MP bar; the target's HP bar under the minimap.
+        var frame = Frame();
+        int[] rows = [99, 126, 152, 179, 206];
+        foreach (int row in rows)
+        {
+            Fill(frame, 31, row, 104, 3, 240, 50, 77);
+            Fill(frame, 31, row + 4, 104, 2, 10, 200, 235);
+        }
+
+        Fill(frame, 1126, 178, 100, 5, 230, 40, 40);
+        Fill(frame, 486, 649, 134, 7, 214, 20, 26); // own HP bar: not part of the party
+
+        var party = HudDetector.FindPartyBars(frame, Width, Height, Width * 4);
+        Assert.NotNull(party);
+        var (x, y, w, _) = party!.Value.First.ToPixels(Width, Height);
+        Assert.Equal(31, x, 1);
+        Assert.Equal(99, y, 1);
+        Assert.Equal(104, w, 1);
+        Assert.Equal(5, party.Value.Rows);
+        Assert.InRange(party.Value.Pitch * Height, 26, 27.5);
+
+        var target = HudDetector.FindTargetBar(frame, Width, Height, Width * 4);
+        Assert.NotNull(target);
+        var (tx, ty, tw, th) = target!.ToPixels(Width, Height);
+        Assert.Equal(1126, tx, 1);
+        Assert.Equal(178, ty, 1);
+        Assert.Equal(100, tw, 1);
+        Assert.Equal(5, th, 1);
+    }
+
+    [Fact]
     public void NoHpBarWithoutOne()
     {
         var frame = Frame();

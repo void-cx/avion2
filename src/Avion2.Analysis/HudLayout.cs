@@ -21,23 +21,22 @@ public static class HudAnchors
     /// <summary>The party frames.</summary>
     public const string Party = "party";
 
-    /// <summary>The elements the calibration asks for (party frames: once an effect uses them).</summary>
-    public static IReadOnlyList<string> All { get; } = [SelfHp, Target];
+    public static IReadOnlyList<string> All { get; } = [SelfHp, Target, Party];
 
     public static string Label(string id) => id switch
     {
         SelfHp => "Your HP bar",
         Target => "Target frame",
-        Party => "Party frames",
+        Party => "Party HP bars",
         _ => id,
     };
 
     /// <summary>A first guess before calibration (the game's default layout); the player moves them onto the real HUD.</summary>
     public static HudBox Default(string id) => id switch
     {
-        SelfHp => new HudBox(0.395, 0.855, 0.21, 0.02),
-        Target => new HudBox(0.38, 0.05, 0.24, 0.045),
-        Party => new HudBox(0.01, 0.30, 0.13, 0.26),
+        SelfHp => new HudBox(0.38, 0.901, 0.104, 0.01),
+        Target => new HudBox(0.88, 0.247, 0.078, 0.008),
+        Party => new HudBox(0.024, 0.138, 0.081, 0.15),
         _ => new HudBox(0.45, 0.45, 0.1, 0.05),
     };
 }
@@ -55,6 +54,24 @@ public sealed class HudLayout
     public Dictionary<string, HudBox> Boxes { get; set; } = new();
 
     public DateTime CalibratedUtc { get; set; }
+
+    /// <summary>How many party rows the party box spans (from the top bar to the bottom bar); 0 when unknown.</summary>
+    public int PartyRows { get; set; }
+
+    /// <summary>
+    /// The party rows' HP bars: the party box split into <see cref="PartyRows"/> evenly spaced bars as tall as
+    /// <paramref name="barHeight"/> (a fraction of the screen height).
+    /// </summary>
+    public IReadOnlyList<HudBox> PartyBars(double barHeight)
+    {
+        if (PartyRows < 1 || !Boxes.TryGetValue(HudAnchors.Party, out var box))
+        {
+            return [];
+        }
+
+        double pitch = PartyRows == 1 ? 0 : (box.H - barHeight) / (PartyRows - 1);
+        return Enumerable.Range(0, PartyRows).Select(i => box with { Y = box.Y + i * pitch, H = barHeight }).ToList();
+    }
 
     public static string Key(int width, int height) => $"{width}x{height}";
 
