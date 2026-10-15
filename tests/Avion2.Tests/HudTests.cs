@@ -55,6 +55,28 @@ public class HudTests
     }
 
     [Fact]
+    public void BigHitsFlashOnceSmallOnesNever()
+    {
+        var monitor = new BigHitMonitor();
+        Assert.False(monitor.Update(10_000, 10_000, 0));
+        Assert.False(monitor.Update(9_500, 10_000, 100));  // 5 %
+        Assert.False(monitor.Update(9_000, 10_000, 200));  // 10 % within the second
+        Assert.True(monitor.Update(8_400, 10_000, 300));   // 16 %
+        Assert.False(monitor.Update(8_300, 10_000, 400));  // the same drop
+        Assert.False(monitor.Update(8_300, 10_000, 3_000));
+
+        // Losing HP slowly never flashes
+        for (int i = 1; i <= 40; i++)
+        {
+            Assert.False(monitor.Update((uint)(8_300 - i * 100), 10_000, 3_000 + i * 500));
+        }
+
+        // Unknown HP or death resets
+        Assert.False(monitor.Update(0, 10_000, 30_000));
+        Assert.False(monitor.Update(10_000, 0, 30_100));
+    }
+
+    [Fact]
     public void LayoutsAreKeptPerResolution()
     {
         var layout = new HudLayout { Width = 2560, Height = 1440 };

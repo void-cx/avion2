@@ -407,7 +407,8 @@ public sealed class AppState
         if (wanted && Hud is null)
         {
             var engine = Engine!;
-            Hud = new HudWindow(this, () => Engine == engine ? engine.Status() : null);
+            Hud = new HudWindow(this, () => Engine == engine ? engine.Status() : null,
+                () => Engine == engine ? engine.Snapshot(Settings.Scope) : null);
             Hud.Show();
         }
         else if (!wanted && Hud is not null)

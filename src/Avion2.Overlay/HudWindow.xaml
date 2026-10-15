@@ -7,6 +7,51 @@
         FontFamily="{DynamicResource BodyFont}">
     <!-- Effects drawn over the game's own HUD; click-through, positioned over the game's client area -->
     <Canvas x:Name="Stage" IsHitTestVisible="False">
+        <!-- Big hit: red light along the screen edges -->
+        <Grid x:Name="EdgeFlash" Opacity="0" Visibility="Collapsed">
+            <Rectangle Height="120" VerticalAlignment="Top">
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#B0FF1E1E" Offset="0" />
+                        <GradientStop Color="#00FF1E1E" Offset="1" />
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle Height="120" VerticalAlignment="Bottom">
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                        <GradientStop Color="#B0FF1E1E" Offset="0" />
+                        <GradientStop Color="#00FF1E1E" Offset="1" />
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle Width="140" HorizontalAlignment="Left">
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#B0FF1E1E" Offset="0" />
+                        <GradientStop Color="#00FF1E1E" Offset="1" />
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle Width="140" HorizontalAlignment="Right">
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="1,0" EndPoint="0,0">
+                        <GradientStop Color="#B0FF1E1E" Offset="0" />
+                        <GradientStop Color="#00FF1E1E" Offset="1" />
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+        </Grid>
+
+        <!-- Your DPS in the current fight, just above your HP bar -->
+        <Border x:Name="DpsLine" Padding="8,2" CornerRadius="3" Background="#A6070D18" Visibility="Collapsed">
+            <TextBlock x:Name="DpsText" Foreground="White" FontSize="13">
+                <TextBlock.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="0" Opacity="0.9" />
+                </TextBlock.Effect>
+            </TextBlock>
+        </Border>
+
         <!-- Low HP: a pulsing red frame around your HP bar -->
         <Border x:Name="HpGlow" BorderBrush="#FFFF3B3B" BorderThickness="2.5" CornerRadius="4" Visibility="Collapsed" Opacity="0">
             <Border.Background>

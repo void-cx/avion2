@@ -52,6 +52,12 @@ public sealed class OverlaySettings
     /// <summary>Your HP bar pulses red while your HP is below the low-HP threshold.</summary>
     public bool HudHpBlink { get; set; } = true;
 
+    /// <summary>The screen edges flash red when you lose a big share of your HP at once.</summary>
+    public bool HudDamageFlash { get; set; } = true;
+
+    /// <summary>Your DPS, crit and fight time above your HP bar while you fight.</summary>
+    public bool HudDpsLine { get; set; } = true;
+
     /// <summary>Boss skills appear under the target frame (instead of a notice).</summary>
     public bool HudBossCasts { get; set; } = true;
 
