@@ -14,6 +14,7 @@
     <None Include="Fonts\SpaceGrotesk-OFL.txt" Link="licenses\SpaceGrotesk-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Fonts\JetBrainsMono-OFL.txt" Link="licenses\JetBrainsMono-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
     <Resource Include="Assets\avion2.ico" />
+    <Resource Include="Assets\avion2.png" />
     <None Include="Fonts\Cinzel-OFL.txt" Link="Cinzel-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
     <!-- Official class emblems, built in (assets/gamedata/PROVENANCE.md) -->
     <Resource Include="..\..\assets\gamedata\classes\*.png" Link="Assets\classes\%(Filename)%(Extension)" />

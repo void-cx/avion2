@@ -33,6 +33,13 @@ public sealed record PlayerOption(uint ActorId, string Label);
 
 public sealed record StatTile(string Label, string Value, string Tone = "");
 
+/// <summary>A player in the replay's meter at the playhead.</summary>
+/// <param name="Share">Of all player damage so far (bar length).</param>
+public sealed record PlayheadRow(string Name, string Detail, string Dps, double Share, System.Windows.Media.Brush Color, System.Windows.Media.Brush Fill, bool IsSelf);
+
+/// <summary>A recent hit in the replay's pane.</summary>
+public sealed record HitLine(string Time, string Text, string Amount, System.Windows.Media.Brush Color, System.Windows.Media.Brush AmountBrush);
+
 /// <summary>One row of the skill table; updated in place so sorting and scrolling survive refreshes.</summary>
 public sealed class SkillLine(uint skillId) : Bindable
 {
@@ -180,6 +187,29 @@ public sealed class DetailViewModel : Bindable
 
     /// <summary>0 = damage dealt, 1 = damage taken, 2 = timeline, 3 = buffs, 4 = replay.</summary>
     public int TabIndex { get => _tabIndex; set => Set(ref _tabIndex, value); }
+
+    public const int ReplayTab = 4;
+
+    private string _subtitle = string.Empty;
+    private string _playheadLabel = string.Empty;
+    private string _bossHpText = string.Empty;
+    private double _bossHp;
+    private IReadOnlyList<PlayheadRow> _playheadRows = [];
+    private IReadOnlyList<HitLine> _recentHits = [];
+
+    /// <summary>"14 Oct · 23:11 · 1:20 · 2 players" under the fight's name.</summary>
+    public string Subtitle { get => _subtitle; set => Set(ref _subtitle, value); }
+
+    /// <summary>The replay pane: "AT 0:47", the main target's HP, the meter so far and the last hits.</summary>
+    public string PlayheadLabel { get => _playheadLabel; set => Set(ref _playheadLabel, value); }
+
+    public string BossHpText { get => _bossHpText; set => Set(ref _bossHpText, value); }
+
+    public double BossHp { get => _bossHp; set => Set(ref _bossHp, value); }
+
+    public IReadOnlyList<PlayheadRow> PlayheadRows { get => _playheadRows; set => Set(ref _playheadRows, value); }
+
+    public IReadOnlyList<HitLine> RecentHits { get => _recentHits; set => Set(ref _recentHits, value); }
 
     public IReadOnlyList<StatTile> Tiles { get => _tiles; private set => Set(ref _tiles, value); }
     public IReadOnlyList<StatTile> TakenTiles { get => _takenTiles; private set => Set(ref _takenTiles, value); }

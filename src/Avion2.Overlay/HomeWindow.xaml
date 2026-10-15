@@ -1,55 +1,54 @@
 <Window x:Class="Avion2.Overlay.HomeWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Avion2.Overlay"
         Title="AVION2"
         ThemeMode="Dark"
-        Width="1280" Height="800" MinWidth="900" MinHeight="560"
+        Width="1280" Height="800" MinWidth="980" MinHeight="600"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource BackdropBrush}"
-        FontFamily="{DynamicResource BodyFont}" FontSize="12">
+        Background="{DynamicResource ContentBrush}"
+        FontFamily="{DynamicResource BodyFont}" FontSize="13">
     <Grid>
-        <!-- Backdrop: the theme's drawn backdrop, the key-art video over it if the theme allows one -->
-        <Grid x:Name="Backdrop" ClipToBounds="True">
-            <ContentControl Template="{DynamicResource BackdropTemplate}" IsHitTestVisible="False" />
-            <MediaElement x:Name="BackdropVideo" Stretch="UniformToFill" IsMuted="True" LoadedBehavior="Manual"
-                          UnloadedBehavior="Stop" MediaEnded="BackdropVideo_MediaEnded" MediaFailed="BackdropVideo_MediaFailed" />
-            <!-- Vignette keeps text readable -->
-            <Rectangle IsHitTestVisible="False" Fill="{DynamicResource VignetteBrush}" />
-            <!-- Inner pages dim the backdrop -->
-            <Rectangle x:Name="Dim" Fill="{DynamicResource DimBrush}" Opacity="0" IsHitTestVisible="False" />
-        </Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="76" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <DockPanel>
-            <!-- Top navigation -->
-            <Grid DockPanel.Dock="Top" Height="58" Background="{DynamicResource NavBarBrush}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Rectangle Grid.ColumnSpan="3" Height="1" VerticalAlignment="Bottom" Fill="{DynamicResource DividerBrush}" />
-
-                <ContentControl Template="{DynamicResource BrandTemplate}" Margin="24,0,36,0" VerticalAlignment="Center" Focusable="False" />
-
-                <StackPanel x:Name="NavLinks" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <RadioButton Style="{DynamicResource NavLink}" Content="Home" Tag="home" GroupName="Nav" Checked="Nav_Checked" />
-                    <RadioButton Style="{DynamicResource NavLink}" Content="Timers" Tag="timers" GroupName="Nav" Checked="Nav_Checked" />
-                    <RadioButton Style="{DynamicResource NavLink}" Content="Map" Tag="map" GroupName="Nav" Checked="Nav_Checked" />
-                    <RadioButton Style="{DynamicResource NavLink}" Content="Gear Forge" Tag="forge" GroupName="Nav" Checked="Nav_Checked" />
-                    <RadioButton Style="{DynamicResource NavLink}" Content="History" Tag="history" GroupName="Nav" Checked="Nav_Checked" />
-                    <RadioButton Style="{DynamicResource NavLink}" Content="Settings" Tag="settings" GroupName="Nav" Checked="Nav_Checked" />
+        <!-- Icon rail -->
+        <Border Background="{DynamicResource RailBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0">
+            <DockPanel x:Name="Rail">
+                <Image DockPanel.Dock="Top" Source="{DynamicResource RailLogo}" Width="40" Height="40" Margin="0,18,0,18"
+                       RenderOptions.BitmapScalingMode="HighQuality" ToolTip="AVION2" />
+                <RadioButton DockPanel.Dock="Bottom" Style="{StaticResource RailButton}" Content="Settings" Tag="settings" GroupName="Nav"
+                             local:Ui.Icon="{StaticResource IconSettings}" Checked="Nav_Checked" Margin="0,0,0,8" />
+                <Ellipse x:Name="NavDot" DockPanel.Dock="Bottom" Width="8" Height="8" Margin="0,0,0,10" Fill="{DynamicResource IdleBrush}"
+                         ToolTip="{Binding Text, Source={x:Static local:ShellStatus.Current}}" />
+                <StackPanel>
+                    <RadioButton Style="{StaticResource RailButton}" Content="Home" Tag="home" GroupName="Nav"
+                                 local:Ui.Icon="{StaticResource IconHome}" Checked="Nav_Checked" />
+                    <RadioButton Style="{StaticResource RailButton}" Content="Timers" Tag="timers" GroupName="Nav"
+                                 local:Ui.Icon="{StaticResource IconTimers}" Checked="Nav_Checked" />
+                    <RadioButton Style="{StaticResource RailButton}" Content="Map" Tag="map" GroupName="Nav"
+                                 local:Ui.Icon="{StaticResource IconMap}" Checked="Nav_Checked" />
+                    <RadioButton Style="{StaticResource RailButton}" Content="Forge" Tag="forge" GroupName="Nav"
+                                 local:Ui.Icon="{StaticResource IconForge}" Checked="Nav_Checked" ToolTip="Gear Forge" />
+                    <RadioButton Style="{StaticResource RailButton}" Content="History" Tag="history" GroupName="Nav"
+                                 local:Ui.Icon="{StaticResource IconHistory}" Checked="Nav_Checked" />
                 </StackPanel>
+            </DockPanel>
+        </Border>
 
-                <Border Grid.Column="2" Margin="0,0,20,0" VerticalAlignment="Center" Padding="12,5" CornerRadius="14"
-                        Background="{DynamicResource StatusPillBackground}" BorderBrush="{DynamicResource StatusPillBorder}" BorderThickness="1">
-                    <StackPanel Orientation="Horizontal">
-                        <Ellipse x:Name="NavDot" Width="8" Height="8" Fill="{DynamicResource IdleBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
-                        <TextBlock x:Name="NavStatus" Text="Meter stopped" Foreground="{DynamicResource NavTextBrush}" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Border>
+        <Grid Grid.Column="1" Background="{DynamicResource ContentBrush}">
+            <!-- Home banner: the theme's drawn backdrop, the key-art video over it if the theme allows one -->
+            <Grid x:Name="Backdrop" Height="{x:Static local:HomePage.BannerHeight}" VerticalAlignment="Top" ClipToBounds="True">
+                <ContentControl Template="{DynamicResource BackdropTemplate}" IsHitTestVisible="False" />
+                <MediaElement x:Name="BackdropVideo" Stretch="UniformToFill" IsMuted="True" LoadedBehavior="Manual"
+                              UnloadedBehavior="Stop" MediaEnded="BackdropVideo_MediaEnded" MediaFailed="BackdropVideo_MediaFailed" />
+                <!-- Vignette keeps the banner text readable and fades into the page -->
+                <Rectangle IsHitTestVisible="False" Fill="{DynamicResource VignetteBrush}" />
             </Grid>
 
-            <ContentControl x:Name="Page" />
-        </DockPanel>
+            <ContentControl x:Name="Page" Focusable="False" />
+        </Grid>
     </Grid>
 </Window>

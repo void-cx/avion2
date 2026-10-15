@@ -6,7 +6,11 @@
     <!-- The theme dictionary (Theme/*.xaml) is merged in at startup by ThemeManager, so it can be swapped later. -->
     <Application.Resources>
         <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="Theme/Shell.xaml" />
+        </ResourceDictionary.MergedDictionaries>
         <local:NotNullConverter x:Key="NotNull" />
+        <local:NotEmptyConverter x:Key="NotEmpty" />
         <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
         <Style x:Key="HeaderButton" TargetType="Button">

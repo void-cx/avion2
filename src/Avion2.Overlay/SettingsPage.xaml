@@ -3,9 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.Resources>
         <Style x:Key="Heading" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{DynamicResource DisplayFont}" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontSize" Value="15" />
             <Setter Property="Foreground" Value="{DynamicResource TitleBrush}" />
             <Setter Property="Margin" Value="0,0,0,10" />
         </Style>
@@ -18,11 +17,11 @@
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="16" MaxWidth="720" HorizontalAlignment="Left">
-            <TextBlock Text="Settings" Style="{DynamicResource CardHeading}" FontSize="28" Margin="0,0,0,16" />
+        <StackPanel Margin="28,26,28,28" MaxWidth="760" HorizontalAlignment="Left">
+            <TextBlock Text="Settings" Style="{StaticResource PageTitle}" Margin="0,0,0,18" />
 
             <!-- General -->
-            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="General" Style="{StaticResource Heading}" />
                     <CheckBox Content="Start the meter automatically when AVION2 opens" IsChecked="{Binding AutoStart}" />
@@ -37,7 +36,7 @@
             </Border>
 
             <!-- Timers -->
-            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Timers &amp; notifications" Style="{StaticResource Heading}" />
                     <DockPanel>
@@ -86,7 +85,7 @@
             </Border>
 
             <!-- Appearance -->
-            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Appearance" Style="{StaticResource Heading}" />
                     <DockPanel Margin="0,0,0,8">
@@ -112,7 +111,7 @@
             </Border>
 
             <!-- Overlay -->
-            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Overlay" Style="{StaticResource Heading}" />
                     <DockPanel>
@@ -129,7 +128,7 @@
             </Border>
 
             <!-- Find My Cube (opt-in) -->
-            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Find My Cube" Style="{StaticResource Heading}" />
                     <CheckBox x:Name="CubeFinderBox" Content="Lead me to hidden cubes (compass and exact cube positions)" Click="CubeFinder_Click" />
@@ -139,7 +138,7 @@
             </Border>
 
             <!-- Storage -->
-            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Storage" Style="{StaticResource Heading}" />
                     <DockPanel>
@@ -160,7 +159,7 @@
             </Border>
 
             <!-- Low HP alert -->
-            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Low-HP alert" Style="{StaticResource Heading}" />
                     <CheckBox Content="Play a sound and flash the overlay when my HP is low" IsChecked="{Binding LowHpAlert}" />
@@ -191,7 +190,7 @@
             </Border>
 
             <!-- Game data -->
-            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Skill and NPC names" Style="{StaticResource Heading}" />
                     <TextBlock x:Name="DataStatus" TextWrapping="Wrap" />
@@ -205,7 +204,7 @@
             </Border>
 
             <!-- History -->
-            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Fight history" Style="{StaticResource Heading}" />
                     <DockPanel>
@@ -218,7 +217,7 @@
             </Border>
 
             <!-- Hotkeys -->
-            <Border Style="{DynamicResource Panel}" Margin="0,0,0,12">
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="Hotkeys" Style="{StaticResource Heading}" />
                     <Grid>

@@ -23,16 +23,20 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="32,20,32,24" MaxWidth="1200">
+    <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Margin="28,26,28,10">
+        <TextBlock Text="Gear Forge" Style="{StaticResource PageTitle}" />
+        <TextBlock Text="Expected attempts, materials and Kinah to enchant or amplify an item, from the game's own tables." Style="{StaticResource PageSubtitle}" />
+    </StackPanel>
+    <Grid Margin="20,0,28,24" MaxWidth="1240" HorizontalAlignment="Left">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="330" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <!-- Item search -->
-        <Border Style="{DynamicResource Card}" Margin="8,8,8,0">
+        <Border Style="{StaticResource SurfaceCard}" Margin="8,8,8,0">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Text="Gear Forge" Style="{DynamicResource CardHeading}" Margin="0,4,0,8" />
                 <StackPanel x:Name="MyGearPanel" DockPanel.Dock="Top" Visibility="Collapsed" Margin="0,0,0,10">
                     <TextBlock x:Name="MyGearTitle" Foreground="{DynamicResource ChipTextBrush}" FontSize="11" Margin="0,0,0,4" />
                     <ListBox x:Name="MyGear" MaxHeight="230" Background="Transparent" BorderThickness="0" SelectionChanged="MyGear_SelectionChanged"
@@ -84,9 +88,9 @@
         <!-- Plan -->
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="8,8,8,0">
-                <Border Style="{DynamicResource Card}">
+                <Border Style="{StaticResource SurfaceCard}">
                     <StackPanel>
-                        <TextBlock x:Name="ItemName" Style="{DynamicResource CardHeading}" FontSize="20" Text="Pick an item" />
+                        <TextBlock x:Name="ItemName" Style="{StaticResource PaneTitle}" FontSize="20" Text="Pick an item" />
                         <TextBlock x:Name="ItemMeta" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,2,0,0"
                                    Text="Search your gear on the left: the Forge loads its enchant and amplify ladders from the game data." TextWrapping="Wrap" />
                         <TextBlock x:Name="HaveLine" Foreground="{DynamicResource MutedBrush}" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap" Visibility="Collapsed" />
@@ -110,7 +114,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Style="{DynamicResource Card}" Margin="0,0,10,10">
+                                <Border Style="{StaticResource SurfaceCard}" Margin="0,0,10,10">
                                     <StackPanel>
                                         <TextBlock Text="{Binding Label}" Style="{StaticResource TileLabel}" TextTrimming="CharacterEllipsis" />
                                         <TextBlock Text="{Binding Average}" Style="{StaticResource TileValue}" />
@@ -123,9 +127,9 @@
 
                     <TextBlock x:Name="ReachLine" Foreground="{DynamicResource TitleBrush}" FontFamily="{DynamicResource DisplayFont}" FontSize="15"
                                Margin="4,0,0,12" TextWrapping="Wrap" Visibility="Collapsed" />
-                    <Border Style="{DynamicResource Card}" Margin="0,0,10,0">
+                    <Border Style="{StaticResource SurfaceCard}" Margin="0,0,10,0">
                         <StackPanel>
-                            <TextBlock Text="Per Level" Style="{DynamicResource CardHeading}" Margin="0,0,0,8" />
+                            <TextBlock Text="PER LEVEL" Style="{StaticResource SectionLabel}" Margin="0,0,0,10" />
                             <Grid Margin="0,0,0,4">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="110" />
@@ -174,4 +178,5 @@
             </StackPanel>
         </ScrollViewer>
     </Grid>
+    </DockPanel>
 </UserControl>

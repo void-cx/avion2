@@ -15,6 +15,12 @@ public sealed record LegionLine(string Name, string Seen);
 /// <summary>Start/stop the meter, see what's going on, jump to recent fights.</summary>
 public partial class HomePage : UserControl
 {
+    /// <summary>Height of the banner (the key-art video plays behind it).</summary>
+    public const double BannerHeight = 330;
+
+    public static GridLength BannerRow { get; } = new(BannerHeight);
+
+    private DetailWindow? _fightWindow;
 
     private readonly AppState _state;
     private readonly Action<HistoryRow?> _openHistory;
@@ -40,6 +46,7 @@ public partial class HomePage : UserControl
         state.LegionUpdated += RefreshLegion;
         state.UpdateAvailableChanged += RefreshUpdate;
         state.Fights.CollectionChanged += (_, _) => RefreshRecent();
+        state.InventoryUpdated += RefreshCharacter;
         _timer.Tick += (_, _) => Refresh();
         Loaded += (_, _) =>
         {
@@ -47,6 +54,7 @@ public partial class HomePage : UserControl
             RefreshUpdate();
             Refresh();
             RefreshRecent();
+            RefreshCharacter();
             _timer.Start();
         };
         Unloaded += (_, _) => _timer.Stop();
@@ -57,45 +65,42 @@ public partial class HomePage : UserControl
     {
         var now = DateTimeOffset.Now;
         var upcoming = _state.Timers.Upcoming(now);
-        var lines = new List<EventLine>();
+        var lines = new List<(DateTimeOffset At, EventLine Line)>();
 
         void Add(string category, string name, DateTimeOffset at) =>
-            lines.Add(new EventLine(category, name, $"{at.ToLocalTime():HH:mm}", TimersPage.Countdown(at - now), string.Empty));
+            lines.Add((at, new EventLine(category, name, $"{at.ToLocalTime():HH:mm}", "in " + TimersPage.Countdown(at - now), string.Empty)));
+
+
+        if (_state.FieldBosses.Rows(_state.Data, now).FirstOrDefault(r => r.Status == Avion2.Analysis.FieldBossStatus.Respawning) is { } next)
+        {
+            Add("Field boss", next.Name, next.At);
+        }
 
         var rift = upcoming.First(o => o.Event.Category == Avion2.Analysis.ScheduleCategory.Rift);
-        Add("Spacetime Rift", $"{_state.Settings.Region} server", rift.StartsAt);
+        Add("Spacetime Rift", "Spacetime Rift", rift.StartsAt);
         if (upcoming.FirstOrDefault(o => o.Event.Category == Avion2.Analysis.ScheduleCategory.WorldBoss) is { } boss)
         {
             Add("World boss", boss.Event.Name, boss.StartsAt);
         }
 
-        if (_state.FieldBosses.Rows(_state.Data, now).FirstOrDefault(r => r.Status == Avion2.Analysis.FieldBossStatus.Respawning) is { } field)
-        {
-            Add("Field boss", field.Name, field.At);
-        }
-        else if (upcoming.FirstOrDefault(o => o.Event.Category == Avion2.Analysis.ScheduleCategory.BossRaid) is { } raid)
+        if (upcoming.FirstOrDefault(o => o.Event.Category == Avion2.Analysis.ScheduleCategory.BossRaid) is { } raid)
         {
             Add("Boss raid", raid.Event.Name, raid.StartsAt);
         }
 
-        ComingUp.ItemsSource = lines;
+        ComingUp.ItemsSource = lines.OrderBy(l => l.At).Take(4).Select(l => l.Line).ToList();
     }
 
     private void Refresh()
     {
         RefreshComingUp();
-        NpcapValue.Text = AppState.NpcapInstalled ? "Installed ✓" : "Missing — install from npcap.com";
+        NpcapValue.Text = AppState.NpcapInstalled ? "Installed" : "Missing: install from npcap.com";
         NamesValue.Text = _state.SkillNames == 0
-            ? "Not installed (Settings → download)"
+            ? "Not installed (Settings)"
             : $"{_state.SkillNames:N0} skills · {_state.NpcNames:N0} NPCs";
-        var characters = new CharacterStore().Characters;
-        CharactersValue.Text = characters.Count == 0
-            ? "None yet — teleport once in game"
-            : string.Join("\n", characters.Take(3).Select(c =>
-                $"{c.Name} · {c.Class}{(c.MaxHp > 0 ? $" · {c.MaxHp:N0} HP" : string.Empty)}"));
 
         bool running = _state.IsRunning;
-        StartStop.Content = running ? "Stop Meter" : "Start Meter";
+        StartStop.Content = running ? "Stop meter" : "Start meter";
         Options.IsEnabled = !running;
 
         if (_state.Engine is not { } engine)
@@ -140,10 +145,55 @@ public partial class HomePage : UserControl
 
     private void RefreshRecent()
     {
-        var recent = _state.Fights.Take(6).ToList();
-        Recent.ItemsSource = recent;
-        NoFights.Visibility = recent.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        Recent.ItemsSource = _state.Fights.Take(6).ToList();
+        var last = _state.Fights.FirstOrDefault();
+        NoFights.Visibility = last is null ? Visibility.Visible : Visibility.Collapsed;
+        LastStats.Visibility = last is null ? Visibility.Collapsed : Visibility.Visible;
+        LastReplay.IsEnabled = last is not null;
+        LastTitle.Text = last is null ? "No fights yet" : last.Title;
+        LastWhen.Text = last is null ? string.Empty : $"{last.Day} · {last.Time}";
+        LastDps.Text = last?.YourDpsFull ?? string.Empty;
+        LastDuration.Text = last?.Duration ?? string.Empty;
     }
+
+    /// <summary>Your characters, Kinah and Enhance Stones (from the last login the meter saw).</summary>
+    private void RefreshCharacter()
+    {
+        var characters = new CharacterStore().Characters;
+        CharactersValue.Text = characters.Count == 0
+            ? "None yet: teleport once in game"
+            : string.Join("\n", characters.Take(3).Select(c => $"{c.Name} · {c.Class}"));
+        if (_state.Inventory is { IsKnown: true } inventory)
+        {
+            Wallet.Visibility = Visibility.Visible;
+            KinahValue.Text = inventory.Kinah.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
+            StonesValue.Text = inventory.Count(Avion2.Analysis.ItemIds.EnhanceStone).ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
+            InventoryAge.Text = inventory.Character is { } who ? who : string.Empty;
+        }
+        else
+        {
+            Wallet.Visibility = Visibility.Collapsed;
+            InventoryAge.Text = string.Empty;
+        }
+    }
+
+    private void LastReplay_Click(object sender, RoutedEventArgs e)
+    {
+        if (_state.Fights.FirstOrDefault() is not { } last)
+        {
+            return;
+        }
+
+        var trace = _state.LoadTrace(last.Entry);
+        if (_fightWindow is not { IsLoaded: true })
+        {
+            _fightWindow = new DetailWindow { Owner = Window.GetWindow(this) };
+        }
+
+        _fightWindow.OpenSaved(last.Entry, trace, trace is null ? 0 : DetailViewModel.ReplayTab);
+    }
+
+    private void Forge_Click(object sender, RoutedEventArgs e) => _state.RequestPage("forge");
 
     private void StartStop_Click(object sender, RoutedEventArgs e)
     {

@@ -1,130 +1,221 @@
 <UserControl x:Class="Avion2.Overlay.HomePage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Avion2.Overlay">
     <UserControl.Resources>
-        <Style x:Key="CardLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{DynamicResource ChipTextBrush}" />
-            <Setter Property="FontSize" Value="11" />
+        <Style x:Key="CardHead" TargetType="DockPanel">
+            <Setter Property="Margin" Value="0,0,0,10" />
         </Style>
-        <Style x:Key="CardValue" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{DynamicResource DisplayFont}" />
-            <Setter Property="FontSize" Value="17" />
-            <Setter Property="Foreground" Value="{DynamicResource TitleBrush}" />
-            <Setter Property="Margin" Value="0,6,0,0" />
-            <Setter Property="TextWrapping" Value="Wrap" />
+        <Style x:Key="CardCaption" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource MutedBrush}" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style x:Key="LinkButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter x:Name="Text" />
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Text" Property="Opacity" Value="0.8" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="32,28,32,32">
-            <!-- Update available -->
-            <Border x:Name="UpdateBanner" Style="{DynamicResource Card}" MaxWidth="984" Margin="8,0,8,8" Visibility="Collapsed">
-                <DockPanel>
-                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Content="What's new" Margin="0,0,8,0" Click="ReleaseNotes_Click" />
-                        <Button Content="Later" Margin="0,0,8,0" Click="UpdateLater_Click" />
-                        <Button x:Name="UpdateNow" Content="Update now" Style="{DynamicResource PrimaryButton}" Click="UpdateNow_Click" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="{x:Static local:HomePage.BannerRow}" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Banner (the window plays the key-art video behind it) -->
+        <Grid Margin="40,0,40,30">
+            <Border x:Name="UpdateBanner" Style="{StaticResource FloatingPanel}" Padding="16,12" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    MaxWidth="460" Margin="0,18,0,0" Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock x:Name="UpdateTitle" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource TitleBrush}" />
+                    <TextBlock x:Name="UpdateDetail" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,4,0,10" FontSize="12" />
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="UpdateNow" Style="{StaticResource AccentButton}" Content="Update now" MinHeight="34" Click="UpdateNow_Click" />
+                        <Button Style="{StaticResource QuietButton}" Content="What's new" MinHeight="34" Margin="8,0,0,0" Click="ReleaseNotes_Click" />
+                        <Button Style="{StaticResource QuietButton}" Content="Later" MinHeight="34" Margin="8,0,0,0" Click="UpdateLater_Click" />
                     </StackPanel>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock x:Name="UpdateTitle" Style="{DynamicResource CardHeading}" FontSize="16" />
-                        <TextBlock x:Name="UpdateDetail" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,2,12,0" />
-                    </StackPanel>
-                </DockPanel>
+                </StackPanel>
             </Border>
 
-            <!-- Hero -->
-            <TextBlock Style="{DynamicResource HeroEyebrow}" Margin="0,24,0,6" />
-            <TextBlock Style="{DynamicResource HeroTitle}" />
-            <Rectangle Height="1" Width="620" Margin="0,8,0,0" Fill="{DynamicResource DividerBrush}" />
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,0">
-                <Ellipse x:Name="StatusDot" Width="9" Height="9" Fill="{DynamicResource IdleBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
-                <TextBlock x:Name="StatusTitle" Text="Meter stopped" FontFamily="{DynamicResource DisplayFont}" FontSize="16"
-                           Foreground="{DynamicResource TitleBrush}" VerticalAlignment="Center" />
+            <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                <TextBlock Style="{StaticResource BrandTitle}" FontSize="54" />
+                <TextBlock Text="Passive DPS meter for AION2. Reads network traffic, never touches the game." Foreground="{DynamicResource SecondaryTextBrush}"
+                           FontSize="15" Margin="0,6,0,0" />
+                <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+                    <Button x:Name="StartStop" Style="{StaticResource AccentButton}" Content="Start meter" MinWidth="170" MinHeight="42" Click="StartStop_Click" />
+                    <Button Style="{StaticResource QuietButton}" Content="Fight history" MinHeight="42" Margin="10,0,0,0" Click="AllFights_Click"
+                            Background="{DynamicResource FloatingPanelBrush}" />
+                    <Border Style="{StaticResource FloatingPanel}" CornerRadius="17" Padding="14,0" Height="34" Margin="14,0,0,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse x:Name="StatusDot" Width="8" Height="8" Fill="{DynamicResource IdleBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock x:Name="StatusTitle" Text="Meter stopped" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+                <TextBlock x:Name="StatusDetail" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,10,0,0" TextWrapping="Wrap" MaxWidth="720"
+                           Text="Start the meter, then play: the overlay appears and finds the game connection by itself." />
             </StackPanel>
-            <TextBlock x:Name="StatusDetail" HorizontalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,4,0,0" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="720"
-                       Text="Start the meter, then play: the overlay appears and finds the game connection by itself." />
-            <TextBlock x:Name="LiveLine" HorizontalAlignment="Center" Margin="0,6,0,0" FontWeight="SemiBold"
-                       Foreground="{DynamicResource HighlightBrush}" Visibility="Collapsed" />
+        </Grid>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,22,0,0">
-                <Button x:Name="StartStop" Style="{DynamicResource PrimaryButton}" Content="Start Meter" MinWidth="230" Margin="0,0,14,0" Click="StartStop_Click" />
-                <Button Style="{DynamicResource SecondaryButton}" Content="Fight History" MinWidth="230" Click="AllFights_Click" />
-            </StackPanel>
+        <!-- Cards -->
+        <ScrollViewer x:Name="Scroller" Grid.Row="1" VerticalScrollBarVisibility="Auto" Background="{DynamicResource ContentBrush}">
+            <StackPanel Margin="28,22,28,28">
+                <TextBlock x:Name="LiveLine" Foreground="{DynamicResource AccentTextBrush}" FontWeight="SemiBold" Margin="2,0,0,14" Visibility="Collapsed" />
 
-            <WrapPanel x:Name="Options" HorizontalAlignment="Center" Margin="0,16,0,0">
-                <TextBlock Text="Capture" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource SecondaryTextBrush}" />
-                <ComboBox x:Name="DeviceBox" Width="320" Margin="0,0,16,0" DisplayMemberPath="Label"
-                          ToolTip="Automatic captures on every adapter and finds the game connection by itself (also through VPNs and ping reducers)." />
-                <CheckBox x:Name="RecordBox" Content="Record session (.pcap)" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" />
-            </WrapPanel>
-
-            <!-- Status cards (site "Notice / Event" cards) -->
-            <UniformGrid Columns="3" Margin="0,44,0,0" MaxWidth="1000">
-                <Grid Margin="8,0">
-                    <Border Style="{DynamicResource Card}" Margin="0,8,0,0" MinHeight="96">
-                        <StackPanel>
-                            <Border Style="{DynamicResource Chip}"><TextBlock Text="Capture" Style="{StaticResource CardLabel}" /></Border>
-                            <TextBlock x:Name="NpcapValue" Style="{StaticResource CardValue}" />
-                        </StackPanel>
-                    </Border>
-                    <Path Style="{DynamicResource Ornament}" VerticalAlignment="Top" HorizontalAlignment="Center" />
-                </Grid>
-                <Grid Margin="8,0">
-                    <Border Style="{DynamicResource Card}" Margin="0,8,0,0" MinHeight="96">
-                        <StackPanel>
-                            <Border Style="{DynamicResource Chip}"><TextBlock Text="Names" Style="{StaticResource CardLabel}" /></Border>
-                            <TextBlock x:Name="NamesValue" Style="{StaticResource CardValue}" />
-                        </StackPanel>
-                    </Border>
-                    <Path Style="{DynamicResource Ornament}" VerticalAlignment="Top" HorizontalAlignment="Center" />
-                </Grid>
-                <Grid Margin="8,0">
-                    <Border Style="{DynamicResource Card}" Margin="0,8,0,0" MinHeight="96">
-                        <StackPanel>
-                            <Border Style="{DynamicResource Chip}"><TextBlock Text="Daeva" Style="{StaticResource CardLabel}" /></Border>
-                            <TextBlock x:Name="CharactersValue" Style="{StaticResource CardValue}" />
-                        </StackPanel>
-                    </Border>
-                    <Path Style="{DynamicResource Ornament}" VerticalAlignment="Top" HorizontalAlignment="Center" />
-                </Grid>
-            </UniformGrid>
-
-            <!-- Coming up (details on the Timers page) -->
-            <Grid Margin="8,30,8,0" MaxWidth="984">
-                <Border Style="{DynamicResource Card}" Margin="0,8,0,0">
-                    <StackPanel>
-                        <DockPanel Margin="0,4,0,10">
-                            <Button DockPanel.Dock="Right" Content="All timers →" Click="Timers_Click" />
-                            <TextBlock Text="Coming Up" Style="{DynamicResource CardHeading}" VerticalAlignment="Center" />
+                <UniformGrid Columns="3">
+                    <!-- Last fight -->
+                    <Border Style="{StaticResource SurfaceCard}" Margin="0,0,8,16" BorderBrush="{DynamicResource FieldBorderBrush}">
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Top" Style="{StaticResource CardHead}">
+                                <TextBlock x:Name="LastWhen" DockPanel.Dock="Right" Style="{StaticResource CardCaption}" />
+                                <TextBlock Text="Last fight" Style="{StaticResource CardCaption}" />
+                            </DockPanel>
+                            <Button x:Name="LastReplay" DockPanel.Dock="Bottom" Style="{StaticResource AccentButton}" Content="Watch replay" MinHeight="36" Margin="0,12,0,0" Click="LastReplay_Click" />
+                            <StackPanel>
+                                <TextBlock x:Name="LastTitle" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource TitleBrush}" TextTrimming="CharacterEllipsis"
+                                           Text="No fights yet" />
+                                <StackPanel x:Name="LastStats" Orientation="Horizontal" Margin="0,10,0,0">
+                                    <StackPanel Margin="0,0,24,0"><TextBlock Text="Your DPS" Style="{StaticResource StatLabel}" />
+                                        <TextBlock x:Name="LastDps" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextBrush}" /></StackPanel>
+                                    <StackPanel><TextBlock Text="Duration" Style="{StaticResource StatLabel}" />
+                                        <TextBlock x:Name="LastDuration" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TitleBrush}" /></StackPanel>
+                                </StackPanel>
+                                <TextBlock x:Name="NoFights" Text="Fights show up here when they end." Style="{StaticResource CardCaption}" Margin="0,8,0,0" Visibility="Collapsed" />
+                            </StackPanel>
                         </DockPanel>
-                        <ItemsControl x:Name="ComingUp">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate><UniformGrid Columns="3" /></ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Margin="0,0,18,4">
-                                        <TextBlock Text="{Binding Category}" Foreground="{DynamicResource ChipTextBrush}" FontSize="11" />
-                                        <TextBlock Text="{Binding In}" FontFamily="{DynamicResource DisplayFont}" FontSize="22" Foreground="{DynamicResource TitleBrush}" Margin="0,2,0,0" />
-                                        <TextBlock Foreground="{DynamicResource SecondaryTextBrush}" TextTrimming="CharacterEllipsis">
-                                            <Run Text="{Binding Name, Mode=OneWay}" /><Run Text=" · " Foreground="{DynamicResource MutedBrush}" /><Run Text="{Binding At, Mode=OneWay}" Foreground="{DynamicResource MutedBrush}" />
-                                        </TextBlock>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
-                <Path Style="{DynamicResource Ornament}" VerticalAlignment="Top" HorizontalAlignment="Center" />
-            </Grid>
+                    </Border>
 
-            <!-- Legion -->
-            <Grid x:Name="LegionCard" Margin="8,30,8,0" MaxWidth="984" Visibility="Collapsed">
-                <Border Style="{DynamicResource Card}" Margin="0,8,0,0">
+                    <!-- Up next -->
+                    <Border Style="{StaticResource SurfaceCard}" Margin="8,0,8,16">
+                        <StackPanel>
+                            <DockPanel Style="{StaticResource CardHead}">
+                                <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="All timers" Click="Timers_Click" />
+                                <TextBlock Text="Up next" Style="{StaticResource CardCaption}" />
+                            </DockPanel>
+                            <ItemsControl x:Name="ComingUp">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Height="34" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" ToolTip="{Binding Category}">
+                                            <DockPanel>
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding In}" Foreground="{DynamicResource AccentTextBrush}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Character -->
+                    <Border Style="{StaticResource SurfaceCard}" Margin="8,0,0,16">
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Top" Style="{StaticResource CardHead}">
+                                <TextBlock x:Name="InventoryAge" DockPanel.Dock="Right" Style="{StaticResource CardCaption}" />
+                                <TextBlock Text="Character" Style="{StaticResource CardCaption}" />
+                            </DockPanel>
+                            <Button DockPanel.Dock="Bottom" Style="{StaticResource QuietButton}" Content="Open Gear Forge" MinHeight="36" Margin="0,12,0,0" Click="Forge_Click" />
+                            <StackPanel>
+                                <TextBlock x:Name="CharactersValue" Foreground="{DynamicResource TitleBrush}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                <StackPanel x:Name="Wallet" Orientation="Horizontal" Margin="0,10,0,0">
+                                    <StackPanel Margin="0,0,24,0"><TextBlock Text="Kinah" Style="{StaticResource StatLabel}" />
+                                        <TextBlock x:Name="KinahValue" Style="{StaticResource StatValue}" /></StackPanel>
+                                    <StackPanel><TextBlock Text="Enhance Stones" Style="{StaticResource StatLabel}" />
+                                        <TextBlock x:Name="StonesValue" Style="{StaticResource StatValue}" /></StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </UniformGrid>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Recent fights -->
+                    <Border Style="{StaticResource SurfaceCard}" Margin="0,0,8,16" Padding="16,14,16,8">
+                        <StackPanel>
+                            <DockPanel Style="{StaticResource CardHead}">
+                                <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="All fights" Click="AllFights_Click" />
+                                <TextBlock Text="Recent fights" Style="{StaticResource CardCaption}" />
+                            </DockPanel>
+                            <ItemsControl x:Name="Recent">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Height="36" Cursor="Hand" MouseLeftButtonUp="Recent_Click" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Padding="6,0">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="Transparent" />
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="90" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="60" />
+                                                    <ColumnDefinition Width="80" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}">
+                                                    <Run Text="{Binding Day, Mode=OneWay}" />
+                                                </TextBlock>
+                                                <TextBlock Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,8,0">
+                                                    <Run Text="{Binding Boss, Mode=OneWay}" Foreground="{DynamicResource TextBrush}" /> <Run Text="{Binding Extra, Mode=OneWay}" Foreground="{DynamicResource SectionLabelBrush}" />
+                                                </TextBlock>
+                                                <TextBlock Grid.Column="2" Text="{Binding Duration}" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" TextAlignment="Right" />
+                                                <TextBlock Grid.Column="3" Text="{Binding YourDpsFull}" Foreground="{DynamicResource TitleBrush}" FontWeight="SemiBold" VerticalAlignment="Center" TextAlignment="Right" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Capture setup -->
+                    <Border Grid.Column="1" Style="{StaticResource SurfaceCard}" Margin="8,0,0,16">
+                        <StackPanel x:Name="Options">
+                            <TextBlock Text="Capture" Style="{StaticResource CardCaption}" Margin="0,0,0,10" />
+                            <DockPanel Margin="0,0,0,6">
+                                <TextBlock x:Name="NpcapValue" DockPanel.Dock="Right" Foreground="{DynamicResource TitleBrush}" />
+                                <TextBlock Text="Npcap" Foreground="{DynamicResource SecondaryTextBrush}" />
+                            </DockPanel>
+                            <DockPanel Margin="0,0,0,12">
+                                <TextBlock x:Name="NamesValue" DockPanel.Dock="Right" Foreground="{DynamicResource TitleBrush}" TextTrimming="CharacterEllipsis" Margin="12,0,0,0" />
+                                <TextBlock Text="Names" Foreground="{DynamicResource SecondaryTextBrush}" />
+                            </DockPanel>
+                            <ComboBox x:Name="DeviceBox" DisplayMemberPath="Label" Margin="0,0,0,10"
+                                      ToolTip="Automatic captures on every adapter and finds the game connection by itself (also through VPNs and ping reducers)." />
+                            <CheckBox x:Name="RecordBox" Content="Record session (.pcap)" Foreground="{DynamicResource SecondaryTextBrush}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Legion -->
+                <Border x:Name="LegionCard" Style="{StaticResource SurfaceCard}" Visibility="Collapsed">
                     <StackPanel>
-                        <DockPanel Margin="0,4,0,6">
-                            <TextBlock x:Name="LegionMeta" DockPanel.Dock="Right" Foreground="{DynamicResource MutedBrush}" FontSize="11" VerticalAlignment="Center" />
-                            <TextBlock x:Name="LegionName" Style="{DynamicResource CardHeading}" VerticalAlignment="Center" />
+                        <DockPanel Style="{StaticResource CardHead}">
+                            <TextBlock x:Name="LegionMeta" DockPanel.Dock="Right" Style="{StaticResource CardCaption}" />
+                            <TextBlock x:Name="LegionName" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TitleBrush}" />
                         </DockPanel>
                         <TextBlock x:Name="LegionIntro" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,0,0,10" MaxHeight="54"
                                    TextTrimming="CharacterEllipsis" />
@@ -143,59 +234,7 @@
                         </ItemsControl>
                     </StackPanel>
                 </Border>
-                <Path Style="{DynamicResource Ornament}" VerticalAlignment="Top" HorizontalAlignment="Center" />
-            </Grid>
-
-            <!-- Recent fights -->
-            <Grid Margin="8,30,8,0" MaxWidth="984">
-                <Border Style="{DynamicResource Card}" Margin="0,8,0,0">
-                    <StackPanel>
-                        <DockPanel Margin="0,4,0,10">
-                            <Button DockPanel.Dock="Right" Content="All fights →" Click="AllFights_Click" />
-                            <TextBlock Text="Recent Fights" Style="{DynamicResource CardHeading}" VerticalAlignment="Center" />
-                        </DockPanel>
-                        <TextBlock x:Name="NoFights" Text="No fights yet. They show up here when they end." Foreground="{DynamicResource MutedBrush}" Visibility="Collapsed" Margin="0,0,0,6" />
-                        <ItemsControl x:Name="Recent">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Padding="10,8" Cursor="Hand" MouseLeftButtonUp="Recent_Click" BorderBrush="{DynamicResource HairlineBrush}" BorderThickness="0,1,0,0">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Background" Value="Transparent" />
-                                                <Style.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
-                                                    </Trigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="130" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="70" />
-                                                <ColumnDefinition Width="120" />
-                                                <ColumnDefinition Width="120" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Text="{Binding When}" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="1" Text="{Binding Title}" Foreground="{DynamicResource TitleBrush}" FontFamily="{DynamicResource DisplayFont}" FontSize="14"
-                                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="2" Text="{Binding Duration}" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="3" VerticalAlignment="Center">
-                                                <Run Text="You " Foreground="{DynamicResource MutedBrush}" /><Run Text="{Binding YourDps, Mode=OneWay}" Foreground="{DynamicResource SelfBrush}" /><Run Text="/s" Foreground="{DynamicResource MutedBrush}" />
-                                            </TextBlock>
-                                            <TextBlock Grid.Column="4" VerticalAlignment="Center">
-                                                <Run Text="Party " Foreground="{DynamicResource MutedBrush}" /><Run Text="{Binding TotalDps, Mode=OneWay}" Foreground="{DynamicResource HighlightBrush}" /><Run Text="/s" Foreground="{DynamicResource MutedBrush}" />
-                                            </TextBlock>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
-                <Path Style="{DynamicResource Ornament}" VerticalAlignment="Top" HorizontalAlignment="Center" />
-            </Grid>
-        </StackPanel>
-    </ScrollViewer>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </UserControl>

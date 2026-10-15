@@ -2,7 +2,6 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
-using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Avion2.Protocol;
 
@@ -30,7 +29,7 @@ public partial class HomeWindow : Window
         ThemeManager.Attach(this);
         ThemeManager.Changed += UpdateBackdrop;
         _home = new HomePage(state, row => ShowPage("history", row));
-        _timers = new TimersPage(state);
+        _timers = new TimersPage(state, ShowOnMap, row => ShowPage("history", row));
         _forge = new ForgePage(state);
         _history = new HistoryPage(state);
         _settings = new SettingsPage(state);
@@ -55,13 +54,18 @@ public partial class HomeWindow : Window
             _timer.Start();
         };
 
-        ((RadioButton)NavLinks.Children[0]).IsChecked = true;
+        NavLinks.First().IsChecked = true;
     }
+
+    /// <summary>The rail's page buttons (Settings sits at the bottom of the rail).</summary>
+    private IEnumerable<RadioButton> NavLinks => Rail.Children.OfType<RadioButton>()
+        .Concat(Rail.Children.OfType<StackPanel>().SelectMany(p => p.Children.OfType<RadioButton>()))
+        .OrderBy(b => (string)b.Tag == "settings" ? 1 : 0);
 
     /// <summary>Shows a page and brings the window to the front (used by the overlay's buttons).</summary>
     public void ShowPage(string page, HistoryRow? select = null)
     {
-        foreach (RadioButton link in NavLinks.Children)
+        foreach (var link in NavLinks)
         {
             if ((string)link.Tag == page)
             {
@@ -87,6 +91,13 @@ public partial class HomeWindow : Window
         Activate();
     }
 
+    /// <summary>Opens the map at a marker (Timers: "Show on map").</summary>
+    private void ShowOnMap(string mapKey, Avion2.Analysis.MapMarker marker)
+    {
+        ShowPage("map");
+        _map?.Reveal(mapKey, marker);
+    }
+
     private void Nav_Checked(object sender, RoutedEventArgs e)
     {
         if (sender is not RadioButton { Tag: string tag })
@@ -104,8 +115,8 @@ public partial class HomeWindow : Window
             _ => _home,
         };
 
-        // The key art belongs to the home page; inner pages get an armory-style dark.
-        Dim.BeginAnimation(OpacityProperty, new DoubleAnimation(tag == "home" ? 0 : 0.86, TimeSpan.FromMilliseconds(250)));
+        // The key art is the home page's banner; other pages are plain.
+        Backdrop.Visibility = tag == "home" ? Visibility.Visible : Visibility.Collapsed;
         _page = tag;
         UpdateBackdrop();
     }
@@ -168,22 +179,26 @@ public partial class HomeWindow : Window
 
         if (_state.Engine is not { } engine)
         {
-            NavDot.SetResourceReference(Shape.FillProperty, "IdleBrush");
-            NavStatus.Text = "Meter stopped";
+            SetStatus("Meter stopped", "IdleBrush");
             return;
         }
 
         var status = engine.Status();
         if (!status.Locked)
         {
-            NavDot.SetResourceReference(Shape.FillProperty, "WarnBrush");
-            NavStatus.Text = "Searching for AION2…";
+            SetStatus("Searching for AION2…", "WarnBrush");
             return;
         }
 
-        NavDot.SetResourceReference(Shape.FillProperty, "LiveBrush");
         string who = status.SelfName ?? (status.SelfClass != GameClass.Unknown ? status.SelfClass.ToString() : "connected");
-        NavStatus.Text = status.InCombat ? $"{who} · in combat" : who;
+        string where = engine.LiveMap() is { MapId: { } map } ? _state.Data.MapName(map) : string.Empty;
+        SetStatus(status.InCombat ? $"{who} · in combat" : where.Length > 0 ? $"{who} · {where}" : who, "LiveBrush");
+    }
+
+    private void SetStatus(string text, string dotKey)
+    {
+        NavDot.SetResourceReference(Shape.FillProperty, dotKey);
+        ShellStatus.Current.Update(text, dotKey);
     }
 
     internal UserControl CurrentPage => (UserControl)Page.Content;

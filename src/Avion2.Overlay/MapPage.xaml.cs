@@ -785,7 +785,6 @@ public partial class MapPage : UserControl
 
     private void FindBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        FindHint.Visibility = FindBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
         Find(FindBox.Text);
     }
 
@@ -817,11 +816,16 @@ public partial class MapPage : UserControl
 
     private void FindList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (FindList.SelectedItem is not FindLine line)
+        if (FindList.SelectedItem is FindLine line)
         {
-            return;
+            Reveal(line.MapKey, line.Marker);
         }
+    }
 
+    /// <summary>Switches to the marker's map, makes sure no filter hides it, and selects it (also used by Timers).</summary>
+    public void Reveal(string mapKey, MapMarker marker)
+    {
+        var line = new FindLine(marker, mapKey, marker.Name, string.Empty);
         if (View.Map?.Key != line.MapKey)
         {
             MapBox.SelectedItem = ((IEnumerable<MapChoice>)MapBox.ItemsSource).First(c => c.Key == line.MapKey);

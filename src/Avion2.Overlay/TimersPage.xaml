@@ -1,124 +1,154 @@
 <UserControl x:Class="Avion2.Overlay.TimersPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="32,20,32,32">
-            <!-- Rift + events -->
-            <Grid Margin="8,0,8,0" MaxWidth="984">
-                <Border Style="{DynamicResource Card}" Margin="0,8,0,0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="300" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,4,24,4">
-                            <Border Style="{DynamicResource Chip}"><TextBlock x:Name="RegionChip" Foreground="{DynamicResource ChipTextBrush}" FontSize="11" /></Border>
-                            <TextBlock Text="Next Spacetime Rift" Style="{DynamicResource CardHeading}" Margin="0,8,0,0" />
-                            <TextBlock x:Name="RiftCountdown" FontFamily="{DynamicResource DisplayFont}" FontSize="34" Foreground="{DynamicResource TitleBrush}"
-                                       Effect="{DynamicResource Glow}" Margin="0,2,0,0" />
-                            <TextBlock x:Name="RiftAt" Foreground="{DynamicResource SecondaryTextBrush}" />
-                            <TextBlock x:Name="RiftList" Foreground="{DynamicResource MutedBrush}" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
-                            <DockPanel Margin="0,12,0,0">
-                                <TextBlock Text="Server" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" Margin="0,0,10,0" />
-                                <ComboBox x:Name="RegionBox" SelectedItem="{Binding Region}" Width="150" HorizontalAlignment="Left" />
-                            </DockPanel>
-                        </StackPanel>
-                        <ItemsControl x:Name="EventList" Grid.Column="1" Margin="0,4,0,0">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,0,0,6" ToolTip="{Binding Rule}">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="104" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="90" />
-                                            <ColumnDefinition Width="90" />
-                                        </Grid.ColumnDefinitions>
-                                        <Border Style="{DynamicResource Chip}" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Category}" Foreground="{DynamicResource ChipTextBrush}" FontSize="10.5" />
-                                        </Border>
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="{DynamicResource TitleBrush}" FontFamily="{DynamicResource DisplayFont}" FontSize="13"
-                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                        <TextBlock Grid.Column="2" Text="{Binding At}" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" />
-                                        <TextBlock Grid.Column="3" Text="{Binding In}" Foreground="{DynamicResource HighlightBrush}" VerticalAlignment="Center" TextAlignment="Right" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Grid>
-                </Border>
-                <Path Style="{DynamicResource Ornament}" VerticalAlignment="Top" HorizontalAlignment="Center" />
-            </Grid>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Avion2.Overlay">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="236" />
+            <ColumnDefinition Width="*" MinWidth="380" />
+            <ColumnDefinition Width="384" />
+        </Grid.ColumnDefinitions>
 
-            <!-- World bosses -->
-            <Grid Margin="8,30,8,0" MaxWidth="984">
-                <Border Style="{DynamicResource Card}" Margin="0,8,0,0">
+        <!-- Sidebar -->
+        <Border Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="22,26,22,18">
+                    <TextBlock Style="{StaticResource BrandTitle}" />
+                    <TextBlock Text="Passive DPS meter for AION2" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,2,0,0" />
+                </StackPanel>
+                <TextBox x:Name="Search" DockPanel.Dock="Top" Style="{StaticResource SearchBox}" Margin="16,0,16,14"
+                         local:Ui.Placeholder="Search bosses, events" TextChanged="Search_TextChanged" />
+                <local:SidebarFooter DockPanel.Dock="Bottom" />
+                <StackPanel Margin="8,0">
+                    <RadioButton x:Name="NextView" Style="{StaticResource SideItem}" Content="Up next" Tag="next" GroupName="TimerView" IsChecked="True"
+                                 local:Ui.Icon="{StaticResource IconTimers}" Checked="View_Checked" />
+                    <RadioButton x:Name="FieldView" Style="{StaticResource SideItem}" Content="Field bosses" Tag="field" GroupName="TimerView"
+                                 local:Ui.Icon="{StaticResource IconShield}" Checked="View_Checked" />
+                    <RadioButton x:Name="WorldView" Style="{StaticResource SideItem}" Content="World bosses" Tag="world" GroupName="TimerView"
+                                 local:Ui.Icon="{StaticResource IconCrown}" Checked="View_Checked" />
+                    <RadioButton x:Name="EventView" Style="{StaticResource SideItem}" Content="Events" Tag="event" GroupName="TimerView"
+                                 local:Ui.Icon="{StaticResource IconCalendar}" Checked="View_Checked" />
+                    <TextBlock Text="SERVER" Style="{StaticResource SectionLabel}" Margin="14,20,0,8" />
+                    <ComboBox x:Name="RegionBox" SelectedItem="{Binding Region}" Margin="6,0,6,6" />
+                    <TextBlock x:Name="RegionNote" Foreground="{DynamicResource MutedBrush}" FontSize="11" Margin="8,0,8,10" TextWrapping="Wrap" />
+                    <Button Style="{StaticResource SideAction}" Content="Notifications" local:Ui.Icon="{StaticResource IconBell}" Click="Notifications_Click"
+                            ToolTip="Which timers announce themselves, and how early (Settings)" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Timers -->
+        <DockPanel Grid.Column="1">
+            <StackPanel DockPanel.Dock="Top" Margin="28,26,28,0">
+                <TextBlock Text="Timers" Style="{StaticResource PageTitle}" />
+                <TextBlock Text="Server schedules, plus the respawn table the game sends for the map you are on." Style="{StaticResource PageSubtitle}" />
+            </StackPanel>
+
+            <UniformGrid DockPanel.Dock="Top" Columns="2" Margin="28,18,28,0">
+                <Border Style="{StaticResource SurfaceCard}" Margin="0,0,7,0" BorderBrush="{DynamicResource FieldBorderBrush}" Padding="16,12">
                     <StackPanel>
-                        <DockPanel Margin="0,4,0,10">
-                            <TextBlock x:Name="WorldBossNote" DockPanel.Dock="Right" Foreground="{DynamicResource MutedBrush}" FontSize="11" VerticalAlignment="Center" />
-                            <TextBlock Text="World Bosses" Style="{DynamicResource CardHeading}" VerticalAlignment="Center" />
+                        <DockPanel>
+                            <TextBlock x:Name="RiftIn" DockPanel.Dock="Right" Foreground="{DynamicResource MutedBrush}" FontSize="12" />
+                            <TextBlock Text="Next Spacetime Rift" Foreground="{DynamicResource MutedBrush}" FontSize="12" />
                         </DockPanel>
-                        <ItemsControl x:Name="WorldBossList">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,0,0,8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="200" />
-                                            <ColumnDefinition Width="110" />
-                                            <ColumnDefinition Width="100" />
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TitleBrush}" FontFamily="{DynamicResource DisplayFont}" FontSize="13"
-                                                       TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding Zone}" Foreground="{DynamicResource MutedBrush}" FontSize="11" />
-                                        </StackPanel>
-                                        <TextBlock Grid.Column="1" Text="{Binding Rule}" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center"
-                                                   TextTrimming="CharacterEllipsis" ToolTip="Server time" />
-                                        <TextBlock Grid.Column="2" Text="{Binding At}" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" />
-                                        <TextBlock Grid.Column="3" Text="{Binding In}" Foreground="{DynamicResource HighlightBrush}" VerticalAlignment="Center" TextAlignment="Right" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <TextBlock x:Name="RiftAt" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource TitleBrush}" Margin="0,6,0,8" />
+                        <ProgressBar x:Name="RiftBar" Style="{StaticResource ThinBar}" />
+                        <TextBlock x:Name="RiftList" Foreground="{DynamicResource SectionLabelBrush}" FontSize="11" Margin="0,8,0,0" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </Border>
-                <Path Style="{DynamicResource Ornament}" VerticalAlignment="Top" HorizontalAlignment="Center" />
-            </Grid>
-
-            <!-- Field bosses (live, from the game) -->
-            <Grid Margin="8,30,8,0" MaxWidth="984">
-                <Border Style="{DynamicResource Card}" Margin="0,8,0,0">
+                <Border Style="{StaticResource SurfaceCard}" Margin="7,0,0,0" Padding="16,12">
                     <StackPanel>
-                        <DockPanel Margin="0,4,0,10">
-                            <TextBlock x:Name="FieldBossSeen" DockPanel.Dock="Right" Foreground="{DynamicResource MutedBrush}" FontSize="11" VerticalAlignment="Center" />
-                            <TextBlock Text="Field Bosses" Style="{DynamicResource CardHeading}" VerticalAlignment="Center" />
+                        <DockPanel>
+                            <TextBlock x:Name="WorldIn" DockPanel.Dock="Right" Foreground="{DynamicResource MutedBrush}" FontSize="12" />
+                            <TextBlock Text="Next world boss" Foreground="{DynamicResource MutedBrush}" FontSize="12" />
                         </DockPanel>
-                        <TextBlock x:Name="NoFieldBosses" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Visibility="Collapsed"
-                                   Text="No field boss data yet. Visit a field map with the meter running: the game sends the respawn table of the map you are on." />
-                        <ItemsControl x:Name="FieldBossList">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate><UniformGrid Columns="2" /></ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,0,18,6">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="10" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Ellipse Width="7" Height="7" Fill="{Binding Dot}" VerticalAlignment="Center" />
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="{DynamicResource TitleBrush}" FontFamily="{DynamicResource DisplayFont}" FontSize="13"
-                                                   TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="4,0,8,0" ToolTip="{Binding Detail}" />
-                                        <TextBlock Grid.Column="2" Text="{Binding When}" Foreground="{Binding WhenBrush}" VerticalAlignment="Center" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <TextBlock x:Name="WorldAt" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource TitleBrush}" Margin="0,6,0,8" TextTrimming="CharacterEllipsis" />
+                        <ProgressBar x:Name="WorldBar" Style="{StaticResource ThinBar}" Foreground="{DynamicResource SelfBrush}" />
+                        <TextBlock x:Name="WorldZone" Foreground="{DynamicResource SectionLabelBrush}" FontSize="11" Margin="0,8,0,0" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </Border>
-                <Path Style="{DynamicResource Ornament}" VerticalAlignment="Top" HorizontalAlignment="Center" />
+            </UniformGrid>
+
+            <Border DockPanel.Dock="Top" Margin="28,22,28,0" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Padding="0,0,0,6">
+                <DockPanel>
+                    <TextBlock x:Name="ServerTime" DockPanel.Dock="Right" Foreground="{DynamicResource MutedBrush}" FontSize="12" />
+                    <TextBlock x:Name="ListTitle" Foreground="{DynamicResource MutedBrush}" FontSize="12" />
+                </DockPanel>
+            </Border>
+            <Grid>
+                <ListBox x:Name="TimerList" Style="{StaticResource PlainList}" ItemContainerStyle="{StaticResource ListRow}" Margin="18,4,18,8"
+                         SelectionChanged="TimerList_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="local:TimerItem">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="128" />
+                                    <ColumnDefinition Width="112" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,8,0">
+                                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Where}" Foreground="{DynamicResource SectionLabelBrush}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                                <Border Grid.Column="1" Style="{StaticResource Pill}" Background="{Binding StatusBack}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0">
+                                    <TextBlock Text="{Binding Status}" Foreground="{Binding StatusBrush}" />
+                                </Border>
+                                <TextBlock Grid.Column="2" Text="{Binding In}" Foreground="{DynamicResource SecondaryTextBrush}" TextAlignment="Right" VerticalAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <TextBlock x:Name="NoTimers" Foreground="{DynamicResource MutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0"
+                           TextWrapping="Wrap" TextAlignment="Center" MaxWidth="380" Visibility="Collapsed" />
             </Grid>
-        </StackPanel>
-    </ScrollViewer>
+        </DockPanel>
+
+        <!-- Selected timer -->
+        <Border Grid.Column="2" Background="{DynamicResource PaneBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1,0,0,0">
+            <Grid>
+                <TextBlock x:Name="Empty" Text="Select a timer to see its details." Foreground="{DynamicResource MutedBrush}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <DockPanel x:Name="Pane" Visibility="Collapsed">
+                    <Border DockPanel.Dock="Top" Height="170" Background="{DynamicResource PaneHeaderBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" ClipToBounds="True">
+                        <Grid>
+                            <Image x:Name="MapCrop" Stretch="UniformToFill" Opacity="0.85" />
+                            <Canvas x:Name="PinLayer" IsHitTestVisible="False">
+                                <Grid x:Name="Pin" Width="26" Height="26">
+                                    <Ellipse Fill="#B3070D18" Stroke="{DynamicResource AccentBrush}" StrokeThickness="2" />
+                                    <Ellipse Width="8" Height="8" Fill="{DynamicResource AccentBrush}" />
+                                </Grid>
+                            </Canvas>
+                            <StackPanel x:Name="NoMap" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <Viewbox Width="34" Height="34" HorizontalAlignment="Center">
+                                    <Path Style="{StaticResource IconPath}" Data="{StaticResource IconTimers}" Stroke="{DynamicResource SectionLabelBrush}" StrokeThickness="1.2" />
+                                </Viewbox>
+                                <TextBlock x:Name="NoMapText" Foreground="{DynamicResource SectionLabelBrush}" FontSize="12" Margin="0,8,0,0" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="22,14,22,22">
+                        <Button x:Name="ShowOnMap" Style="{StaticResource AccentButton}" Content="Show on map" Width="150" Click="ShowOnMap_Click" />
+                        <Button x:Name="OpenBest" Style="{StaticResource QuietButton}" Content="Best fight" Margin="10,0,0,0" Click="OpenBest_Click"
+                                ToolTip="Your best fight against this boss (History)" />
+                    </StackPanel>
+                    <StackPanel Margin="22,18,22,0">
+                        <TextBlock x:Name="DetailName" Style="{StaticResource PaneTitle}" />
+                        <WrapPanel Margin="0,10,0,6">
+                            <Border Style="{StaticResource AccentPill}"><TextBlock x:Name="DetailCategory" /></Border>
+                            <Border x:Name="DetailWhereBox" Style="{StaticResource Pill}"><TextBlock x:Name="DetailWhere" /></Border>
+                        </WrapPanel>
+                        <TextBlock x:Name="DetailCountdown" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TitleBrush}" />
+                        <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Margin="0,14,0,0" Padding="0,14,0,0">
+                            <Grid x:Name="Facts">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="104" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </DockPanel>
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>

@@ -32,34 +32,46 @@
     </UserControl.Resources>
 
     <DockPanel>
-        <!-- Header: target, player picker, source -->
-        <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock Text="Target" Opacity="0.7" FontSize="11" />
-                <TextBlock Text="{Binding Target}" FontFamily="{DynamicResource DisplayFont}" FontSize="20" Foreground="{DynamicResource TitleBrush}" TextTrimming="CharacterEllipsis" Effect="{DynamicResource SoftGlow}" />
-                <TextBlock Text="{Binding Trace.NetSummary}" FontSize="11" Foreground="{DynamicResource MutedBrush}" Margin="0,2,0,0"
-                           ToolTip="Delay of the game server's clock ticks (above the best case) and freezes of more than a second during this fight." />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Margin="12,0">
-                <TextBlock Text="Player" Opacity="0.7" FontSize="11" />
-                <ComboBox Width="260" ItemsSource="{Binding Players}" SelectedItem="{Binding SelectedPlayer}" DisplayMemberPath="Label" />
-            </StackPanel>
-            <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Orientation="Horizontal">
-                <Border Padding="8,4" CornerRadius="4" Background="{DynamicResource SourceChipBackground}" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Source}" Foreground="{DynamicResource SourceChipText}" />
-                </Border>
-                <ToggleButton x:Name="PinButton" Visibility="Collapsed" Margin="8,0,0,0" Padding="8,4" Content="&#xE718;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                              ToolTip="Keep this window on top of the game" Checked="Pin_Changed" Unchecked="Pin_Changed" />
-            </StackPanel>
-        </Grid>
+        <!-- Header: the fight, the views, the player and the pin -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource RailBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1">
+            <Grid Height="64" Margin="20,0,16,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MinWidth="200" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Target}" FontFamily="{DynamicResource DisplayFont}" FontWeight="{DynamicResource DisplayWeight}" FontSize="20"
+                               Foreground="{DynamicResource TitleBrush}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Subtitle}" Foreground="{DynamicResource MutedBrush}" FontSize="12" TextTrimming="CharacterEllipsis"
+                               ToolTip="{Binding Trace.NetSummary}" />
+                </StackPanel>
+                <StackPanel x:Name="TabLinks" Grid.Column="1" Orientation="Horizontal" Margin="16,0,8,0">
+                    <RadioButton Style="{StaticResource TabLink}" Content="Replay" Tag="4" GroupName="FightTab" Checked="TabLink_Checked" Height="64" Margin="0,0,20,0" />
+                    <RadioButton Style="{StaticResource TabLink}" Content="Damage dealt" Tag="0" GroupName="FightTab" Checked="TabLink_Checked" Height="64" Margin="0,0,20,0" />
+                    <RadioButton Style="{StaticResource TabLink}" Content="Damage taken" Tag="1" GroupName="FightTab" Checked="TabLink_Checked" Height="64" Margin="0,0,20,0" />
+                    <RadioButton Style="{StaticResource TabLink}" Content="Buffs" Tag="3" GroupName="FightTab" Checked="TabLink_Checked" Height="64" Margin="0,0,20,0" />
+                    <RadioButton Style="{StaticResource TabLink}" Content="Timeline" Tag="2" GroupName="FightTab" Checked="TabLink_Checked" Height="64" Margin="0" />
+                </StackPanel>
+                <ComboBox Grid.Column="2" Width="210" Margin="12,0" VerticalAlignment="Center" ItemsSource="{Binding Players}" SelectedItem="{Binding SelectedPlayer}"
+                          DisplayMemberPath="Label" ToolTip="Whose numbers the tables show" />
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Style="{StaticResource Pill}" Margin="0" VerticalAlignment="Center"><TextBlock Text="{Binding Source}" /></Border>
+                    <ToggleButton x:Name="PinButton" Visibility="Collapsed" Margin="10,0,0,0" Style="{StaticResource QuietToggle}" local:Ui.Icon="{StaticResource IconPin}"
+                                  ToolTip="Keep this window on top of the game" Checked="Pin_Changed" Unchecked="Pin_Changed" />
+                </StackPanel>
+            </Grid>
+        </Border>
 
-        <TabControl SelectedIndex="{Binding TabIndex}">
+        <TabControl x:Name="Tabs" SelectedIndex="{Binding TabIndex}" Background="Transparent" BorderThickness="0" Padding="0">
+            <TabControl.Template>
+                <ControlTemplate TargetType="TabControl">
+                    <ContentPresenter ContentSource="SelectedContent" />
+                </ControlTemplate>
+            </TabControl.Template>
             <TabItem Header="Damage dealt">
+                <Grid Margin="16,6,16,16">
                 <DockPanel Margin="0,10,0,0">
                     <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Tiles}" ItemTemplate="{StaticResource TileTemplate}">
                         <ItemsControl.ItemsPanel>
@@ -123,9 +135,11 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
+                </Grid>
             </TabItem>
 
             <TabItem Header="Damage taken">
+                <Grid Margin="16,6,16,16">
                 <DockPanel Margin="0,10,0,0">
                     <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding TakenTiles}" ItemTemplate="{StaticResource TileTemplate}">
                         <ItemsControl.ItemsPanel>
@@ -161,9 +175,11 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
+                </Grid>
             </TabItem>
 
             <TabItem Header="Timeline">
+                <Grid Margin="16,6,16,16">
                 <DockPanel Margin="0,10,0,0">
                     <TextBlock DockPanel.Dock="Top" Opacity="0.7" FontSize="11" Margin="0,0,0,6" TextWrapping="Wrap"
                                Text="Every skill cast, per player (summons count for their owner), with the main target's HP behind. Hover a mark for the skill." />
@@ -171,9 +187,11 @@
                         <local:TimelineView x:Name="Timeline" Trace="{Binding Trace}" SelectedActor="{Binding SelectedActorId}" />
                     </ScrollViewer>
                 </DockPanel>
+                </Grid>
             </TabItem>
 
             <TabItem Header="Buffs">
+                <Grid Margin="16,6,16,16">
                 <DockPanel Margin="0,10,0,0">
                     <TextBlock DockPanel.Dock="Top" Opacity="0.7" FontSize="11" Margin="0,0,0,6" TextWrapping="Wrap"
                                Text="Buffs and debuffs on the selected player: share of the fight they were up, how often they were applied, and by whom." />
@@ -202,28 +220,104 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
+                </Grid>
             </TabItem>
 
             <TabItem Header="Replay">
-                <DockPanel Margin="0,10,0,0">
-                    <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
-                        <ToggleButton x:Name="PlayButton" DockPanel.Dock="Left" Width="40" Content="&#xE768;" FontFamily="{StaticResource IconFont}"
-                                      ToolTip="Play / pause (Space)" Checked="Play_Changed" Unchecked="Play_Changed" />
-                        <ComboBox x:Name="SpeedBox" DockPanel.Dock="Right" Width="78" Margin="8,0,0,0" SelectedIndex="1" ToolTip="Playback speed">
-                            <ComboBoxItem Content="0.5×" Tag="0.5" />
-                            <ComboBoxItem Content="1×" Tag="1" />
-                            <ComboBoxItem Content="2×" Tag="2" />
-                            <ComboBoxItem Content="4×" Tag="4" />
-                            <ComboBoxItem Content="8×" Tag="8" />
-                        </ComboBox>
-                        <Slider x:Name="ReplaySlider" Margin="10,0,0,0" VerticalAlignment="Center" Minimum="0" Maximum="{Binding TraceLength}"
-                                SmallChange="100" LargeChange="5000" IsMoveToPointEnabled="True" />
-                    </DockPanel>
-                    <TextBlock DockPanel.Dock="Bottom" Opacity="0.6" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"
-                               Text="Click a dot for details · wheel: zoom · drag: pan · double-click: fit. Your own position comes from buffs and dashes (the game does not send it continuously); dashed players and faint monsters = estimated positions." />
-                    <local:ReplayView x:Name="Replay" Trace="{Binding Trace}" Time="{Binding Value, ElementName=ReplaySlider}"
-                                      SelectedActor="{Binding SelectedActorId}" MinHeight="260" />
-                </DockPanel>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="340" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Top-down view -->
+                    <Border Background="{DynamicResource StageBrush}">
+                        <local:ReplayView x:Name="Replay" Trace="{Binding Trace}" Time="{Binding Value, ElementName=ReplaySlider}"
+                                          SelectedActor="{Binding SelectedActorId}" MinHeight="240" Margin="10"
+                                          ToolTip="Click a dot for details · wheel: zoom · drag: pan · double-click: fit. Your own position comes from buffs and dashes (the game does not send it continuously); dashed players and faint monsters are estimated positions."
+                                          ToolTipService.InitialShowDelay="1500" />
+                    </Border>
+
+                    <!-- The meter at the playhead -->
+                    <Border Grid.Column="1" Background="{DynamicResource PaneBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1,0,0,0">
+                        <DockPanel Margin="0,16,0,12">
+                            <StackPanel DockPanel.Dock="Top" Margin="18,0,18,12">
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding BossHpText}" Foreground="{DynamicResource MutedBrush}" FontSize="12" />
+                                    <TextBlock Text="{Binding PlayheadLabel}" Style="{StaticResource SectionLabel}" />
+                                </DockPanel>
+                                <ProgressBar Style="{StaticResource ThinBar}" Value="{Binding BossHp, Mode=OneWay}" Foreground="#E5484D" Height="4" Margin="0,8,0,0"
+                                             Visibility="{Binding BossHpText, Converter={StaticResource NotEmpty}}" />
+                            </StackPanel>
+                            <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding PlayheadRows}" Margin="10,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid x:Name="Row" Height="44" Margin="0,0,0,6">
+                                            <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="{DynamicResource ShellRadius}" />
+                                            <Border Background="{Binding Fill}" CornerRadius="{DynamicResource ShellRadius}" RenderTransformOrigin="0,0.5">
+                                                <Border.RenderTransform><ScaleTransform ScaleX="{Binding Share}" /></Border.RenderTransform>
+                                            </Border>
+                                            <DockPanel Margin="10,0,12,0">
+                                                <Border DockPanel.Dock="Left" Width="4" Height="24" CornerRadius="2" Background="{Binding Color}" Margin="0,0,10,0" />
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Dps}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource TitleBrush}" />
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{DynamicResource TitleBrush}" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock DockPanel.Dock="Top" Text="LAST HITS" Style="{StaticResource SectionLabel}" Margin="18,14,18,6"
+                                       Visibility="{Binding PlayheadLabel, Converter={StaticResource NotEmpty}}" />
+                            <ItemsControl ItemsSource="{Binding RecentHits}" Margin="18,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Height="28" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1">
+                                            <DockPanel>
+                                                <TextBlock DockPanel.Dock="Left" Text="{Binding Time}" Width="46" FontSize="12" Foreground="{DynamicResource SectionLabelBrush}" VerticalAlignment="Center" />
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Amount}" FontSize="12" Foreground="{Binding AmountBrush}" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding Text}" FontSize="12" Foreground="{Binding Color}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- Transport -->
+                    <Border Grid.Row="1" Grid.ColumnSpan="2" Background="{DynamicResource RailBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+                        <DockPanel Height="134" Margin="18,14,18,12">
+                            <StackPanel DockPanel.Dock="Left" Width="164" Margin="0,0,18,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <ToggleButton x:Name="PlayButton" Style="{StaticResource PlayToggle}" ToolTip="Play / pause (Space)" Checked="Play_Changed" Unchecked="Play_Changed" />
+                                    <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock x:Name="Clock" Text="0:00" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TitleBrush}" />
+                                        <TextBlock x:Name="Length" Foreground="{DynamicResource MutedBrush}" FontSize="12" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <Border BorderBrush="{DynamicResource FieldBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource ShellRadius}" Margin="0,14,0,0" Padding="1">
+                                    <UniformGrid x:Name="Speeds" Rows="1" ToolTip="Playback speed">
+                                        <RadioButton Style="{StaticResource Segment}" Content="½×" Tag="0.5" GroupName="Speed" />
+                                        <RadioButton Style="{StaticResource Segment}" Content="1×" Tag="1" GroupName="Speed" IsChecked="True" />
+                                        <RadioButton Style="{StaticResource Segment}" Content="2×" Tag="2" GroupName="Speed" />
+                                        <RadioButton Style="{StaticResource Segment}" Content="4×" Tag="4" GroupName="Speed" />
+                                        <RadioButton Style="{StaticResource Segment}" Content="8×" Tag="8" GroupName="Speed" />
+                                    </UniformGrid>
+                                </Border>
+                            </StackPanel>
+                            <local:ScrubberView x:Name="ReplaySlider" Trace="{Binding Trace}" Maximum="{Binding TraceLength}" SelectedActor="{Binding SelectedActorId}"
+                                                ToolTip="Each mark is a cast · click or drag to jump · red line: the main target's HP" ToolTipService.InitialShowDelay="1500" />
+                        </DockPanel>
+                    </Border>
+                </Grid>
             </TabItem>
         </TabControl>
     </DockPanel>

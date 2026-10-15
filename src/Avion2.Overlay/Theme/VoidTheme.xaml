@@ -60,6 +60,36 @@
     <SolidColorBrush x:Key="StatusPillBackground" Color="#171936" />
     <SolidColorBrush x:Key="StatusPillBorder" Color="#262947" />
 
+    <!-- Shell: rail, sidebars, lists and panes (Theme/Shell.xaml); violet marks what is selected or primary -->
+    <FontWeight x:Key="DisplayWeight">Bold</FontWeight>
+    <FontWeight x:Key="BrandWeight">Bold</FontWeight>
+    <CornerRadius x:Key="ShellRadius">6</CornerRadius>
+    <BitmapImage x:Key="RailLogo" UriSource="pack://application:,,,/AVION2;component/Assets/void-mark.png" />
+    <SolidColorBrush x:Key="RailBrush" Color="#0A0A20" />
+    <SolidColorBrush x:Key="RailActiveBrush" Color="#1FB303F8" />
+    <SolidColorBrush x:Key="SidebarBrush" Color="#0F1024" />
+    <SolidColorBrush x:Key="ContentBrush" Color="#07071A" />
+    <SolidColorBrush x:Key="PaneBrush" Color="#0F1024" />
+    <SolidColorBrush x:Key="PaneHeaderBrush" Color="#131533" />
+    <SolidColorBrush x:Key="LineBrush" Color="#262947" />
+    <SolidColorBrush x:Key="FieldBrush" Color="#171936" />
+    <SolidColorBrush x:Key="FieldBorderBrush" Color="#33365A" />
+    <SolidColorBrush x:Key="SideSelectedBrush" Color="#1D1F42" />
+    <SolidColorBrush x:Key="SelectedRowBrush" Color="#26B303F8" />
+    <SolidColorBrush x:Key="AccentTextBrush" Color="#D27BFF" />
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#9302CC" />
+    <SolidColorBrush x:Key="OnAccentBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="PillBrush" Color="#171936" />
+    <SolidColorBrush x:Key="PillTextBrush" Color="#C9CBE0" />
+    <SolidColorBrush x:Key="AccentPillBrush" Color="#2A0F45" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#0F1024" />
+    <SolidColorBrush x:Key="SurfaceBorderBrush" Color="#262947" />
+    <SolidColorBrush x:Key="SectionLabelBrush" Color="#7D80A0" />
+    <SolidColorBrush x:Key="TrackBrush" Color="#262947" />
+    <SolidColorBrush x:Key="FloatingPanelBrush" Color="#F00F1024" />
+    <SolidColorBrush x:Key="FloatingBorderBrush" Color="#33365A" />
+    <SolidColorBrush x:Key="StageBrush" Color="#0B0B22" />
+
     <!-- Glow: violet only, and only where it carries meaning (brand, primary action, hover) -->
     <DropShadowEffect x:Key="Glow" Color="#B303F8" BlurRadius="28" ShadowDepth="0" Opacity="0.55" />
     <x:Null x:Key="SoftGlow" />

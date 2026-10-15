@@ -25,6 +25,10 @@ stored in `overlay.json` (`Theme`), and `--theme <id>` previews a theme without 
 | Notifications | `NoticeBackground`, `NoticeBorderBrush`, `NoticeChipBrush`, `PlaceholderBackground`, `PlaceholderStripeBrush` |
 | Templates | `BackdropTemplate`, `BrandTemplate` (ControlTemplates for a `ContentControl`), `VignetteBrush` |
 | Styles | `HeroEyebrow` and `HeroTitle` (these set the hero text too), `CardHeading`, `Card`, `Panel`, `Chip`, `Ornament`, `PrimaryButton`, `SecondaryButton` |
+| Shell | `DisplayWeight`, `BrandWeight`, `ShellRadius`, `RailLogo` (image), `RailBrush`, `RailActiveBrush`, `SidebarBrush`, `ContentBrush`, `PaneBrush`, `PaneHeaderBrush`, `StageBrush`, `LineBrush`, `FieldBrush`, `FieldBorderBrush`, `SideSelectedBrush`, `SelectedRowBrush`, `AccentTextBrush`, `AccentHoverBrush`, `OnAccentBrush`, `PillBrush`, `PillTextBrush`, `AccentPillBrush`, `SurfaceBrush`, `SurfaceBorderBrush`, `SectionLabelBrush`, `TrackBrush`, `FloatingPanelBrush`, `FloatingBorderBrush` |
+
+The app shell (icon rail, sidebars, list rows, detail panes, flat buttons, icons) lives in `Theme/Shell.xaml` and is
+shared by every theme. It only reads the keys above, so a new theme needs the Shell keys and nothing else.
 
 Stat colours (crit, back, double, perfect) and class colours carry meaning and are the same in every theme.
 

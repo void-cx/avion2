@@ -67,12 +67,12 @@ internal static class DevShots
             }
 
             Shoot(home, "home", directory, "home.png");
-            if (home.CurrentPage.Content is System.Windows.Controls.ScrollViewer scroller)
+            if (home.CurrentPage is HomePage homePage)
             {
-                scroller.ScrollToVerticalOffset(560);
+                homePage.Scroller.ScrollToVerticalOffset(560);
                 Pump(TimeSpan.FromMilliseconds(500));
                 Save(home, Path.Combine(directory, "home-lower.png"));
-                scroller.ScrollToTop();
+                homePage.Scroller.ScrollToTop();
             }
             if (state.Fights.FirstOrDefault() is { } fight)
             {
@@ -80,6 +80,11 @@ internal static class DevShots
             }
 
             Shoot(home, "timers", directory, "timers.png");
+            if (home.CurrentPage is TimersPage timersPage && timersPage.SelectFirst())
+            {
+                Pump(TimeSpan.FromMilliseconds(600));
+                Save(home, Path.Combine(directory, "timers-selected.png"));
+            }
             Shoot(home, "map", directory, "map.png");
             if (home.CurrentPage is MapPage mapPage)
             {
@@ -128,9 +133,31 @@ internal static class DevShots
                 Shoot(home, "forge", directory, "forge-mine.png");
             }
 
+            var traced = state.Fights.FirstOrDefault(f => f.Players > 1 && state.LoadTrace(f.Entry) is not null)
+                         ?? state.Fights.FirstOrDefault(f => state.LoadTrace(f.Entry) is not null);
+            if (traced is not null)
+            {
+                home.ShowPage("history", traced);
+            }
+
             Shoot(home, "history", directory, "history.png");
             if (home.CurrentPage is HistoryPage historyPage)
             {
+                if (historyPage.OpenFightForShots(DetailViewModel.ReplayTab) is { } window)
+                {
+                    window.WindowStartupLocation = WindowStartupLocation.Manual;
+                    window.Left = -20000;
+                    Pump(TimeSpan.FromMilliseconds(1200));
+                    window.View.ReplaySlider.Value = window.View.ReplaySlider.Maximum * 0.55;
+                    window.View.Replay.Inspect(window.View.ViewModel.Trace?.SelfId);
+                    Pump(TimeSpan.FromMilliseconds(600));
+                    Save(window, Path.Combine(directory, "fight-replay.png"));
+                    window.View.ViewModel.TabIndex = 0;
+                    Pump(TimeSpan.FromMilliseconds(800));
+                    Save(window, Path.Combine(directory, "fight-dealt.png"));
+                    window.Close();
+                }
+
                 historyPage.ShowBest();
                 Shoot(home, "history", directory, "history-best.png");
             }
