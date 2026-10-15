@@ -132,15 +132,16 @@ public partial class HudWindow : Window
         HpGlow.Width = hp.W + pad * 2;
         HpGlow.Height = hp.H + pad * 2;
 
-        // Centred above the level emblem, which sits just right of the HP bar's end
+        // Right-aligned to the HP bar's end (next to the level emblem): the DPS line, what hit you above it
         DpsLine.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-        double emblemX = hp.X + hp.W + w * 0.017;
-        Canvas.SetLeft(DpsLine, emblemX - DpsLine.DesiredSize.Width / 2);
-        Canvas.SetTop(DpsLine, hp.Y - h * 0.027 - DpsLine.DesiredSize.Height);
+        double right = hp.X + hp.W;
+        double dpsTop = hp.Y - h * 0.01 - DpsLine.DesiredSize.Height;
+        Canvas.SetLeft(DpsLine, right - DpsLine.DesiredSize.Width);
+        Canvas.SetTop(DpsLine, dpsTop);
 
         HitInfo.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-        Canvas.SetLeft(HitInfo, hp.X);
-        Canvas.SetTop(HitInfo, hp.Y - HitInfo.DesiredSize.Height - h * 0.02);
+        Canvas.SetLeft(HitInfo, right - HitInfo.DesiredSize.Width);
+        Canvas.SetTop(HitInfo, dpsTop - HitInfo.DesiredSize.Height - 2);
 
         // Centred below the boss's status pills and buff icons; the skill banner goes under it
         BossInfo.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
