@@ -335,9 +335,13 @@ public sealed class CubeFinder
         }
 
         var latest = _state.CubeLog.Find(cube.Id) ?? cube;
-        if (target.Exact?.Id == latest.Id && latest.State != CubeState.Available)
+        if (target.Exact?.Id == latest.Id && latest.State == CubeState.Opened)
         {
-            LeadToNext(); // opened by us or taken by someone else
+            Close(); // we picked it up: done (in "nearby" mode the next cube the game sends opens it again)
+        }
+        else if (target.Exact?.Id == latest.Id && latest.State == CubeState.Taken)
+        {
+            LeadToNext(); // someone else was faster: on to the next
         }
         else
         {
