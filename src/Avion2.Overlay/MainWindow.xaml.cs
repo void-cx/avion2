@@ -9,8 +9,9 @@ using Avion2.Engine;
 namespace Avion2.Overlay;
 
 /// <summary>
-/// The compact, always-on-top meter shown while the meter runs. History and settings live in the
-/// home window; clicking a player opens the live detail window.
+/// The compact, always-on-top meter view. The meter itself (capture, low-HP alert, hotkeys) runs as long as this
+/// window exists, shown or hidden: ✕, Alt+F4 and Ctrl+Shift+O only hide it; <see cref="AppState.StopMeter"/>
+/// closes it for good. History and settings live in the home window; clicking a player opens the live detail window.
 /// </summary>
 public partial class MainWindow : Window
 {
@@ -28,6 +29,7 @@ public partial class MainWindow : Window
     private DetailWindow? _detail;
     private nint _hwnd;
     private string? _startupError;
+    private bool _stopping;
 
     public MainWindow(AppState state, MeterEngine engine)
     {
@@ -48,8 +50,40 @@ public partial class MainWindow : Window
             _alertTimer.Stop();
             _vm.Alerting = false;
         };
-        Loaded += OnLoaded;
+        Closing += (_, e) =>
+        {
+            // Only stopping the meter closes the overlay; anything else just hides it
+            if (!_stopping)
+            {
+                e.Cancel = true;
+                _state.SetOverlayVisible(false);
+            }
+        };
         Closed += OnClosed;
+    }
+
+    /// <summary>
+    /// Starts the meter: capture, the refresh timer and the hotkeys, without showing the window (it may start hidden).
+    /// </summary>
+    internal void Run()
+    {
+        _hwnd = new WindowInteropHelper(this).EnsureHandle(); // hotkeys and click-through need the window handle
+        _vm.Tab = StartTab;
+        var errors = _engine.Start();
+        if (errors.Count > 0 && _engine.Status().Message.StartsWith("No capture", StringComparison.Ordinal))
+        {
+            _startupError = string.Join("; ", errors);
+        }
+
+        Refresh();
+        _timer.Start();
+    }
+
+    /// <summary>Closes the overlay and stops the meter (the running fight is saved).</summary>
+    internal void Stop()
+    {
+        _stopping = true;
+        Close();
     }
 
     /// <summary>Initial tab (<c>--tab taken</c>).</summary>
@@ -73,19 +107,6 @@ public partial class MainWindow : Window
         NativeMethods.RegisterHotKey(_hwnd, HotkeyLock, mods, (uint)KeyInterop.VirtualKeyFromKey(Key.L));
         NativeMethods.RegisterHotKey(_hwnd, HotkeyReset, mods, (uint)KeyInterop.VirtualKeyFromKey(Key.R));
         NativeMethods.RegisterHotKey(_hwnd, HotkeyToggle, mods, (uint)KeyInterop.VirtualKeyFromKey(Key.O));
-    }
-
-    private void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        _vm.Tab = StartTab;
-        var errors = _engine.Start();
-        if (errors.Count > 0 && _engine.Status().Message.StartsWith("No capture", StringComparison.Ordinal))
-        {
-            _startupError = string.Join("; ", errors);
-        }
-
-        Refresh();
-        _timer.Start();
     }
 
     private void Refresh()
@@ -154,7 +175,7 @@ public partial class MainWindow : Window
                 Refresh();
                 break;
             case HotkeyToggle:
-                Visibility = Visibility == Visibility.Visible ? Visibility.Hidden : Visibility.Visible;
+                _state.SetOverlayVisible(!IsVisible);
                 break;
         }
 
@@ -226,12 +247,8 @@ public partial class MainWindow : Window
 
     private void Lock_Click(object sender, RoutedEventArgs e) => _vm.Locked = true;
 
-    /// <summary>✕ stops the meter (the running fight is saved) and brings the home window back.</summary>
-    private void Close_Click(object sender, RoutedEventArgs e)
-    {
-        _state.StopMeter();
-        _state.RequestPage("home");
-    }
+    /// <summary>✕ hides the overlay; the meter keeps running (stop it on the home page).</summary>
+    private void Close_Click(object sender, RoutedEventArgs e) => _state.SetOverlayVisible(false);
 
     private void TabDamage_Click(object sender, RoutedEventArgs e) => SwitchTab(OverlayTab.Damage);
 

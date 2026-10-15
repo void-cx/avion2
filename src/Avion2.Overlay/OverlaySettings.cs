@@ -19,6 +19,9 @@ public sealed class OverlaySettings
 
     public bool LowHpAlert { get; set; } = true;
 
+    /// <summary>The overlay was hidden: the next start keeps it hidden (the meter runs all the same).</summary>
+    public bool OverlayHidden { get; set; }
+
     /// <summary>Start the meter as soon as AVION2 opens.</summary>
     public bool AutoStart { get; set; }
 

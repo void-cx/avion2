@@ -249,7 +249,12 @@ public sealed class AppState
 
         Engine = engine;
         Overlay = new MainWindow(this, engine) { StartTab = startTab };
-        Overlay.Show();
+        Overlay.Run();
+        if (!Stored.OverlayHidden)
+        {
+            Overlay.Show();
+        }
+
         UpdateHud();
         MeterStateChanged?.Invoke();
         return null;
@@ -266,12 +271,36 @@ public sealed class AppState
         var overlay = Overlay;
         Overlay = null;
         Engine = null;
-        overlay?.Close(); // disposes the engine
+        overlay?.Stop(); // disposes the engine
         UpdateHud();
         MeterStateChanged?.Invoke();
     }
 
-    /// <summary>Called by the overlay when it closes on its own (e.g. Alt+F4).</summary>
+    /// <summary>The overlay is on screen (the meter may run with it hidden).</summary>
+    public bool OverlayVisible => Overlay?.IsVisible == true;
+
+    /// <summary>Shows or hides the overlay while the meter keeps running; remembered for the next start.</summary>
+    public void SetOverlayVisible(bool visible)
+    {
+        Stored.OverlayHidden = !visible;
+        SaveSettings();
+        if (Overlay is { } overlay)
+        {
+            if (visible)
+            {
+                overlay.Show();
+                TopmostKeeper.Raise(overlay);
+            }
+            else
+            {
+                overlay.Hide();
+            }
+        }
+
+        MeterStateChanged?.Invoke();
+    }
+
+    /// <summary>Called by the overlay when it closes (only when the meter is stopped).</summary>
     internal void OnOverlayClosed(MainWindow overlay)
     {
         if (Overlay != overlay)

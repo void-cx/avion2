@@ -101,6 +101,8 @@ public partial class HomePage : UserControl
 
         bool running = _state.IsRunning;
         StartStop.Content = running ? "Stop meter" : "Start meter";
+        OverlayToggle.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
+        OverlayToggle.Content = _state.OverlayVisible ? "Hide overlay" : "Show overlay";
         Options.IsEnabled = !running;
 
         if (_state.Engine is not { } engine)
@@ -211,6 +213,8 @@ public partial class HomePage : UserControl
     }
 
     private void AllFights_Click(object sender, RoutedEventArgs e) => _openHistory(null);
+
+    private void OverlayToggle_Click(object sender, RoutedEventArgs e) => _state.SetOverlayVisible(!_state.OverlayVisible);
 
     private void Timers_Click(object sender, RoutedEventArgs e) => _state.RequestPage("timers");
 
