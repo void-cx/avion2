@@ -52,6 +52,20 @@
             </TextBlock>
         </Border>
 
+        <!-- Boss: exact HP, share left, time to kill, fight clock (under the boss bar, right) -->
+        <TextBlock x:Name="BossInfo" Foreground="White" FontSize="13" Visibility="Collapsed">
+            <TextBlock.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="0" Opacity="1" />
+            </TextBlock.Effect>
+        </TextBlock>
+
+        <!-- What hit you (with the red edge flash), above your HP bar on the left -->
+        <TextBlock x:Name="HitInfo" Foreground="#FFFF8A80" FontSize="15" FontWeight="SemiBold" Visibility="Collapsed" Opacity="0">
+            <TextBlock.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="0" Opacity="1" />
+            </TextBlock.Effect>
+        </TextBlock>
+
         <!-- Party DPS, styled like the game's group list, right under it -->
         <StackPanel x:Name="PartyMeter" Visibility="Collapsed">
             <StackPanel.Effect>

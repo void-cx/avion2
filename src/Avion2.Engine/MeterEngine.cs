@@ -39,6 +39,9 @@ public sealed class EngineOptions
 }
 
 /// <summary>What a UI needs besides the meter rows.</summary>
+/// <summary>A hit we took: who (summons count for their owner), with what, how much.</summary>
+public sealed record SelfHit(string Attacker, string Skill, long Amount, bool Critical);
+
 public sealed record EngineStatus(
     string Message,
     bool Locked,
@@ -166,6 +169,12 @@ public sealed class MeterEngine : IDisposable
             else if (e is SkillCastEvent cast && Cast is { } onCast)
             {
                 onCast(cast, _session.Registry.Find(cast.ActorId));
+            }
+            else if (e is DamageEvent { Amount: > 0 } hit && HitTaken is { } onHit && hit.TargetId == _session.Registry.SelfId)
+            {
+                var registry = _session.Registry;
+                onHit(new SelfHit(registry.DisplayName(registry.ResolveOwner(hit.ActorId)), registry.Data.SkillName(hit.SkillId),
+                    hit.Amount, hit.HitType == HitType.Critical));
             }
         });
         _pipeline.StatusChanged += message => _message = message;
@@ -347,6 +356,9 @@ public sealed class MeterEngine : IDisposable
             return _session.Inventory.Copy();
         }
     }
+
+    /// <summary>Raised on the capture thread for every damaging hit we take.</summary>
+    public event Action<SelfHit>? HitTaken;
 
     /// <summary>Raised on the capture thread for every skill cast (boss cast warnings).</summary>
     public event Action<SkillCastEvent, EntityInfo?>? Cast;

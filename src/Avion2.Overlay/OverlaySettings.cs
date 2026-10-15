@@ -61,6 +61,9 @@ public sealed class OverlaySettings
     /// <summary>The party's DPS right under the game's group list, in its style.</summary>
     public bool HudPartyMeter { get; set; } = true;
 
+    /// <summary>Under the boss bar: exact HP, time to kill and the fight clock.</summary>
+    public bool HudBossInfo { get; set; } = true;
+
     /// <summary>Boss skills appear under the target frame (instead of a notice).</summary>
     public bool HudBossCasts { get; set; } = true;
 

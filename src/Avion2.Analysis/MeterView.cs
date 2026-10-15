@@ -88,6 +88,9 @@ public sealed record MeterSnapshot(
     public IReadOnlyList<IncomingRow> Incoming { get; init; } = Incoming ?? [];
 
     public MeterRow? Self => Rows.FirstOrDefault(r => r.IsSelf);
+
+    /// <summary>The main target is a boss (its HP is <see cref="TargetHp"/>).</summary>
+    public bool TargetIsBoss { get; init; }
 }
 
 public enum MeterScope
@@ -266,7 +269,10 @@ public static class MeterView
             rows,
             encounter.StartMs,
             encounter.End,
-            BuildIncoming(encounter, registry, self, seconds));
+            BuildIncoming(encounter, registry, self, seconds))
+        {
+            TargetIsBoss = targetInfo?.IsBoss == true,
+        };
     }
 
     private static double Rate(int count, int total) => total == 0 ? 0 : (double)count / total;

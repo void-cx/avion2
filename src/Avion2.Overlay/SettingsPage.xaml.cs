@@ -46,6 +46,7 @@ public partial class SettingsPage : UserControl
         HudFlashBox.IsChecked = state.Stored.HudDamageFlash;
         HudDpsBox.IsChecked = state.Stored.HudDpsLine;
         HudPartyBox.IsChecked = state.Stored.HudPartyMeter;
+        HudBossBox.IsChecked = state.Stored.HudBossInfo;
         state.HudChanged += UpdateHudStatus;
         UpdateHudStatus();
         ThemeBox.ItemsSource = ThemeManager.Themes;
@@ -297,6 +298,7 @@ public partial class SettingsPage : UserControl
         _state.Stored.HudDamageFlash = HudFlashBox.IsChecked == true;
         _state.Stored.HudDpsLine = HudDpsBox.IsChecked == true;
         _state.Stored.HudPartyMeter = HudPartyBox.IsChecked == true;
+        _state.Stored.HudBossInfo = HudBossBox.IsChecked == true;
         _state.SaveSettings();
     }
 

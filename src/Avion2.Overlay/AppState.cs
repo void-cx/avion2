@@ -225,6 +225,13 @@ public sealed class AppState
             var inventory = engine.Inventory();
             Application.Current.Dispatcher.BeginInvoke(() => UpdateInventory(inventory));
         };
+        engine.HitTaken += hit =>
+        {
+            if (Hud is not null)
+            {
+                Application.Current.Dispatcher.BeginInvoke(() => Hud?.AddHit(hit));
+            }
+        };
         engine.Cast += (cast, info) =>
         {
             if (info is { IsBoss: true, IsDummy: false } && Settings.NotifyBossCasts)

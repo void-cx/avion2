@@ -25,6 +25,8 @@ public partial class HudWindow : Window
     private readonly BigHitMonitor _bigHits = new();
     private DateTime _dpsUpdated;
     private DateTime _partyUpdated;
+    private DateTime _bossUpdated;
+    private readonly Queue<(long Ms, SelfHit Hit)> _hits = new();
     private long _lastCombatMs = long.MinValue / 2;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(100) };
     private readonly DispatcherTimer _castTimer = new() { Interval = TimeSpan.FromSeconds(2.8) };
@@ -102,6 +104,7 @@ public partial class HudWindow : Window
         UpdateBigHit(s);
         UpdateDps(s);
         UpdateParty(s);
+        UpdateBoss(s);
     }
 
     /// <summary>Covers the game's client area exactly (pixels), above the game.</summary>
@@ -122,23 +125,34 @@ public partial class HudWindow : Window
     {
         double w = Stage.Width, h = Stage.Height;
         var hp = layout.Box(HudAnchors.SelfHp).ToPixels(w, h);
+        var target = layout.Box(HudAnchors.Target).ToPixels(w, h);
         const double pad = 4;
         Canvas.SetLeft(HpGlow, hp.X - pad);
         Canvas.SetTop(HpGlow, hp.Y - pad);
         HpGlow.Width = hp.W + pad * 2;
         HpGlow.Height = hp.H + pad * 2;
 
+        // Centred above the level emblem, which sits just right of the HP bar's end
         DpsLine.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-        Canvas.SetLeft(DpsLine, hp.X);
-        Canvas.SetTop(DpsLine, hp.Y - DpsLine.DesiredSize.Height - 6);
+        double emblemX = hp.X + hp.W + w * 0.017;
+        Canvas.SetLeft(DpsLine, emblemX - DpsLine.DesiredSize.Width / 2);
+        Canvas.SetTop(DpsLine, hp.Y - h * 0.027 - DpsLine.DesiredSize.Height);
 
-        var target = layout.Box(HudAnchors.Target).ToPixels(w, h);
+        HitInfo.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        Canvas.SetLeft(HitInfo, hp.X);
+        Canvas.SetTop(HitInfo, hp.Y - HitInfo.DesiredSize.Height - h * 0.02);
+
+        // Centred below the boss's status pills and buff icons; the skill banner goes under it
+        BossInfo.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        Canvas.SetLeft(BossInfo, target.X + target.W / 2 - BossInfo.DesiredSize.Width / 2);
+        Canvas.SetTop(BossInfo, target.Y + target.H + h * 0.058);
+
         CastBanner.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         // Centred under the boss bar, kept on screen when the bar is near an edge
         double bannerWidth = CastBanner.DesiredSize.Width;
         Canvas.SetLeft(CastBanner, Math.Clamp(target.X + target.W / 2 - bannerWidth / 2, 8, Math.Max(8, w - bannerWidth - 8)));
         // Below the boss's status pills and buff icons under the bar
-        Canvas.SetTop(CastBanner, target.Y + target.H + h * 0.06);
+        Canvas.SetTop(CastBanner, target.Y + target.H + h * 0.058 + (BossInfo.Visibility == Visibility.Visible ? BossInfo.DesiredSize.Height + 6 : 0));
     }
 
     private void UpdateLowHp(EngineStatus? status)
@@ -181,6 +195,97 @@ public partial class HudWindow : Window
         }
 
         Flash();
+        ShowWhatHitYou();
+    }
+
+    /// <summary>A hit we took (from the engine): kept for a second and a half, for "what hit you".</summary>
+    public void AddHit(SelfHit hit)
+    {
+        long now = Environment.TickCount64;
+        _hits.Enqueue((now, hit));
+        while (_hits.Count > 0 && now - _hits.Peek().Ms > 1_500)
+        {
+            _hits.Dequeue();
+        }
+    }
+
+    /// <summary>The biggest recent hit next to your HP bar, with the edge flash: "Wave of Fury −3,214 · Ultimate Berk".</summary>
+    private void ShowWhatHitYou()
+    {
+        long now = Environment.TickCount64;
+        var hits = _hits.Where(h => now - h.Ms <= 1_500).Select(h => h.Hit).ToList();
+        if (_demo)
+        {
+            hits = [new SelfHit("Boss", "Skill name", 3214, true)];
+        }
+
+        if (hits.Count == 0)
+        {
+            return;
+        }
+
+        // Several hits of one skill in the burst add up
+        var worst = hits.GroupBy(h => (h.Attacker, h.Skill))
+            .Select(g => (g.Key.Attacker, g.Key.Skill, Amount: g.Sum(h => h.Amount), Count: g.Count()))
+            .MaxBy(g => g.Amount);
+        string times = worst.Count > 1 ? $" ×{worst.Count}" : string.Empty;
+        HitInfo.Text = $"{worst.Skill}{times}  −{worst.Amount:N0}  ·  {worst.Attacker}";
+        HitInfo.Visibility = Visibility.Visible;
+        if (GameWindow.ClientArea is { } area && (_preview ?? Layout(area)) is { } layout)
+        {
+            Arrange(layout);
+        }
+
+        var fade = new DoubleAnimationUsingKeyFrames();
+        fade.KeyFrames.Add(new LinearDoubleKeyFrame(1, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(80))));
+        fade.KeyFrames.Add(new LinearDoubleKeyFrame(1, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(2500))));
+        fade.KeyFrames.Add(new LinearDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(3200))));
+        HitInfo.BeginAnimation(OpacityProperty, fade);
+    }
+
+    /// <summary>
+    /// Under the boss bar: exact HP, what is left, the time to kill at the party's damage so far and the fight clock,
+    /// e.g. "5,268,856 / 6,800,000 · 77 % · ~1:12 left · 4:19". Only while fighting a boss.
+    /// </summary>
+    private void UpdateBoss(EngineStatus? status)
+    {
+        if (!_demo && (!_state.Stored.HudBossInfo || status is not { InCombat: true }))
+        {
+            BossInfo.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        if (DateTime.UtcNow - _bossUpdated < TimeSpan.FromMilliseconds(500) && BossInfo.Visibility == Visibility.Visible)
+        {
+            return;
+        }
+
+        _bossUpdated = DateTime.UtcNow;
+        string? text = null;
+        if (_demo)
+        {
+            text = "5,268,856 / 6,800,000  ·  77 %  ·  ~1:12 left  ·  4:19";
+        }
+        else if (_snapshot() is { TargetIsBoss: true, TargetHp: { } hp, TargetMaxHp: > 0 } s)
+        {
+            double share = hp / (double)s.TargetMaxHp!.Value;
+            string left = s.TotalDps > 0 && hp > 0 ? $"  ·  ~{HistoryStore.Duration(hp / s.TotalDps)} left" : string.Empty;
+            text = $"{hp:N0} / {s.TargetMaxHp:N0}  ·  {share:P0}{left}  ·  {HistoryStore.Duration(s.DurationSeconds)}";
+        }
+
+        if (text is null)
+        {
+            BossInfo.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        bool first = BossInfo.Visibility != Visibility.Visible || BossInfo.Text.Length != text.Length;
+        BossInfo.Text = text;
+        BossInfo.Visibility = Visibility.Visible;
+        if (first && (_preview ?? (GameWindow.ClientArea is { } area ? Layout(area) : null)) is { } layout)
+        {
+            Arrange(layout);
+        }
     }
 
     private void Flash()
@@ -388,6 +493,10 @@ public partial class HudWindow : Window
         HpGlow.Opacity = 1;
         UpdateDps(null);
         UpdateParty(null);
+        UpdateBoss(null);
+        ShowWhatHitYou();
+        HitInfo.BeginAnimation(OpacityProperty, null);
+        HitInfo.Opacity = 1;
         DpsLine.Visibility = Visibility.Visible;
         Arrange(layout);
         Stage.Measure(new Size(Stage.Width, Stage.Height));
