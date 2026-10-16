@@ -53,6 +53,7 @@ public static class PacketParser
             Opcodes.DamageOverTime => RecordParsers.ParseDamageOverTime(body, timestampMs, emit),
             Opcodes.Death => RecordParsers.ParseDeath(body, timestampMs, emit),
             Opcodes.MapLoad => RecordParsers.ParseMapLoad(body, timestampMs, emit),
+            Opcodes.PartyRoster => RecordParsers.ParsePartyRoster(body, timestampMs, emit),
             Opcodes.Position => RecordParsers.ParsePosition(body, timestampMs, emit),
             Opcodes.HpUpdate => RecordParsers.ParseHpUpdate(body, timestampMs, emit),
             Opcodes.RemainingHp => RecordParsers.ParseRemainingHp(body, timestampMs, emit),

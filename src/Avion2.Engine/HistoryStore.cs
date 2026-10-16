@@ -190,7 +190,7 @@ public sealed class HistoryStore
         {
             try
             {
-                if (JsonSerializer.Deserialize<MeterSnapshot>(File.ReadAllText(path), Options) is { } snapshot)
+                if (JsonSerializer.Deserialize<MeterSnapshot>(File.ReadAllText(path), Options) is { Rows: not null } snapshot) // other JSON in the folder is not a fight
                 {
                     entries.Add(new HistoryEntry(path, snapshot));
                 }

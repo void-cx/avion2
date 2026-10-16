@@ -6,6 +6,12 @@ public static class Recordings
     public static string Directory =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "captures");
 
+    /// <summary>Every recording's path (except <paramref name="inUse"/>, the one being written).</summary>
+    public static IReadOnlyList<string> Paths(string? inUse = null) => Files()
+        .Where(f => inUse is null || !string.Equals(Path.GetFullPath(inUse), f.FullName, StringComparison.OrdinalIgnoreCase))
+        .Select(f => f.FullName)
+        .ToList();
+
     public static (int Files, long Bytes) Usage()
     {
         var files = Files();

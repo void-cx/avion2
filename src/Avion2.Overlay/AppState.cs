@@ -22,6 +22,10 @@ public sealed class AppState
         Settings = new OverlayViewModel();
         LoadSettings();
         History = new HistoryStore(baseOptions.HistoryDirectory);
+        // --history-dir (replays for UI work) keeps the runs beside those fights, away from the real ones
+        RunLog = new RunStore(baseOptions.HistoryDirectory is { } dir
+            ? Path.Combine(Path.GetDirectoryName(Path.GetFullPath(dir)) ?? dir, "runs.json")
+            : null);
         if (baseOptions.ReplayPath is null)
         {
             CleanUpStorage();
@@ -33,6 +37,11 @@ public sealed class AppState
         }
 
         RefreshGameDataInfo();
+        foreach (var run in RunLog.Runs)
+        {
+            Runs.Add(new RunRow(run, Data));
+        }
+
         FieldBosses = Avion2.Analysis.FieldBossBoard.Load(FieldBossFile);
         Timers = new TimerService(Settings, FieldBossOccurrences);
         Timers.Due += OnEventDue;
@@ -125,6 +134,61 @@ public sealed class AppState
 
     public MeterEngine? Engine { get; private set; }
 
+    /// <summary>Saved dungeon runs and what was learned about maps.</summary>
+    public RunStore RunLog { get; }
+
+    /// <summary>Saved dungeon runs, newest first.</summary>
+    public ObservableCollection<RunRow> Runs { get; } = new();
+
+    /// <summary>The run in progress (inside a dungeon, expedition or other instance), or null.</summary>
+    public Avion2.Analysis.DungeonRun? LiveRun { get; private set; }
+
+    /// <summary>The live run started, changed or ended.</summary>
+    public event Action? LiveRunChanged;
+
+    /// <summary>Names the place of a run (every run on that map); empty clears the name.</summary>
+    public void RenameRuns(RunRow row, string? name)
+    {
+        RunLog.Rename(row.Run.FirstMap, name);
+        for (int i = 0; i < Runs.Count; i++)
+        {
+            if (Runs[i].Run.FirstMap == row.Run.FirstMap)
+            {
+                Runs[i].Run.CustomName = string.IsNullOrWhiteSpace(name) ? null : name.Trim();
+                Runs[i] = new RunRow(Runs[i].Run, Data);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Finds the runs in the saved recordings (Record session) and saves them; the Runs page then shows them.
+    /// Runs already saved are replaced, not doubled. Reports (file, files) while it reads.
+    /// </summary>
+    public async Task<RunImporter.Result> ImportRunsAsync(Action<int, int> progress)
+    {
+        var files = Recordings.Paths(Engine is not null ? CurrentRecording : null);
+        var data = Data;
+        var dispatcher = Application.Current.Dispatcher;
+        var result = await Task.Run(() => RunImporter.Import(files, data, RunLog,
+            (done, total) => dispatcher.BeginInvoke(() => progress(done, total))));
+        Runs.Clear();
+        foreach (var run in RunLog.Runs)
+        {
+            Runs.Add(new RunRow(run, Data));
+        }
+
+        return result;
+    }
+
+    public void DeleteRuns(IReadOnlyCollection<RunRow> rows)
+    {
+        RunLog.Delete(rows.Select(r => r.Run.Id));
+        foreach (var row in rows)
+        {
+            Runs.Remove(row);
+        }
+    }
+
     public MainWindow? Overlay { get; private set; }
 
     public bool IsRunning => Engine is not null;
@@ -215,6 +279,22 @@ public sealed class AppState
             ReplayPath = _baseOptions.ReplayPath,
             ReplaySpeed = _baseOptions.ReplaySpeed,
             AnonymizeNames = _baseOptions.AnonymizeNames,
+            Runs = _baseOptions.SaveHistory ? RunLog : null,
+        });
+        engine.RunChanged += run => Application.Current.Dispatcher.BeginInvoke(() =>
+        {
+            LiveRun = run;
+            LiveRunChanged?.Invoke();
+        });
+        engine.RunEnded += (run, saved) => Application.Current.Dispatcher.BeginInvoke(() =>
+        {
+            LiveRun = null;
+            if (saved)
+            {
+                Runs.Insert(0, new RunRow(run, Data));
+            }
+
+            LiveRunChanged?.Invoke();
         });
         engine.FightSaved += entry => Application.Current.Dispatcher.BeginInvoke(() => Fights.Insert(0, new HistoryRow(entry)));
         engine.LegionChanged += () =>
@@ -537,8 +617,11 @@ public sealed class AppState
             return;
         }
 
-        var calibration = new HudCalibrationWindow(this, picture);
+        // The game is in front and Windows does not let us take the focus from it: show the editor above the game
+        // (topmost) so it is not hidden behind it; a click gives it the focus.
+        var calibration = new HudCalibrationWindow(this, picture) { Topmost = true };
         calibration.Show();
+        TopmostKeeper.Raise(calibration);
         calibration.Activate();
     }
 

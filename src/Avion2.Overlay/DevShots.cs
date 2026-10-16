@@ -170,6 +170,13 @@ internal static class DevShots
                 Shoot(home, "history", directory, "history-best.png");
             }
 
+            Shoot(home, "runs", directory, "runs.png");
+            if (home.CurrentPage is RunsPage runsPage)
+            {
+                runsPage.SelectFirst();
+                Shoot(home, "runs", directory, "runs-selected.png");
+            }
+
             Shoot(home, "settings", directory, "settings.png");
             if (home.CurrentPage is SettingsPage settingsPage)
             {

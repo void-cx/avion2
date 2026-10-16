@@ -36,6 +36,9 @@ public sealed class EngineOptions
 
     /// <summary>Developer aid: no real player or legion names anywhere (shareable screenshots, see <see cref="NameAnonymizer"/>).</summary>
     public bool AnonymizeNames { get; init; }
+
+    /// <summary>Where finished dungeon runs are saved (and maps learned); null = runs are tracked but not saved.</summary>
+    public RunStore? Runs { get; init; }
 }
 
 /// <summary>What a UI needs besides the meter rows.</summary>
@@ -107,6 +110,13 @@ public sealed class MeterEngine : IDisposable
             FightSaved?.Invoke(entry);
         };
         _session.Cubes.Changed += cube => CubeSeen?.Invoke(cube);
+        var runs = _session.Runs;
+        runs.Catalog = BundledGameData.Dungeons;
+        runs.EnglishName = BundledGameData.EnglishNpcName;
+        runs.KnownMap = map => _options.Runs?.DungeonFor(map);
+        runs.RunStarted += run => RunChanged?.Invoke(run.Copy());
+        runs.RunChanged += run => RunChanged?.Invoke(run.Copy());
+        runs.RunEnded += run => RunEnded?.Invoke(run.Copy(), _options.Runs?.Add(run) != false);
         var anonymizer = _options.AnonymizeNames ? new NameAnonymizer() : null;
         if (anonymizer is null)
         {
@@ -234,6 +244,21 @@ public sealed class MeterEngine : IDisposable
 
     /// <summary>Raised on the capture thread when an encounter ends (and was saved, if saving is on).</summary>
     public event Action<HistoryEntry>? FightSaved;
+
+    /// <summary>A run started or changed (boss killed, death, fight); a copy, safe to keep. Raised on the capture thread.</summary>
+    public event Action<DungeonRun>? RunChanged;
+
+    /// <summary>A run ended; the flag is false when it was not kept (a short visit without a fight).</summary>
+    public event Action<DungeonRun, bool>? RunEnded;
+
+    /// <summary>The run in progress (a copy), or null outside instances.</summary>
+    public DungeonRun? CurrentRun()
+    {
+        lock (_sync)
+        {
+            return _session.Runs.Current?.Copy();
+        }
+    }
 
     public MeterSnapshot? Snapshot(MeterScope scope = MeterScope.MyTargets)
     {
@@ -412,6 +437,11 @@ public sealed class MeterEngine : IDisposable
         catch (AggregateException)
         {
             // cancelled
+        }
+
+        lock (_sync)
+        {
+            _session.Runs.Finish(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()); // saved as "not left"
         }
 
         Reset();

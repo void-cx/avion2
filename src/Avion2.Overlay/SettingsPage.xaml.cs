@@ -263,6 +263,13 @@ public partial class SettingsPage : UserControl
         FightsUsage.Text = $"{fights:N0} fights · {Size(fightBytes)}";
         RecordingsUsage.Text = files == 0 ? "none" : $"{files:N0} files · {Size(recordingBytes)}";
         DeleteRecordingsButton.IsEnabled = files > 0;
+        if (ImportRunsButton.IsEnabled)
+        {
+            ImportRunsButton.IsEnabled = files > 0;
+            ImportRunsText.Text = files == 0
+                ? "No recordings saved."
+                : $"{files:N0} recordings to search · {_state.Runs.Count:N0} runs saved";
+        }
     }
 
     private static string Size(long bytes) =>
@@ -277,6 +284,27 @@ public partial class SettingsPage : UserControl
         {
             _state.DeleteRecordings();
             UpdateStorage();
+        }
+    }
+
+    private async void ImportRuns_Click(object sender, RoutedEventArgs e)
+    {
+        ImportRunsButton.IsEnabled = false;
+        try
+        {
+            var result = await _state.ImportRunsAsync((done, total) =>
+                ImportRunsText.Text = $"Reading recording {Math.Min(done + 1, total):N0} of {total:N0}…");
+            ImportRunsText.Text = result.Found == 0
+                ? $"No runs found in {result.Files:N0} recordings."
+                : $"Found {result.Found:N0} runs in {result.Files:N0} recordings, {result.Added:N0} new. They are on the Runs page.";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            ImportRunsText.Text = $"Import stopped: {ex.Message}";
+        }
+        finally
+        {
+            ImportRunsButton.IsEnabled = Recordings.Usage().Files > 0;
         }
     }
 

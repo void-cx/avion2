@@ -230,7 +230,10 @@ public static class RecordParsers
         return true;
     }
 
-    /// <summary><c>21 36</c>: count u32, mapId u32.</summary>
+    /// <summary>
+    /// <c>21 36</c>: count u32, mapId u32, u64, spawn x/y/z f32, facing f32, then 11 bytes and the content type u8
+    /// (offset 43; 0 open world, 30 sealed dungeon, 79 expedition, 37/38 stronghold).
+    /// </summary>
     public static bool ParseMapLoad(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
         var r = new SpanReader(body);
@@ -239,7 +242,53 @@ public static class RecordParsers
             return false;
         }
 
-        emit(new MapLoadEvent(ts, mapId));
+        emit(new MapLoadEvent(ts, mapId, body.Length > 43 ? body[43] : (byte)0));
+        return true;
+    }
+
+    /// <summary>
+    /// <c>02 97</c>: a header (party id, recruiting text), then one entry per slot: flag u8 (<c>0C</c>/<c>1C</c> here,
+    /// <c>0E</c>/<c>1E</c> elsewhere / offline), slot u8, character id u32, <c>00 00</c>, 2 bytes, name length u8, name,
+    /// class u32 (roster code), level u32, ... Empty slots are zeros, so entries are found by their shape.
+    /// </summary>
+    public static bool ParsePartyRoster(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var members = new List<PartyMember>();
+        for (int i = 0; i + 14 < body.Length; i++)
+        {
+            byte flag = body[i];
+            if (flag is not (0x0C or 0x0E or 0x1C or 0x1E) || body[i + 1] is 0 or > 8 || body[i + 6] != 0 || body[i + 7] != 0)
+            {
+                continue;
+            }
+
+            var r = new SpanReader(body, i + 2);
+            if (!r.TryU32(out uint characterId) || characterId == 0)
+            {
+                continue;
+            }
+
+            r.Position += 4;
+            if (!r.TryU8(out byte length) || length is 0 or > 36 || !r.TryUtf8(length, out string name) ||
+                !r.TryU32(out uint classCode) || GameClasses.FromRosterCode(classCode) is var cls && cls == GameClass.Unknown)
+            {
+                continue;
+            }
+
+            if (members.All(m => m.CharacterId != characterId))
+            {
+                members.Add(new PartyMember(body[i + 1], characterId, name, cls, (flag & 0x02) == 0));
+            }
+
+            i = r.Position - 1;
+        }
+
+        if (members.Count == 0)
+        {
+            return false;
+        }
+
+        emit(new PartyRosterEvent(ts, members));
         return true;
     }
 

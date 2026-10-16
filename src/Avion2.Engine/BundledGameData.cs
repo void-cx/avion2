@@ -62,6 +62,37 @@ public static class BundledGameData
     public static Stream? WorldMapImage(string key) =>
         typeof(BundledGameData).Assembly.GetManifestResourceStream($"gamedata/world/{key}.jpg");
 
+    private static readonly Lazy<DungeonCatalog> DungeonTable = new(() => DungeonCatalog.Parse(Read("dungeons.json")));
+
+    private static readonly Lazy<GameData> EnglishNpcTable = new(() => GameData.Parse(null, Read("npcs/en.json")));
+
+    private static readonly Lazy<Dictionary<uint, string>> ItemTable = new(() =>
+    {
+        var items = new Dictionary<uint, string>();
+        if (Read("items.json") is { } json)
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            foreach (var item in doc.RootElement.GetProperty("items").EnumerateObject())
+            {
+                if (uint.TryParse(item.Name, out uint id) && item.Value.GetString() is { } name)
+                {
+                    items[id] = name;
+                }
+            }
+        }
+
+        return items;
+    });
+
+    /// <summary>An item's English name ("Enhance Stone"), or null when the table does not know it.</summary>
+    public static string? ItemName(uint itemId) => ItemTable.Value.GetValueOrDefault(itemId);
+
+    /// <summary>Dungeons and instances with their bosses (English names), parsed on first use.</summary>
+    public static DungeonCatalog Dungeons => DungeonTable.Value;
+
+    /// <summary>An NPC's English name (the dungeon table is English).</summary>
+    public static string? EnglishNpcName(uint code) => EnglishNpcTable.Value.Npcs.GetValueOrDefault(code)?.Name;
+
     private static readonly Lazy<GearForge> ForgeTable = new(() => GearForge.Parse(Read("gear_forge.json")));
 
     /// <summary>Enchant/amplify ladders per item (English names), parsed on first use.</summary>
