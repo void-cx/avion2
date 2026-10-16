@@ -279,6 +279,16 @@ internal static class Commands
     public static int Runs(CliArgs cli)
     {
         var data = LoadData(cli);
+        if (cli.Has("save") || cli.Get("store") is not null)
+        {
+            // The same import as Settings → Past dungeon runs
+            var result = RunImporter.Import(cli.Positional, data, new RunStore(cli.Get("store")),
+                (done, total) => Console.Error.Write($"\r{done}/{total} recordings"));
+            Console.Error.WriteLine();
+            Console.WriteLine($"Found {result.Found} runs in {result.Files} recordings, {result.Added} new.");
+            return 0;
+        }
+
         var session = new GameSession(data, TrackerOptions(cli));
         var catalog = BundledGameData.Dungeons;
         session.Runs.Catalog = catalog;

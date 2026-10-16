@@ -160,6 +160,26 @@ public sealed class AppState
         }
     }
 
+    /// <summary>
+    /// Finds the runs in the saved recordings (Record session) and saves them; the Runs page then shows them.
+    /// Runs already saved are replaced, not doubled. Reports (file, files) while it reads.
+    /// </summary>
+    public async Task<RunImporter.Result> ImportRunsAsync(Action<int, int> progress)
+    {
+        var files = Recordings.Paths(Engine is not null ? CurrentRecording : null);
+        var data = Data;
+        var dispatcher = Application.Current.Dispatcher;
+        var result = await Task.Run(() => RunImporter.Import(files, data, RunLog,
+            (done, total) => dispatcher.BeginInvoke(() => progress(done, total))));
+        Runs.Clear();
+        foreach (var run in RunLog.Runs)
+        {
+            Runs.Add(new RunRow(run, Data));
+        }
+
+        return result;
+    }
+
     public void DeleteRuns(IReadOnlyCollection<RunRow> rows)
     {
         RunLog.Delete(rows.Select(r => r.Run.Id));
@@ -597,8 +617,11 @@ public sealed class AppState
             return;
         }
 
-        var calibration = new HudCalibrationWindow(this, picture);
+        // The game is in front and Windows does not let us take the focus from it: show the editor above the game
+        // (topmost) so it is not hidden behind it; a click gives it the focus.
+        var calibration = new HudCalibrationWindow(this, picture) { Topmost = true };
         calibration.Show();
+        TopmostKeeper.Raise(calibration);
         calibration.Activate();
     }
 

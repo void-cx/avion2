@@ -236,6 +236,19 @@
                 </StackPanel>
             </Border>
 
+            <!-- Past dungeon runs from recordings -->
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="data">
+                <StackPanel>
+                    <TextBlock Text="Past dungeon runs" Style="{StaticResource Heading}" />
+                    <DockPanel>
+                        <Button x:Name="ImportRunsButton" DockPanel.Dock="Right" Content="Find and import past runs" Click="ImportRuns_Click" />
+                        <TextBlock x:Name="ImportRunsText" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,12,0" />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="Only works when Record session (.pcap) was enabled: AVION2 reads your saved recordings and adds the dungeons, expeditions and other instances found in them to the Runs page. Runs that are already there are not doubled." />
+                </StackPanel>
+            </Border>
+
             <!-- Low HP alert -->
             <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="alerts">
                 <StackPanel>
