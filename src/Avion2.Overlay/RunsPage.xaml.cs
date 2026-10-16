@@ -193,7 +193,22 @@ public partial class RunsPage : UserControl
         string bosses = run.Bosses.Count == 1 ? "1 boss" : $"{run.Bosses.Count} bosses";
         string deaths = run.Deaths.Count == 1 ? "1 death" : $"{run.Deaths.Count} deaths";
         var best = RunRow.BestPerPlace(_state.Runs.Where(r => r.PlaceKey == row.PlaceKey)).FirstOrDefault();
-        LiveDetail.Text = $"{row.Category} · {bosses} · {deaths}" + (best is null ? string.Empty : $" · best {best.Duration}");
+        string pace = string.Empty;
+        if (best is not null)
+        {
+            // The last boss against the best run, and the next one the best run killed (with its time there)
+            pace = run.Bosses.Count > 0 && RunSummary.SplitDelta(run.Bosses[^1], best) is { } delta
+                ? $" · {run.Bosses[^1].Name} {RunSummary.Signed(delta)}"
+                : string.Empty;
+            if (best.Run.Bosses.Skip(run.Bosses.Count).FirstOrDefault() is { } next)
+            {
+                pace += $" · next {next.Name} by {RunRow.Clock(next.AtMs)}";
+            }
+
+            pace += $" · best {best.Duration}";
+        }
+
+        LiveDetail.Text = $"{row.Category} · {bosses} · {deaths}{pace}";
         if (_showingLive)
         {
             ShowInPane(new RunSummary(row, _state.Runs, live: true));

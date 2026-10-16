@@ -82,8 +82,8 @@ public sealed record RunRow(DungeonRun Run, GameData Data)
         .ToList();
 }
 
-/// <summary>A boss kill or a death in the detail pane's timeline.</summary>
-public sealed record RunMoment(string At, string Text, string Detail, Brush Accent);
+/// <summary>A boss kill or a death in the detail pane's timeline; <paramref name="Split"/> compares with the best run.</summary>
+public sealed record RunMoment(string At, string Text, string Detail, Brush Accent, string Split = "", Brush? SplitBrush = null);
 
 public sealed record RunMemberRow(string Name, string ClassName, ImageSource? Icon);
 
@@ -92,6 +92,19 @@ public sealed record RunLootRow(string Name, string Count);
 /// <summary>The selected run in the detail pane (or the live one).</summary>
 public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live = false)
 {
+    /// <summary>
+    /// How a boss kill compares with the same boss in the best run here: "−0:12" (faster) or "+0:05"; null when the
+    /// best run did not kill that boss (or there is none).
+    /// </summary>
+    public static long? SplitDelta(RunBoss boss, RunRow? best)
+    {
+        var same = best?.Run.Bosses.FirstOrDefault(b => b.Npc is { } npc && npc == boss.Npc || b.Name == boss.Name);
+        return same is null ? null : boss.AtMs - same.AtMs;
+    }
+
+    public static string Signed(long deltaMs) =>
+        (deltaMs < 0 ? "−" : "+") + RunRow.Clock(Math.Abs(deltaMs));
+
     private readonly List<RunRow> _same = all.Where(r => r.PlaceKey == row.PlaceKey && r.Run.Id != row.Run.Id).ToList();
 
     public RunRow Row => row;
@@ -145,7 +158,7 @@ public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live 
     public string DeathCount => row.Run.Deaths.Count.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>The best other run here (to compare with); null when this is the first or only one.</summary>
-    private RunRow? Best => RunRow.BestPerPlace(_same).FirstOrDefault();
+    public RunRow? Best => RunRow.BestPerPlace(_same).FirstOrDefault();
 
     public string BestTime => Best is { } best ? best.Duration : "–";
 
@@ -183,9 +196,13 @@ public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live 
         {
             var gold = Brush("WarnBrush");
             var red = Brush("HpBarBrush");
+            var green = Brush("LiveBrush");
+            var best = Best;
             var list = row.Run.Bosses
-                .Select(b => (b.AtMs, new RunMoment(RunRow.Clock(b.AtMs), b.Name,
-                    b.FightMs is { } ms ? $"fight {RunRow.Clock(ms)}" : "", gold)))
+                .Select(b => (b.AtMs, SplitDelta(b, best) is { } delta
+                    ? new RunMoment(RunRow.Clock(b.AtMs), b.Name, b.FightMs is { } ms ? $"fight {RunRow.Clock(ms)}" : "", gold,
+                        Signed(delta), delta <= 0 ? green : red)
+                    : new RunMoment(RunRow.Clock(b.AtMs), b.Name, b.FightMs is { } ms2 ? $"fight {RunRow.Clock(ms2)}" : "", gold)))
                 .Concat(row.Run.Deaths.Select(d => (d, new RunMoment(RunRow.Clock(d), "You died", "", red))))
                 .OrderBy(m => m.Item1)
                 .Select(m => m.Item2)
@@ -229,12 +246,7 @@ public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live 
 
     public Visibility LootVisibility => row.Run.Loot.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-    private static string ItemName(uint id) => id switch
-    {
-        ItemIds.EnhanceStone => "Enhancement Stone",
-        ItemIds.AbyssPoints => "Abyss Points",
-        _ => BundledGameData.Forge.Find(id)?.Name ?? $"Item {id}",
-    };
+    private static string ItemName(uint id) => BundledGameData.ItemName(id) ?? $"Item {id}";
 
     private static Brush Brush(string key) => Application.Current.TryFindResource(key) as Brush ?? Brushes.Gray;
 }

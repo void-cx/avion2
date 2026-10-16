@@ -310,7 +310,7 @@ internal static class Commands
             if (kills && e is DeathEvent { Kind: DeathKind.Combat } death && session.Runs.Current is { } run &&
                 session.Registry.Find(death.EntityId) is { Kind: EntityKind.Npc } npc)
             {
-                Console.WriteLine($"  kill {run.Maps[^1]} {Clock(death.TimestampMs - run.StartMs)} {npc.NpcCode} {npc.Name} hp {npc.MaxHp:N0}{(npc.IsBoss ? " boss" : "")}");
+                Console.WriteLine($"  kill {run.Maps[^1]} {Clock(death.TimestampMs - run.StartMs)} {npc.NpcCode} {npc.Name ?? (npc.NpcCode is { } code ? data.Npcs.GetValueOrDefault(code)?.Name : null)} hp {npc.MaxHp:N0}{(npc.IsBoss ? " boss" : "")}");
             }
 
             session.Apply(e);

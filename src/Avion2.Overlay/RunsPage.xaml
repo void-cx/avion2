@@ -186,6 +186,8 @@
                                             <DockPanel Margin="0,0,0,8">
                                                 <TextBlock DockPanel.Dock="Left" Text="{Binding At}" Width="52" Foreground="{DynamicResource MutedBrush}" />
                                                 <Rectangle DockPanel.Dock="Left" Width="3" Height="16" Fill="{Binding Accent}" RadiusX="1.5" RadiusY="1.5" Margin="0,0,10,0" />
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Split}" Foreground="{Binding SplitBrush}" FontWeight="SemiBold"
+                                                           Width="52" TextAlignment="Right" VerticalAlignment="Center" ToolTip="Compared with your best run here" />
                                                 <TextBlock DockPanel.Dock="Right" Text="{Binding Detail}" Foreground="{DynamicResource MutedBrush}" FontSize="12" VerticalAlignment="Center" />
                                                 <TextBlock Text="{Binding Text}" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" />
                                             </DockPanel>

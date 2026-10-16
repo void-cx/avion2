@@ -146,6 +146,17 @@ public sealed class DungeonCatalog(IReadOnlyList<DungeonInfo> dungeons)
         return best;
     }
 
+    private Dictionary<string, int>? _spread;
+
+    /// <summary>In how many dungeons a monster kind lives.</summary>
+    private int Spread(string monster)
+    {
+        _spread ??= Dungeons.SelectMany(d => (d.Monsters ?? []).Select(m => m.Name).Distinct())
+            .GroupBy(n => n, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
+        return Math.Max(1, _spread.GetValueOrDefault(monster));
+    }
+
     private DungeonInfo? MatchMonsters(HashSet<string> killed)
     {
         DungeonInfo? best = null;
@@ -158,9 +169,10 @@ public sealed class DungeonCatalog(IReadOnlyList<DungeonInfo> dungeons)
                 continue;
             }
 
-            int hits = list.Count(m => killed.Contains(m.Name));
-            // share of the dungeon's monster kinds we met, so a dungeon with every monster in the game does not win
-            double score = hits < Math.Min(2, list.Count) ? 0 : hits + (double)hits / list.Count;
+            // A monster kind counts by how telling it is: one found in a single dungeon decides alone, one shared by
+            // three dungeons a third; together they must reach one telling kind
+            double score = list.Where(m => killed.Contains(m.Name)).Sum(m => 1.0 / Spread(m.Name));
+            score = score < 0.99 ? 0 : score + score / list.Count;
             if (score > bestScore)
             {
                 (best, bestScore, tie) = (dungeon, score, false);
@@ -281,9 +293,12 @@ public sealed class DungeonRun
     public uint FirstMap => Maps.Count > 0 ? Maps[0] : 0;
 
     /// <summary>The run's place: the user's name, the table's dungeon, else the map's name or "Map 310042".</summary>
+    /// <remarks>An unknown place with a boss kill is named after its last boss ("Stronghold · Wanted Criminal Gargos").</remarks>
     public string Title(DungeonCatalog catalog, GameData data) =>
         CustomName ?? (DungeonSlug is { } slug ? catalog.Find(slug)?.Name : null) ??
-        (data.Maps.TryGetValue(FirstMap, out var map) ? map : $"{Content.Label(Kind)} {FirstMap}");
+        (data.Maps.TryGetValue(FirstMap, out var map) ? map
+            : Bosses.Count > 0 ? $"{Content.Label(Kind)} · {Bosses[^1].Name}"
+            : $"{Content.Label(Kind)} {FirstMap}");
 }
 
 /// <summary>
@@ -313,6 +328,9 @@ public sealed class RunTracker
 
     /// <summary>Players who dealt damage in the run's fights: the best evidence of who was in the party.</summary>
     private readonly HashSet<string> _fought = new();
+
+    /// <summary>The fight that ended last: a boss kill closes its fight before the run hears of the kill.</summary>
+    private (long Start, long Last)? _lastFight;
 
     /// <summary>When we loaded an open-world map; the run ends at the zone change that follows (the last fight closes there).</summary>
     private long? _leftAt;
@@ -460,7 +478,12 @@ public sealed class RunTracker
         }
 
         string name = boss.Name ?? (boss.NpcCode is { } code ? _registry.Data.Npcs.GetValueOrDefault(code)?.Name : null) ?? "Boss";
-        run.Bosses.Add(new RunBoss(name, boss.NpcCode, death.TimestampMs - run.StartMs));
+        long? fight = _lastFight is { } f && death.TimestampMs >= f.Start && death.TimestampMs <= f.Last + 5_000
+            ? death.TimestampMs - f.Start
+            : null;
+        // Copies of one boss (phases, clones) die several times: the split is the last kill
+        run.Bosses.RemoveAll(b => b.Npc is { } npc ? npc == boss.NpcCode : b.Name == name);
+        run.Bosses.Add(new RunBoss(name, boss.NpcCode, death.TimestampMs - run.StartMs, fight));
         Rematch(run);
         RunChanged?.Invoke(run);
     }
@@ -474,6 +497,7 @@ public sealed class RunTracker
 
         run.EndMs = Math.Max(run.EndMs, encounter.LastMs);
         run.Fights++;
+        _lastFight = (encounter.StartMs, encounter.LastMs);
         if (encounter.Final is not { } final)
         {
             return;
