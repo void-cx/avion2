@@ -19,7 +19,7 @@ public enum ContentKind
 public static class Content
 {
     /// <summary>
-    /// Map id ranges first (3100xx and 400001 sealed dungeons, 6000xx expeditions, 152xxx/153xxx strongholds), then the
+    /// Map id ranges first (3100xx and 400001 sealed dungeons, 6000xx expeditions, 15xxxx strongholds (152xxx–154xxx seen)), then the
     /// content code of the map load (30 sealed, 79 expedition, 37/38 stronghold, 0 open world).
     /// </summary>
     public static ContentKind Classify(uint mapId, byte contentCode = 0)
@@ -34,7 +34,7 @@ public static class Content
             return ContentKind.Expedition;
         }
 
-        if (mapId is >= 152_000 and < 154_000)
+        if (mapId is >= 150_000 and < 160_000)
         {
             return ContentKind.Stronghold;
         }

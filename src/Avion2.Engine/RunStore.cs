@@ -143,7 +143,13 @@ public sealed class RunStore
         {
             if (File.Exists(path))
             {
-                return JsonSerializer.Deserialize<Data>(File.ReadAllText(path), Options) ?? new();
+                var data = JsonSerializer.Deserialize<Data>(File.ReadAllText(path), Options) ?? new();
+                foreach (var run in data.Runs)
+                {
+                    run.Kind = Content.Classify(run.FirstMap, run.ContentCode); // runs saved before a map range was known
+                }
+
+                return data;
             }
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)

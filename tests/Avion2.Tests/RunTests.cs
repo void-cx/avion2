@@ -44,6 +44,8 @@ public class RunTests
     [InlineData(400001u, 30, ContentKind.SealedDungeon)]
     [InlineData(600001u, 79, ContentKind.Expedition)]
     [InlineData(152003u, 37, ContentKind.Stronghold)]
+    [InlineData(154005u, 40, ContentKind.Stronghold)]
+    [InlineData(154003u, 65, ContentKind.Stronghold)]
     [InlineData(200001u, 80, ContentKind.Instance)]
     [InlineData(1010u, 0, ContentKind.OpenWorld)]
     public void ClassifiesMaps(uint map, byte code, ContentKind kind) => Assert.Equal(kind, Content.Classify(map, code));
