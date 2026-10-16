@@ -51,6 +51,9 @@ public partial class HistoryPage : UserControl
     private readonly AppState _state;
     private readonly ListCollectionView _all;
     private int _periodDays;
+
+    /// <summary>Only the fights of one dungeon run (from the Runs page); cleared by any other filter change.</summary>
+    private (long From, long To, string Label)? _range;
     private DetailWindow? _fightWindow;
 
     public HistoryPage(AppState state)
@@ -78,9 +81,25 @@ public partial class HistoryPage : UserControl
 
     private bool Best => BestMode.IsChecked == true;
 
+    /// <summary>Shows only the fights started between two times (a dungeon run's fights).</summary>
+    public void ShowRange(long fromMs, long toMs, string label)
+    {
+        AllMode.IsChecked = true;
+        Search.Text = string.Empty;
+        ((RadioButton)Periods.Children[^1]).IsChecked = true;
+        _range = (fromMs, toMs, label);
+        Refresh();
+        FightList.SelectedIndex = FightList.Items.Count > 0 ? 0 : -1;
+    }
+
     private bool Matches(object item)
     {
         if (item is not HistoryRow row)
+        {
+            return false;
+        }
+
+        if (_range is { } range && (row.StartedAtMs < range.From || row.StartedAtMs > range.To))
         {
             return false;
         }
@@ -115,8 +134,8 @@ public partial class HistoryPage : UserControl
         Ui.SetCount(BestMode, bests.ToString("N0", CultureInfo.InvariantCulture));
         Shown.Text = Best ? $"{shown} targets" : $"{shown} fights";
 
-        Hint.Text = Best
-            ? "Your best DPS per boss or named target, from fights of 20 s or more."
+        Hint.Text = _range is { } range ? $"The fights of {range.Label}. Change the view or the period to see all fights."
+            : Best ? "Your best DPS per boss or named target, from fights of 20 s or more."
             : "Saved on this PC only. Fights include other players' names, so ask before sharing.";
         NoFights.Visibility = shown == 0 ? Visibility.Visible : Visibility.Collapsed;
         NoFights.Text = _state.Fights.Count == 0 ? "No fights saved yet. Fights are saved when they end."
@@ -126,6 +145,7 @@ public partial class HistoryPage : UserControl
 
     private void Mode_Checked(object sender, RoutedEventArgs e)
     {
+        _range = null;
         if (IsInitialized && _state is not null)
         {
             Refresh();
@@ -134,6 +154,7 @@ public partial class HistoryPage : UserControl
 
     private void Period_Checked(object sender, RoutedEventArgs e)
     {
+        _range = null;
         if (sender is RadioButton { Tag: string days })
         {
             _periodDays = int.Parse(days, CultureInfo.InvariantCulture);
@@ -147,6 +168,11 @@ public partial class HistoryPage : UserControl
 
     private void Search_TextChanged(object sender, TextChangedEventArgs e)
     {
+        if (Search.Text.Length > 0)
+        {
+            _range = null;
+        }
+
         if (IsInitialized && _state is not null)
         {
             Refresh();

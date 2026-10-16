@@ -60,6 +60,7 @@ internal static class Commands
               --unparsed          dump: only packets the parsers rejected
               --events            dump: show the events decoded from each packet
               --kills             runs: list every NPC killed inside a run
+              --save              runs: add the runs to AVION2's saved runs (or --store <file>)
             """);
         return 1;
     }
@@ -283,7 +284,15 @@ internal static class Commands
         session.Runs.Catalog = catalog;
         session.Runs.EnglishName = BundledGameData.EnglishNpcName;
         var runs = new List<DungeonRun>();
-        session.Runs.RunEnded += runs.Add;
+        var store = cli.Has("save") || cli.Get("store") is not null ? new RunStore(cli.Get("store")) : null;
+        session.Runs.KnownMap = map => store?.DungeonFor(map);
+        session.Runs.RunEnded += run =>
+        {
+            if (store?.Add(run) != false)
+            {
+                runs.Add(run);
+            }
+        };
         bool kills = cli.Has("kills");
         var pipeline = new GameCapturePipeline(e =>
         {
@@ -305,10 +314,11 @@ internal static class Commands
                 session.Tracker.Tick(frame.TimestampMs);
                 lastTs = frame.TimestampMs;
             }
-        }
 
-        session.Tracker.Tick(lastTs + long.MaxValue / 4);
-        session.Runs.Finish(lastTs);
+            // Each recording is one capture: a run does not go on into the next file (as when the app stops)
+            session.Tracker.Tick(lastTs + 60_000);
+            session.Runs.Finish(lastTs);
+        }
         foreach (var run in runs)
         {
             var start = DateTimeOffset.FromUnixTimeMilliseconds(run.StartMs).ToLocalTime();

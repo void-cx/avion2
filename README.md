@@ -13,6 +13,8 @@ It is passive: it never touches the game, its files or its memory, and sends not
   boss HP, fight timer.
 - **Fight history** with the full breakdown of every fight: skills, hits, crits, damage taken by source, and your
   best DPS per boss.
+- **Dungeon runs**: every sealed dungeon, expedition, stronghold and other instance from entering to leaving, with
+  boss times, deaths, party, Kinah and loot, and your best time per dungeon.
 - **Timeline** of every skill cast per player, **buff uptime**, and a **replay** of the fight: everyone's position,
   facing, HP, hits, heals and deaths, with the key moments to jump to and a camera that follows you or the boss.
 - **Timers and notices** for Spacetime Rifts, Beritra air raids, PvP events, resets, Reshanta world bosses and

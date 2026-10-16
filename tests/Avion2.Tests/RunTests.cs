@@ -112,6 +112,21 @@ public class RunTests
     }
 
     [Fact]
+    public void AnotherExpeditionStartsANewRunAndStalePartyIsDropped()
+    {
+        var session = Session();
+        var ended = new List<DungeonRun>();
+        session.Runs.RunEnded += ended.Add;
+        session.Apply(new PartyRosterEvent(0, [new PartyMember(2, 2, "Gone", GameClass.Cleric, true)]));
+        session.Apply(new MapLoadEvent(1_000, 600001, 79));
+        session.Apply(new MapLoadEvent(300_000, 600031, 79)); // the exit in between was missed
+        var first = Assert.Single(ended);
+        Assert.Equal([600001u], first.Maps);
+        Assert.Empty(first.Party); // never seen inside: an old party
+        Assert.Equal(600031u, session.Runs.Current?.FirstMap);
+    }
+
+    [Fact]
     public void ParsesPartyRoster()
     {
         // header, then two entries (flag, slot, character id, 00 00, 2 bytes, name, class code, level) and an empty slot

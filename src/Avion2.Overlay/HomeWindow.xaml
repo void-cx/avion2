@@ -32,6 +32,8 @@
                                  local:Ui.Icon="{StaticResource IconMap}" Checked="Nav_Checked" />
                     <RadioButton Style="{StaticResource RailButton}" Content="Forge" Tag="forge" GroupName="Nav"
                                  local:Ui.Icon="{StaticResource IconForge}" Checked="Nav_Checked" ToolTip="Gear Forge" />
+                    <RadioButton Style="{StaticResource RailButton}" Content="Runs" Tag="runs" GroupName="Nav"
+                                 local:Ui.Icon="{StaticResource IconDungeon}" Checked="Nav_Checked" ToolTip="Dungeon runs" />
                     <RadioButton Style="{StaticResource RailButton}" Content="History" Tag="history" GroupName="Nav"
                                  local:Ui.Icon="{StaticResource IconHistory}" Checked="Nav_Checked" />
                 </StackPanel>

@@ -16,6 +16,7 @@ public partial class HomeWindow : Window
     private readonly ForgePage _forge;
     private MapPage? _map;
     private readonly HistoryPage _history;
+    private readonly RunsPage _runs;
     private readonly SettingsPage _settings;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(500) };
     private string _page = "home";
@@ -32,6 +33,11 @@ public partial class HomeWindow : Window
         _timers = new TimersPage(state, ShowOnMap, row => ShowPage("history", row));
         _forge = new ForgePage(state);
         _history = new HistoryPage(state);
+        _runs = new RunsPage(state, run =>
+        {
+            ShowPage("history");
+            _history.ShowRange(run.Run.StartMs, run.Run.EndMs, $"{run.Title} ({run.When})");
+        });
         _settings = new SettingsPage(state);
 
         state.ShowPageRequested += page => ShowPage(page);
@@ -111,6 +117,7 @@ public partial class HomeWindow : Window
             "forge" => _forge,
             "map" => _map ??= new MapPage(_state), // created on first visit: it loads the map pictures
             "history" => _history,
+            "runs" => _runs,
             "settings" => _settings,
             _ => _home,
         };

@@ -274,6 +274,9 @@ public sealed class DungeonRun
     [JsonIgnore]
     public long DurationMs => Math.Max(0, EndMs - StartMs);
 
+    /// <summary>A deep copy (runs change on the capture thread while the UI shows them).</summary>
+    public DungeonRun Copy() => JsonSerializer.Deserialize<DungeonRun>(JsonSerializer.Serialize(this))!;
+
     [JsonIgnore]
     public uint FirstMap => Maps.Count > 0 ? Maps[0] : 0;
 
@@ -304,6 +307,12 @@ public sealed class RunTracker
 
     /// <summary>English names of the monsters killed in the current run (to name runs without a boss).</summary>
     private readonly HashSet<string> _killed = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Players seen in the current run: the roster can outlive a party, so only members seen inside are kept.</summary>
+    private readonly HashSet<string> _seen = new();
+
+    /// <summary>Players who dealt damage in the run's fights: the best evidence of who was in the party.</summary>
+    private readonly HashSet<string> _fought = new();
 
     /// <summary>When we loaded an open-world map; the run ends at the zone change that follows (the last fight closes there).</summary>
     private long? _leftAt;
@@ -351,6 +360,9 @@ public sealed class RunTracker
             case DeathEvent { Kind: DeathKind.Combat } death when Current is { } run:
                 OnDeath(run, death);
                 break;
+            case PlayerSpawnEvent player when Current is not null:
+                _seen.Add(player.Name);
+                break;
             case PartyRosterEvent roster:
                 _roster = roster.Members;
                 if (Current is { } inside && AddParty(inside))
@@ -389,7 +401,9 @@ public sealed class RunTracker
         _leftAt = null; // straight into another instance map: the run goes on
         if (Current is { } current)
         {
-            if (map.TimestampMs - current.EndMs <= ContinueWithinMs)
+            // Expeditions are one map each: another expedition is a new run (the exit was missed, e.g. a capture gap)
+            bool another = kind == ContentKind.Expedition && current.Kind == ContentKind.Expedition && !current.Maps.Contains(map.MapId);
+            if (!another && map.TimestampMs - current.EndMs <= ContinueWithinMs)
             {
                 if (current.Maps[^1] != map.MapId)
                 {
@@ -466,6 +480,10 @@ public sealed class RunTracker
         }
 
         run.Damage += final.Self?.Total ?? 0;
+        foreach (var row in final.Rows)
+        {
+            _fought.Add(row.Name);
+        }
 
         // The boss fight's length goes with the boss killed in it
         for (int i = run.Bosses.Count - 1; i >= 0; i--)
@@ -539,8 +557,12 @@ public sealed class RunTracker
             }
         }
 
+        // Party members fought with us; without fights, being seen inside is enough
+        run.Party.RemoveAll(m => run.Fights > 0 ? !_fought.Contains(m.Name) : !_seen.Contains(m.Name));
         Current = null;
         _killed.Clear();
+        _seen.Clear();
+        _fought.Clear();
         _bagAtStart = null;
         _kinahAtStart = null;
         RunEnded?.Invoke(run);
