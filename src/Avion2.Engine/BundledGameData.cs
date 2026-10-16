@@ -62,6 +62,16 @@ public static class BundledGameData
     public static Stream? WorldMapImage(string key) =>
         typeof(BundledGameData).Assembly.GetManifestResourceStream($"gamedata/world/{key}.jpg");
 
+    private static readonly Lazy<DungeonCatalog> DungeonTable = new(() => DungeonCatalog.Parse(Read("dungeons.json")));
+
+    private static readonly Lazy<GameData> EnglishNpcTable = new(() => GameData.Parse(null, Read("npcs/en.json")));
+
+    /// <summary>Dungeons and instances with their bosses (English names), parsed on first use.</summary>
+    public static DungeonCatalog Dungeons => DungeonTable.Value;
+
+    /// <summary>An NPC's English name (the dungeon table is English).</summary>
+    public static string? EnglishNpcName(uint code) => EnglishNpcTable.Value.Npcs.GetValueOrDefault(code)?.Name;
+
     private static readonly Lazy<GearForge> ForgeTable = new(() => GearForge.Parse(Read("gear_forge.json")));
 
     /// <summary>Enchant/amplify ladders per item (English names), parsed on first use.</summary>

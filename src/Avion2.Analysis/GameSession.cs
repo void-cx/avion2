@@ -9,7 +9,11 @@ public sealed class GameSession
     {
         Registry = new EntityRegistry(data);
         Tracker = new CombatTracker(Registry, options);
+        Runs = new RunTracker(Registry, Tracker, Inventory);
     }
+
+    /// <summary>Dungeon / expedition / instance runs, from entering to leaving.</summary>
+    public RunTracker Runs { get; }
 
     /// <summary>Recent positions, casts, hits and buffs, for fight traces (timeline, buff uptime, replay).</summary>
     public TraceRecorder Recorder { get; } = new();
@@ -40,6 +44,7 @@ public sealed class GameSession
         {
             // Close (and freeze) the encounter before entity ids are forgotten.
             Tracker.Apply(e);
+            Runs.Apply(e);
             Registry.Apply(e);
             Recorder.Apply(e);
             Positions.Apply(e);
@@ -49,6 +54,7 @@ public sealed class GameSession
 
         Registry.Apply(e);
         Tracker.Apply(e);
+        Runs.Apply(e);
         Recorder.Apply(e);
         Legion.Apply(e);
         Positions.Apply(e);

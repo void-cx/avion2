@@ -17,6 +17,7 @@ try
         "live" => await Commands.Live(cli),
         "replay" when cli.Positional.Count > 0 => Commands.Replay(cli),
         "dump" when cli.Positional.Count > 0 => Commands.Dump(cli),
+        "runs" when cli.Positional.Count > 0 => Commands.Runs(cli),
         "import-data" => await Commands.ImportData(cli),
         _ => Commands.Usage(),
     };
@@ -39,6 +40,7 @@ internal static class Commands
               avion2 live   [options]                Live DPS meter
               avion2 replay <file.pcap> [options]    Decode a recorded capture and print encounters
               avion2 dump   <file.pcap> [options]    Hex-dump decoded packets (reverse engineering)
+              avion2 runs   <file.pcap> [...]        List the dungeon / expedition runs in recorded captures
               avion2 import-data [--lang de] [--source <dir>] [--data <dir>]
                                                      Optional: refresh the names from A2Tools into an
                                                      override folder (default %AppData%\AVION2\data)
@@ -57,6 +59,7 @@ internal static class Commands
               --summary           dump: only print the opcode histogram
               --unparsed          dump: only packets the parsers rejected
               --events            dump: show the events decoded from each packet
+              --kills             runs: list every NPC killed inside a run
             """);
         return 1;
     }
@@ -271,6 +274,62 @@ internal static class Commands
         Console.WriteLine($"You: {registry.SelfName ?? "not detected"} (id {registry.SelfId?.ToString() ?? "-"}), map {registry.MapId?.ToString() ?? "-"}");
         return 0;
     }
+
+    public static int Runs(CliArgs cli)
+    {
+        var data = LoadData(cli);
+        var session = new GameSession(data, TrackerOptions(cli));
+        var catalog = BundledGameData.Dungeons;
+        session.Runs.Catalog = catalog;
+        session.Runs.EnglishName = BundledGameData.EnglishNpcName;
+        var runs = new List<DungeonRun>();
+        session.Runs.RunEnded += runs.Add;
+        bool kills = cli.Has("kills");
+        var pipeline = new GameCapturePipeline(e =>
+        {
+            // --kills: every NPC killed inside a run (to find bosses the tables do not know)
+            if (kills && e is DeathEvent { Kind: DeathKind.Combat } death && session.Runs.Current is { } run &&
+                session.Registry.Find(death.EntityId) is { Kind: EntityKind.Npc } npc)
+            {
+                Console.WriteLine($"  kill {run.Maps[^1]} {Clock(death.TimestampMs - run.StartMs)} {npc.NpcCode} {npc.Name} hp {npc.MaxHp:N0}{(npc.IsBoss ? " boss" : "")}");
+            }
+
+            session.Apply(e);
+        });
+        long lastTs = 0;
+        foreach (string file in cli.Positional)
+        {
+            foreach (var frame in PcapFile.Read(file))
+            {
+                pipeline.Process(frame);
+                session.Tracker.Tick(frame.TimestampMs);
+                lastTs = frame.TimestampMs;
+            }
+        }
+
+        session.Tracker.Tick(lastTs + long.MaxValue / 4);
+        session.Runs.Finish(lastTs);
+        foreach (var run in runs)
+        {
+            var start = DateTimeOffset.FromUnixTimeMilliseconds(run.StartMs).ToLocalTime();
+            var dungeon = run.DungeonSlug is { } slug ? catalog.Find(slug) : null;
+            Console.WriteLine($"{start:yyyy-MM-dd HH:mm}  {Clock(run.DurationMs)}  {Content.Label(run.Kind),-14} " +
+                              $"{run.Title(catalog, data)}{(dungeon is null ? "" : $" ({dungeon.Category})")}  maps {string.Join(" → ", run.Maps)} code {run.ContentCode}" +
+                              $"{(run.Left ? "" : "  [not left]")}");
+            Console.WriteLine($"    {run.Character} · {run.Fights} fights · {run.Damage:N0} damage · {run.Deaths.Count} deaths · " +
+                              $"kinah {run.Kinah?.ToString("+#,0;-#,0;0") ?? "?"} · {run.Loot.Count} items · party {string.Join(", ", run.Party.Select(m => m.Name))}");
+            foreach (var boss in run.Bosses)
+            {
+                Console.WriteLine($"    {Clock(boss.AtMs)}  {boss.Name} ({boss.Npc})" +
+                                  $"{(boss.FightMs is { } ms ? $"  fight {ms / 1000.0:0.0} s" : "")}");
+            }
+        }
+
+        Console.WriteLine($"{runs.Count} runs");
+        return 0;
+    }
+
+    private static string Clock(long ms) => TimeSpan.FromMilliseconds(ms).ToString(@"h\:mm\:ss", CultureInfo.InvariantCulture);
 
     public static int Dump(CliArgs cli)
     {

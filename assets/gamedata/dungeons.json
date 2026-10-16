@@ -1,0 +1,6996 @@
+{
+ "source": "https://metabot.gg/en/aion-2/dungeons",
+ "fetched": "2026-10-16",
+ "dungeons": [
+  {
+   "slug": "abyssal-horn-den",
+   "name": "Abyssal Horn Den",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": null,
+   "party": 5,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Gargaum",
+     "npc": null
+    },
+    {
+     "name": "Kapu",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Dhakan",
+     "npc": null
+    },
+    {
+     "name": "Addicted Shulak Laborer",
+     "npc": null
+    },
+    {
+     "name": "Addicted Shulak Miner",
+     "npc": null
+    },
+    {
+     "name": "Addicted Shulak Sentinel",
+     "npc": null
+    },
+    {
+     "name": "Addicted Shulak Cart Worker",
+     "npc": null
+    },
+    {
+     "name": "Addicted Shulak Overseer",
+     "npc": null
+    },
+    {
+     "name": "Abyssal Horn Duduka Worker",
+     "npc": null
+    },
+    {
+     "name": "Abyssal Horn Duduka Slinger",
+     "npc": null
+    },
+    {
+     "name": "Abyssal Horn Mau Totem Shaman",
+     "npc": null
+    },
+    {
+     "name": "Abyssal Horn Mau Healer",
+     "npc": null
+    },
+    {
+     "name": "Abyssal Horn Mau Brawler",
+     "npc": null
+    },
+    {
+     "name": "Abyssal Horn Mau Sentry",
+     "npc": null
+    },
+    {
+     "name": "Fullmoon Ritual Supervisor",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "azure-breath-island",
+   "name": "Azure Breath Island",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": 3000,
+   "party": 5,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Awakened Alturadon",
+     "npc": null
+    },
+    {
+     "name": "Wise Baumnute",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Expanding Xyrepe",
+     "npc": null
+    },
+    {
+     "name": "Crestlich",
+     "npc": null
+    },
+    {
+     "name": "Blue Crestlich",
+     "npc": null
+    },
+    {
+     "name": "Keneire",
+     "npc": null
+    },
+    {
+     "name": "Black Spirit",
+     "npc": null
+    },
+    {
+     "name": "Sleep Grass",
+     "npc": null
+    },
+    {
+     "name": "Sparkie",
+     "npc": null
+    },
+    {
+     "name": "Starturtle",
+     "npc": null
+    },
+    {
+     "name": "Azure Breath Ursus",
+     "npc": null
+    },
+    {
+     "name": "Leader Zaif",
+     "npc": null
+    },
+    {
+     "name": "Zaif",
+     "npc": null
+    },
+    {
+     "name": "Fungen",
+     "npc": null
+    },
+    {
+     "name": "Fungie",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "citadel-of-the-fallen-daeva",
+   "name": "Citadel of the Fallen Daeva",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": 3800,
+   "party": 5,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Willful Turgen",
+     "npc": null
+    },
+    {
+     "name": "Forbidden Hexbeast Griosa",
+     "npc": null
+    },
+    {
+     "name": "Basilus the False",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Corrupted Daeva Elite Sorcerer",
+     "npc": null
+    },
+    {
+     "name": "Corrupted Daeva Executioner",
+     "npc": null
+    },
+    {
+     "name": "Corrupted Daeva Cleric",
+     "npc": null
+    },
+    {
+     "name": "Corrupted Daeva Watcher",
+     "npc": null
+    },
+    {
+     "name": "Legion Guardite",
+     "npc": null
+    },
+    {
+     "name": "Legion Watcher Guardite",
+     "npc": null
+    },
+    {
+     "name": "Legion Elite Guardite",
+     "npc": null
+    },
+    {
+     "name": "Corrupted Daeva Knight",
+     "npc": null
+    },
+    {
+     "name": "Citadel Odyle Spider",
+     "npc": null
+    },
+    {
+     "name": "Blades Gimmick",
+     "npc": null
+    },
+    {
+     "name": "Citadel Magic Weapon",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "cradle-of-nihility",
+   "name": "Cradle of Nihility",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": 2800,
+   "party": 5,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Afflicted Bakarma",
+     "npc": null
+    },
+    {
+     "name": "Multiverse Veltiras",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Solemn Valkan",
+     "npc": null
+    },
+    {
+     "name": "Subspace Swarm",
+     "npc": null
+    },
+    {
+     "name": "Subspace Swarm Colony",
+     "npc": null
+    },
+    {
+     "name": "Bakarma Brigade Air Raiders Weapon",
+     "npc": null
+    },
+    {
+     "name": "Drana Predator",
+     "npc": null
+    },
+    {
+     "name": "Drana Dimensional Floater",
+     "npc": null
+    },
+    {
+     "name": "Congealed Drana Chunk",
+     "npc": null
+    },
+    {
+     "name": "Multiverse Magic Spider",
+     "npc": null
+    },
+    {
+     "name": "Distorted Chunk",
+     "npc": null
+    },
+    {
+     "name": "Multiverse Magic Rafflesia",
+     "npc": null
+    },
+    {
+     "name": "Subspace Parasite Swarm",
+     "npc": null
+    },
+    {
+     "name": "Bakarma Brigade Strike Force Officer",
+     "npc": null
+    },
+    {
+     "name": "Bakarma Brigade Strike Force Member",
+     "npc": null
+    },
+    {
+     "name": "Bakarma Brigade Skirmisher",
+     "npc": null
+    },
+    {
+     "name": "Drakan Vanguard Armed Soldier",
+     "npc": null
+    },
+    {
+     "name": "Drakan Vanguard Armed Beast",
+     "npc": null
+    },
+    {
+     "name": "Crystal",
+     "npc": null
+    },
+    {
+     "name": "Drakan Vanguard Probe",
+     "npc": null
+    },
+    {
+     "name": "Bakarma's Watcheye",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "deus-research-base",
+   "name": "Deus Research Base",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": 1200,
+   "party": 5,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Atiel",
+     "npc": 2346601
+    },
+    {
+     "name": "Gelcos",
+     "npc": 2346616
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Nazmun",
+     "npc": 2346615
+    },
+    {
+     "name": "Deus Research Base Rift",
+     "npc": null
+    },
+    {
+     "name": "Deus Research Base Laser",
+     "npc": null
+    },
+    {
+     "name": "Modified Krall Healer",
+     "npc": null
+    },
+    {
+     "name": "Modified Krall Scout",
+     "npc": null
+    },
+    {
+     "name": "Deus Research Base Dark Spirit",
+     "npc": null
+    },
+    {
+     "name": "Deus Research Base Warrior",
+     "npc": null
+    },
+    {
+     "name": "Deus Research Base Mage",
+     "npc": null
+    },
+    {
+     "name": "Research Center Mudthorn",
+     "npc": null
+    },
+    {
+     "name": "Deus Research Base Bomber",
+     "npc": null
+    },
+    {
+     "name": "Modified Krall Combatant",
+     "npc": null
+    },
+    {
+     "name": "Deus Research Base Storm",
+     "npc": null
+    },
+    {
+     "name": "Modified Krall Warden",
+     "npc": null
+    },
+    {
+     "name": "Deus Research Base Guard",
+     "npc": null
+    },
+    {
+     "name": "Soul Binder",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "draupnir",
+   "name": "Draupnir",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": 700,
+   "party": 5,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Transcendent Bakarma",
+     "npc": 2320471
+    },
+    {
+     "name": "Afflicted Bakarma",
+     "npc": 2320470
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Phantasmal Lakshmi",
+     "npc": null
+    },
+    {
+     "name": "Predator Saraswati",
+     "npc": null
+    },
+    {
+     "name": "Draconute Combatant",
+     "npc": null
+    },
+    {
+     "name": "Draconute Task Soldier",
+     "npc": null
+    },
+    {
+     "name": "Draconute Task Captain",
+     "npc": null
+    },
+    {
+     "name": "Naga Priest",
+     "npc": null
+    },
+    {
+     "name": "Draconute Sentry Captain",
+     "npc": null
+    },
+    {
+     "name": "Nagarant Guardian Warrior",
+     "npc": null
+    },
+    {
+     "name": "Hungry Void Insectoid",
+     "npc": null
+    },
+    {
+     "name": "Abyss Insectoid Egg",
+     "npc": null
+    },
+    {
+     "name": "Draconute Ranger",
+     "npc": null
+    },
+    {
+     "name": "Draconute Sniper",
+     "npc": null
+    },
+    {
+     "name": "Petty Officer Akvar",
+     "npc": 2320408
+    },
+    {
+     "name": "Odyle-eating Abyss Insectoid",
+     "npc": null
+    },
+    {
+     "name": "Klaw Janitor",
+     "npc": null
+    },
+    {
+     "name": "Draconute Infantry",
+     "npc": null
+    },
+    {
+     "name": "Manager Abatur",
+     "npc": 2320406
+    },
+    {
+     "name": "Draconute Sentry",
+     "npc": null
+    },
+    {
+     "name": "Draconute Slinger",
+     "npc": null
+    },
+    {
+     "name": "Draconute Handler",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "dying-dramatas-nest",
+   "name": "Dying Dramata's Nest",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": 2800,
+   "party": 5,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Manager Nasium",
+     "npc": null
+    },
+    {
+     "name": "Broodkeeper Nayatman",
+     "npc": 2300154
+    },
+    {
+     "name": "Decaying Durvati",
+     "npc": 2300155
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Decaying Durvati (Specimen)",
+     "npc": null
+    },
+    {
+     "name": "Durvati's Poison Fluid",
+     "npc": null
+    },
+    {
+     "name": "Thermal Vent",
+     "npc": null
+    },
+    {
+     "name": "Aquatic Skyray",
+     "npc": null
+    },
+    {
+     "name": "Dratona Tamer",
+     "npc": null
+    },
+    {
+     "name": "Dratona Egg",
+     "npc": null
+    },
+    {
+     "name": "Dratona",
+     "npc": null
+    },
+    {
+     "name": "Dratona Handler",
+     "npc": null
+    },
+    {
+     "name": "Dratona Brute",
+     "npc": null
+    },
+    {
+     "name": "Cave Papis",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "ferocious-horn-den",
+   "name": "Ferocious Horn Den",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": 2100,
+   "party": 5,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Ferocious Horn Nuakum",
+     "npc": null
+    },
+    {
+     "name": "Watchdog Kwapo",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Necromancer Duanka",
+     "npc": null
+    },
+    {
+     "name": "Shining Mau Totem",
+     "npc": null
+    },
+    {
+     "name": "Mutated Shulak Laborer",
+     "npc": null
+    },
+    {
+     "name": "Mutated Shulak Miner",
+     "npc": null
+    },
+    {
+     "name": "Mutated Shulak Overseer",
+     "npc": null
+    },
+    {
+     "name": "Abyssal Moss Crab",
+     "npc": null
+    },
+    {
+     "name": "Ferocious Horn Mau Brawler",
+     "npc": null
+    },
+    {
+     "name": "Ferocious Horn Mau Healer",
+     "npc": null
+    },
+    {
+     "name": "Ferocious Horn Mau Sentry",
+     "npc": null
+    },
+    {
+     "name": "Ferocious Horn Mau Combat Chief",
+     "npc": null
+    },
+    {
+     "name": "Ferocious Duduka Worker",
+     "npc": null
+    },
+    {
+     "name": "Ferocious Duduka Slinger",
+     "npc": null
+    },
+    {
+     "name": "Abyssal Lupyllini",
+     "npc": null
+    },
+    {
+     "name": "Mutated Shulak Sentinel",
+     "npc": null
+    },
+    {
+     "name": "Mutated Shulak Cart Worker",
+     "npc": null
+    },
+    {
+     "name": "Training Scarecrow",
+     "npc": null
+    },
+    {
+     "name": "Summoned Duduka Worker",
+     "npc": null
+    },
+    {
+     "name": "Ferocious Horn Mau Totem Shaman",
+     "npc": null
+    },
+    {
+     "name": "Summoned Duduka Slinger",
+     "npc": null
+    },
+    {
+     "name": "Fafnite Enhance Totem",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fire-temple",
+   "name": "Fire Temple",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": 500,
+   "party": 5,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "hall-of-illusion",
+   "name": "Hall of Illusion",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": 3000,
+   "party": 5,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Nathara",
+     "npc": null
+    },
+    {
+     "name": "Nazarak",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Glassvein",
+     "npc": null
+    },
+    {
+     "name": "Corridor Executor",
+     "npc": null
+    },
+    {
+     "name": "Corridor Watcher",
+     "npc": null
+    },
+    {
+     "name": "Illusion Specter",
+     "npc": null
+    },
+    {
+     "name": "Forgotten Sura Warrior",
+     "npc": null
+    },
+    {
+     "name": "Forgotten Sura Priest",
+     "npc": null
+    },
+    {
+     "name": "Illusion Templar Soul",
+     "npc": null
+    },
+    {
+     "name": "Illusion Ranger Soul",
+     "npc": null
+    },
+    {
+     "name": "Forgotten Sura Knight",
+     "npc": null
+    },
+    {
+     "name": "Illusion Veil",
+     "npc": null
+    },
+    {
+     "name": "Specter Bomb",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "krao-cave",
+   "name": "Krao Cave",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": 200,
+   "party": 5,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Ultimate Berk",
+     "npc": null
+    },
+    {
+     "name": "Enhanced Harcon",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Neglected Gadioton",
+     "npc": null
+    },
+    {
+     "name": "Sniping Croka",
+     "npc": null
+    },
+    {
+     "name": "Enhanced Krao Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Krao Mutant",
+     "npc": null
+    },
+    {
+     "name": "Krao Seal Guardian",
+     "npc": null
+    },
+    {
+     "name": "Krao Magic Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Condensed Krao",
+     "npc": null
+    },
+    {
+     "name": "Krao Magnetic Field",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "mirror-of-scarlet-desire",
+   "name": "Mirror of Scarlet Desire",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": null,
+   "party": 5,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Kromede's Desolation",
+     "npc": 2300355
+    },
+    {
+     "name": "Robstino",
+     "npc": 2300354
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Ordeal of Love",
+     "npc": null
+    },
+    {
+     "name": "Rotar",
+     "npc": 2300353
+    },
+    {
+     "name": "Rose Garden Bee",
+     "npc": null
+    },
+    {
+     "name": "Alluring Dionae",
+     "npc": null
+    },
+    {
+     "name": "Jealous Fairy",
+     "npc": null
+    },
+    {
+     "name": "Heartbound Knights Gladiator",
+     "npc": null
+    },
+    {
+     "name": "Heartbound Knights Elite Soldier",
+     "npc": null
+    },
+    {
+     "name": "Rose Garden Keeper",
+     "npc": null
+    },
+    {
+     "name": "Alluring Arrow",
+     "npc": null
+    },
+    {
+     "name": "Heartbound Elite Priest",
+     "npc": null
+    },
+    {
+     "name": "Heartbound Acolyte Priest",
+     "npc": null
+    },
+    {
+     "name": "Heartbound Priest",
+     "npc": null
+    },
+    {
+     "name": "Heartbound Rafflesia",
+     "npc": null
+    },
+    {
+     "name": "Heartbound Knights Templar",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "shattered-arkanis",
+   "name": "Shattered Arkanis",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": 1200,
+   "party": 5,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Talisra of the Void",
+     "npc": 2356709
+    },
+    {
+     "name": "Siliator of Deceit",
+     "npc": 2356707
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Ruthilis of Pain",
+     "npc": 2356708
+    },
+    {
+     "name": "Arkanis Elite Guardian",
+     "npc": null
+    },
+    {
+     "name": "Void Water Spirit",
+     "npc": null
+    },
+    {
+     "name": "Enraged Water Spirit",
+     "npc": null
+    },
+    {
+     "name": "Shattered Water Spirit",
+     "npc": null
+    },
+    {
+     "name": "Arkanis Elite Priest",
+     "npc": null
+    },
+    {
+     "name": "Whispering Water Spirit",
+     "npc": null
+    },
+    {
+     "name": "Spinning Magnetic Field",
+     "npc": null
+    },
+    {
+     "name": "Corrosion Wave",
+     "npc": null
+    },
+    {
+     "name": "Void Wave",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "submerged-life-temple",
+   "name": "Submerged Life Temple",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": null,
+   "party": 5,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Submerged Emon",
+     "npc": null
+    },
+    {
+     "name": "Singing Ellyde",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Deep Sea Pydeon",
+     "npc": null
+    },
+    {
+     "name": "Sunken Shieldbearer",
+     "npc": null
+    },
+    {
+     "name": "Sunken Watcher",
+     "npc": null
+    },
+    {
+     "name": "Sunken Combatant",
+     "npc": null
+    },
+    {
+     "name": "Deep Sea Slime",
+     "npc": null
+    },
+    {
+     "name": "Laser",
+     "npc": null
+    },
+    {
+     "name": "Sunken Jailor",
+     "npc": null
+    },
+    {
+     "name": "Distorted Elite Brawler",
+     "npc": null
+    },
+    {
+     "name": "Distorted Elite Knight",
+     "npc": null
+    },
+    {
+     "name": "Liberated Elite Guardian",
+     "npc": null
+    },
+    {
+     "name": "Sunken Guardian Tower",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "urugugu-canyon",
+   "name": "Urugugu Canyon",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": 300,
+   "party": 5,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Judge Urahum",
+     "npc": null
+    },
+    {
+     "name": "Guardian Captain Raur",
+     "npc": null
+    },
+    {
+     "name": "Divine Auldor",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Auldor Sanctum Gatekeeper",
+     "npc": null
+    },
+    {
+     "name": "Urugugu Shaman",
+     "npc": null
+    },
+    {
+     "name": "Healing Totem",
+     "npc": null
+    },
+    {
+     "name": "Urugugu Mage",
+     "npc": null
+    },
+    {
+     "name": "Blazing Totem",
+     "npc": null
+    },
+    {
+     "name": "Urugugu Skirmisher",
+     "npc": null
+    },
+    {
+     "name": "Training Scarecrow",
+     "npc": null
+    },
+    {
+     "name": "Urugugu Soldier",
+     "npc": null
+    },
+    {
+     "name": "Urugugu Patrol",
+     "npc": null
+    },
+    {
+     "name": "Urugugu Slayer",
+     "npc": null
+    },
+    {
+     "name": "Faithful Konutin",
+     "npc": null
+    },
+    {
+     "name": "Brainwashed Konutin",
+     "npc": null
+    },
+    {
+     "name": "Urugugu Wind Mage",
+     "npc": null
+    },
+    {
+     "name": "Urugugu Bloodfighter",
+     "npc": null
+    },
+    {
+     "name": "Urugugu Gladiator",
+     "npc": null
+    },
+    {
+     "name": "Deceived Pino",
+     "npc": null
+    },
+    {
+     "name": "Surveillance Healing Totem",
+     "npc": null
+    },
+    {
+     "name": "Surveillance Blazing Totem",
+     "npc": null
+    },
+    {
+     "name": "Furious Pino",
+     "npc": null
+    },
+    {
+     "name": "Urugugu Brawler",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "vakron-sky-island",
+   "name": "Vakron Sky Island",
+   "category": "Party Dungeon",
+   "level": null,
+   "itemLevel": 1400,
+   "party": 5,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Vakron",
+     "npc": null
+    },
+    {
+     "name": "Tiere",
+     "npc": 2320810
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Thamon",
+     "npc": 2320811
+    },
+    {
+     "name": "Odyle Stone Spirit",
+     "npc": null
+    },
+    {
+     "name": "Island Guardian Ranger",
+     "npc": null
+    },
+    {
+     "name": "Giant Honeybee",
+     "npc": null
+    },
+    {
+     "name": "Ferocious Queen Bee",
+     "npc": null
+    },
+    {
+     "name": "Rock Spirit",
+     "npc": null
+    },
+    {
+     "name": "Earth Spirit",
+     "npc": null
+    },
+    {
+     "name": "Enraged Rock Spirit",
+     "npc": null
+    },
+    {
+     "name": "Corrupted Fairy",
+     "npc": null
+    },
+    {
+     "name": "Forest Coradon",
+     "npc": null
+    },
+    {
+     "name": "Enraged Earth Spirit",
+     "npc": null
+    },
+    {
+     "name": "Eroded Kalgolem",
+     "npc": null
+    },
+    {
+     "name": "Sweet Poison Flower",
+     "npc": null
+    },
+    {
+     "name": "Fog Spiritstone",
+     "npc": null
+    },
+    {
+     "name": "Floating Tourmaline",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "abyssal-forge-ludra",
+   "name": "Abyssal Forge: Ludra",
+   "category": "Raid",
+   "level": null,
+   "itemLevel": 2800,
+   "party": 10,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Eternal Ludra",
+     "npc": 2301014
+    },
+    {
+     "name": "Abyssal Wings Ketu",
+     "npc": 2301007
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Isolation Specialist Rahu",
+     "npc": 2301006
+    },
+    {
+     "name": "Central Abyss Fusion Reactor",
+     "npc": null
+    },
+    {
+     "name": "Auxiliary Abyss Fusion Reactor",
+     "npc": null
+    },
+    {
+     "name": "Ludra Follower Drakan",
+     "npc": null
+    },
+    {
+     "name": "Ludra Follower Beast",
+     "npc": null
+    },
+    {
+     "name": "Ludra Follower Warmage",
+     "npc": null
+    },
+    {
+     "name": "Ludra Follower Officer",
+     "npc": null
+    },
+    {
+     "name": "Abyssal Beast",
+     "npc": null
+    },
+    {
+     "name": "Abyssal Drakan Mage Officer",
+     "npc": null
+    },
+    {
+     "name": "Abyssal Drakan Armed Soldier",
+     "npc": null
+    },
+    {
+     "name": "Laser",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "chalice-of-muspel",
+   "name": "Chalice of Muspel",
+   "category": "Raid",
+   "level": null,
+   "itemLevel": 4300,
+   "party": 10,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Iscariel",
+     "npc": null
+    },
+    {
+     "name": "Kaldrix",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Muspel Guardian Statue",
+     "npc": null
+    },
+    {
+     "name": "Blazing Guardian Sword",
+     "npc": null
+    },
+    {
+     "name": "Fiery Eggs",
+     "npc": null
+    },
+    {
+     "name": "Muspel Abyss Monster",
+     "npc": null
+    },
+    {
+     "name": "Flame",
+     "npc": null
+    },
+    {
+     "name": "Flame Zone",
+     "npc": null
+    },
+    {
+     "name": "Meteor",
+     "npc": null
+    },
+    {
+     "name": "Mutated Elite Chief",
+     "npc": null
+    },
+    {
+     "name": "Mutated Healer",
+     "npc": null
+    },
+    {
+     "name": "Muspel Lava",
+     "npc": null
+    },
+    {
+     "name": "Muspel Giant Lava",
+     "npc": null
+    },
+    {
+     "name": "Muspel Abyss Lamphu",
+     "npc": null
+    },
+    {
+     "name": "Mutated Scout",
+     "npc": null
+    },
+    {
+     "name": "Sanctum Barghest",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "corroded-decontamination-facility",
+   "name": "Corroded Decontamination Facility",
+   "category": "Raid",
+   "level": null,
+   "itemLevel": 3500,
+   "party": 10,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Hydraulic Press",
+     "npc": null
+    },
+    {
+     "name": "Terminator Bargott",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Surveillance Device",
+     "npc": null
+    },
+    {
+     "name": "Black Blood Blatt",
+     "npc": null
+    },
+    {
+     "name": "Devouring Klawfly",
+     "npc": null
+    },
+    {
+     "name": "Contaminated Slime",
+     "npc": null
+    },
+    {
+     "name": "Defiled Poison Blood",
+     "npc": null
+    },
+    {
+     "name": "Wastewater",
+     "npc": null
+    },
+    {
+     "name": "Contaminated Sura Soldier",
+     "npc": null
+    },
+    {
+     "name": "Contaminated Sura Battle Mage",
+     "npc": null
+    },
+    {
+     "name": "Noxious Gas",
+     "npc": null
+    },
+    {
+     "name": "Contaminated Poison Sac",
+     "npc": null
+    },
+    {
+     "name": "Defiled Poison Sac",
+     "npc": null
+    },
+    {
+     "name": "Defiled Sura Captain",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "chamber-of-the-dead",
+   "name": "Chamber of the Dead",
+   "category": "Ascension Trial",
+   "level": null,
+   "itemLevel": 1000,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Eloen",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Void Helicoid",
+     "npc": null
+    },
+    {
+     "name": "Grave Twisted Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Grave Mutant",
+     "npc": null
+    },
+    {
+     "name": "Grave Floater",
+     "npc": null
+    },
+    {
+     "name": "Grave Dracuni",
+     "npc": null
+    },
+    {
+     "name": "Grave Bomb Trap",
+     "npc": null
+    },
+    {
+     "name": "Grave Twisted Magic Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Grave Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Grave Predator",
+     "npc": null
+    },
+    {
+     "name": "Grave Magic Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Grave Drana",
+     "npc": null
+    },
+    {
+     "name": "Ascended Twisted Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Ascended Mutant",
+     "npc": null
+    },
+    {
+     "name": "Ascended Floater",
+     "npc": null
+    },
+    {
+     "name": "Awakened Dracuni",
+     "npc": null
+    },
+    {
+     "name": "Ascended Twisted Magic Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Ascended Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Ascended Predator",
+     "npc": null
+    },
+    {
+     "name": "Ascended Magic Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Awakened Drana",
+     "npc": null
+    },
+    {
+     "name": "Consumed Twisted Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Contaminated Mutant",
+     "npc": null
+    },
+    {
+     "name": "Consumed Floater",
+     "npc": null
+    },
+    {
+     "name": "Consumed Dracuni",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "chamber-of-the-dead-doom",
+   "name": "Chamber of the Dead (Doom)",
+   "category": "Ascension Trial",
+   "level": null,
+   "itemLevel": 4000,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Eloen",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Void Helicoid",
+     "npc": null
+    },
+    {
+     "name": "Void Twisted Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Void Mutant",
+     "npc": null
+    },
+    {
+     "name": "Void Floater",
+     "npc": null
+    },
+    {
+     "name": "Void Dracuni",
+     "npc": null
+    },
+    {
+     "name": "Grave Bomb Trap",
+     "npc": null
+    },
+    {
+     "name": "Void Twisted Magic Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Void Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Void Predator",
+     "npc": null
+    },
+    {
+     "name": "Void Magic Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Void Drana",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "depository-of-fates",
+   "name": "Depository of Fates",
+   "category": "Ascension Trial",
+   "level": null,
+   "itemLevel": 1000,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Claudia",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Depository Pino Worker",
+     "npc": null
+    },
+    {
+     "name": "Depository Konutin",
+     "npc": null
+    },
+    {
+     "name": "Depository Raptor Ranger",
+     "npc": null
+    },
+    {
+     "name": "Depository Ursus",
+     "npc": null
+    },
+    {
+     "name": "Depository Raptor Warrior",
+     "npc": null
+    },
+    {
+     "name": "Void Helicoid",
+     "npc": null
+    },
+    {
+     "name": "Ancient Document Protection Device",
+     "npc": null
+    },
+    {
+     "name": "Impetuous Pino",
+     "npc": null
+    },
+    {
+     "name": "Impetuous Konutin",
+     "npc": null
+    },
+    {
+     "name": "Impetuous Raptor Ranger",
+     "npc": null
+    },
+    {
+     "name": "Impetuous Ursus",
+     "npc": null
+    },
+    {
+     "name": "Impetuous Raptor Warrior",
+     "npc": null
+    },
+    {
+     "name": "Fates Pino",
+     "npc": null
+    },
+    {
+     "name": "Fates Konutin",
+     "npc": null
+    },
+    {
+     "name": "Fates Aullaeu Ranger",
+     "npc": null
+    },
+    {
+     "name": "Fates Ursus",
+     "npc": null
+    },
+    {
+     "name": "Fates Raptor Warrior",
+     "npc": null
+    },
+    {
+     "name": "Furious Pino Worker",
+     "npc": null
+    },
+    {
+     "name": "Furious Ursus",
+     "npc": null
+    },
+    {
+     "name": "Furious Raptor Ranger",
+     "npc": null
+    },
+    {
+     "name": "Furious Raptor Warrior",
+     "npc": null
+    },
+    {
+     "name": "Furious Konutin",
+     "npc": null
+    },
+    {
+     "name": "Despair Pino Worker",
+     "npc": null
+    },
+    {
+     "name": "Despair Ursus",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "forgotten-repository",
+   "name": "Forgotten Repository",
+   "category": "Ascension Trial",
+   "level": null,
+   "itemLevel": 1000,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Karlix",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Repository Ancient Totem",
+     "npc": null
+    },
+    {
+     "name": "Repository Warrior",
+     "npc": null
+    },
+    {
+     "name": "Repository Mage",
+     "npc": null
+    },
+    {
+     "name": "Repository Assault Captain",
+     "npc": null
+    },
+    {
+     "name": "Repository Bomber",
+     "npc": null
+    },
+    {
+     "name": "Repository Defense Cannon",
+     "npc": null
+    },
+    {
+     "name": "Void Helicoid",
+     "npc": null
+    },
+    {
+     "name": "Repository Supporter",
+     "npc": null
+    },
+    {
+     "name": "Repository Reaper",
+     "npc": null
+    },
+    {
+     "name": "Repository Guard",
+     "npc": null
+    },
+    {
+     "name": "Repository Warmage",
+     "npc": null
+    },
+    {
+     "name": "Ascended Repository Ancient Totem",
+     "npc": null
+    },
+    {
+     "name": "Ascended Repository Warrior",
+     "npc": null
+    },
+    {
+     "name": "Ascended Repository Mage",
+     "npc": null
+    },
+    {
+     "name": "Ascended Repository Assault Captain",
+     "npc": null
+    },
+    {
+     "name": "Ascended Repository Bomber",
+     "npc": null
+    },
+    {
+     "name": "Ascended Repository Defense Cannon",
+     "npc": null
+    },
+    {
+     "name": "Ascended Repository Supporter",
+     "npc": null
+    },
+    {
+     "name": "Ascended Repository Reaper",
+     "npc": null
+    },
+    {
+     "name": "Ascended Repository Guard",
+     "npc": null
+    },
+    {
+     "name": "Ascended Repository Warmage",
+     "npc": null
+    },
+    {
+     "name": "Forgotten Repository Ancient Totem",
+     "npc": null
+    },
+    {
+     "name": "Forgotten Repository Warrior",
+     "npc": null
+    },
+    {
+     "name": "Forgotten Repository Mage",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "forgotten-repository-doom",
+   "name": "Forgotten Repository (Doom)",
+   "category": "Ascension Trial",
+   "level": null,
+   "itemLevel": 4000,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Karlix",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Void Repository Ancient Totem",
+     "npc": null
+    },
+    {
+     "name": "Void Repository Warrior",
+     "npc": null
+    },
+    {
+     "name": "Void Repository Mage",
+     "npc": null
+    },
+    {
+     "name": "Void Repository Assault Captain",
+     "npc": null
+    },
+    {
+     "name": "Void Repository Bomber",
+     "npc": null
+    },
+    {
+     "name": "Void Repository Defense Cannon",
+     "npc": null
+    },
+    {
+     "name": "Void Helicoid",
+     "npc": null
+    },
+    {
+     "name": "Void Repository Supporter",
+     "npc": null
+    },
+    {
+     "name": "Void Repository Reaper",
+     "npc": null
+    },
+    {
+     "name": "Void Repository Guard",
+     "npc": null
+    },
+    {
+     "name": "Void Repository Warmage",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "nightmare-altar",
+   "name": "Nightmare Altar",
+   "category": "Ascension Trial",
+   "level": null,
+   "itemLevel": 1000,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Divided Aponos",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Altar Guardian",
+     "npc": null
+    },
+    {
+     "name": "Altar Watcher",
+     "npc": null
+    },
+    {
+     "name": "Altar Elite Assault Trooper",
+     "npc": null
+    },
+    {
+     "name": "Altar Daeva Patrol",
+     "npc": null
+    },
+    {
+     "name": "Altar Dark Mage",
+     "npc": null
+    },
+    {
+     "name": "Altar Elite Shieldbearer",
+     "npc": null
+    },
+    {
+     "name": "Void Helicoid",
+     "npc": null
+    },
+    {
+     "name": "Ancient Document Protection Device",
+     "npc": null
+    },
+    {
+     "name": "Distorted Guardian",
+     "npc": null
+    },
+    {
+     "name": "Distorted Watcher",
+     "npc": null
+    },
+    {
+     "name": "Distorted Elite Assault Trooper",
+     "npc": null
+    },
+    {
+     "name": "Distorted Daeva Patrol",
+     "npc": null
+    },
+    {
+     "name": "Distorted Dark Mage",
+     "npc": null
+    },
+    {
+     "name": "Distorted Elite Shieldbearer",
+     "npc": null
+    },
+    {
+     "name": "Nightmare Guardian",
+     "npc": null
+    },
+    {
+     "name": "Nightmare Daeva Patrol",
+     "npc": null
+    },
+    {
+     "name": "Nightmare Watcher",
+     "npc": null
+    },
+    {
+     "name": "Nightmare Elite Shieldbearer",
+     "npc": null
+    },
+    {
+     "name": "Nightmare Elite Assault Trooper",
+     "npc": null
+    },
+    {
+     "name": "Nightmare Dark Mage",
+     "npc": null
+    },
+    {
+     "name": "Furious Daeva Patrol",
+     "npc": null
+    },
+    {
+     "name": "Furious Elite Shieldbearer",
+     "npc": null
+    },
+    {
+     "name": "Furious Elite Assault Trooper",
+     "npc": null
+    },
+    {
+     "name": "Furious Dark Mage",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "sanctum-of-loathing",
+   "name": "Sanctum of Loathing",
+   "category": "Ascension Trial",
+   "level": null,
+   "itemLevel": 1000,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Featherstorm Duduri",
+     "npc": 2702384
+    },
+    {
+     "name": "Watchful Raptor Dodori",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Void Helicoid",
+     "npc": null
+    },
+    {
+     "name": "Sanctum Guard Troopers Captain",
+     "npc": null
+    },
+    {
+     "name": "Sanctum Balaur Warrior",
+     "npc": null
+    },
+    {
+     "name": "Sanctum Balaur Ranger",
+     "npc": null
+    },
+    {
+     "name": "Sanctum Abyss Swarm",
+     "npc": null
+    },
+    {
+     "name": "Sanctum Superior Drakan",
+     "npc": null
+    },
+    {
+     "name": "Sanctum Drakan Armed Soldier",
+     "npc": null
+    },
+    {
+     "name": "Sanctum Drakan Thaumaturge",
+     "npc": null
+    },
+    {
+     "name": "Sanctum Elite Brawler",
+     "npc": null
+    },
+    {
+     "name": "Sanctum Drakan Chief",
+     "npc": null
+    },
+    {
+     "name": "Sanctum Elite Watcher",
+     "npc": null
+    },
+    {
+     "name": "Enhanced Guard Troopers Captain",
+     "npc": null
+    },
+    {
+     "name": "Enhanced Balaur Warrior",
+     "npc": null
+    },
+    {
+     "name": "Enhanced Balaur Ranger",
+     "npc": null
+    },
+    {
+     "name": "Enhanced Abyss Swarm",
+     "npc": null
+    },
+    {
+     "name": "Enhanced Superior Drakan",
+     "npc": null
+    },
+    {
+     "name": "Enhanced Drakan Armed Soldier",
+     "npc": null
+    },
+    {
+     "name": "Enhanced Drakan Thaumaturge",
+     "npc": null
+    },
+    {
+     "name": "Enhanced Elite Brawler",
+     "npc": null
+    },
+    {
+     "name": "Enhanced Drakan Chief",
+     "npc": null
+    },
+    {
+     "name": "Enhanced Elite Watcher",
+     "npc": null
+    },
+    {
+     "name": "Loathing Guard Troopers Captain",
+     "npc": null
+    },
+    {
+     "name": "Loathing Balaur Warrior",
+     "npc": null
+    },
+    {
+     "name": "Loathing Balaur Ranger",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "tyrants-hideout",
+   "name": "Tyrant's Hideout",
+   "category": "Ascension Trial",
+   "level": null,
+   "itemLevel": 1000,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Menoch",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Void Helicoid",
+     "npc": null
+    },
+    {
+     "name": "Hideout Wraith Brawler",
+     "npc": null
+    },
+    {
+     "name": "Hideout Undead Soldier",
+     "npc": null
+    },
+    {
+     "name": "Hideout Undead Ranger",
+     "npc": null
+    },
+    {
+     "name": "Hideout Undead Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Hideout Undead Gladiator",
+     "npc": null
+    },
+    {
+     "name": "Hideout Undead Warrior",
+     "npc": null
+    },
+    {
+     "name": "Hideout Wraith Ranger",
+     "npc": null
+    },
+    {
+     "name": "Hideout Revenant",
+     "npc": null
+    },
+    {
+     "name": "Hideout Undead Chief Officer",
+     "npc": null
+    },
+    {
+     "name": "Hideout Sura Warrior",
+     "npc": null
+    },
+    {
+     "name": "Rift",
+     "npc": null
+    },
+    {
+     "name": "Ascended Wraith Brawler",
+     "npc": null
+    },
+    {
+     "name": "Ascended Undead Soldier",
+     "npc": null
+    },
+    {
+     "name": "Ascended Undead Ranger",
+     "npc": null
+    },
+    {
+     "name": "Ascended Undead Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Ascended Undead Gladiator",
+     "npc": null
+    },
+    {
+     "name": "Ascended Undead Warrior",
+     "npc": null
+    },
+    {
+     "name": "Ascended Wraith Ranger",
+     "npc": null
+    },
+    {
+     "name": "Ascended Revenant",
+     "npc": null
+    },
+    {
+     "name": "Ascended Undead Chief Officer",
+     "npc": null
+    },
+    {
+     "name": "Ascended Sura Warrior",
+     "npc": null
+    },
+    {
+     "name": "Tyrant Wraith Brawler",
+     "npc": null
+    },
+    {
+     "name": "Tyrant Undead Soldier",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fafnite-amphitheater",
+   "name": "Fafnite Amphitheater",
+   "category": "Growth Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "silent-graveyard",
+   "name": "Silent Graveyard",
+   "category": "Growth Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Leafless Agrint",
+     "npc": null
+    },
+    {
+     "name": "Soulless Corpse Gnat",
+     "npc": null
+    },
+    {
+     "name": "Grave Vivel",
+     "npc": null
+    },
+    {
+     "name": "Grudge Bearing Wraith",
+     "npc": null
+    },
+    {
+     "name": "Hungry Dead",
+     "npc": null
+    },
+    {
+     "name": "Grave Undead Knight",
+     "npc": null
+    },
+    {
+     "name": "Withered Spider",
+     "npc": null
+    },
+    {
+     "name": "Nepenthes",
+     "npc": null
+    },
+    {
+     "name": "Daeva Ranger's Soul",
+     "npc": null
+    },
+    {
+     "name": "Daeva Knight's Soul",
+     "npc": null
+    },
+    {
+     "name": "Decomposed Ancient Dead",
+     "npc": null
+    },
+    {
+     "name": "Karas Handmaiden",
+     "npc": null
+    },
+    {
+     "name": "Cemetery Mutated Sura",
+     "npc": null
+    },
+    {
+     "name": "Rafflesia",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "crobakhis-secret-depository",
+   "name": "Crobakhi's Secret Depository",
+   "category": "Daily Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Bomb",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "daeva-bio-research-base",
+   "name": "Daeva Bio-Research Base",
+   "category": "Daily Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "odylium-repository",
+   "name": "Odylium Repository",
+   "category": "Daily Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Unstable Odylium Gemstone",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "abandoned-ones-grave",
+   "name": "Abandoned One's Grave",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Scion Behit",
+     "npc": 2701035
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Karas Butler",
+     "npc": null
+    },
+    {
+     "name": "Karas Servant",
+     "npc": null
+    },
+    {
+     "name": "Abandoned Karas Wraith",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "cave-of-the-desperate",
+   "name": "Cave of the Desperate",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Desperate Knight's Soul",
+     "npc": null
+    },
+    {
+     "name": "Desperate Ranger's Soul",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "chilly-hideout",
+   "name": "Chilly Hideout",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Toblini",
+     "npc": 2700914
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Hideout Sura",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "dratona-cave",
+   "name": "Dratona Cave",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Mature Baratuna",
+     "npc": 2700876
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Cave Dratona Egg",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "dusk-pit",
+   "name": "Dusk Pit",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Legion Outlaws Leader",
+     "npc": 2701227
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Legion Outlaws Warrior",
+     "npc": null
+    },
+    {
+     "name": "Legion Outlaws Ranger",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "hidden-vein-cave",
+   "name": "Hidden Vein Cave",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Ore Vein Kalgolem",
+     "npc": null
+    },
+    {
+     "name": "Ore Vein Odyle Spirit",
+     "npc": null
+    },
+    {
+     "name": "Ore Vein Giant Sparkie",
+     "npc": null
+    },
+    {
+     "name": "Ore Vein Odyle Sparkie",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "lost-ruins",
+   "name": "Lost Ruins",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Ru Priest",
+     "npc": null
+    },
+    {
+     "name": "Bomb",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "lupyllini-habitat",
+   "name": "Lupyllini Habitat",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Habitat Elite Lupyllini",
+     "npc": null
+    },
+    {
+     "name": "Habitat Lupyllini",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "mysterious-mushroom-cave",
+   "name": "Mysterious Mushroom Cave",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Snailcap Fungie",
+     "npc": null
+    },
+    {
+     "name": "Mushroom Cave Fungie",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "old-graveyard",
+   "name": "Old Graveyard",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Grave Ghost",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "ossuary-of-the-noble",
+   "name": "Ossuary of the Noble",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Grave Undead",
+     "npc": null
+    },
+    {
+     "name": "Cemetery Spider",
+     "npc": null
+    },
+    {
+     "name": "Grave Poison Sac",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "poachers-den",
+   "name": "Poacher's Den",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Poacher Captain",
+     "npc": 2700916
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Poacher Warrior",
+     "npc": null
+    },
+    {
+     "name": "Poacher Ranger",
+     "npc": null
+    },
+    {
+     "name": "Rare Ursus",
+     "npc": null
+    },
+    {
+     "name": "Tamed Rare Ursus",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "poisonous-plant-habitat",
+   "name": "Poisonous Plant Habitat",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Poison Contaminated Slime",
+     "npc": null
+    },
+    {
+     "name": "Poison Contaminated Agrint",
+     "npc": null
+    },
+    {
+     "name": "Poisonous Plant",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "smugglers-cave",
+   "name": "Smuggler's Cave",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Cruel Sumakhi",
+     "npc": 2701013
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Shulak Smuggler",
+     "npc": null
+    },
+    {
+     "name": "Shulak Tinkerer",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "treasure-hunters-residence",
+   "name": "Treasure Hunter's Residence",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Spirit Treasure Hunter Knight",
+     "npc": null
+    },
+    {
+     "name": "Wandering Treasure Hunter Ranger",
+     "npc": null
+    },
+    {
+     "name": "Vindictive Treasure Hunter Knight",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "tricksters-den",
+   "name": "Trickster's Den",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Trickster Boss Korhe",
+     "npc": 2700921
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Trickster Warrior",
+     "npc": null
+    },
+    {
+     "name": "Trickster Brawler",
+     "npc": null
+    },
+    {
+     "name": "Trickster Ruffian",
+     "npc": null
+    },
+    {
+     "name": "Defense Turret",
+     "npc": null
+    },
+    {
+     "name": "Trickster Archer",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "valkas-nest",
+   "name": "Valka's Nest",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Mutated Insectoid Valka",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Drana Mutant Sylphen",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "watchers-temporary-outpost",
+   "name": "Watcher's Temporary Outpost",
+   "category": "Sealed Dungeon",
+   "level": 10,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Watchful Superior Warrior",
+     "npc": null
+    },
+    {
+     "name": "Watchful Balaur Ranger",
+     "npc": null
+    },
+    {
+     "name": "Draconute Watch Warrior",
+     "npc": null
+    },
+    {
+     "name": "Draconute Elite Watch Warrior",
+     "npc": null
+    },
+    {
+     "name": "Watchful Balaur Superior Ranger",
+     "npc": null
+    },
+    {
+     "name": "Watchful Balaur Tinkerer",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "abandoned-archon-jail",
+   "name": "Abandoned Archon Jail",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Moslan Thieves Zaif",
+     "npc": null
+    },
+    {
+     "name": "Moslan Thieves Ranger",
+     "npc": null
+    },
+    {
+     "name": "Moslan Thieves Warrior",
+     "npc": null
+    },
+    {
+     "name": "Moslan Thieves Tamer",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "akilo-thieves-den",
+   "name": "Akilo Thieves Den",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Akilo Thieves Fossa",
+     "npc": null
+    },
+    {
+     "name": "Akilo Thieves Warrior",
+     "npc": null
+    },
+    {
+     "name": "Akilo Thieves Ranger",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "anguish-hideout",
+   "name": "Anguish Hideout",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Lieutenant Sineora",
+     "npc": 2700975
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Anguish Ranger Soul",
+     "npc": null
+    },
+    {
+     "name": "Anguish Knight Soul",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "bibliophiles-grave",
+   "name": "Bibliophile's Grave",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Tome Grave Spider",
+     "npc": null
+    },
+    {
+     "name": "Tome Grave Gnat",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "bloodsoaked-confessional",
+   "name": "Bloodsoaked Confessional",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Balhash",
+     "npc": 2701250
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Balhash's Follower",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "blue-dragons-trap",
+   "name": "Blue Dragon's Trap",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Sentinel Nuraka",
+     "npc": 2700886
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Fafnium Guardian",
+     "npc": null
+    },
+    {
+     "name": "Fafnium Guardian Beast",
+     "npc": null
+    },
+    {
+     "name": "Fafnium Protector",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "corrupted-spiritmasters-residence",
+   "name": "Corrupted Spiritmaster's Residence",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Corrupted Deios",
+     "npc": 2700835
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Rooted Black Spirit",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "cursed-hideout",
+   "name": "Cursed Hideout",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Mad Sura",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "deep-underground-cave",
+   "name": "Deep Underground Cave",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Deep Underground Cave Mutant",
+     "npc": null
+    },
+    {
+     "name": "Deep Underground Cave Mass",
+     "npc": null
+    },
+    {
+     "name": "Deep Underground Cave Drana Mutant",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fafnite-storage-room",
+   "name": "Fafnite Storage Room",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Storage Room Drakan Sentry Warmage",
+     "npc": null
+    },
+    {
+     "name": "Storage Room Drakan Skirmisher",
+     "npc": null
+    },
+    {
+     "name": "Storage Room Fafnium",
+     "npc": null
+    },
+    {
+     "name": "Balaur Security Device",
+     "npc": null
+    },
+    {
+     "name": "Storage Room Drakan Scout",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fanatics-den",
+   "name": "Fanatics' Den",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Fanatics' Den Guard",
+     "npc": null
+    },
+    {
+     "name": "Fanatics' Den Zealot",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "filth-pit",
+   "name": "Filth Pit",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Filth Pit Sura Mage",
+     "npc": null
+    },
+    {
+     "name": "Filth Pit Sura",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "forest-library",
+   "name": "Forest Library",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Library Kerubar",
+     "npc": null
+    },
+    {
+     "name": "Library Kerubian",
+     "npc": null
+    },
+    {
+     "name": "Poison Sac",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fortunetellers-grave",
+   "name": "Fortuneteller's Grave",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Tainted Wraith",
+     "npc": null
+    },
+    {
+     "name": "Nornir Wraith",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "homishs-prison-compound",
+   "name": "Homish's Prison Compound",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Prison Compound Warden Homish",
+     "npc": 2701568
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Prison Compound Warden",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "howling-den",
+   "name": "Howling Den",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Bounty Hunter",
+     "npc": null
+    },
+    {
+     "name": "Howling Den Varg Warrior",
+     "npc": null
+    },
+    {
+     "name": "Howling Den Tayga",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "library-of-foresight",
+   "name": "Library of Foresight",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Library Kerubian Watcher",
+     "npc": null
+    },
+    {
+     "name": "Bomb",
+     "npc": null
+    },
+    {
+     "name": "Library Kerubar Searcher",
+     "npc": null
+    },
+    {
+     "name": "Library Kerubar Observer",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "looted-repository",
+   "name": "Looted Repository",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Captain Nagto",
+     "npc": 2700942
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Marauder Dratona",
+     "npc": null
+    },
+    {
+     "name": "Marauder Dratona Brute",
+     "npc": null
+    },
+    {
+     "name": "Marauder Dratona Handyman",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "marsh-library",
+   "name": "Marsh Library",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Library Laser",
+     "npc": null
+    },
+    {
+     "name": "Library Guard Kerubar",
+     "npc": null
+    },
+    {
+     "name": "Library Guard Kerubian",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "prison-of-oblivion",
+   "name": "Prison of Oblivion",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Reanimated Knight",
+     "npc": null
+    },
+    {
+     "name": "Reanimated Soldier",
+     "npc": null
+    },
+    {
+     "name": "Rotten Grave Rat",
+     "npc": null
+    },
+    {
+     "name": "Poison Sac",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "spirit-flower-cave",
+   "name": "Spirit Flower Cave",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Illegal Herbalist",
+     "npc": null
+    },
+    {
+     "name": "Herbalist Karnif",
+     "npc": null
+    },
+    {
+     "name": "Herbalist Fossa",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "victims-cave",
+   "name": "Victims' Cave",
+   "category": "Sealed Dungeon",
+   "level": 15,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Desperate Robere's Apparition",
+     "npc": 2701298
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Sacrificed Daeva",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "abandoned-memorial-room",
+   "name": "Abandoned Memorial Room",
+   "category": "Sealed Dungeon",
+   "level": 20,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Priestess Soirel",
+     "npc": 2700952
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Soulless Follower",
+     "npc": null
+    },
+    {
+     "name": "Soulless Novice Priest",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "closed-hideout",
+   "name": "Closed Hideout",
+   "category": "Sealed Dungeon",
+   "level": 20,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Hideout Karas Warrior",
+     "npc": null
+    },
+    {
+     "name": "Karas Priest",
+     "npc": null
+    },
+    {
+     "name": "Hideout Karas Ranger",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "collapsed-fortress-basement",
+   "name": "Collapsed Fortress Basement",
+   "category": "Sealed Dungeon",
+   "level": 20,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Basement Krall Healer",
+     "npc": null
+    },
+    {
+     "name": "Basement Krall Watcher",
+     "npc": null
+    },
+    {
+     "name": "Basement Krall Scout",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "destroyed-scriptorium",
+   "name": "Destroyed Scriptorium",
+   "category": "Sealed Dungeon",
+   "level": 20,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Drakan Investigator",
+     "npc": null
+    },
+    {
+     "name": "Drakan Detector",
+     "npc": null
+    },
+    {
+     "name": "Drakan Warrior",
+     "npc": null
+    },
+    {
+     "name": "Guide Turret",
+     "npc": null
+    },
+    {
+     "name": "Scriptorium Drakan Soldier",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "distorted-cave",
+   "name": "Distorted Cave",
+   "category": "Sealed Dungeon",
+   "level": 20,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Distorted Ru Priest",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fortress-grave",
+   "name": "Fortress Grave",
+   "category": "Sealed Dungeon",
+   "level": 20,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "fortress-jail",
+   "name": "Fortress Jail",
+   "category": "Sealed Dungeon",
+   "level": 20,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Krall Warden",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "hidden-ruins-altar",
+   "name": "Hidden Ruins Altar",
+   "category": "Sealed Dungeon",
+   "level": 20,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Vanguard Captain Vamana",
+     "npc": 2701055
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Darkened Past Wraith",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "karats-nest",
+   "name": "Karat's Nest",
+   "category": "Sealed Dungeon",
+   "level": 20,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Queen Karat",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Nest Klaw Worker",
+     "npc": null
+    },
+    {
+     "name": "Nest Klaw Scout",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "lamnah-base",
+   "name": "Lamnah Base",
+   "category": "Sealed Dungeon",
+   "level": 20,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Scouts Captain Lamnah",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Lamnah Superior Combatant",
+     "npc": null
+    },
+    {
+     "name": "Lamnah Superior Ranger",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "predators-lair",
+   "name": "Predator's Lair",
+   "category": "Sealed Dungeon",
+   "level": 20,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Varg Poacher",
+     "npc": null
+    },
+    {
+     "name": "Varg Tayga",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "unstable-cave",
+   "name": "Unstable Cave",
+   "category": "Sealed Dungeon",
+   "level": 20,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Daine of Tears",
+     "npc": 2701310
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Small Water Spirit",
+     "npc": null
+    },
+    {
+     "name": "Wandering Water Spirit",
+     "npc": null
+    },
+    {
+     "name": "Rockfall",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "worshipers-underground-cave",
+   "name": "Worshiper's Underground Cave",
+   "category": "Sealed Dungeon",
+   "level": 20,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Fanatic Enforcer",
+     "npc": null
+    },
+    {
+     "name": "Zikel Worshipper",
+     "npc": null
+    },
+    {
+     "name": "Zikel Follower",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "abandoned-odylium-cave",
+   "name": "Abandoned Odylium Cave",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "aullaeu-oratory",
+   "name": "Aullaeu Oratory",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Fanatic Ullimus",
+     "npc": 2701202
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Oratory Aullaeu Fanatic",
+     "npc": null
+    },
+    {
+     "name": "Oratory Aullaeu Elder",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "cave-storage",
+   "name": "Cave Storage",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Pino Storage Keeper",
+     "npc": null
+    },
+    {
+     "name": "Pino Laborer",
+     "npc": null
+    },
+    {
+     "name": "Storage Sentry",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "dark-root-cave",
+   "name": "Dark Root Cave",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Root Cave Contaminated Agrint",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "deadly-poison-den",
+   "name": "Deadly Poison Den",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Venomous Insect Sram",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Deadly Poison Grass",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "drana-depository",
+   "name": "Drana Depository",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Depository Manager Arya",
+     "npc": 2701551
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Depository Scout",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fissure-cave",
+   "name": "Fissure Cave",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "herb-cave",
+   "name": "Herb Cave",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Enraged Kernon",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Herb Eating Tog",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "hidden-valley",
+   "name": "Hidden Valley",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Karas Balaur Worshipper",
+     "npc": null
+    },
+    {
+     "name": "Hidden Karas Wraith",
+     "npc": null
+    },
+    {
+     "name": "Hidden Karas Warrior",
+     "npc": null
+    },
+    {
+     "name": "Hidden Karas Ranger",
+     "npc": null
+    },
+    {
+     "name": "Hidden Decaying Karas",
+     "npc": null
+    },
+    {
+     "name": "Bomb",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "high-priests-ruins",
+   "name": "High Priest's Ruins",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Baby Cave Spider",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "konutins-cave",
+   "name": "Konutin's Cave",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Konutin",
+     "npc": null
+    },
+    {
+     "name": "Konutin Worker",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "prison-of-exiles",
+   "name": "Prison of Exiles",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Aullaeu Warmage",
+     "npc": null
+    },
+    {
+     "name": "Prison of Exiles Guard",
+     "npc": null
+    },
+    {
+     "name": "Exiled Aullaeu",
+     "npc": null
+    },
+    {
+     "name": "Exiled Aullaeu Priest",
+     "npc": null
+    },
+    {
+     "name": "Aullaeu Watcher",
+     "npc": null
+    },
+    {
+     "name": "Aullaeu Patrol",
+     "npc": null
+    },
+    {
+     "name": "Patrolling Pino",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "red-dragon-altar",
+   "name": "Red Dragon Altar",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Aullaeu Heretic Shaman",
+     "npc": null
+    },
+    {
+     "name": "Aullaeu Heretic Wraith",
+     "npc": null
+    },
+    {
+     "name": "Aullaeu Heretic Patrol",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "skurv-laborer-den",
+   "name": "Skurv Laborer Den",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Labor Camp Mumu Overseer",
+     "npc": null
+    },
+    {
+     "name": "Mumu Senior Overseer",
+     "npc": null
+    },
+    {
+     "name": "Labor Camp Mumu Warrior",
+     "npc": null
+    },
+    {
+     "name": "Labor Camp Mumu Patrol",
+     "npc": null
+    },
+    {
+     "name": "Labor Camp Mumu Worker",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "solitary-rock-tomb",
+   "name": "Solitary Rock Tomb",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Pilgrim Santian",
+     "npc": 2700963
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Sura Wraith",
+     "npc": null
+    },
+    {
+     "name": "Sura Pilgrim",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "twisted-pit",
+   "name": "Twisted Pit",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Twisted Ranger Soul",
+     "npc": null
+    },
+    {
+     "name": "Twisted Warrior Soul",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "wild-biruta-habitat",
+   "name": "Wild Biruta Habitat",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Wild Biruta Herbalist",
+     "npc": null
+    },
+    {
+     "name": "Wild Biruta Wanderer",
+     "npc": null
+    },
+    {
+     "name": "Wild Biruta Fighter",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "wild-kuru-habitat",
+   "name": "Wild Kuru Habitat",
+   "category": "Sealed Dungeon",
+   "level": 25,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Satiated Kuru Worker",
+     "npc": null
+    },
+    {
+     "name": "Satiated Kuru Tinkerer",
+     "npc": null
+    },
+    {
+     "name": "Satiated Kuru Errand Runner",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "all-curing-cave",
+   "name": "All-Curing Cave",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Rare Fungpus",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Herb-Covered Fungen",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "altar-of-hope",
+   "name": "Altar of Hope",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Forgotten Lenara",
+     "npc": 2701096
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Sacrificed Wraith",
+     "npc": null
+    },
+    {
+     "name": "Rockfall",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "balaur-scouts-outpost",
+   "name": "Balaur Scouts Outpost",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Outpost Ranger",
+     "npc": null
+    },
+    {
+     "name": "Outpost Watcher",
+     "npc": null
+    },
+    {
+     "name": "Outpost Superior Scout",
+     "npc": null
+    },
+    {
+     "name": "Outpost Superior Ranger",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "broken-hall-of-knowledge",
+   "name": "Broken Hall of Knowledge",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Trapped Revenant",
+     "npc": null
+    },
+    {
+     "name": "Wandering Revenant",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "canyon-library",
+   "name": "Canyon Library",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Hippatia's Kerubar",
+     "npc": null
+    },
+    {
+     "name": "Hippatia's Kerubian",
+     "npc": null
+    },
+    {
+     "name": "Guide Turret",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "deep-and-dark-pit",
+   "name": "Deep and Dark Pit",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Seyron of the Lake",
+     "npc": 2700988
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Pit Water Spirit",
+     "npc": null
+    },
+    {
+     "name": "Pit Forest Spirit",
+     "npc": null
+    },
+    {
+     "name": "Pit Water Mist Spirit",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "dratona-assembly-area",
+   "name": "Dratona Assembly Area",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Dratona Trainer",
+     "npc": null
+    },
+    {
+     "name": "Assembly Area Dratona",
+     "npc": null
+    },
+    {
+     "name": "Assembly Area Enhanced Dratona",
+     "npc": null
+    },
+    {
+     "name": "Assembly Area Dratona Tinkerer",
+     "npc": null
+    },
+    {
+     "name": "Dratona Egg Warden",
+     "npc": null
+    },
+    {
+     "name": "Assembly Area Dratona Egg",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "experimental-prison-compound",
+   "name": "Experimental Prison Compound",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Elite Drana Mutant",
+     "npc": null
+    },
+    {
+     "name": "Giant Drana Mutant",
+     "npc": null
+    },
+    {
+     "name": "Mutated Drana Test Subject",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "final-haven",
+   "name": "Final Haven",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Wandering Dead",
+     "npc": null
+    },
+    {
+     "name": "Sacrificed Wraith",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "guardians-armory",
+   "name": "Guardian's Armory",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Quartermaster Tyius",
+     "npc": 2701118
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Armory Revenant Knight",
+     "npc": null
+    },
+    {
+     "name": "Armory Revenant Priest",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "insectoid-tunnel",
+   "name": "Insectoid Tunnel",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Tunnel Swarm",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "kidnappers-hold",
+   "name": "Kidnapper's Hold",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Reaver Lisansa",
+     "npc": 2701142
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Raid Squad Draconute Scout",
+     "npc": null
+    },
+    {
+     "name": "Raid Squad Draconute Watcher",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "kius-residence",
+   "name": "Kius' Residence",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Wanted Criminal Kius",
+     "npc": 2701072
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Kius Cutter",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "klaw-den",
+   "name": "Klaw Den",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Klaw Den Watcher",
+     "npc": null
+    },
+    {
+     "name": "Klaw Den Scout",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "krakas-altar",
+   "name": "Kraka's Altar",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Kraka Ritualist",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Kraka Follower",
+     "npc": null
+    },
+    {
+     "name": "Kraka Priest",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "library-of-patience",
+   "name": "Library of Patience",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Patient Kerubian",
+     "npc": null
+    },
+    {
+     "name": "Patient Kerubar",
+     "npc": null
+    },
+    {
+     "name": "Spinning Turret",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "library-of-wisdom",
+   "name": "Library of Wisdom",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Library of Wisdom Kerubiel",
+     "npc": null
+    },
+    {
+     "name": "Library Kerubar Scout",
+     "npc": null
+    },
+    {
+     "name": "Poison Sac",
+     "npc": null
+    },
+    {
+     "name": "Library Kerubar Sentry",
+     "npc": null
+    },
+    {
+     "name": "Library Kerubian Scout",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "looted-pilgrims-rest",
+   "name": "Looted Pilgrim's Rest",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Laser",
+     "npc": null
+    },
+    {
+     "name": "Dwelling Fire Spirit",
+     "npc": null
+    },
+    {
+     "name": "Protecting Fire Spirit",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "renegade-base",
+   "name": "Renegade Base",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Suspicious Daeva",
+     "npc": null
+    },
+    {
+     "name": "Renegade Daeva Patrol",
+     "npc": null
+    },
+    {
+     "name": "Renegade Daeva Assassin",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "rift-cave",
+   "name": "Rift Cave",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "rift-fissure",
+   "name": "Rift Fissure",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Rift Knight's Soul",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "scribes-room",
+   "name": "Scribe's Room",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Library Watcher Guardite",
+     "npc": null
+    },
+    {
+     "name": "Library Guard Guardite",
+     "npc": null
+    },
+    {
+     "name": "Ancient Document Protection Device",
+     "npc": null
+    },
+    {
+     "name": "Mortal",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "targoths-cave",
+   "name": "Targoth's Cave",
+   "category": "Sealed Dungeon",
+   "level": 30,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Corpse-Eating Targoth",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Decaying Slime",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "balaur-scouts-campsite",
+   "name": "Balaur Scouts Campsite",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Scouts Captain Nahram",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Balaur Scout Combatant",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "cave-of-the-defeated",
+   "name": "Cave of the Defeated",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Cave Grave Rat",
+     "npc": null
+    },
+    {
+     "name": "Corpse Spider",
+     "npc": null
+    },
+    {
+     "name": "Cave Cadaver Insectoid",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "destruction-archons-armory",
+   "name": "Destruction Archons Armory",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Armory Archon Gladiator",
+     "npc": null
+    },
+    {
+     "name": "Armory Archon Templar",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "dratona-outpost",
+   "name": "Dratona Outpost",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Mutant Dratona",
+     "npc": 2701184
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Dratona Outpost Watcher",
+     "npc": null
+    },
+    {
+     "name": "Dratona Guard",
+     "npc": null
+    },
+    {
+     "name": "Dratona Outpost Tinkerer",
+     "npc": null
+    },
+    {
+     "name": "Dratona Outpost Brute",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "empty-cave",
+   "name": "Empty Cave",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Cave Drana Mole",
+     "npc": null
+    },
+    {
+     "name": "Cave Drana Mutant",
+     "npc": null
+    },
+    {
+     "name": "Cave Krao Test Subject",
+     "npc": null
+    },
+    {
+     "name": "Cave Magic Test Subject",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fungie-habitat",
+   "name": "Fungie Habitat",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Cave Fungen",
+     "npc": null
+    },
+    {
+     "name": "Cave Fungie",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "laborers-training-ground",
+   "name": "Laborers Training Ground",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Caretaker Sinandash",
+     "npc": 2701521
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Tamed Dracuni",
+     "npc": null
+    },
+    {
+     "name": "Tamed Kobold",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "lonely-rock-chasm",
+   "name": "Lonely Rock Chasm",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Informant Zibro",
+     "npc": 2701480
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Wandering Phantom",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "odylium-marauder-den",
+   "name": "Odylium Marauder Den",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Odylium Marauder Warrior",
+     "npc": null
+    },
+    {
+     "name": "Odylium Marauder Mage",
+     "npc": null
+    },
+    {
+     "name": "Odylium Marauder Sentry",
+     "npc": null
+    },
+    {
+     "name": "Laser",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "pirates-treasure-storage",
+   "name": "Pirate's Treasure Storage",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Custodian Chakkerman",
+     "npc": 2701485
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Gas",
+     "npc": null
+    },
+    {
+     "name": "Treasure Storage Guard",
+     "npc": null
+    },
+    {
+     "name": "Treasure Storage Sentry",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "place-of-rest",
+   "name": "Place of Rest",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Hungry Grave Rat",
+     "npc": null
+    },
+    {
+     "name": "Wandering Graveyard Dead",
+     "npc": null
+    },
+    {
+     "name": "Enraged Graveyard Dead",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "rock-cave",
+   "name": "Rock Cave",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Rock Cave Kalgolem",
+     "npc": null
+    },
+    {
+     "name": "Rock Cave Blue Kalgolem",
+     "npc": null
+    },
+    {
+     "name": "Rockfall",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "scale-altar",
+   "name": "Scale Altar",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Warrior Wasti",
+     "npc": 2701454
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Altar Spider",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "shulak-cave",
+   "name": "Shulak Cave",
+   "category": "Sealed Dungeon",
+   "level": 35,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Mad Lazekhi",
+     "npc": 2701578
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Addicted Shulak",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "ascetics-cave",
+   "name": "Ascetic's Cave",
+   "category": "Sealed Dungeon",
+   "level": 40,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Reckless Jonas",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Deserter Blades Warrior",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "dehinons-hideout",
+   "name": "Dehinon's Hideout",
+   "category": "Sealed Dungeon",
+   "level": 40,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Mutated Dehinon",
+     "npc": 2701130
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Dispatched Balaur Soldier",
+     "npc": null
+    },
+    {
+     "name": "Hideout Warrior",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "den-of-exiles",
+   "name": "Den of Exiles",
+   "category": "Sealed Dungeon",
+   "level": 40,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Exiled Mau Brawler",
+     "npc": null
+    },
+    {
+     "name": "Exiled Mau Sentry",
+     "npc": null
+    },
+    {
+     "name": "Exiled Mau Healer",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "grave-of-the-wrathful-dead",
+   "name": "Grave of the Wrathful Dead",
+   "category": "Sealed Dungeon",
+   "level": 40,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Rampaging Neparan's Soul",
+     "npc": 2701148
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Rockfall",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "illusionary-ruins",
+   "name": "Illusionary Ruins",
+   "category": "Sealed Dungeon",
+   "level": 40,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Guardian Spirit Drant",
+     "npc": 2700949
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Weakened Guardian Spirit",
+     "npc": null
+    },
+    {
+     "name": "Guardian Spirit",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "krall-barracks",
+   "name": "Krall Barracks",
+   "category": "Sealed Dungeon",
+   "level": 40,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Krall Soldier",
+     "npc": null
+    },
+    {
+     "name": "Krall Healer",
+     "npc": null
+    },
+    {
+     "name": "Krall Karnif",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "kumbahums-cave",
+   "name": "Kumbahum's Cave",
+   "category": "Sealed Dungeon",
+   "level": 40,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Shaman Kumbahum",
+     "npc": 2701280
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Kumbahum's Brawler",
+     "npc": null
+    },
+    {
+     "name": "Kumbahum's Sentry",
+     "npc": null
+    },
+    {
+     "name": "Kumbahum Balaur Worship Totem",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "lagta-fafnite-storage",
+   "name": "Lagta Fafnite Storage",
+   "category": "Sealed Dungeon",
+   "level": 40,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [
+    {
+     "name": "Supervisor Sinah",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Storage Guard",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "plantation-storage",
+   "name": "Plantation Storage",
+   "category": "Sealed Dungeon",
+   "level": 40,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Plantation Storage Supply Captain",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Plantation Storage Dog",
+     "npc": null
+    },
+    {
+     "name": "Plantation Storage Keeper",
+     "npc": null
+    },
+    {
+     "name": "Gas",
+     "npc": null
+    },
+    {
+     "name": "Plantation Guard Warmage",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "spider-cave",
+   "name": "Spider Cave",
+   "category": "Sealed Dungeon",
+   "level": 40,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Odyle Spider",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "tayga-breeding-ground",
+   "name": "Tayga Breeding Ground",
+   "category": "Sealed Dungeon",
+   "level": 40,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Mau Brawler",
+     "npc": null
+    },
+    {
+     "name": "Mau Sentry Soldier",
+     "npc": null
+    },
+    {
+     "name": "Breeding Ground Tamed Tayga",
+     "npc": null
+    },
+    {
+     "name": "Mau Healing Shaman",
+     "npc": null
+    },
+    {
+     "name": "Ferocious Tayga",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "warriors-rest",
+   "name": "Warriors' Rest",
+   "category": "Sealed Dungeon",
+   "level": 40,
+   "itemLevel": null,
+   "party": null,
+   "region": "Altgard",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Rest Archon Gladiator",
+     "npc": null
+    },
+    {
+     "name": "Rest Archon Templar",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "abandoned-kromede-base",
+   "name": "Abandoned Kromede Base",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Servant of Fafnir",
+     "npc": null
+    },
+    {
+     "name": "Unstable Veil Jewel",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "abandoned-life-hideout",
+   "name": "Abandoned Life Hideout",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "barrier-tower-fortress-vault",
+   "name": "Barrier Tower Fortress Vault",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Fortress Vault Watcher",
+     "npc": null
+    },
+    {
+     "name": "Fortress Vault Wraith",
+     "npc": null
+    },
+    {
+     "name": "Fortress Vault Priest",
+     "npc": null
+    },
+    {
+     "name": "Bat Wraith",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "blades-base",
+   "name": "Blades Base",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Hiding Blades Warrior",
+     "npc": null
+    },
+    {
+     "name": "Hiding Blades Supporter",
+     "npc": null
+    },
+    {
+     "name": "Hiding Blades Bomber",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "blades-secret-repository",
+   "name": "Blades Secret Repository",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Blades Keykeeper",
+     "npc": null
+    },
+    {
+     "name": "Blades Base Sentry",
+     "npc": null
+    },
+    {
+     "name": "Blades Base Assault Troopers",
+     "npc": null
+    },
+    {
+     "name": "Blades Base Shaman",
+     "npc": null
+    },
+    {
+     "name": "Blades Base Assault Troopers Captain",
+     "npc": null
+    },
+    {
+     "name": "Secret Repository Sentry",
+     "npc": null
+    },
+    {
+     "name": "Secret Repository Warrior",
+     "npc": null
+    },
+    {
+     "name": "Secret Repository Warmage",
+     "npc": null
+    },
+    {
+     "name": "Secret Repository Bomber",
+     "npc": null
+    },
+    {
+     "name": "Marauder Defense Cannon",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "camouflaged-fate-archon-base",
+   "name": "Camouflaged Fate Archon Base",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Fate Archon Watcher",
+     "npc": null
+    },
+    {
+     "name": "Fate Archon Cleric",
+     "npc": null
+    },
+    {
+     "name": "Fate Archon Chief Instructor",
+     "npc": null
+    },
+    {
+     "name": "Sentry Totem",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "cave-of-the-exiled-ones",
+   "name": "Cave of the Exiled Ones",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [
+    {
+     "name": "Leader Korin",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Ferocious Icecap Tuka",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "cave-of-the-stranded",
+   "name": "Cave of the Stranded",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [
+    {
+     "name": "Lamiphedon",
+     "npc": 2702574
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Lost Daeva Knight's Soul",
+     "npc": null
+    },
+    {
+     "name": "Lost Daeva Ranger's Soul",
+     "npc": null
+    },
+    {
+     "name": "Lost Wraith",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "defunct-creion-laboratory",
+   "name": "Defunct Creion Laboratory",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [
+    {
+     "name": "Mutated Malgerre",
+     "npc": 2702564
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Mutated Test Subject",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "drok-the-outlaws-den",
+   "name": "Drok the Outlaw's Den",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [
+    {
+     "name": "Eiron Outlaw Drok",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Eiron Thieves Ranger",
+     "npc": null
+    },
+    {
+     "name": "Eiron Thieves Warrior",
+     "npc": null
+    },
+    {
+     "name": "Eiron Thieves Thug",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fallen-haven",
+   "name": "Fallen Haven",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [
+    {
+     "name": "Revenant Tifus",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Pool",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fate-temple",
+   "name": "Fate Temple",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Executed Archon Candidate",
+     "npc": null
+    },
+    {
+     "name": "Executed Archon Instructor",
+     "npc": null
+    },
+    {
+     "name": "Executed Archon Wraith",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "filthy-cave",
+   "name": "Filthy Cave",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [
+    {
+     "name": "Filthy Grollack",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Filthy Floofy",
+     "npc": null
+    },
+    {
+     "name": "Poison Field",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fire-cave",
+   "name": "Fire Cave",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Wandering Fire Spirit",
+     "npc": null
+    },
+    {
+     "name": "Floating Stone",
+     "npc": null
+    },
+    {
+     "name": "Hiding Small Fire Spirit",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "forgotten-fire-altar",
+   "name": "Forgotten Fire Altar",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Forgotten Guardian Statue",
+     "npc": null
+    },
+    {
+     "name": "Forgotten Zaigolem",
+     "npc": null
+    },
+    {
+     "name": "Fire Spider",
+     "npc": null
+    },
+    {
+     "name": "Rotan",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "forgotten-spring",
+   "name": "Forgotten Spring",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Giant Contamination Clot",
+     "npc": null
+    },
+    {
+     "name": "Filthy Slime",
+     "npc": null
+    },
+    {
+     "name": "Contaminated Slime",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "frozen-land-of-fate",
+   "name": "Frozen Land of Fate",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Fate Archon Wraith",
+     "npc": null
+    },
+    {
+     "name": "Fate Archon Revenant",
+     "npc": null
+    },
+    {
+     "name": "Consumed Fate Archon",
+     "npc": null
+    },
+    {
+     "name": "Mutated Fate Archon",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fugitive-hideout",
+   "name": "Fugitive Hideout",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Deserter Fighter",
+     "npc": null
+    },
+    {
+     "name": "Tamed Floofy",
+     "npc": null
+    },
+    {
+     "name": "Deserter Thief",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "gravarax-research-center",
+   "name": "Gravarax Research Center",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Cultivated Gravarax",
+     "npc": null
+    },
+    {
+     "name": "Laser",
+     "npc": null
+    },
+    {
+     "name": "Lepharist Pugilist",
+     "npc": null
+    },
+    {
+     "name": "Lepharist Warrior",
+     "npc": null
+    },
+    {
+     "name": "Lepharist Mage",
+     "npc": null
+    },
+    {
+     "name": "Lepharist Researcher",
+     "npc": null
+    },
+    {
+     "name": "Gravi",
+     "npc": null
+    },
+    {
+     "name": "Training Scarecrow",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "guardian-statues-cave",
+   "name": "Guardian Statues' Cave",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Flame",
+     "npc": null
+    },
+    {
+     "name": "Noble Guardian Statue",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "hidden-lepharist-research-center",
+   "name": "Hidden Lepharist Research Center",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Laboratory Gatekeeper",
+     "npc": null
+    },
+    {
+     "name": "Drana Energy Repository",
+     "npc": null
+    },
+    {
+     "name": "Artificial God Researcher",
+     "npc": null
+    },
+    {
+     "name": "Drana Energy Injector",
+     "npc": null
+    },
+    {
+     "name": "Lepharist Test Subject",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "iagoshs-secret-storage",
+   "name": "Iagosh's Secret Storage",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Storage Elite Watcher",
+     "npc": null
+    },
+    {
+     "name": "Storage Guard",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "indnath-secret-base",
+   "name": "Indnath Secret Base",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Secret Base Scout",
+     "npc": null
+    },
+    {
+     "name": "Secret Base Skirmisher",
+     "npc": null
+    },
+    {
+     "name": "Secret Base Beast",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "iralcig-naga-cave",
+   "name": "Iralcig Naga Cave",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Cave Naga Guardian Warrior",
+     "npc": null
+    },
+    {
+     "name": "Cave Naga Priest",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "ishtar-logistics-base",
+   "name": "Ishtar Logistics Base",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Bomb Technician",
+     "npc": null
+    },
+    {
+     "name": "Mobile Bomb",
+     "npc": null
+    },
+    {
+     "name": "Balaur Supply Warden",
+     "npc": null
+    },
+    {
+     "name": "Balaur Scout",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "kurpak-special-operations-unit-base",
+   "name": "Kurpak Special Operations Unit Base",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Kurpak Special Operations Unit Assault Trooper",
+     "npc": null
+    },
+    {
+     "name": "Kurpak Special Operations Unit Striker",
+     "npc": null
+    },
+    {
+     "name": "Kurpak Special Operations Unit Ranger",
+     "npc": null
+    },
+    {
+     "name": "Kurpak Special Operations Unit Warrior",
+     "npc": null
+    },
+    {
+     "name": "Kurpak Special Operations Unit Healer",
+     "npc": null
+    },
+    {
+     "name": "Poison Sac",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "land-of-raging-flame",
+   "name": "Land of Raging Flame",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [
+    {
+     "name": "Enraged Avelcatus",
+     "npc": 2702133
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Lava Glob",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "lepharist-special-operations-research-center",
+   "name": "Lepharist Special Operations Research Center",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Lepharist Warrior",
+     "npc": null
+    },
+    {
+     "name": "Lepharist Pugilist",
+     "npc": null
+    },
+    {
+     "name": "Lepharist Mage",
+     "npc": null
+    },
+    {
+     "name": "Lepharist Researcher",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "life-awakening-site",
+   "name": "Life Awakening Site",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Draconute Warrior",
+     "npc": null
+    },
+    {
+     "name": "Draconute Superior Combatant",
+     "npc": null
+    },
+    {
+     "name": "Draconute Tinkerer",
+     "npc": null
+    },
+    {
+     "name": "Draconute Ranger",
+     "npc": null
+    },
+    {
+     "name": "Draconute Superior Ranger",
+     "npc": null
+    },
+    {
+     "name": "Barrierstone",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "life-daeva-library",
+   "name": "Life Daeva Library",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [
+    {
+     "name": "Librarian Messa",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Life Daeva Patrol Revenant",
+     "npc": null
+    },
+    {
+     "name": "Life Daeva Assassin Revenant",
+     "npc": null
+    },
+    {
+     "name": "Life Daeva Ranger Revenant",
+     "npc": null
+    },
+    {
+     "name": "Life Daeva Knight Revenant",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "manduri-habitat",
+   "name": "Manduri Habitat",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Ferocious Manduri",
+     "npc": null
+    },
+    {
+     "name": "Vicious Manduri",
+     "npc": null
+    },
+    {
+     "name": "Rampaging Heart",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "mutated-drana-plantation",
+   "name": "Mutated Drana Plantation",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Drakan Watcher",
+     "npc": null
+    },
+    {
+     "name": "Drakan Guard",
+     "npc": null
+    },
+    {
+     "name": "Drakan Magic Weaver",
+     "npc": null
+    },
+    {
+     "name": "Drakan Sentinel",
+     "npc": null
+    },
+    {
+     "name": "Drakan Overseer",
+     "npc": null
+    },
+    {
+     "name": "Drakan Armed Beast",
+     "npc": null
+    },
+    {
+     "name": "Magic Sphere",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "patamor-marauder-base",
+   "name": "Patamor Marauder Base",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Marauder Defense Cannon",
+     "npc": null
+    },
+    {
+     "name": "Marauder Warrior",
+     "npc": null
+    },
+    {
+     "name": "Marauder Warmage",
+     "npc": null
+    },
+    {
+     "name": "Marauder Guard",
+     "npc": null
+    },
+    {
+     "name": "Marauder Bomber",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "patamor-underwater-cave",
+   "name": "Patamor Underwater Cave",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Gas",
+     "npc": null
+    },
+    {
+     "name": "Marauder Boss",
+     "npc": null
+    },
+    {
+     "name": "Underground Cave Ghula",
+     "npc": null
+    },
+    {
+     "name": "Marauder Seeker",
+     "npc": null
+    },
+    {
+     "name": "Marauder Warrior",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "predators-nest",
+   "name": "Predator's Nest",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [
+    {
+     "name": "Giant Karnif Istan",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Nest Debry",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "pure-spring",
+   "name": "Pure Spring",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [
+    {
+     "name": "Steaming Arbellune",
+     "npc": 2702076
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Boiling Water Spirit",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "ratcatchers-base",
+   "name": "Ratcatchers Base",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Ratcatchers Captor",
+     "npc": null
+    },
+    {
+     "name": "Ratcatchers Herder",
+     "npc": null
+    },
+    {
+     "name": "Ratcatchers Hunter",
+     "npc": null
+    },
+    {
+     "name": "Tamed Zaif",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "ruins-of-the-ancient-city-of-roah",
+   "name": "Ruins of the Ancient City of Roah",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [
+    {
+     "name": "Idris",
+     "npc": 2700845
+    },
+    {
+     "name": "Power-Possessed Kianah",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Obsessive Lithla",
+     "npc": null
+    },
+    {
+     "name": "Bomb Type Gimmick (Specimen)",
+     "npc": null
+    },
+    {
+     "name": "Sorcery Guardian",
+     "npc": null
+    },
+    {
+     "name": "Decaying Ancient Priest",
+     "npc": null
+    },
+    {
+     "name": "Decaying Ancient Knight",
+     "npc": null
+    },
+    {
+     "name": "Ruins Bat",
+     "npc": null
+    },
+    {
+     "name": "Mad Knight's Soul",
+     "npc": null
+    },
+    {
+     "name": "Cursed Knight's Soul",
+     "npc": null
+    },
+    {
+     "name": "Mad Apostle of Ru",
+     "npc": null
+    },
+    {
+     "name": "Wandering Ranger's Soul",
+     "npc": null
+    },
+    {
+     "name": "Wandering Warrior's Soul",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "sunken-ancient-legacy",
+   "name": "Sunken Ancient Legacy",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Spring Marauder",
+     "npc": null
+    },
+    {
+     "name": "Spring Intruder",
+     "npc": null
+    },
+    {
+     "name": "Spring Sentry",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "sunken-temple",
+   "name": "Sunken Temple",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Eltnen",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Finned Monster",
+     "npc": null
+    },
+    {
+     "name": "Young Finned Monster",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "verdandis-oratory",
+   "name": "Verdandi's Oratory",
+   "category": "Sealed Dungeon",
+   "level": 45,
+   "itemLevel": null,
+   "party": null,
+   "region": "Morheim",
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Balaur Aerial Bomb",
+     "npc": null
+    },
+    {
+     "name": "Drakan Skirmisher",
+     "npc": null
+    },
+    {
+     "name": "Drakan Armed Soldier",
+     "npc": null
+    },
+    {
+     "name": "Drakan Watcher",
+     "npc": null
+    },
+    {
+     "name": "Drakan Ranger",
+     "npc": null
+    },
+    {
+     "name": "Drakan Common Soldier",
+     "npc": null
+    },
+    {
+     "name": "Drakan Scout",
+     "npc": null
+    },
+    {
+     "name": "Drakan Magic Supporter",
+     "npc": null
+    },
+    {
+     "name": "Drakan Warhound",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "beritra-brigade-fortress",
+   "name": "Beritra Brigade Fortress",
+   "category": "Arena",
+   "level": null,
+   "itemLevel": 1000,
+   "party": 4,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "High Commander Nahid",
+     "npc": 2370241
+    },
+    {
+     "name": "Division Commander Radbima",
+     "npc": 2370242
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Beritra Air Raiders Captain",
+     "npc": 2370243
+    },
+    {
+     "name": "Beritra Strike Force Captain",
+     "npc": 2370244
+    },
+    {
+     "name": "Beritra Flight Scout",
+     "npc": null
+    },
+    {
+     "name": "Beritra Strike Force Officer",
+     "npc": null
+    },
+    {
+     "name": "Beritra Strike Force Scout",
+     "npc": null
+    },
+    {
+     "name": "Beritra Strike Force Armed Soldier",
+     "npc": null
+    },
+    {
+     "name": "Beritra Strike Force Engineer Officer",
+     "npc": null
+    },
+    {
+     "name": "Beritra Strike Force Member",
+     "npc": null
+    },
+    {
+     "name": "Beritra Strike Force Elite Officer",
+     "npc": null
+    },
+    {
+     "name": "Dredgion Large Totem",
+     "npc": null
+    },
+    {
+     "name": "Dredgion Fafnium Converter",
+     "npc": null
+    },
+    {
+     "name": "Magic Device",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fafnite-forge",
+   "name": "Fafnite Forge",
+   "category": "Arena",
+   "level": null,
+   "itemLevel": 1000,
+   "party": 4,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Quartermaster General Advir",
+     "npc": 2370862
+    },
+    {
+     "name": "Resource Warden Kabira",
+     "npc": 2370863
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Resource Base Shock Troopers Captain",
+     "npc": 2370864
+    },
+    {
+     "name": "Resource Base Scouts Captain",
+     "npc": 2370865
+    },
+    {
+     "name": "Soulless Shulak Cart Worker",
+     "npc": null
+    },
+    {
+     "name": "Forge Alarm Device",
+     "npc": null
+    },
+    {
+     "name": "Forge Security Turret",
+     "npc": null
+    },
+    {
+     "name": "Enhanced Security Turret",
+     "npc": null
+    },
+    {
+     "name": "Draconute Slave Tracker",
+     "npc": null
+    },
+    {
+     "name": "Forge Aerial Bomb",
+     "npc": null
+    },
+    {
+     "name": "Draconute Forge Manager",
+     "npc": null
+    },
+    {
+     "name": "Draconute Soul Shaman",
+     "npc": null
+    },
+    {
+     "name": "Draconute Armed Guard",
+     "npc": null
+    },
+    {
+     "name": "Draconute Smith",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "fire-temple-arena",
+   "name": "Fire Temple Arena",
+   "category": "Arena",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": "Verteron",
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "impetusium-arena",
+   "name": "Impetusium Arena",
+   "category": "Arena",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": "—",
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "odyle-shard-cradle",
+   "name": "Odyle Shard Cradle",
+   "category": "Arena",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": "—",
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "orcuss-grave",
+   "name": "Orcus's Grave",
+   "category": "Arena",
+   "level": null,
+   "itemLevel": 1000,
+   "party": 4,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "Quartermaster General Advir",
+     "npc": 2370770
+    },
+    {
+     "name": "Resource Warden Kabira",
+     "npc": 2370771
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Resource Base Shock Troopers Captain",
+     "npc": 2370772
+    },
+    {
+     "name": "Resource Base Scouts Captain",
+     "npc": 2370773
+    },
+    {
+     "name": "Beritra Flight Scout",
+     "npc": null
+    },
+    {
+     "name": "Contaminated Zone Skyray",
+     "npc": null
+    },
+    {
+     "name": "Dratona Worker",
+     "npc": null
+    },
+    {
+     "name": "Dratona Warden",
+     "npc": null
+    },
+    {
+     "name": "Mutated Dratona Superior Warrior",
+     "npc": null
+    },
+    {
+     "name": "Dredgion Large Totem",
+     "npc": null
+    },
+    {
+     "name": "Modified Ancient Totem",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "sandstorm-temple",
+   "name": "Sandstorm Temple",
+   "category": "Arena",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": "—",
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "stormslumber-snowfield",
+   "name": "Stormslumber Snowfield",
+   "category": "Arena",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": "—",
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "subjugation-closed",
+   "name": "Subjugation Closed",
+   "category": "Arena",
+   "level": null,
+   "itemLevel": 1000,
+   "party": 4,
+   "region": "—",
+   "bosses": [
+    {
+     "name": "High Commander Nahid",
+     "npc": 2370072
+    },
+    {
+     "name": "Division Commander Radbima",
+     "npc": 2370073
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Beritra Air Raiders Captain",
+     "npc": 2370074
+    },
+    {
+     "name": "Beritra Strike Force Captain",
+     "npc": 2370075
+    },
+    {
+     "name": "Beritra Flight Scout",
+     "npc": null
+    },
+    {
+     "name": "Draconute Lesser Ranger",
+     "npc": null
+    },
+    {
+     "name": "Draconute Brave Warrior",
+     "npc": null
+    },
+    {
+     "name": "Draconute Lesser Warrior",
+     "npc": null
+    },
+    {
+     "name": "Dratona Worker",
+     "npc": null
+    },
+    {
+     "name": "Dredgion Large Totem",
+     "npc": null
+    },
+    {
+     "name": "Dredgion Fafnium Converter",
+     "npc": null
+    },
+    {
+     "name": "Magic Device",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "altgard-legion-airship",
+   "name": "Altgard Legion Airship",
+   "category": "Legion Content",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Training Scarecrow",
+     "npc": null
+    },
+    {
+     "name": "Melee Training Scarecrow",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "eltnen-legion-airship",
+   "name": "Eltnen Legion Airship",
+   "category": "Legion Content",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Training Scarecrow",
+     "npc": null
+    },
+    {
+     "name": "Melee Training Scarecrow",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "morheim-legion-airship",
+   "name": "Morheim Legion Airship",
+   "category": "Legion Content",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Training Scarecrow",
+     "npc": null
+    },
+    {
+     "name": "Melee Training Scarecrow",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "verteron-legion-airship",
+   "name": "Verteron Legion Airship",
+   "category": "Legion Content",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Melee Training Scarecrow",
+     "npc": null
+    },
+    {
+     "name": "Training Scarecrow",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "chloriss-abyss",
+   "name": "Chloris's Abyss",
+   "category": "Ascension Instance",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Abyssal Chloris",
+     "npc": 2702110
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Dead Gladiator's Silhouette",
+     "npc": null
+    },
+    {
+     "name": "Dead Ranger's Silhouette",
+     "npc": null
+    },
+    {
+     "name": "Dead Warrior's Silhouette",
+     "npc": null
+    },
+    {
+     "name": "Remnants of a Culled Daeva",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "dream-of-shattered-fragments",
+   "name": "Dream of Shattered Fragments",
+   "category": "Ascension Instance",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Scribe Vellum",
+     "npc": 2702111
+    }
+   ],
+   "monsters": []
+  },
+  {
+   "slug": "dream-of-torment",
+   "name": "Dream of Torment",
+   "category": "Ascension Instance",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "dream-remnants",
+   "name": "Dream Remnants",
+   "category": "Ascension Instance",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Dream Guardian Eonos",
+     "npc": null
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Dream Guardian Knight",
+     "npc": null
+    },
+    {
+     "name": "Dream Knight",
+     "npc": null
+    },
+    {
+     "name": "Dream Guardian",
+     "npc": null
+    },
+    {
+     "name": "Dream Watcher",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "forgotten-battlefield",
+   "name": "Forgotten Battlefield",
+   "category": "Ascension Instance",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [],
+   "monsters": [
+    {
+     "name": "Drakan Warrior's Specter",
+     "npc": null
+    },
+    {
+     "name": "Drakan Elite Soldier's Specter",
+     "npc": null
+    },
+    {
+     "name": "Drakan Priest's Specter",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "kaisinels-collapsed-sanctum",
+   "name": "Kaisinel's Collapsed Sanctum",
+   "category": "Ascension Instance",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Guardian's Illusion",
+     "npc": 2701051
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Kaisinel Sanctuary Guardian Ranger",
+     "npc": null
+    },
+    {
+     "name": "Kaisinel Sanctuary Guardian Warrior",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "kaisinels-distorted-dream",
+   "name": "Kaisinel's Distorted Dream",
+   "category": "Ascension Instance",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Kaisinel's Nightmare",
+     "npc": 2701156
+    }
+   ],
+   "monsters": []
+  },
+  {
+   "slug": "naruns-dream",
+   "name": "Narun's Dream",
+   "category": "Ascension Instance",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Narun",
+     "npc": 2701157
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Nartis Balaur Elite",
+     "npc": null
+    },
+    {
+     "name": "Nartis Balaur Ranger",
+     "npc": null
+    },
+    {
+     "name": "Nartis Balaur Warrior",
+     "npc": null
+    },
+    {
+     "name": "Nartis Drakan Chief",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "sigeberts-abyss",
+   "name": "Sigebert's Abyss",
+   "category": "Ascension Instance",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Abyssal Sigebert",
+     "npc": 2702598
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Fate Archon Renegade",
+     "npc": null
+    },
+    {
+     "name": "Fate Archon Heretic",
+     "npc": null
+    },
+    {
+     "name": "Fate Archon Betrayer",
+     "npc": null
+    },
+    {
+     "name": "Remnants of a Culled Daeva",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "subspace-of-ascension",
+   "name": "Subspace of Ascension",
+   "category": "Ascension Instance",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [],
+   "monsters": []
+  },
+  {
+   "slug": "zikels-collapsed-barracks",
+   "name": "Zikel's Collapsed Barracks",
+   "category": "Ascension Instance",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Sanctuary Guardian",
+     "npc": 2701048
+    }
+   ],
+   "monsters": [
+    {
+     "name": "Archons Revenant Gladiator",
+     "npc": null
+    },
+    {
+     "name": "Archons Revenant Templar",
+     "npc": null
+    }
+   ]
+  },
+  {
+   "slug": "zikels-distorted-dream",
+   "name": "Zikel's Distorted Dream",
+   "category": "Ascension Instance",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [
+    {
+     "name": "Zikel's Nightmare",
+     "npc": 2701155
+    }
+   ],
+   "monsters": []
+  },
+  {
+   "slug": "nightmare",
+   "name": "Nightmare",
+   "category": "Boss Challenge",
+   "level": null,
+   "itemLevel": null,
+   "party": null,
+   "region": null,
+   "bosses": [],
+   "monsters": []
+  }
+ ]
+}

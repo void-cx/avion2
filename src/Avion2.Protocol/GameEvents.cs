@@ -147,7 +147,15 @@ public enum DeathKind : byte
 
 public sealed record DeathEvent(long TimestampMs, uint EntityId, DeathKind Kind) : GameEvent(TimestampMs);
 
-public sealed record MapLoadEvent(long TimestampMs, uint MapId) : GameEvent(TimestampMs);
+/// <summary>A member of our party (<c>02 97</c>); <paramref name="CharacterId"/> is the character, not the entity id.</summary>
+public sealed record PartyMember(byte Slot, uint CharacterId, string Name, GameClass Class, bool Online);
+
+/// <summary>Our party as the game sends it after every change (join, leave, zone); includes ourselves.</summary>
+public sealed record PartyRosterEvent(long TimestampMs, IReadOnlyList<PartyMember> Members) : GameEvent(TimestampMs);
+
+/// <param name="ContentCode">The map's content type as the game sends it: 0 open world, 30 sealed dungeon, 79 expedition,
+/// 37/38 stronghold, 72/80 other instances, 12 a reload inside an instance (0 when the record is too short).</param>
+public sealed record MapLoadEvent(long TimestampMs, uint MapId, byte ContentCode = 0) : GameEvent(TimestampMs);
 
 /// <summary>Self teleport / zone change. Entity ids are reissued afterwards.</summary>
 public sealed record ZoneChangeEvent(long TimestampMs) : GameEvent(TimestampMs);
