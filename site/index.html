@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AVION2 · Damage meter for AION2</title>
-  <meta name="description" content="AVION2 is a free, open-source damage meter and fight analyzer for AION2: live DPS overlay, fight replays, timers, a zone map with a hidden cube finder, and an enchant calculator.">
+  <meta name="description" content="AVION2 is a free, open-source damage meter and fight analyzer for AION2: live DPS overlay, fight replays, dungeon run times, timers, a zone map with a hidden cube finder, and an enchant calculator.">
   <meta property="og:title" content="AVION2 · Damage meter for AION2">
-  <meta property="og:description" content="Live DPS overlay, fight replays, timers, a zone map with Find My Cube, and an enchant calculator. Passive, local, open source.">
+  <meta property="og:description" content="Live DPS overlay, fight replays, dungeon runs with best times, timers, a zone map with Find My Cube, and an enchant calculator. Passive, local, open source.">
   <meta property="og:image" content="img/compass.png">
   <link rel="icon" href="img/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,8 +30,8 @@
       <div class="hero-text">
         <p class="eyebrow">Damage meter &amp; fight analyzer for AION2</p>
         <h1>Every hit, counted.</h1>
-        <p class="lede">See your party's damage live, replay every fight, never miss a rift or world boss, and find hidden cubes
-          with a compass. Passive, runs on your PC, open source.</p>
+        <p class="lede">See your party's damage live, replay every fight, time every dungeon run against your best, never miss
+          a rift or world boss, and find hidden cubes with a compass. Passive, runs on your PC, open source.</p>
         <div class="actions">
           <a class="button primary" href="https://github.com/void-cx/avion2/releases/latest">Download for Windows</a>
           <a class="button" href="https://github.com/void-cx/avion2">Source on GitHub</a>
@@ -72,7 +72,8 @@
         <div>
           <h3>Live meter</h3>
           <p>An overlay on top of the game with damage per player, crits, back attacks, damage taken and the boss's HP.
-            A low-HP alert with its own sound, and a warning when the game server freezes.</p>
+            A low-HP alert with its own sound, and a warning when the game server freezes. Optional HUD effects draw on the
+            game itself: your HP bar blinks when low, and the boss's skills show under its health bar as it casts them.</p>
         </div>
       </article>
 
@@ -90,6 +91,16 @@
           <h3>Fight replay</h3>
           <p>Watch any fight again from above: where everyone stood, who hit whom, and what each player was doing at that
             moment. Scrub through it, change the speed, click anyone for their HP and last skill.</p>
+        </div>
+      </article>
+
+      <article class="feature wide">
+        <img src="img/runs.jpg" width="1264" height="761" alt="The Runs page: sealed dungeons with their times, and a run's boss kills, fight times and loot" loading="lazy">
+        <div>
+          <h3>Dungeon runs</h3>
+          <p>Every sealed dungeon, expedition, stronghold and instance is timed from entering to leaving: boss kills with
+            their fight time, deaths, party, Kinah and loot. Your best time per dungeon, each boss compared with your best
+            run, and a live clock while you're inside. Past runs can be read from your recordings.</p>
         </div>
       </article>
 
@@ -140,9 +151,9 @@
       <ol>
         <li>Install <a href="https://npcap.com/">Npcap</a> (the capture driver Wireshark uses).</li>
         <li>Download the <a href="https://github.com/void-cx/avion2/releases/latest">latest release</a> and unzip it anywhere.</li>
-        <li>Run <code>AVION2.exe</code>, press <strong>Start Meter</strong>, play.</li>
+        <li>Run <code>AVION2.exe</code>, press <strong>Start capture</strong>, play.</li>
       </ol>
-      <p class="fine">New versions show up as a banner in the app and install with one click.</p>
+      <p class="fine">New versions show up as a banner in the app and install with one click, with a progress window.</p>
     </section>
   </main>
 
