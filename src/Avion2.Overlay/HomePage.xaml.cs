@@ -248,7 +248,7 @@ public partial class HomePage : UserControl
 
     private void UpdateNow_Click(object sender, RoutedEventArgs e)
     {
-        if (_state.StartUpdate() is { } error)
+        if (_state.StartUpdate(Window.GetWindow(this)) is { } error)
         {
             MessageBox.Show(Window.GetWindow(this), error, "AVION2 update", MessageBoxButton.OK, MessageBoxImage.Warning);
         }

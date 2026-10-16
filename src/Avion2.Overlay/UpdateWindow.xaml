@@ -1,0 +1,33 @@
+<Window x:Class="Avion2.Overlay.UpdateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AVION2 · Update"
+        ThemeMode="Dark"
+        Width="480" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource ContentBrush}"
+        FontFamily="{DynamicResource BodyFont}" FontSize="13">
+    <StackPanel Margin="28,24,28,24">
+        <DockPanel>
+            <Image DockPanel.Dock="Left" Source="{DynamicResource RailLogo}" Width="44" Height="44" Margin="0,0,16,0"
+                   RenderOptions.BitmapScalingMode="HighQuality" />
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock x:Name="Heading" Text="Updating AVION2" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TitleBrush}" />
+                <TextBlock x:Name="Versions" Foreground="{DynamicResource MutedBrush}" Margin="0,2,0,0" />
+            </StackPanel>
+        </DockPanel>
+
+        <ProgressBar x:Name="Bar" Style="{StaticResource ThinBar}" Height="6" Margin="0,24,0,0" />
+        <DockPanel Margin="0,10,0,0">
+            <TextBlock x:Name="Amount" DockPanel.Dock="Right" Foreground="{DynamicResource SecondaryTextBrush}" />
+            <TextBlock x:Name="Status" Text="Starting…" Foreground="{DynamicResource TextBrush}" TextWrapping="Wrap" />
+        </DockPanel>
+        <TextBlock x:Name="Note" Foreground="{DynamicResource MutedBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,14,0,0"
+                   Text="Your settings, fights and runs stay. AVION2 closes for a moment and starts again on its own." />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="PageButton" Style="{StaticResource QuietButton}" Content="Release page" Margin="0,0,8,0" Click="Page_Click" Visibility="Collapsed" />
+            <Button x:Name="CancelButton" Style="{StaticResource QuietButton}" Content="Cancel" Width="110" Click="Cancel_Click" />
+        </StackPanel>
+    </StackPanel>
+</Window>

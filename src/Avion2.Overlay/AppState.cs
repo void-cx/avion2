@@ -820,16 +820,31 @@ public sealed class AppState
     }
 
     /// <summary>
-    /// Hands over to AVION2-Updater.exe (next to this exe) and closes AVION2: the updater waits for us to exit,
-    /// installs the release and restarts AVION2. Returns an error message, or null when the update started.
+    /// "Update now": opens the update window, which downloads and checks the release with a progress bar and then
+    /// hands over to AVION2-Updater.exe. Returns an error message, or null when the update window opened.
     /// </summary>
-    public string? StartUpdate()
+    public string? StartUpdate(Window? owner = null)
     {
         if (AvailableUpdate is not { } release)
         {
             return "No update available.";
         }
 
+        if (!File.Exists(Path.Combine(AppContext.BaseDirectory, "AVION2-Updater.exe")))
+        {
+            return "AVION2-Updater.exe is missing next to AVION2.exe. Download the release from GitHub instead.";
+        }
+
+        new UpdateWindow(this, release) { Owner = owner }.Show();
+        return null;
+    }
+
+    /// <summary>
+    /// Starts AVION2-Updater.exe on a downloaded and unpacked release and closes AVION2: the updater waits for us to
+    /// exit, swaps the files and starts AVION2 again. Returns an error message, or null when AVION2 is closing.
+    /// </summary>
+    public string? HandOverUpdate(string staged, ReleaseInfo release)
+    {
         string dir = AppContext.BaseDirectory;
         string updater = Path.Combine(dir, "AVION2-Updater.exe");
         if (!File.Exists(updater))
@@ -840,19 +855,21 @@ public sealed class AppState
         SaveSettings();
         StopMeter();
         var start = new System.Diagnostics.ProcessStartInfo(updater) { UseShellExecute = false };
-        foreach (string arg in new[] { "--dir", dir.TrimEnd(Path.DirectorySeparatorChar), "--zip", release.ZipUrl, "--version", release.Tag,
+        foreach (string arg in new[] { "--dir", dir.TrimEnd(Path.DirectorySeparatorChar), "--staged", staged, "--version", release.Tag,
                      "--pid", Environment.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture) })
         {
             start.ArgumentList.Add(arg);
         }
 
-        if (release.ChecksumsUrl is { } sums)
+        try
         {
-            start.ArgumentList.Add("--sums");
-            start.ArgumentList.Add(sums);
+            System.Diagnostics.Process.Start(start);
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            return $"AVION2-Updater.exe could not be started: {ex.Message}";
         }
 
-        System.Diagnostics.Process.Start(start);
         Application.Current.Shutdown();
         return null;
     }

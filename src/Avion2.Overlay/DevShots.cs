@@ -177,6 +177,13 @@ internal static class DevShots
                 Shoot(home, "runs", directory, "runs-selected.png");
             }
 
+            var update = new UpdateWindow(state, new Avion2.Engine.ReleaseInfo(new Version(9, 9, 9), "v9.9.9", "https://github.com", null,
+                "https://github.com/x.zip", null, 0), preview: true) { Left = -20000, WindowStartupLocation = WindowStartupLocation.Manual };
+            update.Show();
+            Pump(TimeSpan.FromMilliseconds(500));
+            Save(update, Path.Combine(directory, "update.png"));
+            update.Close();
+
             Shoot(home, "settings", directory, "settings.png");
             if (home.CurrentPage is SettingsPage settingsPage)
             {

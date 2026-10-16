@@ -79,7 +79,7 @@
                         <TextBlock x:Name="VersionText" VerticalAlignment="Center" TextWrapping="Wrap" />
                     </DockPanel>
                     <TextBlock Style="{StaticResource Hint}"
-                               Text="One request to the GitHub releases of void-cx/avion2. Nothing is downloaded until you choose &quot;Update now&quot;; AVION2-Updater.exe then installs the release and restarts AVION2." />
+                               Text="One request to the GitHub releases of void-cx/avion2. Nothing is downloaded until you choose &quot;Update now&quot;; AVION2 then downloads and checks the release, and AVION2-Updater.exe swaps the files and restarts AVION2." />
                 </StackPanel>
             </Border>
 
