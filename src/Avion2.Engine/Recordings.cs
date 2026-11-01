@@ -12,10 +12,15 @@ public static class Recordings
         .Select(f => f.FullName)
         .ToList();
 
+    /// <summary>The pictures of the screen recorded with <paramref name="recording"/> (Developer setting).</summary>
+    public static string FramesDirectory(string recording) => Path.ChangeExtension(recording, ".frames");
+
+    /// <summary>How many recordings there are and their size, screen pictures included.</summary>
     public static (int Files, long Bytes) Usage()
     {
         var files = Files();
-        return (files.Count, files.Sum(f => f.Length));
+        long frames = Frames().Sum(d => d.EnumerateFiles().Sum(f => f.Length));
+        return (files.Count, files.Sum(f => f.Length) + frames);
     }
 
     /// <summary>
@@ -44,9 +49,31 @@ public static class Recordings
             }
         }
 
+        string? inUseFrames = inUse is null ? null : Path.GetFullPath(FramesDirectory(inUse));
+        foreach (var folder in Frames())
+        {
+            if (cutoff is { } before && folder.LastWriteTimeUtc >= before.ToUniversalTime() ||
+                string.Equals(inUseFrames, folder.FullName, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            try
+            {
+                folder.Delete(recursive: true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // in use; next time
+            }
+        }
+
         return deleted;
     }
 
     private static List<FileInfo> Files() =>
         System.IO.Directory.Exists(Directory) ? new DirectoryInfo(Directory).GetFiles("*.pcap").ToList() : [];
+
+    private static List<DirectoryInfo> Frames() =>
+        System.IO.Directory.Exists(Directory) ? new DirectoryInfo(Directory).GetDirectories("*.frames").ToList() : [];
 }

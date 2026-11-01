@@ -344,6 +344,7 @@ public sealed class AppState
         });
 
         Engine = engine;
+        _screen = record is not null && Stored.RecordScreen && !IsReplay ? new ScreenRecorder(record) : null;
         Overlay = new MainWindow(this, engine) { StartTab = startTab };
         Overlay.Run();
         if (Stored.OverlayAutoShow == "start")
@@ -367,6 +368,7 @@ public sealed class AppState
         var overlay = Overlay;
         Overlay = null;
         Engine = null;
+        StopScreen();
         overlay?.Stop(); // disposes the engine
         UpdateHud();
         MeterStateChanged?.Invoke();
@@ -404,7 +406,17 @@ public sealed class AppState
 
         Overlay = null;
         Engine = null;
+        StopScreen();
         MeterStateChanged?.Invoke();
+    }
+
+    /// <summary>Pictures of the game window while recording (Developer setting), or null.</summary>
+    private ScreenRecorder? _screen;
+
+    private void StopScreen()
+    {
+        _screen?.Dispose();
+        _screen = null;
     }
 
     public void DeleteFight(HistoryRow row)

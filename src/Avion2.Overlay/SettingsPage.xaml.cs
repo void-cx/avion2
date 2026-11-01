@@ -44,6 +44,12 @@ public partial class SettingsPage : UserControl
             _state.Stored.RecordAllGameConnections = RecordAllBox.IsChecked == true;
             _state.SaveSettings();
         };
+        RecordScreenBox.IsChecked = state.Stored.RecordScreen;
+        RecordScreenBox.Click += (_, _) =>
+        {
+            _state.Stored.RecordScreen = RecordScreenBox.IsChecked == true;
+            _state.SaveSettings();
+        };
         SetUpStorage();
         CubeFinderBox.IsChecked = state.Stored.CubeFinder;
         OverlayModeBox.ItemsSource = OverlayModes;
