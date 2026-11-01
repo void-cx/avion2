@@ -187,6 +187,24 @@ Status: Verified · sent for every entity in range, including buffs and heals an
 | facing | `f32` | | degrees; 0 along +X, turning toward +Y (`atan2(dy, dx)`) |
 | target position | `pos` | kind 2 | |
 
+**`06 38`** follows every `02 38` for the same actor and skill, almost always in the same bundle (rarely up to 2.5 s
+later): `actor varint`, `skill u32`, `counter u16` rising by one with each of that actor's casts.
+
+### Own skills and target
+Status: Verified on one session (Chanter at a training dummy, 13 skills)
+
+Sent only for the player. Skill ids here are `u32` as on the skill bar (`18010000`).
+
+| Opcode | Fields | Meaning |
+|---|---|---|
+| `01 38` | `00 00 00`, `skill u32` | a skill was used and its cooldown starts. Every skill the player uses, including Dodge and Dash; not for auras and passive procs. The cooldown length is not sent: the client has it, and no record marks the cooldown ending |
+| `18 38` | `skill u32`, `01`, `next u32` | `next` can be used now: a chain step after `skill` (Onslaught → Resonance Crush → Bolt Crush) |
+| `19 38` | `01`, `next u32` | the chain step `next` is gone: used, or expired after 3 s |
+| `3B 38` `3D 38` | `00 00` | around each targeted skill: `3B 38` with its `02 38`, `3D 38` about 50 ms later |
+| `34 38` | `00 00 00`, `target varint` | the player selected a target; `00` = none |
+| `35 38` | `entity varint`, `00`, `target varint` | the selected target's own target ("target of target"); `00` = none. Sent on selecting and when it changes, e.g. a monster turning to the player once hit |
+| `31 38` | `00 00`, `target varint`, `00 00` | the target the player attacks; `00` when combat ends |
+
 ### Buffs and debuffs
 Status: Verified
 
@@ -669,18 +687,19 @@ Seen in normal play and described by shape only.
 
 | Opcode | Size | Shape | Probably |
 |---|---|---|---|
-| `06 38` | 10&nbsp;B | `entity varint`, `u32`, counter `u16` rising 1, 2, 3 … | stacks or combo steps |
 | `03 38` | ~37&nbsp;B | `caster varint`, `00`, `target varint`, `u32`, counter, …, `pos` | an effect placed at a position |
 | `09 38` | ~33&nbsp;B | `caster`, `u32`, `01 02`, `target`, `pos` | like `03 38` |
 | `0E 38` | ~47&nbsp;B | `caster`, `02`, `target`, `u32`, counter, two positions | something moving between two points |
-| `01 38` `18 38` `19 38` `31 38` `34 38` | 4–11&nbsp;B | the player's skill state; `18 38` pairs two values (a → b) | cooldowns or chain steps |
-| `3B 38` `3D 38` | 2&nbsp;B | `00 00` right after the records above | acknowledgements |
 | `35 36` `37 36` `6D 8D` `46 37` | small | `entity varint` with the player's id | targeting and object interaction |
 | `05 E0` | 16&nbsp;B | `entity`, `03 01`, max `u32`, current `u32` falling by 2 | a gauge (not flight time: absent while flying) |
 | `07 95` `08 95` | 14&nbsp;B | `entity varint`, `u32` (fixed per entity, e.g. 1252, 1264; or 10000 / 20000), `01` / `02`; `08 95` then `07 95` 150 ms later, every few seconds, for NPCs standing around | an idle animation, or a timer in ms |
 | `0C 91` | ~30&nbsp;B | `map u32`, `01 01`, `pos`, `time` | something placed on the map with a time |
 | `15 8D` | ~55&nbsp;B | dialogue keys (`Talk_L1_Garrison_…`), entity at the end | NPC dialogue |
 | `24 E3` | 64&nbsp;B | `01`, id `u32` (10044, 10047), two points `u32`, `time`, … ; both points +30 after each successful craft, none after a failed one | progress of a pass or event |
+| `13 56` | 16&nbsp;B | `04 03`, `id varint`, `00 00`, `varint`, `00`, `02`, `varint` | a legion member's status: one each time the chat says a legion member logged in, and one for the player entering the Legion Hall |
+| `17 56` `19 56` | 16&nbsp;B | `entity varint` (the player), then the same fields as `13 56` | the player's own legion membership, when the legion window opens and its Hall tab is used |
+| `45 8A` `09 61` `08 61` | 3–16&nbsp;B | `45 8A` a fixed 16-byte record; `09 61` `00 00 00 00`; `08 61` `00` | always together, at each teleport into or out of the Legion Hall |
+| `0C 61` | 10&nbsp;B | `00 04`, counter `u32` (10, then 12), `0E 02` | progress in the Legion Training Grounds |
 | `01 43` | 50–130&nbsp;B | ids around 10044–10047 with start and end times | event or season schedule |
 
 ## Identifiers
