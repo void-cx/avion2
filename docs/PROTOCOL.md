@@ -684,6 +684,18 @@ Status: Partly verified
 | `83 56` | ~40 KB at login with item ids (not decoded) |
 | `84 56` | `01`, `u64`, `u64` time, `u8` per item: a cooldown or acquisition time (not decoded) |
 
+## Quests
+Status: Seen once · two kill-ten quests done and turned in
+
+| Opcode | Fields | Meaning |
+|---|---|---|
+| `10 8D` | `quest u32`, `state u8`, `01`, `count u32`, `00 00` | progress, one record per step (1 … 10); at the last step a second record follows with state 3 instead of 2: the objective is done |
+| `0F 8D` | `00 00`, `quest u32`, `00` | the quest was turned in |
+
+Quest ids seen: 167 and 168. A turn-in comes with the reward in the bag (`1B 56`), several `84 56` records and pass
+progress (`24 E3` id 10044: +150 per quest). A `10 8D` of another shape follows each turn-in
+(`09 00 00 00 02 01`, then varints, one of them +10 per quest), probably a counter of quests done.
+
 ## Party
 
 ### `02 97` — Party roster
@@ -718,7 +730,8 @@ Seen in normal play and described by shape only.
 | `07 95` `08 95` | 14&nbsp;B | `entity varint`, `u32` (fixed per entity, e.g. 1252, 1264; or 10000 / 20000), `01` / `02`; `08 95` then `07 95` 150 ms later, every few seconds, for NPCs standing around | an idle animation, or a timer in ms |
 | `0C 91` | ~30&nbsp;B | `map u32`, `01 01`, `pos`, `time` | something placed on the map with a time |
 | `15 8D` | ~55&nbsp;B | dialogue keys (`Talk_L1_Garrison_…`), entity at the end | NPC dialogue |
-| `24 E3` | 64&nbsp;B | `01`, id `u32` (10044, 10047), two points `u32`, `time`, … ; both points +30 after each successful craft, none after a failed one | progress of a pass or event |
+| `24 E3` | 64&nbsp;B | `01`, id `u32` (10044, 10047), two points `u32`, `time`, … ; both points +30 after each successful craft, none after a failed one, +150 per quest turned in | progress of a pass or event |
+| `09 90` `08 90` | 25 / 6&nbsp;B | `09 90`: the player's `entity varint`, `u32` (1137, 1202), `01 00 00 00`, `02`, `03 00 00 00`, `u32` (1000, 1500), …; `08 90`: `entity varint`, `00 00`. Twice while fighting for two kill quests, not on a kill step | unknown |
 | `13 56` | 16&nbsp;B | `04 03`, `id varint`, `00 00`, `varint`, `00`, `02`, `varint` | a legion member's status: one each time the chat says a legion member logged in, and one for the player entering the Legion Hall |
 | `17 56` `19 56` | 16&nbsp;B | `entity varint` (the player), then the same fields as `13 56` | the player's own legion membership, when the legion window opens and its Hall tab is used |
 | `45 8A` `09 61` `08 61` | 3–16&nbsp;B | `45 8A` a fixed 16-byte record; `09 61` `00 00 00 00`; `08 61` `00` | always together, at each teleport into or out of the Legion Hall |
