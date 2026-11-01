@@ -15,7 +15,8 @@ namespace Avion2.Overlay;
 /// Effects on the game's own HUD, placed with the calibrated <see cref="HudLayout"/>: your HP bar pulses red while
 /// your HP is low, the screen edges flash red when you lose a big share of HP at once, your DPS shows above your
 /// HP bar during a fight, and boss skills appear right under the target frame. A transparent, click-through window
-/// that follows the game's client area and only shows while the game is in front.
+/// that follows the game's client area: on top of everything while the game is in front, otherwise just above the
+/// game window (a game on a second screen keeps its HUD; a window over the game covers the HUD too).
 /// </summary>
 public partial class HudWindow : Window
 {
@@ -37,8 +38,14 @@ public partial class HudWindow : Window
     [DllImport("user32.dll")]
     private static extern bool SetWindowPos(nint hwnd, nint after, int x, int y, int cx, int cy, uint flags);
 
+    [DllImport("user32.dll")]
+    private static extern nint GetWindow(nint hwnd, uint command);
+
+    private const uint NoSize = 0x0001;
+    private const uint NoMove = 0x0002;
+    private const uint NoZOrder = 0x0004;
     private const uint NoActivate = 0x0010;
-    private static readonly nint HwndTopmost = new(-1);
+    private const uint WindowAbove = 3; // GW_HWNDPREV
 
     public HudWindow(AppState state, Func<EngineStatus?> status, Func<MeterSnapshot?> snapshot)
     {
@@ -78,7 +85,7 @@ public partial class HudWindow : Window
     private void Tick()
     {
         var area = GameWindow.ClientArea;
-        bool show = !Suspended && area is not null && (_demo || GameWindow.IsInFront) && Layout(area.Value) is not null;
+        bool show = !Suspended && area is not null && Layout(area.Value) is not null;
         if (!show)
         {
             if (IsVisible)
@@ -99,6 +106,7 @@ public partial class HudWindow : Window
             Place(area.Value);
         }
 
+        Stack();
         var s = _status();
         UpdateLowHp(s);
         UpdateBigHit(s);
@@ -112,13 +120,44 @@ public partial class HudWindow : Window
     {
         _placed = area;
         var hwnd = new WindowInteropHelper(this).Handle;
-        SetWindowPos(hwnd, HwndTopmost, area.X, area.Y, area.Width, area.Height, NoActivate);
+        SetWindowPos(hwnd, 0, area.X, area.Y, area.Width, area.Height, NoZOrder | NoActivate);
         var dpi = VisualTreeHelper.GetDpi(this);
         Stage.Width = area.Width / dpi.DpiScaleX;
         Stage.Height = area.Height / dpi.DpiScaleY;
         EdgeFlash.Width = Stage.Width;
         EdgeFlash.Height = Stage.Height;
         Arrange(Layout(area)!);
+    }
+
+    /// <summary>
+    /// On top of everything while the game (or AVION2) is in front. Otherwise right above the game window, so the HUD
+    /// stays on a game that is still on screen (e.g. while another screen has the focus), and whatever covers the
+    /// game covers it too.
+    /// </summary>
+    private void Stack()
+    {
+        if (_demo || GameWindow.IsInFront)
+        {
+            if (!Topmost)
+            {
+                Topmost = true;
+            }
+
+            return;
+        }
+
+        if (Topmost)
+        {
+            Topmost = false;
+        }
+
+        var hwnd = new WindowInteropHelper(this).Handle;
+        nint game = GameWindow.Handle;
+        nint above = game == 0 ? 0 : GetWindow(game, WindowAbove);
+        if (above != 0 && above != hwnd)
+        {
+            SetWindowPos(hwnd, above, 0, 0, 0, 0, NoMove | NoSize | NoActivate);
+        }
     }
 
     private void Arrange(HudLayout layout)
