@@ -226,8 +226,20 @@ Status: Verified
 | entity | `varint` | |
 | kind | `u8` | |
 | — | `u8` | |
-| resource | `u8` | 0 HP, 1 MP, 3 / 4 / 6 other gauges |
+| resource | `u8` | 0 HP, 1 MP, 6 flight time (below), 3 / 4 other gauges |
 | value | `u32` | current value; the maximum is not sent (learn it from the highest value seen or from spawns) |
+
+**Flight time** (resource 6) counts in 1/10 000 s; full is 570 000 (57 s). Sent every 100 ms while flying, every
+second while it refills.
+
+| While | Change |
+|---|---|
+| taking off | −2 500 once |
+| flying | −1 000, −1 500 or −2 500 per 100 ms; each `44 37` (`our id`, `00 00`) switches between −1 500 and −2 500 (probably a speed boost) |
+| gliding | −750 per 100 ms, −1 000 for 2 s at a time between two `43 37` (`our id`, `00 00`), and −10 000 at once every ~4 s |
+| on the ground | +4 000 per second until full |
+
+At 0 the character lands.
 
 ### `1B 92` — HP
 Status: Unconfirmed
@@ -641,12 +653,13 @@ Seen in normal play and described by shape only.
 | `0E 38` | ~47&nbsp;B | `caster`, `02`, `target`, `u32`, counter, two positions | something moving between two points |
 | `01 38` `18 38` `19 38` `31 38` `34 38` | 4–11&nbsp;B | the player's skill state; `18 38` pairs two values (a → b) | cooldowns or chain steps |
 | `3B 38` `3D 38` | 2&nbsp;B | `00 00` right after the records above | acknowledgements |
-| `35 36` `37 36` `6D 8D` `44 37` `46 37` | small | `entity varint` with the player's id | targeting and object interaction |
-| `05 E0` | 16&nbsp;B | `entity`, `03 01`, max `u32`, current `u32` falling by 2 | a gauge (flight time?) |
+| `35 36` `37 36` `6D 8D` `46 37` | small | `entity varint` with the player's id | targeting and object interaction |
+| `05 E0` | 16&nbsp;B | `entity`, `03 01`, max `u32`, current `u32` falling by 2 | a gauge (not flight time: absent while flying) |
 | `07 95` | 14&nbsp;B | `entity varint`, `u32` (10000 / 20000), `01` | a timer in ms |
 | `0C 91` | ~30&nbsp;B | `map u32`, `01 01`, `pos`, `time` | something placed on the map with a time |
 | `15 8D` | ~55&nbsp;B | dialogue keys (`Talk_L1_Garrison_…`), entity at the end | NPC dialogue |
-| `24 E3` `01 43` | 50–130&nbsp;B | ids around 10044–10047 with start and end times | event or season schedule |
+| `24 E3` | 64&nbsp;B | `01`, id `u32` (10044, 10047), two points `u32`, `time`, … ; both points +30 after each successful craft, none after a failed one | progress of a pass or event |
+| `01 43` | 50–130&nbsp;B | ids around 10044–10047 with start and end times | event or season schedule |
 
 ## Identifiers
 
