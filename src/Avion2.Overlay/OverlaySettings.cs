@@ -133,6 +133,9 @@ public sealed class OverlaySettings
     /// <summary>Record each meter session to a .pcap (for troubleshooting).</summary>
     public bool RecordSessions { get; set; }
 
+    /// <summary>Developer: recordings hold every connection of AION2.exe (login, lobby, world), not only the world.</summary>
+    public bool RecordAllGameConnections { get; set; }
+
     /// <summary>Delete saved fights / recordings older than this many days when AVION2 starts (0 = keep).</summary>
     public int KeepFightsDays { get; set; }
     public int KeepRecordingsDays { get; set; }

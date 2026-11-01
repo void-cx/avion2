@@ -8,7 +8,8 @@ namespace Avion2.Engine;
 /// </summary>
 public static class GameProcess
 {
-    private static readonly string[] Names = ["AION2", "AION2-Win64-Shipping"];
+    /// <summary>The game's process names (without .exe).</summary>
+    public static readonly IReadOnlyList<string> Names = ["AION2", "AION2-Win64-Shipping"];
     private static readonly TimeSpan CheckEvery = TimeSpan.FromSeconds(2);
     private static readonly Stopwatch SinceCheck = new();
     private static bool _running;

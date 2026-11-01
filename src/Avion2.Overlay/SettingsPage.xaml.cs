@@ -38,6 +38,12 @@ public partial class SettingsPage : UserControl
             _state.SaveSettings();
         };
         VersionText.Text = $"Version {Avion2.Engine.UpdateChecker.CurrentVersion}";
+        RecordAllBox.IsChecked = state.Stored.RecordAllGameConnections;
+        RecordAllBox.Click += (_, _) =>
+        {
+            _state.Stored.RecordAllGameConnections = RecordAllBox.IsChecked == true;
+            _state.SaveSettings();
+        };
         SetUpStorage();
         CubeFinderBox.IsChecked = state.Stored.CubeFinder;
         OverlayModeBox.ItemsSource = OverlayModes;
@@ -337,6 +343,7 @@ public partial class SettingsPage : UserControl
         ["alerts"] = ("Alerts & timers", "Notifications for rifts, bosses and events, and the low-HP alert."),
         ["appearance"] = ("Appearance", "Theme and home page background."),
         ["data"] = ("Data & storage", "Skill and NPC names, saved fights and recordings."),
+        ["developer"] = ("Developer", "Tools for protocol research. Not needed for normal use."),
     };
 
     /// <summary>Shows one section's cards (the sidebar picks it).</summary>

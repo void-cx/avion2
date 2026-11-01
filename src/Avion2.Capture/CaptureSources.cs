@@ -188,7 +188,7 @@ public static class PcapFile
 /// Records the game device to a .pcap for offline replay. Frames are buffered per device until the
 /// game connection locks (so the lead-up, e.g. the identity burst, is kept), then streamed.
 /// </summary>
-public sealed class PcapRecorder : IDisposable
+public sealed class PcapRecorder : IFrameRecorder
 {
     private const long PreLockBufferMs = 15_000;
 

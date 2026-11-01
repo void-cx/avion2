@@ -46,6 +46,8 @@
                                  local:Ui.Icon="{StaticResource IconStar}" Checked="Section_Checked" />
                     <RadioButton Style="{StaticResource SideItem}" Content="Data &amp; storage" Tag="data" GroupName="SettingsSection"
                                  local:Ui.Icon="{StaticResource IconFolder}" Checked="Section_Checked" />
+                    <RadioButton Style="{StaticResource SideItem}" Content="Developer" Tag="developer" GroupName="SettingsSection"
+                                 local:Ui.Icon="{StaticResource IconSearch}" Checked="Section_Checked" />
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -233,6 +235,16 @@
                     </DockPanel>
                     <TextBlock Style="{StaticResource Hint}"
                                Text="Old fights and recordings are deleted when AVION2 starts. Fights (with replays) take a few dozen KB each, recordings (Record session) several MB. Single fights can be deleted on the History page." />
+                </StackPanel>
+            </Border>
+
+            <!-- Developer: recordings for protocol research -->
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="developer">
+                <StackPanel>
+                    <TextBlock Text="Protocol recordings" Style="{StaticResource Heading}" />
+                    <CheckBox x:Name="RecordAllBox" Content="Record all of AION2's connections (login, lobby, world), not only the world" />
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="For protocol research. Session recordings (Record session on the home page) then hold every TCP connection that belongs to AION2.exe, found through Windows' connection list; nothing else from your PC. Start the capture before the game to get the login and the lobby. The game's own messages to its servers stay encrypted. Applies from the next capture start." />
                 </StackPanel>
             </Border>
 

@@ -271,6 +271,7 @@ public sealed class AppState
         {
             Devices = _baseOptions.Devices ?? (Stored.Device is { } device ? [device] : null),
             RecordPath = record,
+            RecordGameProcess = Stored.RecordAllGameConnections,
             EventLogPath = _baseOptions.EventLogPath,
             DataDirectory = _baseOptions.DataDirectory,
             DataLanguage = Stored.DataLanguage,

@@ -187,7 +187,7 @@ internal static class DevShots
             Shoot(home, "settings", directory, "settings.png");
             if (home.CurrentPage is SettingsPage settingsPage)
             {
-                foreach (string section in new[] { "overlay", "hud", "cubes", "alerts", "data" })
+                foreach (string section in new[] { "overlay", "hud", "cubes", "alerts", "data", "developer" })
                 {
                     settingsPage.ShowSection(section);
                     Pump(TimeSpan.FromMilliseconds(500));

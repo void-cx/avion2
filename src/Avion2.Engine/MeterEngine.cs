@@ -11,6 +11,12 @@ public sealed class EngineOptions
 
     public string? RecordPath { get; init; }
 
+    /// <summary>
+    /// Developer: record every connection of the game process (login, lobby, world, instances) instead of only the
+    /// world connection. Needs the capture to run before the game starts.
+    /// </summary>
+    public bool RecordGameProcess { get; init; }
+
     public string? EventLogPath { get; init; }
 
     /// <summary>Directory whose skills.json / npcs.json / field_bosses.json / maps.json override the built-in tables; null = %AppData%\AVION2\data if it has any.</summary>
@@ -73,7 +79,7 @@ public sealed class MeterEngine : IDisposable
     private readonly GameCapturePipeline _pipeline;
     private readonly LiveCapture _capture = new();
     private readonly EventLog? _log;
-    private readonly PcapRecorder? _recorder;
+    private readonly IFrameRecorder? _recorder;
     private readonly CancellationTokenSource _cts = new();
     private Task? _consumer;
     private readonly CharacterStore _characters;
@@ -139,7 +145,9 @@ public sealed class MeterEngine : IDisposable
             }
         };
         _log = _options.EventLogPath is { } logPath ? new EventLog(logPath) : null;
-        _recorder = _options.RecordPath is { } recordPath ? new PcapRecorder(recordPath) : null;
+        _recorder = _options.RecordPath is not { } recordPath ? null
+            : _options.RecordGameProcess ? new ProcessRecorder(recordPath, GameProcess.Names)
+            : new PcapRecorder(recordPath);
         _pipeline = new GameCapturePipeline(raw =>
         {
             if ((anonymizer is null ? raw : anonymizer.Rewrite(raw)) is not { } e)
