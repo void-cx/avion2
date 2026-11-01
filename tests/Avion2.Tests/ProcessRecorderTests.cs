@@ -18,4 +18,12 @@ public class ProcessRecorderTests
         Assert.Contains(flows, f => f.ToString() == "192.168.1.5:54000 -> 193.0.2.7:13328");
         Assert.Contains(flows, f => f.ToString() == "193.0.2.7:13328 -> 192.168.1.5:54000");
     }
+
+    [Theory]
+    [InlineData("0b0d390000002905", true)]                 // 0D 39 (server chosen): L = 11 → an 8-byte frame
+    [InlineData("0b0d3900000029050b0d390000002905", true)] // the segment may hold more frames
+    [InlineData("0a000036e2294196a10100", false)] // 00 36 (world clock), not the lobby
+    [InlineData("160303004a", false)]             // TLS
+    public void RecognisesLobbyPackets(string hex, bool lobby) =>
+        Assert.Equal(lobby, ProcessRecorder.IsLobby(Convert.FromHexString(hex)));
 }

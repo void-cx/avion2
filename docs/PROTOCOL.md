@@ -88,6 +88,43 @@ Bundles also appear **embedded in the middle of another packet**, preceded by a 
 records often arrive this way. Damage, spawn, HP and identity records are therefore best found by scanning packets,
 not only at frame starts.
 
+## Lobby
+
+Status: Partly verified · plaintext server → client, like the world connection
+
+Before the world connection, the client talks to a **lobby server** on a separate connection for a few seconds:
+account, server list, character list and the chosen server, ending with a redirect to the world server. The lobby
+closes as the world connection opens. Its packets are the `xx 39` family; the framing is the same as below.
+
+| Opcode | Record | Content |
+|---|---|---|
+| `01 39` | handshake | an encrypted key block |
+| `06 39` | account | account identifiers (GUID strings) |
+| `09 39` | server list | see below |
+| `0B 39` | characters | the account's characters on the servers: name, level, legion, … |
+| `0D 39` | server chosen | `00 00 00`, `server u16` |
+| `0F 39` | redirect | `00 00`, `server u16`, `host str8`, `port u16` of the world server |
+
+**`09 39` server list**: `00 00`, `count u8`, then per server:
+
+| Field | Type | Meaning |
+|---|---|---|
+| id | `u16` | the server id used in player records (e.g. 1321) |
+| faction | `u8` | 1 Light, 2 Dark |
+| id | `u16` | again |
+| — | `00 00` | |
+| name | `str8` | the internal name, e.g. `LIVE_Light_021` |
+| status | 6 bytes | load or status (not decoded) |
+
+Observed: ids 1301–1323 are `LIVE_Light_001…023`, ids 2301–2323 `LIVE_Dark_001…023`.
+
+### Entering the world
+Status: Partly verified
+
+The world connection starts with a key exchange: the client sends its public key (`10 36`), the server answers with
+`11 36` (the client → server direction is encrypted from here). `15 36` (~4 KB) then describes the chosen character
+(name, class, level, legion, position, appearance, character id) and `20 36` enters the world with it.
+
 ## Combat
 
 ### `04 38` — Direct damage

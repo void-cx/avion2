@@ -163,13 +163,21 @@ public sealed class ProcessRecorder : IFrameRecorder
             Refresh();
         }
 
-        if (!PacketDissector.TryParse(frame.LinkType, frame.Data, out var segment, out _))
+        if (!PacketDissector.TryParse(frame.LinkType, frame.Data, out var segment, out var payload))
         {
             return;
         }
 
         if (_flows.Contains(segment.Flow))
         {
+            Record(frame);
+            return;
+        }
+
+        // The lobby (character and server list) can come from another process than the game: known by its packets
+        if (IsLobby(payload))
+        {
+            Adopt([segment.Flow, new FlowKey(segment.Flow.Destination, segment.Flow.Source)]);
             Record(frame);
             return;
         }
@@ -192,6 +200,41 @@ public sealed class ProcessRecorder : IFrameRecorder
             return;
         }
 
+        Adopt(current);
+    }
+
+    /// <summary>
+    /// A lobby packet: a varint length that matches the segment, then an opcode <c>xx 39</c> (the lobby family:
+    /// handshake, account, server list, characters, redirect).
+    /// </summary>
+    public static bool IsLobby(ReadOnlySpan<byte> payload)
+    {
+        if (payload.Length < 4)
+        {
+            return false;
+        }
+
+        uint length = 0;
+        int i = 0, shift = 0;
+        while (i < payload.Length && i < 3)
+        {
+            byte b = payload[i++];
+            length |= (uint)(b & 0x7F) << shift;
+            shift += 7;
+            if (b < 0x80)
+            {
+                break;
+            }
+        }
+
+        long frame = (long)length - 4 + i;
+        return i + 2 <= payload.Length && payload[i + 1] == 0x39 && payload[i] is >= 0x01 and <= 0x20 &&
+               frame >= 2 && frame <= payload.Length;
+    }
+
+    /// <summary>Records these flows from now on, and writes what was held of them, in the order it arrived.</summary>
+    private void Adopt(IReadOnlyCollection<FlowKey> current)
+    {
         _flows.UnionWith(current); // closed connections stay: their last packets may still be on the way
         for (var node = _held.First; node is not null;)
         {
