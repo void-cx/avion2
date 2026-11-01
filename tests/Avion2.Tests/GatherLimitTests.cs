@@ -26,17 +26,24 @@ public class GatherLimitTests
     }
 
     [Fact]
-    public void RecentAbortsCountUntilTheBlock()
+    public void RecentAbortsCountForFiveMinutes()
     {
         var limit = new GatherLimit();
         limit.Aborted(0);
         limit.Aborted(48_000);
         limit.Aborted(156_000);
-        Assert.Equal(GatherLimit.WarnAt, limit.RecentAborts(160_000)); // the next one may block
+        Assert.Equal(GatherLimit.WarnAt, limit.RecentAborts(160_000)); // the next one blocks
 
-        Assert.Equal(2, limit.RecentAborts(GatherLimit.AbortWindowMs + 1_000)); // the first is old enough to forget
+        Assert.Equal(2, limit.RecentAborts(GatherLimit.AbortWindowMs + 1_000)); // the first is over 5 min old
 
-        limit.Apply(new BuffEvent(182_000, 2041, 1, GatherLimit.BlockAbnormal, null, 2041, 60_000, true, null));
-        Assert.Equal(0, limit.RecentAborts(182_000)); // counting starts over after a block
+        // A block does not start the count over: recorded, the next abort 104 s after one blocked again
+        var again = new GatherLimit();
+        foreach (long ms in new long[] { 0, 106_000, 170_000, 274_000 })
+        {
+            again.Aborted(ms);
+        }
+
+        again.Apply(new BuffEvent(276_000, 2041, 1, GatherLimit.BlockAbnormal, null, 2041, 60_000, true, null));
+        Assert.Equal(GatherLimit.WarnAt, again.RecentAborts(378_000));
     }
 }

@@ -4,17 +4,18 @@ namespace Avion2.Analysis;
 
 /// <summary>
 /// The game blocks gathering for a while when you abort too often ("Essence Extraction has been restricted due to
-/// repetitive behavior"): abnormal 10020 on us for 60 s. Seen once, after the fourth abort within about three minutes
-/// (the third had not triggered it). Counts our recent aborts, for a warning, and tracks the block.
+/// repetitive behavior"): abnormal 10020 on us, 60 s or more (120 s when blocked again soon after). Recorded: three
+/// blocks, each on the fourth abort within 5 minutes and none on a third; aborting a gathering that would succeed
+/// counts too, and a block does not reset the count. Counts our recent aborts, for a warning, and tracks the block.
 /// </summary>
 public sealed class GatherLimit
 {
     public const uint BlockAbnormal = 10020;
 
-    /// <summary>Aborts this recent count; the real window is unknown, so it errs on the long side.</summary>
-    public const long AbortWindowMs = 10 * 60_000;
+    /// <summary>Aborts this recent count. Recorded: an abort 4 min 34 s back still counted, one 5 min 5 s back did not.</summary>
+    public const long AbortWindowMs = 5 * 60_000;
 
-    /// <summary>With this many recent aborts, the next one may get gathering blocked.</summary>
+    /// <summary>With this many recent aborts, the next one gets gathering blocked.</summary>
     public const int WarnAt = 3;
 
     private readonly Queue<long> _aborts = new();
@@ -23,7 +24,7 @@ public sealed class GatherLimit
 
     public void Aborted(long nowMs) => _aborts.Enqueue(nowMs);
 
-    /// <summary>An abnormal on us: the block starts (and the count starts over).</summary>
+    /// <summary>An abnormal on us: the block starts.</summary>
     public void Apply(BuffEvent buff)
     {
         if (buff.AbnormalId != BlockAbnormal || buff.DurationMs is not { } length)
@@ -33,7 +34,6 @@ public sealed class GatherLimit
 
         _blockedUntil = buff.TimestampMs + length;
         _instance = buff.Instance;
-        _aborts.Clear();
     }
 
     public void Apply(BuffRemovedEvent removed)

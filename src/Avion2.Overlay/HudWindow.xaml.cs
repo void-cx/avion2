@@ -628,12 +628,13 @@ public partial class HudWindow : Window
     /// ("· Fine" when the item is the better grade), "Will fail" in red. Hidden when it ends (or after 15 s).
     /// </summary>
     /// <remarks>
-    /// Aborting too often gets gathering blocked for a minute, so after a few aborts a failing one says so.
+    /// A fourth abort within 5 minutes gets gathering blocked for a minute or more (whatever the outcome), so after
+    /// three it says so.
     /// </remarks>
     public void ShowGather(Avion2.Protocol.GatherStartEvent start)
     {
-        string fail = _status()?.GatherAborts >= GatherLimit.WarnAt ? "✖  Will fail · aborting again may block gathering for 60 s" : "✖  Will fail";
-        ShowOutcome(!start.Success ? fail : start.Fine ? "✔  Will succeed · Fine" : "✔  Will succeed",
+        string warn = _status()?.GatherAborts >= GatherLimit.WarnAt ? " · aborting blocks gathering" : string.Empty;
+        ShowOutcome((!start.Success ? "✖  Will fail" : start.Fine ? "✔  Will succeed · Fine" : "✔  Will succeed") + warn,
             start.Success, start.Fine, 0.728, TimeSpan.FromSeconds(15));
     }
 
