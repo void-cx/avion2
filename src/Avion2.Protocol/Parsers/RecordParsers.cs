@@ -397,6 +397,63 @@ public static class RecordParsers
         return true;
     }
 
+    /// <summary><c>18 38</c>: skill u32, <c>01</c>, the chain skill it opens u32.</summary>
+    public static bool ParseChainOpen(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryU32(out uint after) || !r.TryU8(out _) || !r.TryU32(out uint skill) || after == 0 || skill == 0)
+        {
+            return false;
+        }
+
+        emit(new ChainStepEvent(ts, after, skill, Open: true));
+        return true;
+    }
+
+    /// <summary><c>19 38</c>: <c>01</c>, the chain skill that closed u32.</summary>
+    public static bool ParseChainClose(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryU8(out _) || !r.TryU32(out uint skill) || skill == 0)
+        {
+            return false;
+        }
+
+        emit(new ChainStepEvent(ts, 0, skill, Open: false));
+        return true;
+    }
+
+    /// <summary><c>34 38</c>: <c>00 00 00</c>, the selected target varint (0 = none).</summary>
+    public static bool ParseTargetSelected(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        if (body.Length < 4 || body[0] != 0 || body[1] != 0 || body[2] != 0)
+        {
+            return false;
+        }
+
+        var r = new SpanReader(body[3..]);
+        if (!r.TryVarint(out uint target))
+        {
+            return false;
+        }
+
+        emit(new TargetSelectedEvent(ts, target));
+        return true;
+    }
+
+    /// <summary><c>35 38</c>: entity varint, <c>00</c>, its target varint (0 = none).</summary>
+    public static bool ParseTargetOfTarget(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryVarint(out uint entity) || entity == 0 || !r.TryU8(out _) || !r.TryVarint(out uint target))
+        {
+            return false;
+        }
+
+        emit(new TargetOfTargetEvent(ts, entity, target));
+        return true;
+    }
+
     /// <summary><c>00 61</c>: map u32, stage u8, from u64 (Unix ms), to u64 (Unix ms, 0 = open).</summary>
     public static bool ParseInstanceStage(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {

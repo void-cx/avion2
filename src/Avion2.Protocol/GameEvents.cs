@@ -207,6 +207,18 @@ public sealed record CraftStartEvent(long TimestampMs, uint StationId, uint Reci
 /// <summary><c>71 8D</c>: the craft ended: <paramref name="Result"/> 0 success, 1 combo success (two items), 2 failed.</summary>
 public sealed record CraftEndEvent(long TimestampMs, uint StationId, byte Result) : GameEvent(TimestampMs);
 
+/// <summary>
+/// <c>18 38</c> (<paramref name="Open"/>): after <paramref name="After"/>, the chain skill <paramref name="Skill"/> can
+/// be used for 3 s. <c>19 38</c>: it can't any more (used or expired); <paramref name="After"/> is 0 then.
+/// </summary>
+public sealed record ChainStepEvent(long TimestampMs, uint After, uint Skill, bool Open) : GameEvent(TimestampMs);
+
+/// <summary><c>34 38</c>: we selected <paramref name="TargetId"/>; 0 = nothing selected.</summary>
+public sealed record TargetSelectedEvent(long TimestampMs, uint TargetId) : GameEvent(TimestampMs);
+
+/// <summary><c>35 38</c>: whom our selected target <paramref name="EntityId"/> targets; 0 = nobody.</summary>
+public sealed record TargetOfTargetEvent(long TimestampMs, uint EntityId, uint TargetId) : GameEvent(TimestampMs);
+
 /// <summary>A member of our party (<c>02 97</c>); <paramref name="CharacterId"/> is the character, not the entity id.</summary>
 public sealed record PartyMember(byte Slot, uint CharacterId, string Name, GameClass Class, bool Online);
 

@@ -15,6 +15,12 @@ public static class Opcodes
     public const ushort BuffRemoved = 0x2C38;
     public const ushort SkillCast = 0x0238;
 
+    // Our own skill state and target (only the player receives these)
+    public const ushort ChainOpen = 0x1838;
+    public const ushort ChainClose = 0x1938;
+    public const ushort TargetSelected = 0x3438;
+    public const ushort TargetOfTarget = 0x3538;
+
     // Movement (37 family). Positions are world units (≈ cm), z up.
     public const ushort MoveRelative = 0x1A37;
     public const ushort MoveSteer = 0x1B37;

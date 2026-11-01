@@ -64,6 +64,8 @@ public partial class SettingsPage : UserControl
         HudCastBox.IsChecked = state.Stored.HudBossCasts;
         HudGatherBox.IsChecked = state.Stored.HudGatherOutcome;
         HudFlightBox.IsChecked = state.Stored.HudFlightTime;
+        HudChainBox.IsChecked = state.Stored.HudChainSteps;
+        HudTurnBox.IsChecked = state.Stored.HudBossOnYou;
         HudFlashBox.IsChecked = state.Stored.HudDamageFlash;
         HudDpsBox.IsChecked = state.Stored.HudDpsLine;
         HudPartyBox.IsChecked = state.Stored.HudPartyMeter;
@@ -423,6 +425,8 @@ public partial class SettingsPage : UserControl
         _state.Stored.HudBossCasts = HudCastBox.IsChecked == true;
         _state.Stored.HudGatherOutcome = HudGatherBox.IsChecked == true;
         _state.Stored.HudFlightTime = HudFlightBox.IsChecked == true;
+        _state.Stored.HudChainSteps = HudChainBox.IsChecked == true;
+        _state.Stored.HudBossOnYou = HudTurnBox.IsChecked == true;
         _state.Stored.HudDamageFlash = HudFlashBox.IsChecked == true;
         _state.Stored.HudDpsLine = HudDpsBox.IsChecked == true;
         _state.Stored.HudPartyMeter = HudPartyBox.IsChecked == true;

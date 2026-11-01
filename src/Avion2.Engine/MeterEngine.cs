@@ -72,6 +72,12 @@ public sealed record EngineStatus(
 
     /// <summary>While we fly: how long until we land at the current rate of flight time; null on the ground.</summary>
     public long? FlightLeftMs { get; init; }
+
+    /// <summary>Chain skills we can use right now, the first to run out first.</summary>
+    public IReadOnlyList<ChainStep> Chains { get; init; } = [];
+
+    /// <summary>The boss we have selected targets us.</summary>
+    public bool BossOnYou { get; init; }
 }
 
 /// <summary>
@@ -210,6 +216,24 @@ public sealed class MeterEngine : IDisposable
             {
                 _flight.Update(flight.Value, flight.TimestampMs);
             }
+            else if (e is ChainStepEvent step)
+            {
+                _chains.Apply(step);
+            }
+            else if (e is TargetSelectedEvent selected)
+            {
+                _selected = selected.TargetId;
+                _selectedTarget = 0; // a 35 38 with its target follows
+            }
+            else if (e is TargetOfTargetEvent focus && focus.EntityId == _selected)
+            {
+                _selectedTarget = focus.TargetId;
+            }
+            else if (e is ZoneChangeEvent or MapLoadEvent)
+            {
+                _chains.Clear(); // entity ids are reissued
+                _selected = _selectedTarget = 0;
+            }
             else if (e is SkillCastEvent cast && Cast is { } onCast)
             {
                 onCast(cast, _session.Registry.Find(cast.ActorId));
@@ -330,12 +354,27 @@ public sealed class MeterEngine : IDisposable
             {
                 SelfServer = registry.SelfId is { } selfId ? registry.Find(selfId)?.ServerId : null,
                 FlightLeftMs = _flight.LeftMs(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()),
+                Chains = _chains.Open(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), ChainSkillName),
+                BossOnYou = _selectedTarget != 0 && _selectedTarget == registry.SelfId && registry.Find(_selected) is { IsBoss: true },
             };
         }
     }
 
+    /// <summary>Chain skills are base ids (<c>18020000</c>); a specialised one falls back to its base skill's name.</summary>
+    private string ChainSkillName(uint skill)
+    {
+        var data = _session.Registry.Data;
+        return data.Skills.ContainsKey(skill) ? data.SkillName(skill) : data.SkillName(skill - skill % 10_000);
+    }
+
     /// <summary>Our flight time, for the HUD.</summary>
     private readonly FlightGauge _flight = new();
+
+    /// <summary>Our open chain steps, for the HUD.</summary>
+    private readonly ChainSteps _chains = new();
+
+    /// <summary>Our selected target (<c>34 38</c>) and whom it targets (<c>35 38</c>); 0 = none.</summary>
+    private uint _selected, _selectedTarget;
 
     /// <summary>When the last server clock tick arrived (Stopwatch ticks); 0 before the first.</summary>
     private long _lastServerTick;

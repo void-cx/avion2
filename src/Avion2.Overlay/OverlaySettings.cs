@@ -80,6 +80,12 @@ public sealed class OverlaySettings
     /// <summary>HUD: while flying, the seconds until we land, beside the game's flight gauge.</summary>
     public bool HudFlightTime { get; set; } = true;
 
+    /// <summary>HUD: the chain skills we can use right now, with the time left to use them.</summary>
+    public bool HudChainSteps { get; set; } = true;
+
+    /// <summary>HUD: a small mark beside the boss bar while the boss we have selected targets us.</summary>
+    public bool HudBossOnYou { get; set; } = true;
+
     /// <summary>Calibrated HUD positions per game resolution ("2560x1440").</summary>
     public Dictionary<string, Avion2.Analysis.HudLayout> HudLayouts { get; set; } = [];
 

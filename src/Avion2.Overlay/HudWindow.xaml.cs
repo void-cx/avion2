@@ -112,6 +112,8 @@ public partial class HudWindow : Window
         UpdateBigHit(s);
         UpdateDps(s);
         UpdateFlight(s);
+        UpdateChains(s);
+        UpdateOnYou(s);
         UpdateParty(s);
         UpdateBoss(s);
     }
@@ -192,6 +194,13 @@ public partial class HudWindow : Window
         GatherBanner.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         Canvas.SetLeft(GatherBanner, w / 2 - GatherBanner.DesiredSize.Width / 2);
         Canvas.SetTop(GatherBanner, h * _gatherBottom - GatherBanner.DesiredSize.Height);
+
+        // Just right of the boss's round emblem, level with its centre (it hangs a little below the middle of the bar)
+        double mark = Math.Max(12, h * 0.018);
+        OnYouMark.Width = OnYouMark.Height = mark;
+        OnYouDot.Width = OnYouDot.Height = mark * 0.3;
+        Canvas.SetLeft(OnYouMark, target.X + target.W / 2 + h * 0.019);
+        Canvas.SetTop(OnYouMark, target.Y + target.H / 2 + h * 0.011 - mark / 2);
 
         CastBanner.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         // Centred under the boss bar, kept on screen when the bar is near an edge
@@ -367,6 +376,64 @@ public partial class HudWindow : Window
         Canvas.SetTop(FlightInfo, Stage.Height * 0.57 - FlightInfo.DesiredSize.Height / 2);
     }
 
+    /// <summary>
+    /// The chain skills we can use right now, e.g. "Resonance Crush  2.1 s" with a bar running out over the 3 s,
+    /// centred above the buff icons over the skill bar. Several open at once stack, the first to run out on top.
+    /// </summary>
+    private void UpdateChains(EngineStatus? status)
+    {
+        var steps = _demo ? [new ChainStep(18020000, "Resonance Crush", 2_100)]
+            : _state.Stored.HudChainSteps ? status?.Chains ?? [] : [];
+        var layout = _preview ?? (GameWindow.ClientArea is { } area ? Layout(area) : null);
+        if (steps.Count == 0 || layout is null)
+        {
+            ChainList.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        double w = Stage.Width, h = Stage.Height;
+        var hp = layout.Box(HudAnchors.SelfHp).ToPixels(w, h);
+        double font = Math.Max(12, h * 0.017);
+        double width = font * 13;
+        ChainList.Children.Clear();
+        foreach (var step in steps)
+        {
+            double left = Math.Clamp(step.LeftMs / (double)ChainSteps.WindowMs, 0, 1);
+            var row = new StackPanel { Margin = new Thickness(0, 0, 0, font * 0.35) };
+            var text = new DockPanel { Width = width };
+            var seconds = new TextBlock { Text = $"{step.LeftMs / 1000.0:0.0} s", Foreground = Brushes.White, FontSize = font * 0.85, VerticalAlignment = VerticalAlignment.Bottom };
+            DockPanel.SetDock(seconds, Dock.Right);
+            text.Children.Add(seconds);
+            text.Children.Add(new TextBlock
+            {
+                Text = step.Name,
+                Foreground = new SolidColorBrush(Color.FromRgb(0xF3, 0xC7, 0x6E)),
+                FontSize = font,
+                FontWeight = FontWeights.SemiBold,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+            });
+            row.Children.Add(text);
+
+            // Runs out over the 3 s: gold, red in the last second
+            var track = new Grid { Width = width, Height = Math.Max(3, h * 0.004), Margin = new Thickness(0, 2, 0, 0) };
+            track.Children.Add(new Border { Background = new SolidColorBrush(Color.FromArgb(0xB0, 0x10, 0x16, 0x1E)) });
+            track.Children.Add(new Border
+            {
+                Background = new SolidColorBrush(step.LeftMs < 1_000 ? Color.FromRgb(0xFF, 0x6B, 0x6B) : Color.FromRgb(0xF0, 0xB4, 0x48)),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Width = width * left,
+            });
+            row.Children.Add(track);
+            ChainList.Children.Add(row);
+        }
+
+        ChainList.Visibility = Visibility.Visible;
+        ChainList.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        Canvas.SetLeft(ChainList, w / 2 - ChainList.DesiredSize.Width / 2);
+        // The buff icons sit about 9 % of the height above the HP bar
+        Canvas.SetTop(ChainList, hp.Y - h * 0.095 - ChainList.DesiredSize.Height);
+    }
+
     private void UpdateDps(EngineStatus? status)
     {
         bool fighting = _demo || (_state.Stored.HudDpsLine && status is { InCombat: true });
@@ -522,6 +589,34 @@ public partial class HudWindow : Window
         return true;
     }
 
+    /// <summary>
+    /// A small red crosshair beside the boss's emblem while the boss we have selected targets us; it pulses for a
+    /// moment when the boss turns to us.
+    /// </summary>
+    private void UpdateOnYou(EngineStatus? status)
+    {
+        bool onYou = _demo || (_state.Stored.HudBossOnYou && status is { BossOnYou: true });
+        if (onYou == (OnYouMark.Visibility == Visibility.Visible))
+        {
+            return;
+        }
+
+        if (!onYou)
+        {
+            OnYouMark.BeginAnimation(OpacityProperty, null);
+            OnYouMark.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        OnYouMark.Visibility = Visibility.Visible;
+        OnYouMark.BeginAnimation(OpacityProperty, new DoubleAnimation(0.2, 1, TimeSpan.FromMilliseconds(250))
+        {
+            AutoReverse = true,
+            RepeatBehavior = new RepeatBehavior(3),
+            FillBehavior = FillBehavior.Stop,
+        });
+    }
+
     private readonly DispatcherTimer _gatherTimer = new() { Interval = TimeSpan.FromSeconds(15) };
 
     /// <summary>Where the outcome banner ends, as a share of the height: just above the game's progress panel.</summary>
@@ -619,7 +714,9 @@ public partial class HudWindow : Window
         GatherBanner.Visibility = Visibility.Visible;
         HpGlow.Visibility = Visibility.Visible;
         HpGlow.Opacity = 1;
+        OnYouMark.Visibility = Visibility.Visible;
         UpdateDps(null);
+        UpdateChains(null);
         UpdateParty(null);
         UpdateBoss(null);
         ShowWhatHitYou();

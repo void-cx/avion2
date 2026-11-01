@@ -26,8 +26,8 @@ It is passive: it never touches the game, its files or its memory, and sends not
 - **Low-HP alert** with its own sound.
 - **HUD effects** (beta, off by default): after a one-off calibration picture of the game, AVION2 draws on the
   game's own HUD: your HP bar pulses when low, the screen edges flash on big hits (with what hit you), boss HP and
-  time to kill under the boss bar, boss skills under it, your DPS above your HP bar and the party's DPS under the
-  group list.
+  time to kill under the boss bar, boss skills under it, a mark while the boss targets you, your DPS above your
+  HP bar, the chain skill you can use next with its time left, and the party's DPS under the group list.
 - **Server lag warning** when the game server freezes, also marked in each fight.
 - **Legion** tags on players and a legion card with your members.
 - Two themes: **AION2** and **VOID**. Skill and NPC names in 10 languages.

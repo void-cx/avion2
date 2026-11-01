@@ -101,6 +101,22 @@
             <TextBlock Text="flight left" Foreground="#CCFFFFFF" FontSize="11" HorizontalAlignment="Right" />
         </StackPanel>
 
+        <!-- Chain skills we can use now, with the time left: above the buff icons over the skill bar -->
+        <StackPanel x:Name="ChainList" Visibility="Collapsed">
+            <StackPanel.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="5" ShadowDepth="0" Opacity="0.95" />
+            </StackPanel.Effect>
+        </StackPanel>
+
+        <!-- The selected boss targets you: a small red crosshair beside its emblem on the boss bar -->
+        <Grid x:Name="OnYouMark" Visibility="Collapsed">
+            <Grid.Effect>
+                <DropShadowEffect Color="#FF2A2A" BlurRadius="8" ShadowDepth="0" Opacity="0.9" />
+            </Grid.Effect>
+            <Ellipse x:Name="OnYouRing" Stroke="#FFFF5A5A" StrokeThickness="2" Fill="#99140A0C" />
+            <Ellipse x:Name="OnYouDot" Fill="#FFFF5A5A" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Grid>
+
         <!-- Gathering outcome, above the game's gathering bars (bottom centre) -->
         <Border x:Name="GatherBanner" Padding="16,5" CornerRadius="4" Visibility="Collapsed" Background="#E60B1220" BorderThickness="1">
             <TextBlock x:Name="GatherText" FontSize="16" FontWeight="SemiBold" />
