@@ -69,6 +69,9 @@ public sealed record EngineStatus(
 {
     /// <summary>Our server (as in player records), once known.</summary>
     public ushort? SelfServer { get; init; }
+
+    /// <summary>While we fly: how long until we land at the current rate of flight time; null on the ground.</summary>
+    public long? FlightLeftMs { get; init; }
 }
 
 /// <summary>
@@ -203,6 +206,10 @@ public sealed class MeterEngine : IDisposable
                 _gatherNode = null; // our gathering was aborted: no end record follows
                 Gathering?.Invoke(e);
             }
+            else if (e is FlightTimeEvent flight && flight.EntityId == _session.Registry.SelfId)
+            {
+                _flight.Update(flight.Value, flight.TimestampMs);
+            }
             else if (e is SkillCastEvent cast && Cast is { } onCast)
             {
                 onCast(cast, _session.Registry.Find(cast.ActorId));
@@ -322,9 +329,13 @@ public sealed class MeterEngine : IDisposable
                     : 0)
             {
                 SelfServer = registry.SelfId is { } selfId ? registry.Find(selfId)?.ServerId : null,
+                FlightLeftMs = _flight.LeftMs(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()),
             };
         }
     }
+
+    /// <summary>Our flight time, for the HUD.</summary>
+    private readonly FlightGauge _flight = new();
 
     /// <summary>When the last server clock tick arrived (Stopwatch ticks); 0 before the first.</summary>
     private long _lastServerTick;

@@ -92,6 +92,15 @@
             </StackPanel>
         </Border>
 
+        <!-- Flight time left, beside the game's flight arc left of the character -->
+        <StackPanel x:Name="FlightInfo" Visibility="Collapsed">
+            <StackPanel.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="5" ShadowDepth="0" Opacity="1" />
+            </StackPanel.Effect>
+            <TextBlock x:Name="FlightText" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Right" />
+            <TextBlock Text="flight left" Foreground="#CCFFFFFF" FontSize="11" HorizontalAlignment="Right" />
+        </StackPanel>
+
         <!-- Gathering outcome, above the game's gathering bars (bottom centre) -->
         <Border x:Name="GatherBanner" Padding="16,5" CornerRadius="4" Visibility="Collapsed" Background="#E60B1220" BorderThickness="1">
             <TextBlock x:Name="GatherText" FontSize="16" FontWeight="SemiBold" />

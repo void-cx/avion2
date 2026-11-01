@@ -223,6 +223,12 @@ public sealed record ZoneChangeEvent(long TimestampMs) : GameEvent(TimestampMs);
 /// <param name="MaxHp">0 when the record carries only the current HP.</param>
 public sealed record HpUpdateEvent(long TimestampMs, uint EntityId, uint Hp, uint MaxHp) : GameEvent(TimestampMs);
 
+/// <summary>
+/// <c>00 8D</c> resource 6: an entity's flight time in 1/10 000 s (570 000 = 57 s when full). Every 100 ms while it
+/// flies, every second while it refills.
+/// </summary>
+public sealed record FlightTimeEvent(long TimestampMs, uint EntityId, uint Value) : GameEvent(TimestampMs);
+
 /// <summary>Our own entity id, from records only the local player receives (own stats, about once per second).
 /// Carries no name; <see cref="SelfIdentityEvent"/> (sent on teleport/zone) does.</summary>
 public sealed record SelfHintEvent(long TimestampMs, uint EntityId) : GameEvent(TimestampMs);

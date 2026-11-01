@@ -451,19 +451,27 @@ public static class RecordParsers
 
     /// <summary>
     /// <c>00 8D</c> resource update: entity varint, kind u8, ? u8, resource u8, value u32, [tail].
-    /// Resource 0 is HP (mobs and us); 1 looks like MP, 3/4/6 are other gauges. Max HP is not included.
+    /// Resource 0 is HP (mobs and us), 6 flight time; 1 looks like MP, 3/4 are other gauges. Max HP is not included.
     /// </summary>
     public static bool ParseRemainingHp(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
         var r = new SpanReader(body);
-        if (!r.TryVarint(out uint id) || id == 0 || !r.TrySkip(2) || !r.TryU8(out byte resource) || resource != 0 ||
-            !r.TryU32(out uint hp) || hp > 1_000_000_000)
+        if (!r.TryVarint(out uint id) || id == 0 || !r.TrySkip(2) || !r.TryU8(out byte resource) || !r.TryU32(out uint value))
         {
             return false;
         }
 
-        emit(new HpUpdateEvent(ts, id, hp, MaxHp: 0));
-        return true;
+        switch (resource)
+        {
+            case 0 when value <= 1_000_000_000:
+                emit(new HpUpdateEvent(ts, id, value, MaxHp: 0));
+                return true;
+            case 6:
+                emit(new FlightTimeEvent(ts, id, value));
+                return true;
+            default:
+                return false;
+        }
     }
 
     /// <summary>

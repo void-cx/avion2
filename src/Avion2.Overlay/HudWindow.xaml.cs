@@ -111,6 +111,7 @@ public partial class HudWindow : Window
         UpdateLowHp(s);
         UpdateBigHit(s);
         UpdateDps(s);
+        UpdateFlight(s);
         UpdateParty(s);
         UpdateBoss(s);
     }
@@ -343,6 +344,29 @@ public partial class HudWindow : Window
     }
 
     /// <summary>"6,279 DPS · 13 % crit · 1:20" above your HP bar while you are fighting (refreshed twice a second).</summary>
+    /// <summary>
+    /// While flying: seconds until we land at the current rate, white, orange under 10 s, red under 5 s. Just left of
+    /// the game's flight arc, which sits left of the character (the camera keeps it in the centre).
+    /// </summary>
+    private void UpdateFlight(EngineStatus? status)
+    {
+        long? left = _demo ? 23_000 : _state.Stored.HudFlightTime ? status?.FlightLeftMs : null;
+        if (left is not { } ms)
+        {
+            FlightInfo.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        double seconds = ms / 1000.0;
+        FlightText.Text = seconds < 10 ? $"{seconds:0.0} s" : $"{seconds:0} s";
+        FlightText.Foreground = new SolidColorBrush(seconds < 5 ? Color.FromRgb(0xFF, 0x6B, 0x6B)
+            : seconds < 10 ? Color.FromRgb(0xFF, 0xB0, 0x4A) : Colors.White);
+        FlightInfo.Visibility = Visibility.Visible;
+        FlightInfo.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        Canvas.SetLeft(FlightInfo, Stage.Width * 0.425 - FlightInfo.DesiredSize.Width);
+        Canvas.SetTop(FlightInfo, Stage.Height * 0.57 - FlightInfo.DesiredSize.Height / 2);
+    }
+
     private void UpdateDps(EngineStatus? status)
     {
         bool fighting = _demo || (_state.Stored.HudDpsLine && status is { InCombat: true });

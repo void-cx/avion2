@@ -77,6 +77,9 @@ public sealed class OverlaySettings
     /// <summary>HUD: whether a gathering will succeed, above the gathering bars, as soon as it starts.</summary>
     public bool HudGatherOutcome { get; set; } = true;
 
+    /// <summary>HUD: while flying, the seconds until we land, beside the game's flight gauge.</summary>
+    public bool HudFlightTime { get; set; } = true;
+
     /// <summary>Calibrated HUD positions per game resolution ("2560x1440").</summary>
     public Dictionary<string, Avion2.Analysis.HudLayout> HudLayouts { get; set; } = [];
 
