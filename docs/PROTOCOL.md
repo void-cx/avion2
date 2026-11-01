@@ -492,6 +492,12 @@ The server decides a gathering's **outcome when it starts**; the success and fai
 **Aborted:** no end record comes. Instead `39 36` (use interrupted: `object varint`, `u8`, `u8` (`06 19`),
 `actor varint`, `attempt u32`) arrives, with `3E 36` (`00 00`, `object varint`) and `6D 8D` (`object varint`).
 
+**Blocked for aborting too often:** after the fourth abort within about three minutes (seen once), the server puts
+abnormal **10020** on the player with `2A 38`: length 60 000 ms, caster the player. The game then says "Essence
+Extraction has been restricted due to repetitive behavior." While it lasts, every try to gather gets a refused
+`31 8D` of 19 bytes: `1C 38` instead of `00 00`, then the node and zeros, and no bar race. `2C 38` removes the
+abnormal (reason 1, expired) exactly 60 s later.
+
 ### Crafting
 Status: Verified · 27 crafts at cooking and alchemy stations, 4 of them combos
 
