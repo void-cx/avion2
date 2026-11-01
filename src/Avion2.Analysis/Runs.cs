@@ -262,6 +262,18 @@ public sealed class DungeonRun
     [JsonPropertyName("deaths")]
     public List<long> Deaths { get; set; } = [];
 
+    /// <summary>When the game declared the instance cleared (ms after the start); null = not cleared (or not told).</summary>
+    [JsonPropertyName("clearedMs")]
+    public long? ClearedMs { get; set; }
+
+    /// <summary>The instance's objectives (strongholds): when each step was done, ms after the start, in order.</summary>
+    [JsonPropertyName("steps")]
+    public List<long> Steps { get; set; } = [];
+
+    /// <summary>The game's name for the objectives ("World_L1_GarrisonTerritory_R3_MapEvent").</summary>
+    [JsonPropertyName("event")]
+    public string? EventName { get; set; }
+
     [JsonPropertyName("party")]
     public List<RunMember> Party { get; set; } = [];
 
@@ -344,6 +356,10 @@ public sealed class RunTracker
     /// <summary>The fight that ended last: a boss kill closes its fight before the run hears of the kill.</summary>
     private (long Start, long Last)? _lastFight;
 
+    /// <summary>The map event (objectives) of the current run, and the step it is on.</summary>
+    private uint? _eventId;
+    private int _step;
+
     /// <summary>When we loaded an open-world map; the run ends at the zone change that follows (the last fight closes there).</summary>
     private long? _leftAt;
 
@@ -392,6 +408,17 @@ public sealed class RunTracker
                 break;
             case PlayerSpawnEvent player when Current is not null:
                 _seen.Add(player.Name);
+                break;
+            case InstanceStageEvent { Stage: 3 } stage when Current is { } cleared && cleared.Maps.Contains(stage.MapId):
+                cleared.ClearedMs ??= stage.TimestampMs - cleared.StartMs;
+                RunChanged?.Invoke(cleared);
+                break;
+            case MapEventStartEvent started when Current is { } withEvent:
+                withEvent.EventName ??= started.Name;
+                _eventId ??= started.EventId;
+                break;
+            case MapEventProgressEvent progress when Current is { } stepped && (_eventId ?? progress.EventId) == progress.EventId:
+                OnStep(stepped, progress);
                 break;
             case PartyRosterEvent roster:
                 _roster = roster.Members;
@@ -465,6 +492,27 @@ public sealed class RunTracker
         _bagAtStart = _inventory.IsKnown ? Bag() : null;
         _kinahAtStart = _inventory.IsKnown ? _inventory.Kinah : null;
         RunStarted?.Invoke(Current);
+    }
+
+    /// <summary>A step begins when the one before it is done; "done" closes the last step.</summary>
+    private void OnStep(DungeonRun run, MapEventProgressEvent progress)
+    {
+        _eventId ??= progress.EventId;
+        int done = progress.Done ? progress.Step : progress.Step - 1;
+        if (done <= run.Steps.Count)
+        {
+            _step = Math.Max(_step, progress.Step);
+            return;
+        }
+
+        long at = progress.TimestampMs - run.StartMs;
+        while (run.Steps.Count < done)
+        {
+            run.Steps.Add(at); // steps skipped between two records end at the same time
+        }
+
+        _step = progress.Step;
+        RunChanged?.Invoke(run);
     }
 
     private void OnDeath(DungeonRun run, DeathEvent death)
@@ -613,6 +661,8 @@ public sealed class RunTracker
         _killed.Clear();
         _seen.Clear();
         _fought.Clear();
+        _eventId = null;
+        _step = 0;
         _bagAtStart = null;
         _kinahAtStart = null;
         RunEnded?.Invoke(run);

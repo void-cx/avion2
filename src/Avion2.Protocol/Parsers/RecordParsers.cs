@@ -316,6 +316,46 @@ public static class RecordParsers
         return true;
     }
 
+    /// <summary><c>00 61</c>: map u32, stage u8, from u64 (Unix ms), to u64 (Unix ms, 0 = open).</summary>
+    public static bool ParseInstanceStage(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryU32(out uint map) || map == 0 || !r.TryU8(out byte stage) || !r.TryI64(out long from) || !r.TryI64(out long to))
+        {
+            return false;
+        }
+
+        emit(new InstanceStageEvent(ts, map, stage, from, to));
+        return true;
+    }
+
+    /// <summary><c>2E 92</c>: event id u32, name length u8, name (ASCII), …</summary>
+    public static bool ParseMapEventStart(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryU32(out uint id) || !r.TryU8(out byte length) || length is 0 or > 120 || !r.TryUtf8(length, out string name))
+        {
+            return false;
+        }
+
+        emit(new MapEventStartEvent(ts, id, name));
+        return true;
+    }
+
+    /// <summary><c>2D 92</c>: event id u32, state u8 (2 running, 3 done), 01, step u8, counter count u8, counters …</summary>
+    public static bool ParseMapEventProgress(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryU32(out uint id) || !r.TryU8(out byte state) || state is not (2 or 3) || !r.TryU8(out _) ||
+            !r.TryU8(out byte step) || step == 0)
+        {
+            return false;
+        }
+
+        emit(new MapEventProgressEvent(ts, id, step, state == 3));
+        return true;
+    }
+
     /// <summary><c>23 36</c> with entity 0 is a self teleport / zone change.</summary>
     public static bool ParsePosition(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {

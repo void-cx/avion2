@@ -160,6 +160,35 @@ public class RunTests
     }
 
     [Fact]
+    public void StrongholdClearAndObjectivesFromTheGame()
+    {
+        // As recorded in Forest Shade Execution Site (152002): stage 2 on entry, steps 1 → 2, done, stage 3
+        var events = new List<GameEvent>();
+        Avion2.Protocol.Parsers.RecordParsers.ParseInstanceStage(Convert.FromHexString("c251020002748e1d96a10100000000000000000000"), 1_000, events.Add);
+        Avion2.Protocol.Parsers.RecordParsers.ParseMapEventStart(Convert.FromHexString(
+            "ee1d040026576f726c645f4c315f4761727269736f6e5465727269746f72795f52335f4d61704576656e74"), 1_100, events.Add);
+        Avion2.Protocol.Parsers.RecordParsers.ParseMapEventProgress(Convert.FromHexString("ee1d04000201010c00000000000000000100000008"), 20_000, events.Add);
+        Avion2.Protocol.Parsers.RecordParsers.ParseMapEventProgress(Convert.FromHexString("ee1d0400020102020000080000"), 40_000, events.Add);
+        Avion2.Protocol.Parsers.RecordParsers.ParseMapEventProgress(Convert.FromHexString("ee1d0400030102020101080000"), 60_000, events.Add);
+        Avion2.Protocol.Parsers.RecordParsers.ParseInstanceStage(Convert.FromHexString("c2510200036eb51f96a10100007edc1f96a1010000"), 61_000, events.Add);
+        Assert.Equal(6, events.Count);
+        Assert.Equal((152002u, (byte)3), (((InstanceStageEvent)events[5]).MapId, ((InstanceStageEvent)events[5]).Stage));
+        Assert.Equal("World_L1_GarrisonTerritory_R3_MapEvent", ((MapEventStartEvent)events[1]).Name);
+
+        var session = Session();
+        DungeonRun? run = null;
+        session.Runs.RunEnded += r => run = r;
+        session.Apply(new MapLoadEvent(500, 152002, 37));
+        events.ForEach(session.Apply);
+        session.Apply(new MapLoadEvent(71_000, 1010, 0));
+        session.Apply(new ZoneChangeEvent(72_000));
+        Assert.NotNull(run);
+        Assert.Equal(60_500, run.ClearedMs);
+        Assert.Equal([39_500L, 59_500L], run.Steps); // step 1 done when step 2 began, step 2 when the event was done
+        Assert.Equal(ContentKind.Stronghold, run.Kind);
+    }
+
+    [Fact]
     public void ParsesPartyRoster()
     {
         // header, then two entries (flag, slot, character id, 00 00, 2 bytes, name, class code, level) and an empty slot

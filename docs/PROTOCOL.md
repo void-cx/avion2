@@ -263,6 +263,20 @@ approximate).
 - `21 8D` boss battle toggle (TK era): `id varint, varint, toggle varint` (1 start / 0 end).
 - Ping: `03 36 00 00 <i64 LE>` client timestamp echo.
 
+### Instance stages and objectives ✅ verified 2026-11-01 (11 strongholds, entry to exit)
+```
+38 36 / 3A 36  we use the entry portal (an object); 47 36: self varint, 02, content code (as in 21 36), then 21 36
+00 61  map u32, stage u8, from u64, to u64 (Unix ms)
+       2 running (from = entering) · 3 cleared (to = from + 10 s: the automatic exit) · 4 leaving (to = + 10 min)
+2E 92  map event started: event id u32, name len u8, name ("World_L1_GarrisonTerritory_R3_MapEvent"), …, time u64
+2D 92  event progress: event id u32, state u8 (2 running, 3 done), 01, step u8 (1, 2, …), n u8, n counters, 08, …
+2F 92  event id u32: the event ended (we left)
+05 40  bodyless, right before the exit's map load
+```
+Stronghold keys: `GarrisonTerritory_R1…R5` = maps 152000…152005, `H` = 153xxx, `D` = 154xxx. R3 is Forest Shade
+Execution Site, R4 Renegade Hideout. A step starts when the one before is done, so the step changes are objective
+splits; stage 3 marks the clear.
+
 ### Seen, not decoded (2026-10-31, 30 MB stronghold and field capture)
 About 140 of 218 opcodes carry nothing we use yet. The frequent ones and what they look like:
 ```

@@ -41,6 +41,9 @@ public static class Opcodes
     public const ushort Ownership = 0x048D;
     public const ushort HpUpdate = 0x1B92;
     public const ushort PartyRoster = 0x0297;
+    public const ushort InstanceStage = 0x0061;
+    public const ushort MapEventStart = 0x2E92;
+    public const ushort MapEventProgress = 0x2D92;
     public const ushort FieldBossTable = 0x0191;
 
     // World objects (hidden cubes, gather nodes, doors…)

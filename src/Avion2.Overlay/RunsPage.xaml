@@ -179,7 +179,7 @@
                             </UniformGrid>
 
                             <StackPanel Visibility="{Binding MomentsVisibility}">
-                                <TextBlock Text="BOSSES AND DEATHS" Style="{StaticResource SectionLabel}" Margin="0,22,0,8" />
+                                <TextBlock Text="TIMELINE" Style="{StaticResource SectionLabel}" Margin="0,22,0,8" />
                                 <ItemsControl ItemsSource="{Binding Moments}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>

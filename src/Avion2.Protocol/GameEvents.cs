@@ -162,6 +162,21 @@ public sealed record LootDropEvent(long TimestampMs, uint DropId, uint SourceId,
 /// <summary><c>1F 56</c>: a drop left the ground; taken by <paramref name="TakerCharacterId"/>, or 0 when it just vanished.</summary>
 public sealed record LootTakenEvent(long TimestampMs, uint DropId, uint TakerCharacterId) : GameEvent(TimestampMs);
 
+/// <summary>
+/// <c>00 61</c>: the stage of the instance we are in. 2 = running (from entering), 3 = cleared (to = the automatic
+/// exit, 10 s later), 4 = leaving (to = 10 min later, likely the time until it can be entered again).
+/// </summary>
+public sealed record InstanceStageEvent(long TimestampMs, uint MapId, byte Stage, long FromMs, long ToMs) : GameEvent(TimestampMs);
+
+/// <summary><c>2E 92</c>: a map event started (e.g. a stronghold's objectives, "World_L1_GarrisonTerritory_R3_MapEvent").</summary>
+public sealed record MapEventStartEvent(long TimestampMs, uint EventId, string Name) : GameEvent(TimestampMs);
+
+/// <summary>
+/// <c>2D 92</c>: progress of a map event: the objective <paramref name="Step"/> (1, 2, …) and whether the event is
+/// <paramref name="Done"/> (all objectives met).
+/// </summary>
+public sealed record MapEventProgressEvent(long TimestampMs, uint EventId, byte Step, bool Done) : GameEvent(TimestampMs);
+
 /// <summary>A member of our party (<c>02 97</c>); <paramref name="CharacterId"/> is the character, not the entity id.</summary>
 public sealed record PartyMember(byte Slot, uint CharacterId, string Name, GameClass Class, bool Online);
 

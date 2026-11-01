@@ -53,12 +53,14 @@ public sealed record RunRow(DungeonRun Run, GameData Data)
     public string Deaths => Run.Deaths.Count == 0 ? "–" : Run.Deaths.Count.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>Muted text after the title: the category, or the map id while the place is unknown.</summary>
-    public string Extra => Run.DungeonSlug is null && Run.CustomName is null ? $"{Category} · map {Run.FirstMap}" : Category;
+    public string Extra => Run.DungeonSlug is null && Run.CustomName is null && !Data.Maps.ContainsKey(Run.FirstMap)
+        ? $"{Category} · map {Run.FirstMap}"
+        : Category;
 
     public bool IsWithin(TimeSpan age) => DateTime.Now - Started <= age;
 
     /// <summary>A run that counts for best times: left normally with at least one boss down.</summary>
-    public bool Counts => Run.Left && Run.Bosses.Count > 0;
+    public bool Counts => Run.Left && (Run.ClearedMs is not null || Run.Bosses.Count > 0);
 
     /// <summary>"4:03", or "1:02:03" past an hour.</summary>
     public static string Clock(long ms)
@@ -140,7 +142,10 @@ public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live 
 
     public Visibility WhereVisibility => Visibility.Visible;
 
-    public string Ending => live ? "In progress" : row.Run.Left ? "Left the instance" : "Capture stopped inside";
+    public string Ending => row.Run.ClearedMs is { } cleared ? $"Cleared at {RunRow.Clock(cleared)}"
+        : live ? "In progress"
+        : row.Run.Left ? "Left the instance"
+        : "Capture stopped inside";
 
     public string PartyText => row.Run.Party.Count == 0 ? "Solo" : $"Party of {row.Run.Party.Count + 1}";
 
@@ -203,6 +208,7 @@ public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live 
                     ? new RunMoment(RunRow.Clock(b.AtMs), b.Name, b.FightMs is { } ms ? $"fight {RunRow.Clock(ms)}" : "", gold,
                         Signed(delta), delta <= 0 ? green : red)
                     : new RunMoment(RunRow.Clock(b.AtMs), b.Name, b.FightMs is { } ms2 ? $"fight {RunRow.Clock(ms2)}" : "", gold)))
+                .Concat(row.Run.Steps.Select((at, i) => (at, Step(i, at, best, green, red))))
                 .Concat(row.Run.Deaths.Select(d => (d, new RunMoment(RunRow.Clock(d), "You died", "", red))))
                 .OrderBy(m => m.Item1)
                 .Select(m => m.Item2)
@@ -211,7 +217,18 @@ public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live 
         }
     }
 
-    public Visibility MomentsVisibility => row.Run.Bosses.Count + row.Run.Deaths.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility MomentsVisibility =>
+        row.Run.Bosses.Count + row.Run.Deaths.Count + row.Run.Steps.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary>An objective done, compared with the same step of the best run.</summary>
+    private static RunMoment Step(int index, long at, RunRow? best, Brush faster, Brush slower)
+    {
+        var quiet = Brush("SecondaryTextBrush");
+        string text = $"Objective {index + 1} done";
+        return best is not null && index < best.Run.Steps.Count && at - best.Run.Steps[index] is var delta
+            ? new RunMoment(RunRow.Clock(at), text, "", quiet, Signed(delta), delta <= 0 ? faster : slower)
+            : new RunMoment(RunRow.Clock(at), text, "", quiet);
+    }
 
     /// <summary>Bosses of the table not killed in this run.</summary>
     public string Missing

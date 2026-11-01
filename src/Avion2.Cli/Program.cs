@@ -338,6 +338,12 @@ internal static class Commands
                               $"{(run.Left ? "" : "  [not left]")}");
             Console.WriteLine($"    {run.Character} · {run.Fights} fights · {run.Damage:N0} damage · {run.Deaths.Count} deaths · " +
                               $"kinah {run.Kinah?.ToString("+#,0;-#,0;0") ?? "?"} · {run.Loot.Count} items · party {string.Join(", ", run.Party.Select(m => m.Name))}");
+            if (run.ClearedMs is not null || run.Steps.Count > 0)
+            {
+                Console.WriteLine($"    cleared {(run.ClearedMs is { } cleared ? Clock(cleared) : "no")} · objectives " +
+                                  string.Join(" ", run.Steps.Select(Clock)) + (run.EventName is { } name ? $" · {name}" : ""));
+            }
+
             foreach (var boss in run.Bosses)
             {
                 Console.WriteLine($"    {Clock(boss.AtMs)}  {boss.Name} ({boss.Npc})" +
