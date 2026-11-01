@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Avion2.Protocol;
 using PacketDotNet;
 using SharpPcap;
 using SharpPcap.LibPcap;
@@ -143,6 +144,7 @@ public sealed class ProcessRecorder : IFrameRecorder
     private readonly string _path;
     private readonly IReadOnlyList<string> _processNames;
     private readonly HashSet<FlowKey> _flows = new();
+    private readonly HashSet<FlowKey> _withData = new();
     private readonly LinkedList<RawFrame> _held = new();
     private readonly Stopwatch _sinceRefresh = new();
     private CaptureFileWriterDevice? _writer;
@@ -174,8 +176,10 @@ public sealed class ProcessRecorder : IFrameRecorder
             return;
         }
 
-        // The lobby (character and server list) can come from another process than the game: known by its packets
-        if (IsLobby(payload))
+        // The lobby (character and server list) can come from another process than the game: known by its first
+        // packet. Only a connection's first data counts: further in, encrypted bytes of other connections (an update
+        // download, an upload) pass for a lobby packet every few thousand segments.
+        if (payload.Length > 0 && _withData.Add(segment.Flow) && IsLobby(payload))
         {
             Adopt([segment.Flow, new FlowKey(segment.Flow.Destination, segment.Flow.Source)]);
             Record(frame);
@@ -204,8 +208,8 @@ public sealed class ProcessRecorder : IFrameRecorder
     }
 
     /// <summary>
-    /// A lobby packet: a varint length that matches the segment, then an opcode <c>xx 39</c> (the lobby family:
-    /// handshake, account, server list, characters, redirect).
+    /// Lobby packets: the segment splits exactly into frames (varint length, then an opcode <c>xx 39</c>: the lobby
+    /// family of handshake, account, server list, characters, redirect).
     /// </summary>
     public static bool IsLobby(ReadOnlySpan<byte> payload)
     {
@@ -214,22 +218,18 @@ public sealed class ProcessRecorder : IFrameRecorder
             return false;
         }
 
-        uint length = 0;
-        int i = 0, shift = 0;
-        while (i < payload.Length && i < 3)
+        while (payload.Length > 0)
         {
-            byte b = payload[i++];
-            length |= (uint)(b & 0x7F) << shift;
-            shift += 7;
-            if (b < 0x80)
+            if (!Framing.TryGetFrameSize(payload, out int size, out int header) || size < header + 2 || size > payload.Length ||
+                payload[header + 1] != 0x39 || payload[header] is < 0x01 or > 0x20)
             {
-                break;
+                return false;
             }
+
+            payload = payload[size..];
         }
 
-        long frame = (long)length - 4 + i;
-        return i + 2 <= payload.Length && payload[i + 1] == 0x39 && payload[i] is >= 0x01 and <= 0x20 &&
-               frame >= 2 && frame <= payload.Length;
+        return true;
     }
 
     /// <summary>Records these flows from now on, and writes what was held of them, in the order it arrived.</summary>
