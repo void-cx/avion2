@@ -224,7 +224,7 @@
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                                             <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TitleBrush}" TextTrimming="CharacterEllipsis" MaxWidth="150" />
                                             <TextBlock Text="{Binding Legion}" FontSize="10.5" Foreground="{DynamicResource HighlightBrush}" Margin="5,0,0,1" VerticalAlignment="Bottom"
-                                                       TextTrimming="CharacterEllipsis" MaxWidth="90" ToolTip="Legion" />
+                                                       TextTrimming="CharacterEllipsis" MaxWidth="120" ToolTip="Legion, and the server for players from another one" />
                                             <TextBlock Text="{Binding CombatPower, StringFormat={}⚔ {0}}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" Margin="7,0,0,1" VerticalAlignment="Bottom"
                                                        Visibility="{Binding HasCombatPower, Converter={StaticResource BoolToVis}}" ToolTip="Combat power" />
                                         </StackPanel>

@@ -65,7 +65,11 @@ public sealed record EngineStatus(
     bool InCombat,
     uint SelfHp,
     uint SelfMaxHp,
-    long ServerSilenceMs = 0);
+    long ServerSilenceMs = 0)
+{
+    /// <summary>Our server (as in player records), once known.</summary>
+    public ushort? SelfServer { get; init; }
+}
 
 /// <summary>
 /// Live capture → pipeline → <see cref="GameSession"/>, on a background consumer.
@@ -300,7 +304,10 @@ public sealed class MeterEngine : IDisposable
                 registry.SelfMaxHp,
                 _pipeline.Detector.Locked is not null && _lastServerTick != 0
                     ? (long)System.Diagnostics.Stopwatch.GetElapsedTime(_lastServerTick).TotalMilliseconds
-                    : 0);
+                    : 0)
+            {
+                SelfServer = registry.SelfId is { } selfId ? registry.Find(selfId)?.ServerId : null,
+            };
         }
     }
 

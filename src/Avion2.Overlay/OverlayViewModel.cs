@@ -419,6 +419,19 @@ public sealed class OverlayViewModel : Bindable
         }
     }
 
+    /// <summary>"‹Legion›", plus the server for players from another one ("‹Legion› · Agnita").</summary>
+    private static string LegionAndServer(MeterRow row, ushort? ourServer)
+    {
+        string legion = row.Legion is { Length: > 0 } name ? $"‹{name}›" : string.Empty;
+        if (row.IsSelf || row.ServerId is not { } server || server == ourServer || ourServer is null ||
+            Avion2.Engine.BundledGameData.Server(server) is not { } info)
+        {
+            return legion;
+        }
+
+        return legion.Length > 0 ? $"{legion} · {info.Name}" : info.Name;
+    }
+
     private void UpdateDamage(MeterSnapshot snapshot)
     {
         double top = snapshot.Rows.Count > 0 ? Math.Max(snapshot.Rows[0].Total, 1) : 1;
@@ -426,7 +439,7 @@ public sealed class OverlayViewModel : Bindable
         {
             var row = snapshot.Rows[i];
             Fill(card, row.Name, row.Class, row.IsSelf, row.CombatPower);
-            card.Legion = row.Legion is { Length: > 0 } legion ? $"‹{legion}›" : string.Empty;
+            card.Legion = LegionAndServer(row, snapshot.Self?.ServerId);
             card.Value = Big(row.Dps);
             card.Share = Invariant($"{row.Share * 100:0.0}%");
             card.Stats = Invariant($"Dbl {row.DoubleRate * 100:0}%  Perf {row.PerfectRate * 100:0}%  Crit {row.CritRate * 100:0}%  Front {row.FrontRate * 100:0}%  Back {row.BackRate * 100:0}%");

@@ -198,6 +198,10 @@ public partial class HomeWindow : Window
         }
 
         string who = status.SelfName ?? (status.SelfClass != GameClass.Unknown ? status.SelfClass.ToString() : "connected");
+        if (status.SelfName is not null && status.SelfServer is { } server && Avion2.Engine.BundledGameData.Server(server) is { } info)
+        {
+            who = $"{who} · {info.Name}";
+        }
         string where = engine.LiveMap() is { MapId: { } map } ? _state.Data.MapName(map) : string.Empty;
         SetStatus(status.InCombat ? $"{who} · in combat" : where.Length > 0 ? $"{who} · {where}" : who, "LiveBrush");
     }

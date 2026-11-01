@@ -84,6 +84,34 @@ public static class BundledGameData
         return items;
     });
 
+    /// <summary>A game server: its name ("Gauss"), short name ("GAU"), faction and region.</summary>
+    public sealed record ServerInfo(string Name, string? Short, string Faction, string Region);
+
+    private static readonly Lazy<Dictionary<ushort, ServerInfo>> ServerTable = new(() =>
+    {
+        var servers = new Dictionary<ushort, ServerInfo>();
+        if (Read("servers.json") is { } json)
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            foreach (var server in doc.RootElement.GetProperty("servers").EnumerateObject())
+            {
+                if (ushort.TryParse(server.Name, out ushort id))
+                {
+                    var v = server.Value;
+                    servers[id] = new ServerInfo(v.GetProperty("name").GetString() ?? $"Server {id}",
+                        v.TryGetProperty("short", out var s) ? s.GetString() : null,
+                        v.TryGetProperty("faction", out var f) ? f.GetString() ?? "?" : "?",
+                        v.TryGetProperty("region", out var r) ? r.GetString() ?? "?" : "?");
+                }
+            }
+        }
+
+        return servers;
+    });
+
+    /// <summary>The server with this id (as in player records, e.g. 1321 = Gauss), or null when unknown.</summary>
+    public static ServerInfo? Server(ushort id) => ServerTable.Value.GetValueOrDefault(id);
+
     /// <summary>An item's English name ("Enhance Stone"), or null when the table does not know it.</summary>
     public static string? ItemName(uint itemId) => ItemTable.Value.GetValueOrDefault(itemId);
 

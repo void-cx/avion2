@@ -227,8 +227,13 @@ public sealed class EntityRegistry
                 break;
 
             case LegionTagEvent tag:
-                GetOrAdd(tag.EntityId).Legion = tag.Legion;
+            {
+                // The legion tag also names the player's server (spawn records do not)
+                var info = GetOrAdd(tag.EntityId);
+                info.Legion = tag.Legion;
+                info.ServerId ??= tag.ServerId;
                 break;
+            }
 
             case MapLoadEvent map:
                 MapId = map.MapId;

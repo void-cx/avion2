@@ -1,0 +1,642 @@
+{
+ "source": "https://aion2.plaync.com/en-us/api/gameinfo/servers?lang=en-US&region=<region>",
+ "fetched": "2026-11-01",
+ "servers": {
+  "1101": {
+   "name": "Siel",
+   "short": "SIE",
+   "faction": "Elyos",
+   "region": "NA East"
+  },
+  "1102": {
+   "name": "Nezekan",
+   "short": "NEZ",
+   "faction": "Elyos",
+   "region": "NA East"
+  },
+  "1103": {
+   "name": "Vaizel",
+   "short": "VAI",
+   "faction": "Elyos",
+   "region": "NA East"
+  },
+  "1104": {
+   "name": "Kaisinel",
+   "short": "KAI",
+   "faction": "Elyos",
+   "region": "NA East"
+  },
+  "1105": {
+   "name": "Yustiel",
+   "short": "YUS",
+   "faction": "Elyos",
+   "region": "NA East"
+  },
+  "1106": {
+   "name": "Ariel",
+   "short": "ARI",
+   "faction": "Elyos",
+   "region": "NA East"
+  },
+  "1107": {
+   "name": "Fregion",
+   "short": "FRE",
+   "faction": "Elyos",
+   "region": "NA East"
+  },
+  "1108": {
+   "name": "Meslamtaeda",
+   "short": "MES",
+   "faction": "Elyos",
+   "region": "NA East"
+  },
+  "1109": {
+   "name": "Hithanya",
+   "short": "HIT",
+   "faction": "Elyos",
+   "region": "NA East"
+  },
+  "1201": {
+   "name": "Siel",
+   "short": "SIE",
+   "faction": "Elyos",
+   "region": "NA West"
+  },
+  "1202": {
+   "name": "Nezekan",
+   "short": "NEZ",
+   "faction": "Elyos",
+   "region": "NA West"
+  },
+  "1203": {
+   "name": "Vaizel",
+   "short": "VAI",
+   "faction": "Elyos",
+   "region": "NA West"
+  },
+  "1204": {
+   "name": "Kaisinel",
+   "short": "KAI",
+   "faction": "Elyos",
+   "region": "NA West"
+  },
+  "1205": {
+   "name": "Yustiel",
+   "short": "YUS",
+   "faction": "Elyos",
+   "region": "NA West"
+  },
+  "1301": {
+   "name": "Siel",
+   "short": "SIE",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1302": {
+   "name": "Nezekan",
+   "short": "NEZ",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1303": {
+   "name": "Vaizel",
+   "short": "VAI",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1304": {
+   "name": "Kaisinel",
+   "short": "KAI",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1305": {
+   "name": "Yustiel",
+   "short": "YUS",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1306": {
+   "name": "Ariel",
+   "short": "ARI",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1307": {
+   "name": "Fregion",
+   "short": "FRE",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1308": {
+   "name": "Meslamtaeda",
+   "short": "MES",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1309": {
+   "name": "Hithanya",
+   "short": "HIT",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1310": {
+   "name": "Nania",
+   "short": "NAN",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1311": {
+   "name": "Tahavatha",
+   "short": "TAH",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1312": {
+   "name": "Luteros",
+   "short": "LUT",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1313": {
+   "name": "Phernos",
+   "short": "PHE",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1314": {
+   "name": "Daminu",
+   "short": "DAM",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1315": {
+   "name": "Kasaka",
+   "short": "KAS",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1316": {
+   "name": "Bakarma",
+   "short": "BAK",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1317": {
+   "name": "Tsenka",
+   "short": "TSE",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1318": {
+   "name": "Kochi",
+   "short": "KOC",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1319": {
+   "name": "Ishtar",
+   "short": "ISH",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1320": {
+   "name": "Tiamat",
+   "short": "TIA",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1321": {
+   "name": "Gauss",
+   "short": "GAU",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1322": {
+   "name": "Lamuatan",
+   "short": "LAM",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1323": {
+   "name": "Nathara",
+   "short": "NAT",
+   "faction": "Elyos",
+   "region": "Europe"
+  },
+  "1401": {
+   "name": "Siel",
+   "short": "SIE",
+   "faction": "Elyos",
+   "region": "Latin America"
+  },
+  "1402": {
+   "name": "Nezekan",
+   "short": "NEZ",
+   "faction": "Elyos",
+   "region": "Latin America"
+  },
+  "1403": {
+   "name": "Vaizel",
+   "short": "VAI",
+   "faction": "Elyos",
+   "region": "Latin America"
+  },
+  "1404": {
+   "name": "Kaisinel",
+   "short": "KAI",
+   "faction": "Elyos",
+   "region": "Latin America"
+  },
+  "1405": {
+   "name": "Yustiel",
+   "short": "YUS",
+   "faction": "Elyos",
+   "region": "Latin America"
+  },
+  "1406": {
+   "name": "Ariel",
+   "short": "ARI",
+   "faction": "Elyos",
+   "region": "Latin America"
+  },
+  "1501": {
+   "name": "Siel",
+   "short": "SIE",
+   "faction": "Elyos",
+   "region": "Asia"
+  },
+  "1502": {
+   "name": "Nezekan",
+   "short": "NEZ",
+   "faction": "Elyos",
+   "region": "Asia"
+  },
+  "1503": {
+   "name": "Vaizel",
+   "short": "VAI",
+   "faction": "Elyos",
+   "region": "Asia"
+  },
+  "1504": {
+   "name": "Kaisinel",
+   "short": "KAI",
+   "faction": "Elyos",
+   "region": "Asia"
+  },
+  "1505": {
+   "name": "Yustiel",
+   "short": "YUS",
+   "faction": "Elyos",
+   "region": "Asia"
+  },
+  "1506": {
+   "name": "Ariel",
+   "short": "ARI",
+   "faction": "Elyos",
+   "region": "Asia"
+  },
+  "1507": {
+   "name": "Fregion",
+   "short": "FRE",
+   "faction": "Elyos",
+   "region": "Asia"
+  },
+  "1508": {
+   "name": "Meslamtaeda",
+   "short": "MES",
+   "faction": "Elyos",
+   "region": "Asia"
+  },
+  "1509": {
+   "name": "Hithanya",
+   "short": "HIT",
+   "faction": "Elyos",
+   "region": "Asia"
+  },
+  "1510": {
+   "name": "Nania",
+   "short": "NAN",
+   "faction": "Elyos",
+   "region": "Asia"
+  },
+  "2101": {
+   "name": "Israphel",
+   "short": "ISR",
+   "faction": "Asmodian",
+   "region": "NA East"
+  },
+  "2102": {
+   "name": "Zikel",
+   "short": "ZIK",
+   "faction": "Asmodian",
+   "region": "NA East"
+  },
+  "2103": {
+   "name": "Triniel",
+   "short": "TRI",
+   "faction": "Asmodian",
+   "region": "NA East"
+  },
+  "2104": {
+   "name": "Lumiel",
+   "short": "LUM",
+   "faction": "Asmodian",
+   "region": "NA East"
+  },
+  "2105": {
+   "name": "Marchutan",
+   "short": "MAR",
+   "faction": "Asmodian",
+   "region": "NA East"
+  },
+  "2106": {
+   "name": "Azphel",
+   "short": "AZP",
+   "faction": "Asmodian",
+   "region": "NA East"
+  },
+  "2107": {
+   "name": "Ereshkigal",
+   "short": "ERE",
+   "faction": "Asmodian",
+   "region": "NA East"
+  },
+  "2108": {
+   "name": "Beritra",
+   "short": "BER",
+   "faction": "Asmodian",
+   "region": "NA East"
+  },
+  "2109": {
+   "name": "Nemon",
+   "short": "NEM",
+   "faction": "Asmodian",
+   "region": "NA East"
+  },
+  "2201": {
+   "name": "Israphel",
+   "short": "ISR",
+   "faction": "Asmodian",
+   "region": "NA West"
+  },
+  "2202": {
+   "name": "Zikel",
+   "short": "ZIK",
+   "faction": "Asmodian",
+   "region": "NA West"
+  },
+  "2203": {
+   "name": "Triniel",
+   "short": "TRI",
+   "faction": "Asmodian",
+   "region": "NA West"
+  },
+  "2204": {
+   "name": "Lumiel",
+   "short": "LUM",
+   "faction": "Asmodian",
+   "region": "NA West"
+  },
+  "2205": {
+   "name": "Marchutan",
+   "short": "MAR",
+   "faction": "Asmodian",
+   "region": "NA West"
+  },
+  "2301": {
+   "name": "Israphel",
+   "short": "ISR",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2302": {
+   "name": "Zikel",
+   "short": "ZIK",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2303": {
+   "name": "Triniel",
+   "short": "TRI",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2304": {
+   "name": "Lumiel",
+   "short": "LUM",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2305": {
+   "name": "Marchutan",
+   "short": "MAR",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2306": {
+   "name": "Azphel",
+   "short": "AZP",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2307": {
+   "name": "Ereshkigal",
+   "short": "ERE",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2308": {
+   "name": "Beritra",
+   "short": "BER",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2309": {
+   "name": "Nemon",
+   "short": "NEM",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2310": {
+   "name": "Hadala",
+   "short": "HAD",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2311": {
+   "name": "Ludra",
+   "short": "LUD",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2312": {
+   "name": "Ulgorn",
+   "short": "ULG",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2313": {
+   "name": "Munin",
+   "short": "MUN",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2314": {
+   "name": "Odar",
+   "short": "ODA",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2315": {
+   "name": "Zemurru",
+   "short": "ZEM",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2316": {
+   "name": "Kromede",
+   "short": "KRO",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2317": {
+   "name": "Quai",
+   "short": "QUA",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2318": {
+   "name": "Baba",
+   "short": "BAB",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2319": {
+   "name": "Fafnir",
+   "short": "FAF",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2320": {
+   "name": "Indnath",
+   "short": "IND",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2321": {
+   "name": "Agnita",
+   "short": "AGN",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2322": {
+   "name": "Atiel",
+   "short": "ATI",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2323": {
+   "name": "Tassin",
+   "short": "TAS",
+   "faction": "Asmodian",
+   "region": "Europe"
+  },
+  "2401": {
+   "name": "Israphel",
+   "short": "ISR",
+   "faction": "Asmodian",
+   "region": "Latin America"
+  },
+  "2402": {
+   "name": "Zikel",
+   "short": "ZIK",
+   "faction": "Asmodian",
+   "region": "Latin America"
+  },
+  "2403": {
+   "name": "Triniel",
+   "short": "TRI",
+   "faction": "Asmodian",
+   "region": "Latin America"
+  },
+  "2404": {
+   "name": "Lumiel",
+   "short": "LUM",
+   "faction": "Asmodian",
+   "region": "Latin America"
+  },
+  "2405": {
+   "name": "Marchutan",
+   "short": "MAR",
+   "faction": "Asmodian",
+   "region": "Latin America"
+  },
+  "2406": {
+   "name": "Azphel",
+   "short": "AZP",
+   "faction": "Asmodian",
+   "region": "Latin America"
+  },
+  "2501": {
+   "name": "Israphel",
+   "short": "ISR",
+   "faction": "Asmodian",
+   "region": "Asia"
+  },
+  "2502": {
+   "name": "Zikel",
+   "short": "ZIK",
+   "faction": "Asmodian",
+   "region": "Asia"
+  },
+  "2503": {
+   "name": "Triniel",
+   "short": "TRI",
+   "faction": "Asmodian",
+   "region": "Asia"
+  },
+  "2504": {
+   "name": "Lumiel",
+   "short": "LUM",
+   "faction": "Asmodian",
+   "region": "Asia"
+  },
+  "2505": {
+   "name": "Marchutan",
+   "short": "MAR",
+   "faction": "Asmodian",
+   "region": "Asia"
+  },
+  "2506": {
+   "name": "Azphel",
+   "short": "AZP",
+   "faction": "Asmodian",
+   "region": "Asia"
+  },
+  "2507": {
+   "name": "Ereshkigal",
+   "short": "ERE",
+   "faction": "Asmodian",
+   "region": "Asia"
+  },
+  "2508": {
+   "name": "Beritra",
+   "short": "BER",
+   "faction": "Asmodian",
+   "region": "Asia"
+  },
+  "2509": {
+   "name": "Nemon",
+   "short": "NEM",
+   "faction": "Asmodian",
+   "region": "Asia"
+  },
+  "2510": {
+   "name": "Hadala",
+   "short": "HAD",
+   "faction": "Asmodian",
+   "region": "Asia"
+  }
+ }
+}

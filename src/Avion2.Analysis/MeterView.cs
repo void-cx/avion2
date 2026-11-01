@@ -42,6 +42,9 @@ public sealed record MeterRow(
     /// <summary>The player's legion, if the game told us.</summary>
     public string? Legion { get; init; }
 
+    /// <summary>The player's server id (as in player records), if known.</summary>
+    public ushort? ServerId { get; init; }
+
     public double FrontRate => Hits == 0 ? 0 : (double)FrontHits / Hits;
 
     public double DoubleRate => Hits == 0 ? 0 : (double)Doubles / Hits;
@@ -254,6 +257,7 @@ public static class MeterView
                 FrontHits = actor.FrontHits,
                 CombatPower = info?.CombatPower,
                 Legion = info?.Legion,
+                ServerId = info?.ServerId,
             });
         }
 

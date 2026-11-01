@@ -5,6 +5,24 @@ namespace Avion2.Tests;
 public class BundledDataTests
 {
     [Fact]
+    public void ShipsServerNames()
+    {
+        var gauss = Avion2.Engine.BundledGameData.Server(1321);
+        Assert.Equal(("Gauss", "Elyos", "Europe"), (gauss?.Name, gauss?.Faction, gauss?.Region));
+        Assert.Equal("Agnita", Avion2.Engine.BundledGameData.Server(2321)?.Name);
+        Assert.Null(Avion2.Engine.BundledGameData.Server(9999));
+    }
+
+    [Fact]
+    public void PlayersGetTheirServerFromTheLegionTag()
+    {
+        var registry = new Avion2.Analysis.EntityRegistry();
+        registry.Apply(new Avion2.Protocol.PlayerSpawnEvent(0, 50, "Other", null, Avion2.Protocol.GameClass.Cleric));
+        registry.Apply(new Avion2.Protocol.LegionTagEvent(0, 50, 2321, "Legion"));
+        Assert.Equal((ushort?)2321, registry.Find(50)?.ServerId);
+    }
+
+    [Fact]
     public void ShipsNamesFieldBossesAndMaps()
     {
         var data = BundledGameData.Load("en");
