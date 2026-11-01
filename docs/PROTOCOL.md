@@ -501,7 +501,29 @@ first race succeeds, a second race for the better recipe (two items) runs. A fai
 | — | `u8` | |
 
 The materials leave the bag (`1B 56`) when the craft starts, the crafted item arrives with the end record. `7C 8D` and
-`7D 8D` follow with the craft's proficiency (craft type `u8`: 4 alchemy, 5 cooking, then points).
+`7D 8D` follow with the craft's proficiency (craft type `u8`: 3 handicraft, 4 alchemy, 5 cooking, then points).
+
+**Everyone's crafts** at the stations around are broadcast, ours included (without the outcome in advance):
+
+| Opcode | Fields | Meaning |
+|---|---|---|
+| `72 8D` | `actor varint`, `station varint`, `u8`, craft type `u8` | a player started a craft |
+| `74 8D` | `actor varint`, result `u8` (as in `71 8D`), `u8`, `station varint`, `u8`, craft type `u8` | a player's craft ended |
+
+Opening a station's window sends `41 E2` (`00 00`, station `u32`, …) and closing it `43 E2` (`00 00`, station `u32`).
+
+### Shops
+Status: Verified · two purchases from NPC shops
+
+| Opcode | Fields | Meaning |
+|---|---|---|
+| `01 8C` | `00 00`, `npc varint`, `00`, `time` | a shop opened (also `41 E2` with the NPC) |
+| `03 8C` | `00 06`, npc `u32`, lines `u8`, then per line: goods `u32` (the shop's own id, not the item's), count `u32` | we bought |
+
+The bag update (`1B 56`) with the items and the Kina paid arrives in the same instant.
+
+The **marketplace** (other players' listings) does not use the game connection: opening it starts a few short HTTPS
+connections, so its listings and prices are encrypted web traffic.
 
 ## Instances
 
@@ -655,7 +677,7 @@ Seen in normal play and described by shape only.
 | `3B 38` `3D 38` | 2&nbsp;B | `00 00` right after the records above | acknowledgements |
 | `35 36` `37 36` `6D 8D` `46 37` | small | `entity varint` with the player's id | targeting and object interaction |
 | `05 E0` | 16&nbsp;B | `entity`, `03 01`, max `u32`, current `u32` falling by 2 | a gauge (not flight time: absent while flying) |
-| `07 95` | 14&nbsp;B | `entity varint`, `u32` (10000 / 20000), `01` | a timer in ms |
+| `07 95` `08 95` | 14&nbsp;B | `entity varint`, `u32` (fixed per entity, e.g. 1252, 1264; or 10000 / 20000), `01` / `02`; `08 95` then `07 95` 150 ms later, every few seconds, for NPCs standing around | an idle animation, or a timer in ms |
 | `0C 91` | ~30&nbsp;B | `map u32`, `01 01`, `pos`, `time` | something placed on the map with a time |
 | `15 8D` | ~55&nbsp;B | dialogue keys (`Talk_L1_Garrison_…`), entity at the end | NPC dialogue |
 | `24 E3` | 64&nbsp;B | `01`, id `u32` (10044, 10047), two points `u32`, `time`, … ; both points +30 after each successful craft, none after a failed one | progress of a pass or event |
