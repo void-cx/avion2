@@ -43,7 +43,9 @@ public sealed record Occurrence(ScheduledEvent Event, DateTimeOffset StartsAt);
 /// The fixed AION2 event timetable per server region. Source: aion2hub.com's rift timer and world boss
 /// schedule (Global data from the 2026-09-19 client; Korea/Taiwan from client v110, 2026-09-09).
 /// Spacetime Rifts are a timetable, not packets: Global servers open them every 3 hours from 00:00
-/// server time (GMT+9), Korea/Taiwan from 02:00.
+/// server time, Korea/Taiwan from 02:00. Server time is GMT+9, Taiwan GMT+8; Europe follows Central European
+/// time with daylight saving, 7 hours behind its server time (GMT+9 in summer, GMT+8 in winter): after the
+/// 2026-10-25 clock change the rift opened at 14:00 CET, as it had at 14:00 CEST.
 /// </summary>
 public static class GameSchedule
 {
@@ -51,8 +53,36 @@ public static class GameSchedule
     private static readonly int[] KoreaTaiwanRiftHours = [2, 5, 8, 11, 14, 17, 20, 23];
     private static readonly DayOfWeek[] Daily = [];
 
-    public static TimeSpan ServerOffset(ServerRegion region) =>
-        region == ServerRegion.Taiwan ? TimeSpan.FromHours(8) : TimeSpan.FromHours(9);
+    private static readonly TimeZoneInfo CentralEurope = Zone("Central European Standard Time", "Europe/Berlin");
+    private static readonly TimeSpan EuropeAhead = TimeSpan.FromHours(7);
+
+    /// <summary>The server clock's offset from UTC at <paramref name="at"/>.</summary>
+    public static TimeSpan ServerOffset(ServerRegion region, DateTimeOffset at) => region switch
+    {
+        ServerRegion.Taiwan => TimeSpan.FromHours(8),
+        ServerRegion.Europe => CentralEurope.GetUtcOffset(at) + EuropeAhead,
+        _ => TimeSpan.FromHours(9),
+    };
+
+    /// <summary>The offset of a server wall-clock time, so a time across a clock change gets its own.</summary>
+    private static TimeSpan ServerOffset(ServerRegion region, DateTime wall) =>
+        region == ServerRegion.Europe ? CentralEurope.GetUtcOffset(wall - EuropeAhead) + EuropeAhead : ServerOffset(region, default(DateTimeOffset));
+
+    private static TimeZoneInfo Zone(params string[] ids)
+    {
+        foreach (string id in ids)
+        {
+            try
+            {
+                return TimeZoneInfo.FindSystemTimeZoneById(id);
+            }
+            catch (TimeZoneNotFoundException)
+            {
+            }
+        }
+
+        throw new TimeZoneNotFoundException(string.Join(" / ", ids));
+    }
 
     public static IReadOnlyList<ScheduledEvent> Events(ServerRegion region)
     {
@@ -124,9 +154,7 @@ public static class GameSchedule
     /// <summary>The next start of <paramref name="ev"/> strictly after <paramref name="now"/>.</summary>
     public static DateTimeOffset Next(ScheduledEvent ev, DateTimeOffset now, ServerRegion region)
     {
-        var offset = ServerOffset(region);
-        var server = now.ToOffset(offset);
-        var day = new DateTimeOffset(server.Year, server.Month, server.Day, 0, 0, 0, offset);
+        var day = now.ToOffset(ServerOffset(region, now)).Date;
         for (int d = 0; d < 8; d++, day = day.AddDays(1))
         {
             if (ev.Days.Length > 0 && !ev.Days.Contains(day.DayOfWeek))
@@ -136,7 +164,8 @@ public static class GameSchedule
 
             foreach (int hour in ev.Hours.Order())
             {
-                var start = day.AddHours(hour).AddMinutes(ev.Minute);
+                var wall = day.AddHours(hour).AddMinutes(ev.Minute);
+                var start = new DateTimeOffset(wall, ServerOffset(region, wall));
                 if (start > now)
                 {
                     return start;

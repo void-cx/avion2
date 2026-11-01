@@ -102,7 +102,7 @@ public partial class TimersPage : UserControl
     {
         var now = DateTimeOffset.Now;
         var region = _state.Settings.Region;
-        var offset = GameSchedule.ServerOffset(region);
+        var offset = GameSchedule.ServerOffset(region, now);
         RegionNote.Text = $"GMT+{offset.TotalHours:0} · schedules in server time, countdowns in yours";
         ServerTime.Text = $"Server time {now.ToOffset(offset):HH:mm}";
 

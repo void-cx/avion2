@@ -26,6 +26,27 @@ public class ScheduleTests
     }
 
     [Fact]
+    public void EuropeKeepsItsLocalTimesInWinter()
+    {
+        // Recorded on Sun 2026-11-01, a week after the clock change: the rift opened at 14:00 CET (13:00 UTC)
+        var cet = TimeSpan.FromHours(1);
+        var now = new DateTimeOffset(2026, 11, 1, 12, 30, 0, cet);
+        Assert.Equal(new DateTimeOffset(2026, 11, 1, 14, 0, 0, cet), GameSchedule.Next(Event(ServerRegion.Europe, "rift"), now, ServerRegion.Europe));
+        Assert.Equal(TimeSpan.FromHours(8), GameSchedule.ServerOffset(ServerRegion.Europe, now));
+
+        // Across the change itself every rift stays on 2, 5, … 23 local
+        var before = new DateTimeOffset(2026, 10, 24, 22, 0, 0, TimeSpan.FromHours(2));
+        var rifts = GameSchedule.NextRifts(ServerRegion.Europe, before, 10).ToList();
+        Assert.Equal([23, 2, 5, 8, 11, 14, 17, 20, 23, 2], rifts.Select(r => TimeZoneInfo.ConvertTime(r, Berlin).Hour));
+        Assert.Equal(TimeSpan.FromHours(4), rifts[1] - rifts[0]); // the night the clocks go back
+
+        // Korea keeps GMT+9
+        Assert.Equal(TimeSpan.FromHours(9), GameSchedule.ServerOffset(ServerRegion.Korea, now));
+    }
+
+    private static readonly TimeZoneInfo Berlin = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+
+    [Fact]
     public void HourlyEvents()
     {
         // Beritra Air Raid on the half hour ("in 05m 27s"), field events on the hour ("in 35m 27s").
