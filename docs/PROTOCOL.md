@@ -38,6 +38,13 @@ after the opcode and list the fields in order; a **When** column marks fields th
   (type `14`…`17`, version `03 00`…`03 04`, length 1…16640) is not game traffic.
 - Instances (dungeons, strongholds, arenas) are served by **separate servers**: entering one moves the game stream to
   a new TCP connection and leaving moves it back. A reader has to follow the stream across connections.
+- So does crossing through a **Spacetime Rift** into the other faction's land: Verteron and the rift's Altgard were on
+  two different servers, and each crossing (there and back, twice) opened a new connection.
+- Before a switch the old connection sends `16 36` with the next server's address as text (`str8`, e.g.
+  `193.202.112.54`) and its port (`u16`, 13328), followed by bytes not decoded here; then both sides close the old
+  connection (FIN). The new connection's first record is `11 36` (278 bytes, not decoded). It shows the `0E 00 36`
+  signature about a dozen times only some 2.7 s and 30 KB in, so a reader has to keep what arrives before it decides
+  (identity, bag and map load are in there).
 
 ### Finding the game connection
 Status: Verified
@@ -413,7 +420,7 @@ Status: Verified
 |---|---|
 | 0 | open world |
 | 12 | reload inside the current instance |
-| 30 | sealed dungeon |
+| 30 | sealed dungeon; also the other faction's land reached through a Spacetime Rift (map 1110 Altgard) |
 | 37, 38, 40, 65 | stronghold |
 | 72, 80 | other instances (e.g. ascension instances) |
 | 79 | expedition |
@@ -455,6 +462,11 @@ Status: Verified · gathering nodes, portals, chests, hidden cubes
 | `38 36`, `37 36` | the player starts using an object | `object varint`, `actor varint`, … |
 | `3A 36` | use finished | `object varint`, `actor varint`, `u8`, …, `item u32` used up (last 4 bytes, 0 = none) |
 | `35 36` | object state changed | `object varint`, state bytes (e.g. after opening) |
+
+A **Spacetime Rift** portal is code `1100007` (kind 4). After the position its record carries `f32` facing, `01 01 01`,
+the time the rift opened (`time`; 13:00:00 UTC on a Europe server, 1 November 2026) and a `u64` that went from 0 to 31
+while the rift stayed open (players who went through, probably). Using it is `38 36` / `3A 36` like any object; the
+server switch follows (see [Transport](#transport)).
 
 Hidden cubes are objects with code `1200039`; opening one uses up item `630900003` (Key: Hidden Cube) and the loot
 drops at the cube's position.
