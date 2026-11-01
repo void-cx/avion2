@@ -61,6 +61,22 @@ public class InventoryTests
     }
 
     [Fact]
+    public void SlotUpdateCarriesEveryChangedSlot()
+    {
+        // 1B 56 from a Daeva Pass reward: a Nightmare Dungeon Challenge Ticket (with an expiry time) and 20 Small Odyle Energy
+        var events = Parse("1B56" + "020000cb160b000075000042da051e0100000000000000013e00000002008099a67da20100004800000100595c050000cd010040da051e1400000000000000012f000000000088dd7da2010000480000");
+        Assert.Equal([(503700034u, 1ul, (byte)62), (503700032u, 20ul, (byte)47)],
+            events.Cast<InventoryItemEvent>().Select(e => (e.Item.ItemId, e.Item.Count, e.Item.Slot)));
+
+        // Gear in between carries stats, so records are found by their shape: earrings, then Kina
+        const string Earrings = "0001ae580a00002d0100" + "1ee37d1201000000000000000138" + "0000000000000000000000000000000000000000000000000000210000000003000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000180000";
+        const string Kina = "010038ab0a0000bf0000" + "2133703760037000000000000101" + "00000000000000000000000000480000";
+        var two = Parse("1B56" + "02" + Earrings + Kina).Cast<InventoryItemEvent>().ToList();
+        Assert.Equal([310240030u, ItemIds.KinahBound], two.Select(e => e.Item.ItemId));
+        Assert.Equal(7_340_896ul, two[1].Item.Count);
+    }
+
+    [Fact]
     public void InventorySurvivesSaving()
     {
         var inventory = new InventoryState { Character = "Doxylamin" };

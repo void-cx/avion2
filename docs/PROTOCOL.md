@@ -631,6 +631,7 @@ Status: Verified
 | `04` | quest items |
 | `0B` | equipped gear |
 | `0F` | warehouse |
+| `10` | cooking ingredients and other crafting stacks |
 
 ### Inventory
 Status: Verified
@@ -638,7 +639,7 @@ Status: Verified
 | Opcode | Record | Fields |
 |---|---|---|
 | `11 56` | the whole inventory, on entering the world | item records of different lengths (gear carries more); scan for them |
-| `1B 56` | one slot changed | `01`, `u8`, `00`, `u32`, `u32`, then the item record at offset 11 (count = new total, 0 = emptied) |
+| `1B 56` | slots changed | `n u8`, then n changes: two flag bytes, `u32` (top byte 0), `00`, `u16`, `00`, the item record (count = new total, 0 = emptied). Records differ in length (gear carries stats, some items an expiry time), so after the first (at offset 11) the next is found by that shape. Rewards change up to 11 slots at once |
 
 ### Ground loot
 Status: Verified · both come in batches: a `u8` count, the records, one trailing byte
@@ -695,6 +696,15 @@ Status: Seen once · two kill-ten quests done and turned in
 Quest ids seen: 167 and 168. A turn-in comes with the reward in the bag (`1B 56`), several `84 56` records and pass
 progress (`24 E3` id 10044: +150 per quest). A `10 8D` of another shape follows each turn-in
 (`09 00 00 00 02 01`, then varints, one of them +10 per quest), probably a counter of quests done.
+
+## Daeva Pass
+Status: Seen once · two rewards claimed
+
+Pass progress is `24 E3` (see [Not decoded yet](#not-decoded-yet)); ids 10044 and 10047 are two passes or tracks.
+
+**`23 E3` reward claimed:** `00 00`, `pass u32` (10044, 10047), `u32` (810433000, 810439000; 810433000 also names the
+pass points in `84 56`), `level u16` (44, 13). The reward arrives in the bag (`1B 56`) in the same instant: Kina from
+the first, a Nightmare Dungeon Challenge Ticket and 20 Small Odyle Energy from the second.
 
 ## Party
 

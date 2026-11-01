@@ -6,7 +6,8 @@ namespace Avion2.Protocol.Parsers;
 /// Inventory records (our own character). Each item record contains
 /// <c>item u32, count u64, container u8, slot u8</c>, then 11 zero bytes; for gear the enchant level follows in one of
 /// the next two bytes (staff +10, belt and rune +2 in the first; Bakarma Boots +5 in the second — why is not known).
-/// Containers: 01 cube (the bag, currencies included), 0B equipped, 0F warehouse (gear and stacks the cube does not show).
+/// Containers: 01 cube (the bag, currencies included), 0B equipped, 0F warehouse (gear and stacks the cube does not show),
+/// 10 cooking ingredients and other crafting stacks (seen in crafting rewards).
 /// </summary>
 public static class InventoryParsers
 {
@@ -42,18 +43,35 @@ public static class InventoryParsers
     }
 
     /// <summary>
-    /// <c>1B 56</c>: one inventory slot changed — u8, u8, u8, u32, u32, then the item record at offset 11
-    /// (count is the new total).
+    /// <c>1B 56</c>: inventory slots changed (counts are the new totals). The first byte is how many; each change is
+    /// 10 bytes (two flag bytes, a u32 whose top byte is 0, <c>00</c>, u16, <c>00</c>) and then the item record, the
+    /// first at offset 11. Records differ in length (gear carries stats, some items an expiry time), so the following
+    /// ones are found by that shape. Quest and pass rewards, crafting and loot often change several slots at once.
     /// </summary>
     public static bool ParseInventoryItem(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
         const int at = 11;
-        if (body.Length < at + 14 || !TryRecord(body, at, out var item, requireTail: false))
+        if (body.Length < at + 14 || !TryRecord(body, at, out var first, requireTail: false))
         {
             return false;
         }
 
-        emit(new InventoryItemEvent(ts, item));
+        emit(new InventoryItemEvent(ts, first));
+        int found = 1;
+        for (int i = at + 14; found < body[0] && i + 14 <= body.Length;)
+        {
+            if (body[i - 1] == 0 && body[i - 4] == 0 && body[i - 5] == 0 && TryRecord(body, i, out var item, requireTail: false))
+            {
+                emit(new InventoryItemEvent(ts, item));
+                found++;
+                i += 14;
+            }
+            else
+            {
+                i++;
+            }
+        }
+
         return true;
     }
 
@@ -66,7 +84,7 @@ public static class InventoryParsers
         byte slot = body[i + 13];
 
         // Item ids are nine digits (1xxxxxxxx … 9xxxxxxxx); counts stay far below 10^12
-        if (id is < 100_000_000 or > 999_999_999 || count > 1_000_000_000_000 || container is not (0x01 or 0x04 or 0x0B or 0x0F))
+        if (id is < 100_000_000 or > 999_999_999 || count > 1_000_000_000_000 || container is not (0x01 or 0x04 or 0x0B or 0x0F or 0x10))
         {
             return false;
         }
