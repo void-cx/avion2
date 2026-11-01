@@ -429,6 +429,36 @@ Status: Verified · gathering nodes, portals, chests, hidden cubes
 Hidden cubes are objects with code `1200039`; opening one uses up item `630900003` (Key: Hidden Cube) and the loot
 drops at the cube's position.
 
+### Gathering
+Status: Verified · 28 gatherings on ore, plant and gem nodes
+
+The server decides a gathering's **outcome when it starts**; the success and fail bars on screen only play it out.
+
+**`31 8D` started:**
+
+| Field | Type | Meaning |
+|---|---|---|
+| — | `00 00` | |
+| node | `varint` | the gathering node (object) |
+| attempt | `u32` | gatherings on this node so far, this one included (1, 2, 3) |
+| outcome | `u8` | bit 0 = success; bits 1–2 = the better grade: 0 fail, 1 success, 6 fail (fine node), 7 fine success |
+| — | `00 00` | |
+| grade | `u8` | 1 normal, 2 fine (the item the panel shows) |
+| — | `00 00 00` | |
+| steps | `u8` | how many steps the bar race on screen has; the steps follow (27 bytes each: kind `u8`, `01`, timing values) |
+
+**`33 8D` ended:**
+
+| Field | Type | Meaning |
+|---|---|---|
+| result | `u8` | 0 success, 1 success with the better grade, 2 failed |
+| — | `u8` | |
+| node | `varint` | |
+| item | `u32` | the item gathered (or that would have been) |
+| count | `u32` | 0 when it failed |
+
+`3A 36` (use finished) follows on the node, and `1B 56` updates the bag.
+
 ## Instances
 
 ### `00 61` — Instance stage

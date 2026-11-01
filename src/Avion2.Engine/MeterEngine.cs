@@ -188,6 +188,10 @@ public sealed class MeterEngine : IDisposable
             {
                 InventoryChanged?.Invoke();
             }
+            else if (e is GatherStartEvent or GatherEndEvent)
+            {
+                Gathering?.Invoke(e);
+            }
             else if (e is SkillCastEvent cast && Cast is { } onCast)
             {
                 onCast(cast, _session.Registry.Find(cast.ActorId));
@@ -399,6 +403,9 @@ public sealed class MeterEngine : IDisposable
 
     /// <summary>Raised on the capture thread for every damaging hit we take.</summary>
     public event Action<SelfHit>? HitTaken;
+
+    /// <summary>Our gathering started (<see cref="GatherStartEvent"/>, with its outcome) or ended. Capture thread.</summary>
+    public event Action<GameEvent>? Gathering;
 
     /// <summary>Raised on the capture thread for every skill cast (boss cast warnings).</summary>
     public event Action<SkillCastEvent, EntityInfo?>? Cast;

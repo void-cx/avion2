@@ -74,6 +74,9 @@ public sealed class OverlaySettings
     /// <summary>Boss skills appear under the target frame (instead of a notice).</summary>
     public bool HudBossCasts { get; set; } = true;
 
+    /// <summary>HUD: whether a gathering will succeed, above the gathering bars, as soon as it starts.</summary>
+    public bool HudGatherOutcome { get; set; } = true;
+
     /// <summary>Calibrated HUD positions per game resolution ("2560x1440").</summary>
     public Dictionary<string, Avion2.Analysis.HudLayout> HudLayouts { get; set; } = [];
 

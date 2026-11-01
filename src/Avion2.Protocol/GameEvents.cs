@@ -177,6 +177,18 @@ public sealed record MapEventStartEvent(long TimestampMs, uint EventId, string N
 /// </summary>
 public sealed record MapEventProgressEvent(long TimestampMs, uint EventId, byte Step, bool Done) : GameEvent(TimestampMs);
 
+/// <summary>
+/// <c>31 8D</c>: we started gathering from a node. The server decides the outcome up front: <paramref name="Success"/>
+/// (the bars on screen only play it out) and whether the item is the better grade (<paramref name="Fine"/>).
+/// </summary>
+/// <param name="Attempt">Gatherings on this node so far, this one included (1, 2, 3).</param>
+/// <param name="Steps">How many steps the success / fail race on screen has (more steps, longer gathering).</param>
+public sealed record GatherStartEvent(long TimestampMs, uint NodeId, uint Attempt, bool Success, bool Fine, int Steps)
+    : GameEvent(TimestampMs);
+
+/// <summary><c>33 8D</c>: the gathering ended: <paramref name="Result"/> 0 success, 1 success with the better grade, 2 failed.</summary>
+public sealed record GatherEndEvent(long TimestampMs, uint NodeId, byte Result, uint ItemId, uint Count) : GameEvent(TimestampMs);
+
 /// <summary>A member of our party (<c>02 97</c>); <paramref name="CharacterId"/> is the character, not the entity id.</summary>
 public sealed record PartyMember(byte Slot, uint CharacterId, string Name, GameClass Class, bool Online);
 

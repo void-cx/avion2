@@ -91,5 +91,10 @@
                 <TextBlock x:Name="CastSkill" Foreground="White" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center" />
             </StackPanel>
         </Border>
+
+        <!-- Gathering outcome, above the game's gathering bars (bottom centre) -->
+        <Border x:Name="GatherBanner" Padding="16,5" CornerRadius="4" Visibility="Collapsed" Background="#E60B1220" BorderThickness="1">
+            <TextBlock x:Name="GatherText" FontSize="16" FontWeight="SemiBold" />
+        </Border>
     </Canvas>
 </Window>

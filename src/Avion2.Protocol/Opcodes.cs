@@ -42,6 +42,8 @@ public static class Opcodes
     public const ushort HpUpdate = 0x1B92;
     public const ushort PartyRoster = 0x0297;
     public const ushort InstanceStage = 0x0061;
+    public const ushort GatherStart = 0x318D;
+    public const ushort GatherEnd = 0x338D;
     public const ushort MapEventStart = 0x2E92;
     public const ushort MapEventProgress = 0x2D92;
     public const ushort FieldBossTable = 0x0191;

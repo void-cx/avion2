@@ -316,6 +316,41 @@ public static class RecordParsers
         return true;
     }
 
+    /// <summary>
+    /// <c>31 8D</c>: 00 00, node varint, attempt u32, outcome u8 (bit 0 success, bits 1–2 the better grade: 0 fail,
+    /// 1 success, 6 fail on a fine node, 7 fine success), 00 00, grade u8 (1 normal, 2 fine), 00 00 00, steps u8, then
+    /// the steps of the race on screen (27 bytes each).
+    /// </summary>
+    public static bool ParseGatherStart(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body, 2);
+        if (body.Length < 2 || body[0] != 0 || body[1] != 0 || !r.TryVarint(out uint node) || node == 0 ||
+            !r.TryU32(out uint attempt) || !r.TryU8(out byte outcome) || !r.TryU16(out _) || !r.TryU8(out byte grade) ||
+            r.Remaining < 4)
+        {
+            return false;
+        }
+
+        r.Position += 3;
+        r.TryU8(out byte steps);
+        emit(new GatherStartEvent(ts, node, attempt, (outcome & 1) != 0, (outcome & 6) != 0 || grade >= 2, steps));
+        return true;
+    }
+
+    /// <summary><c>33 8D</c>: result u8 (0 success, 1 fine success, 2 failed), u8, node varint, item u32, count u32, …</summary>
+    public static bool ParseGatherEnd(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryU8(out byte result) || result > 2 || !r.TryU8(out _) || !r.TryVarint(out uint node) ||
+            !r.TryU32(out uint item) || !r.TryU32(out uint count))
+        {
+            return false;
+        }
+
+        emit(new GatherEndEvent(ts, node, result, item, count));
+        return true;
+    }
+
     /// <summary><c>00 61</c>: map u32, stage u8, from u64 (Unix ms), to u64 (Unix ms, 0 = open).</summary>
     public static bool ParseInstanceStage(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {

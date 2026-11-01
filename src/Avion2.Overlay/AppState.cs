@@ -317,6 +317,17 @@ public sealed class AppState
                 Application.Current.Dispatcher.BeginInvoke(() => Hud?.AddHit(hit));
             }
         };
+        engine.Gathering += e => Application.Current.Dispatcher.BeginInvoke(() =>
+        {
+            if (e is Avion2.Protocol.GatherStartEvent start)
+            {
+                Hud?.ShowGather(start);
+            }
+            else
+            {
+                Hud?.HideGather();
+            }
+        });
         engine.Cast += (cast, info) =>
         {
             if (info is { IsBoss: true, IsDummy: false } && Settings.NotifyBossCasts)

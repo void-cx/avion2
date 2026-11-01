@@ -148,6 +148,11 @@ public partial class HudWindow : Window
         Canvas.SetLeft(BossInfo, target.X + target.W / 2 - BossInfo.DesiredSize.Width / 2);
         Canvas.SetTop(BossInfo, target.Y + target.H + h * 0.058);
 
+        // Bottom centre, just above the game's gathering panel (its title sits at ~76 % of the height)
+        GatherBanner.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        Canvas.SetLeft(GatherBanner, w / 2 - GatherBanner.DesiredSize.Width / 2);
+        Canvas.SetTop(GatherBanner, h * 0.728 - GatherBanner.DesiredSize.Height);
+
         CastBanner.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         // Centred under the boss bar, kept on screen when the bar is near an edge
         double bannerWidth = CastBanner.DesiredSize.Width;
@@ -454,6 +459,43 @@ public partial class HudWindow : Window
         return true;
     }
 
+    private readonly DispatcherTimer _gatherTimer = new() { Interval = TimeSpan.FromSeconds(15) };
+
+    /// <summary>
+    /// The outcome of the gathering that just started (the server decides it up front): "Will succeed" in green
+    /// ("· Fine" when the item is the better grade), "Will fail" in red. Hidden when it ends (or after 15 s).
+    /// </summary>
+    public void ShowGather(Avion2.Protocol.GatherStartEvent start)
+    {
+        if (!_state.Stored.HudGatherOutcome || GameWindow.ClientArea is not { } area)
+        {
+            return;
+        }
+
+        var color = !start.Success ? Color.FromRgb(0xFF, 0x6B, 0x6B) : start.Fine ? Color.FromRgb(0xF0, 0xC8, 0x5A) : Color.FromRgb(0x5B, 0xD4, 0x8A);
+        GatherText.Text = !start.Success ? "✖  Will fail" : start.Fine ? "✔  Will succeed · Fine" : "✔  Will succeed";
+        GatherText.Foreground = new SolidColorBrush(color);
+        GatherBanner.BorderBrush = new SolidColorBrush(Color.FromArgb(0xB0, color.R, color.G, color.B));
+        GatherBanner.Visibility = Visibility.Visible;
+        if (Layout(area) is { } layout)
+        {
+            Arrange(layout);
+        }
+
+        _gatherTimer.Stop();
+        _gatherTimer.Tick -= GatherTimeout;
+        _gatherTimer.Tick += GatherTimeout;
+        _gatherTimer.Start();
+    }
+
+    public void HideGather()
+    {
+        _gatherTimer.Stop();
+        GatherBanner.Visibility = Visibility.Collapsed;
+    }
+
+    private void GatherTimeout(object? sender, EventArgs e) => HideGather();
+
     /// <summary>Calibration preview: shows every effect for a few seconds.</summary>
     public void Demo()
     {
@@ -490,6 +532,10 @@ public partial class HudWindow : Window
         CastSkill.Text = "Skill name";
         CastBanner.Visibility = Visibility.Visible;
         CastBanner.Opacity = 1;
+        GatherText.Text = "✔  Will succeed · Fine";
+        GatherText.Foreground = new SolidColorBrush(Color.FromRgb(0xF0, 0xC8, 0x5A));
+        GatherBanner.BorderBrush = new SolidColorBrush(Color.FromArgb(0xB0, 0xF0, 0xC8, 0x5A));
+        GatherBanner.Visibility = Visibility.Visible;
         HpGlow.Visibility = Visibility.Visible;
         HpGlow.Opacity = 1;
         UpdateDps(null);
