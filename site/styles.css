@@ -130,6 +130,19 @@ footer p { margin: 4px 0; }
 .wiki-body pre { background: #0a1222; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; }
 .wiki-body pre code { background: none; border: 0; padding: 0; font-size: inherit; }
 .wiki-body hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+.badge { display: inline-block; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 999px; padding: 1px 8px; vertical-align: 1px; }
+.badge.ok { color: #0b1a10; background: var(--green); }
+.badge.part { color: #1a1406; background: var(--gold); }
+.badge.open { color: var(--text); background: rgba(154, 166, 184, 0.25); }
+.wiki-status { margin: -0.4em 0 1em; font-size: 0.86rem; color: var(--muted) !important; }
+.wiki-status .sep { margin: 0 4px; }
+.table-wrap { overflow-x: auto; margin: 0.8em 0 1.2em; border: 1px solid var(--line); border-radius: 8px; }
+.wiki-body table { border-collapse: collapse; width: 100%; font-size: 0.86rem; }
+.wiki-body th { text-align: left; font-weight: 600; color: var(--text); background: #0a1222; padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.wiki-body td { padding: 7px 12px; border-top: 1px solid rgba(232, 214, 170, 0.08); color: #cfd5df; vertical-align: top; }
+.wiki-body tr:first-child td { border-top: 0; }
+.wiki-body td:first-child { color: var(--text); min-width: 7em; }
+.wiki-body td code, .wiki-body th code { white-space: nowrap; }
 .verified { display: inline-block; font-family: var(--body); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #0b1a10; background: var(--green); border-radius: 999px; padding: 1px 8px; vertical-align: middle; }
 .wiki-toc .verified { display: none; }
 

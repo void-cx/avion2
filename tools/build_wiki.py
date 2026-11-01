@@ -51,13 +51,10 @@ PAGE = """<!doctype html>
     </aside>
 
     <article class="wiki-body">
-      <p class="eyebrow">Protocol wiki</p>
-      <h1>How AION2 talks</h1>
-      <p class="lede">What AVION2 knows about the game's network traffic: how packets are framed and compressed, and what
-        each one carries. Sections marked <span class="verified">verified</span> were checked against our own captures;
-        everything else is a working note.</p>
+      <p class="eyebrow">Technical documentation</p>
+      <h1>AION2 Network Protocol</h1>
       <p class="fine">Last change {updated} · source: <a href="{repo}/blob/main/docs/PROTOCOL.md">docs/PROTOCOL.md</a>
-        (corrections welcome as issues or pull requests) · AVION2 only reads server → client traffic and never touches the game.</p>
+        · corrections welcome as issues or pull requests</p>
       <div id="sections">{body}</div>
       <p id="nothing" class="fine" hidden>Nothing matches the filter.</p>
     </article>
@@ -136,16 +133,33 @@ def anchor(value: str, separator: str) -> str:
     return slugify(value, separator)
 
 
+STATUS = {"Verified": "ok", "Partly verified": "part", "Unconfirmed": "open"}
+
+
+def status(match) -> str:
+    """"Status: Verified · note" under a heading → a subtitle with a coloured badge per status word."""
+    parts = []
+    for piece in match.group(1).split(" · "):
+        word = next((w for w in STATUS if piece.startswith(w)), None)
+        if word:
+            rest = piece[len(word):].strip()
+            parts.append(f'<span class="badge {STATUS[word]}">{word}</span>' + (f" {rest}" if rest else ""))
+        else:
+            parts.append(piece)
+    return '<p class="wiki-status">' + ' <span class="sep">·</span> '.join(parts) + "</p>"
+
+
 def main() -> int:
     text = open(SOURCE, encoding="utf-8").read()
-    # The page has its own title; the notes' status and sources (credits to prior work) stay
+    # The page has its own title
     text = re.sub(r"\A# [^\n]*\n", "", text, count=1)
     # The notes start lists right under a paragraph line (GitHub renders that); Markdown needs a blank line first
     text = re.sub(r"(?m)^((?![-*] |\d+\. |\s|```)[^\n]+)\n(?=[-*] |\d+\. )", r"\1\n\n", text)
-    md = markdown.Markdown(extensions=["fenced_code", "sane_lists", "toc"],
+    md = markdown.Markdown(extensions=["fenced_code", "sane_lists", "tables", "toc"],
                            extension_configs={"toc": {"toc_depth": "2-3", "slugify": anchor}})
     body = md.convert(text)
-    body = re.sub(r"✅(\s*verified)?", '<span class="verified">verified</span>', body)
+    body = re.sub(r"<p>Status: (.*?)</p>", status, body)
+    body = re.sub(r"<table>(.*?)</table>", r'<div class="table-wrap"><table>\1</table></div>', body, flags=re.S)
     toc = toc_html(md.toc_tokens[0]["children"] if len(md.toc_tokens) == 1 and md.toc_tokens[0]["level"] == 1 else md.toc_tokens)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8", newline="\n") as f:

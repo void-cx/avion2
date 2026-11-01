@@ -63,7 +63,8 @@ src/
   Avion2.Updater    AVION2-Updater.exe
   Avion2.Cli        console meter and tools
 tests/Avion2.Tests  protocol vectors, reassembly, detection, analysis, traces, updater
-docs/PROTOCOL.md    the wire format (start here for protocol work)
+docs/PROTOCOL.md    the wire format, as published on the website (start here for protocol work)
+docs/PROTOCOL-NOTES.md  working notes: measurements, verification history, open questions
 ```
 
 - **Detection.** Server→client game traffic contains `0E 00 36` many times per second. A connection locks after

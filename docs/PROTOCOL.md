@@ -1,327 +1,608 @@
-# AION2 Network Protocol — Working Notes
+# AION2 Network Protocol
 
-Status: compiled 2026-10-13 from public research. Sections marked ✅ were verified against our own
-capture (EU, Chanter lvl 45, map 1010). Treat everything else as unconfirmed.
+A reference for the AION2 game traffic as of the post-June-2026 client: how packets are framed and compressed, and
+the layout of every packet type that has been decoded. It covers what a passive reader can see: the server → client
+direction, read from the network without touching the game.
 
-Sources (facts only — do not copy code; A2/NOIA2 are GPL-3.0, TK is MIT):
-- **A2** — taengu/A2Tools-DPS-Meter (Rust, GPL-3.0, updated 2026-10-13). Most current reference.
-- **TK** — TK-open-public/Aion2-Dps-Meter (Kotlin, MIT). Common ancestor; ended 2026-06-19, stale since the June patch.
-- **NOIA2** — ZDYoung0519/NOIA2 (Rust, GPL-3.0, legacy 4.0 branch).
-- Also worth checking: nuriland/a2kit (Go decoder), lunixxx37/aion2-protocol-research.
+Each packet section starts with a status line:
+
+- **Verified**: checked field by field against live traffic and the game's own UI.
+- **Partly verified**: the fields that matter were checked; others are inferred.
+- **Unconfirmed**: taken from earlier public research or a single observation.
+
+Working notes, measurements and the history behind each result are kept in
+[PROTOCOL-NOTES.md](https://github.com/void-cx/avion2/blob/main/docs/PROTOCOL-NOTES.md).
 
 ---
 
-## 1. Transport
+## Conventions
 
-- TCP. Only **server → client** is parsed; it is plaintext. Client → server is encrypted.
-- KR server port seen: `13328`. Don't hard-code — detect (below).
-- The same server port also carries a **TLS** connection; exclude any connection whose first segment is a TLS record header
-  (type `0x14..0x17`, `03`, minor `00..04`, BE len `1..16640`).
+| Notation | Meaning |
+|---|---|
+| `u8` `u16` `u32` `u64` | unsigned integers, **little-endian** |
+| `i64` | signed 64-bit integer, little-endian |
+| `f32` | IEEE 754 single, little-endian |
+| `varint` | unsigned LEB128, at most 5 bytes (32 bits) |
+| `str8` | `u8` length, then that many bytes of UTF-8 |
+| `pos` | three `f32` (x, y, z): a world position, see [Positions](#positions) |
+| `time` | `u64` milliseconds since the Unix epoch |
 
-### Game-connection detection ✅ (locked EU server 193.202.112.231:13328 in ~1 s)
-- Record terminator signature `0E 00 36` (pre-June 2026: `06 00 36`) appears ~19×/s even when idle.
-- Lock a flow when ≥12 signature hits occur within 3 s. Candidate port = segment's `src_port` (server side).
-- Prefer loopback devices (ping reducers like ExitLag relay through localhost): give loopback a ~2.5 s head start.
-- Reset lock after 120 s with nothing parsed.
+Opcodes are two bytes, written **in wire order** (`04 38`) as they appear in a hex dump. Field tables start right
+after the opcode and list the fields in order; a **When** column marks fields that are only present sometimes.
 
-### Capture pitfalls
-- Truncate payload to the **IP total length**, not frame length — some NICs pad short frames with non-zero bytes
-  (caused 77% damage loss in A2). If total length is 0 (TSO), use the frame end.
-- Link types: Ethernet (VLAN tags 0x8100/0x88A8), Null/loopback (4-byte `02 00 00 00`), raw IP (DLT 12/14/101/228),
-  Linux cooked v1/v2.
-- Do proper TCP seq reassembly (handle wraparound, retransmits, partial overlap, gap-skip after a bound).
+## Transport
 
-## 2. Framing
+- The game uses TCP. **Server → client data is plaintext**; client → server data is encrypted, so the client's own
+  actions (movement, chat, skill input) are only visible through the server's answers.
+- The same server port may also carry a TLS connection. A connection whose first segment is a TLS record header
+  (type `14`…`17`, version `03 00`…`03 04`, length 1…16640) is not game traffic.
+- Instances (dungeons, strongholds, arenas) are served by **separate servers**: entering one moves the game stream to
+  a new TCP connection and leaving moves it back. A reader has to follow the stream across connections.
+
+### Finding the game connection
+Status: Verified
+
+The server sends a small periodic record whose frame ends in `0E 00 36` (`06 00 36` before June 2026) about 19 times a
+second, even when nothing happens. A connection that shows this signature a dozen times within three seconds is the
+game stream; the server is the side sending it. Addresses and ports differ between regions, so this is more reliable
+than a fixed list.
+
+### Capturing reliably
+
+- Cut each payload at the **IP total length**, not the frame length: some network cards pad short frames with non-zero
+  bytes. When the total length is 0 (segmentation offload), use the end of the frame.
+- Reassemble TCP by sequence number: handle wrap-around, retransmissions and partial overlaps, and give up on a gap
+  after a bound instead of waiting forever.
+- Latency tools that relay the game through `localhost` make the stream visible only on the loopback device.
+
+## Framing
 
 ```
-00                                     zero padding → skip 1 byte
-17 03 03 <u16 BE len> ...              stray TLS record → skip 5+len
-<varint L> <opcode u8 u8> <body>       packet; total frame bytes = L - 4 + varintLen
-<varint L> FF FF <u32 LE size> <lz4>   compressed bundle
+00                                    zero padding: skip one byte
+17 03 03  <u16 BE length>  …          a stray TLS record: skip 5 + length bytes
+<varint L>  <opcode: 2 bytes>  body   a packet
+<varint L>  FF FF  <u32 size>  data   a compressed bundle
 ```
 
-- Varint = LEB128 unsigned, max 5 bytes / 32 bits.
-- **Frame size = `L - 4 + len(varint)`** (1-byte varint → L-3, 2-byte → L-2). Using a fixed L-3 loses ~3% of packets.
-- Opcode written in wire order, e.g. `04 38`.
-- Legacy (TK): byte `0xF0..0xFE` right after the length was an "extraFlag" to skip. A2 no longer sees it; tolerate it.
-- Resync: bad/≤0 length → advance 1 byte; frame > 65535 → advance 1; incomplete frame: wait only if ≤16384
-  (≤65535 if it looks like a bundle header), else advance 1.
+| Rule | Detail |
+|---|---|
+| Frame size | `L − 4 + (bytes used by the varint)`: a 1-byte varint gives `L − 3`, a 2-byte one `L − 2` |
+| Legacy flag | older clients put a byte in `F0`…`FE` right after the length; skip it |
+| Bad length | ≤ 0, or a frame over 65,535 bytes: advance one byte |
+| Incomplete frame | wait for more data only up to 16,384 bytes (65,535 when it looks like a bundle), else advance one byte |
+| Bodyless packets | some packets are the opcode only; never assume a body |
 
-### Bundles (compression)
-- `FF FF` + `u32 LE decompressed_size` (1..1,000,000) + **raw LZ4 block** (not frame format).
-- Decompressed content = more varint-framed packets (zero padding possible). Nesting up to depth 4.
-- Bundles also appear **embedded mid-packet** (varint 1–3 bytes before `FF FF`); these carry identity/roster records.
-- Inside bundles: stop at the first unparseable length rather than resyncing.
-- Some records (damage, spawn, HP, identity) are found by **scanning** packets, not only at frame starts.
+### Bundles
+Status: Verified
 
-## 3. Opcodes (post-June 2026)
+| Field | Type | Meaning |
+|---|---|---|
+| marker | `FF FF` | |
+| size | `u32` | decompressed size, 1…1,000,000 |
+| data | bytes | a **raw LZ4 block** (not the LZ4 frame format) |
 
-Offsets start after the 2-byte opcode. `varint` = LEB128.
+The decompressed bytes are more frames in the same format, zero padding included; bundles nest up to four deep. Inside
+a bundle, stop at the first impossible length rather than resynchronising.
 
-### `04 38` — Direct damage ✅ verified 2026-10-13 (live capture, 249/251 records)
-```
-target   varint
-switch   varint        layout = switch & 0x0F (0 = no value: aura/effect tick, e.g. mantras)
-                       0x02 plotter block, 0x01 extra u32, 0x20 additional hits, 0x40 linked effect
-flag     varint        (always 0 so far)
-actor    varint
-skill    u32 LE        e.g. 18010000 Onslaught; 7-digit = NPC skill
-uid      u8
-hitType  varint        2 Normal, 3 Critical (1 Miss, 6 Resist per prior art)
-[switch & 0x02]  plotter u8, restoreHP varint, angle u8 (0x01 back, 0x02 front)
-[switch & 0x01]  u32 ?
-effect   u32 LE        skill effect code = skill×100 + n (e.g. 1801000011)
-seq      u32 LE        hit index within the cast: 1, 2, 3 …
-[00 pad] scalar varint attacker multiplier in 1/100 % (10000 mobs, ~10690 our lvl-45 Chanter)
-[layout ≠ 0] value varint   total damage, includes additional hits
-[switch & 0x20]  count varint + count × varint (additional hits, already in value)
-[switch & 0x40]  u8 + u32 linked effect code (e.g. damage absorbed by Protection Circle)
-seq u8, 00             terminator repeats low byte of seq
-```
-- **Correction to prior art:** the `01 00 00 00` "anchor" is the hit index, not a constant, and the
-  "layout 4 extra varint" doesn't exist. Records chain without separators. The terminator is `seq 00`.
-- Plotter bits (from prior art, Parry and Perfect seen live): `0x01` ShieldBlock, `0x02` Parry (about half damage),
-  `0x04` Perfect, `0x08` Double, `0x10` IronWall, `0x20` Regeneration, `0x40` PerfectBlock.
-- Skill filters: `3,000,000..3,099,999` → `id*10+1` (Theostone). Skills 16990000–16999999 / 16770000–16779999
-  are spirit↔owner **link records**, not damage.
+Bundles also appear **embedded in the middle of another packet**, preceded by a 1–3 byte varint; identity and roster
+records often arrive this way. Damage, spawn, HP and identity records are therefore best found by scanning packets,
+not only at frame starts.
 
-### `05 38` — DoT / HoT
-```
-target varint, effectType u8, actor varint, unknown varint, skillRaw u32 LE, amount varint
-```
-- effectType (exact match): `0x02`/`0x0A` damage, `0x01`/`0x09` heal, `0x0B` HoT, `0x00` status, `0x08` buff.
-- skill = `skillRaw / 100`. Count damage only for known DoT skill ids (need an allowlist).
+## Combat
+
+### `04 38` — Direct damage
+Status: Verified · one packet can hold several records back to back, without separators
+
+| Field | Type | When | Meaning |
+|---|---|---|---|
+| target | `varint` | | entity hit |
+| switch | `varint` | | layout = `switch & 0x0F` (0 = no value: an aura or effect tick); flag bits below |
+| flag | `varint` | | 0 in all observations |
+| actor | `varint` | | entity hitting |
+| skill | `u32` | | 8-digit player skill or 7-digit NPC skill |
+| uid | `u8` | | |
+| hitType | `varint` | | 2 normal, 3 critical (1 miss, 6 resist per earlier research) |
+| plotter | `u8` | `switch & 0x02` | hit modifiers, see below |
+| restoreHP | `varint` | `switch & 0x02` | |
+| angle | `u8` | `switch & 0x02` | `0x01` back, `0x02` front |
+| extra | `u32` | `switch & 0x01` | unknown |
+| effect | `u32` | | skill effect code = skill × 100 + n |
+| seq | `u32` | | hit index within the cast: 1, 2, 3 … |
+| scalar | `varint` | after a `00` | the attacker's damage multiplier in 1/100 % (10000 = 100 %) |
+| value | `varint` | layout ≠ 0 | total damage, additional hits included |
+| hits | `varint` + n × `varint` | `switch & 0x20` | additional hits, already counted in value |
+| linked | `u8`, `u32` | `switch & 0x40` | a linked effect code (e.g. damage absorbed by a shield) |
+| end | `u8`, `00` | | the low byte of seq, then `00` |
+
+| Plotter bit | Meaning | Plotter bit | Meaning |
+|---|---|---|---|
+| `0x01` | shield block | `0x10` | iron wall |
+| `0x02` | parry (about half damage) | `0x20` | regeneration |
+| `0x04` | perfect | `0x40` | perfect block |
+| `0x08` | double | | |
+
+Skill ids 3,000,000…3,099,999 map to `id × 10 + 1` (Theostones). Skill ids 16990000…16999999 and 16770000…16779999
+are **links between a spirit and its owner**, not damage.
+
+### `05 38` — Damage and healing over time
+Status: Unconfirmed
+
+| Field | Type | Meaning |
+|---|---|---|
+| target | `varint` | |
+| effectType | `u8` | `02`/`0A` damage, `01`/`09` heal, `0B` heal over time, `00` status, `08` buff |
+| actor | `varint` | |
+| — | `varint` | unknown |
+| skillRaw | `u32` | the skill is `skillRaw / 100` |
+| amount | `varint` | |
+
+### `02 38` — Skill cast
+Status: Verified · sent for every entity in range, including buffs and heals and the player's own casts
+
+| Field | Type | When | Meaning |
+|---|---|---|---|
+| actor | `varint` | | |
+| — | `00` | | |
+| skill | `u32` | | |
+| sequence | `u8` | | |
+| kind | `u8` | | 2 = aimed at the ground |
+| target | `varint` | | |
+| facing | `f32` | | degrees; 0 along +X, turning toward +Y (`atan2(dy, dx)`) |
+| target position | `pos` | kind 2 | |
+
+### Buffs and debuffs
+Status: Verified
+
+**`2A 38` added** (`2B 38` changed has the same fields from abnormal on, without the leading `01`):
+
+| Field | Type | When | Meaning |
+|---|---|---|---|
+| entity | `varint` | | who has it |
+| — | `01` | | |
+| flags | `u8` | | |
+| instance | `varint` | | identifies this application, used by `2C 38` |
+| abnormal | `u32` | | the buff or debuff |
+| length | `i64` | | ms, −1 = permanent |
+| end | `i64` | | server-epoch ms, 4102412400000 = never |
+| caster | `varint` | | |
+| level | `u8` | | |
+| skill | `u32` | `flags & 2` | |
+| reapplied | `u8` | | 2 = reapplied |
+| position | `pos` | | where the caster was; for a self-cast buff, the entity's own position |
+
+**`2C 38` removed**: `entity varint`, `n u8`, then n times:
+
+| Field | Type | When | Meaning |
+|---|---|---|---|
+| kind | `u8` | | |
+| instance | `varint` | | as in `2A 38` |
+| reason | `u8` | | 1 = expired |
+| remover | `varint` | `kind & 7 = 7` | |
+| skill | `u32` | `kind & 7 = 7` | |
+| effect | `u32` | `kind & 7 = 7` | |
+
+### `00 8D` — Resources
+Status: Verified
+
+| Field | Type | Meaning |
+|---|---|---|
+| entity | `varint` | |
+| kind | `u8` | |
+| — | `u8` | |
+| resource | `u8` | 0 HP, 1 MP, 3 / 4 / 6 other gauges |
+| value | `u32` | current value; the maximum is not sent (learn it from the highest value seen or from spawns) |
+
+### `1B 92` — HP
+Status: Unconfirmed
+
+| Field | Type |
+|---|---|
+| actor | `varint` |
+| hp | `varint` |
+| hpMax | `varint` |
+
+### `21 8D` — Combat state
+Status: Verified
+
+| Field | Type | Meaning |
+|---|---|---|
+| entity | `varint` | |
+| — | `00` | |
+| state | `u8` | 1 entered combat, 0 left combat |
+
+For the player these bracket the game's own Combat Analysis clock: on just before the first hit, off a few seconds
+after the last.
+
+## Entities
+
+### Entity and character ids
+
+| Id | Scope | Used in |
+|---|---|---|
+| entity id | **per zone**: reissued on every zone change | almost every record (`varint`) |
+| character id | stable per character | party roster, loot, own identity (`u32`, followed by `00 00` and the server `u16`) |
+
+Entity ids above 1,000,000 in spawn records map to `(id & 0x3FFF) | 0x4000`.
 
 ### `33 36` — Own character
-```
-id varint, mask1 u32, mask2 u8 (bit0 = name present), nameLen u8, utf8 name,
-server u16 LE (1000-2999), class u32, u8, level u32
-```
-Sent on map load and periodically (often inside embedded bundles). Teleport once to trigger it.
+Status: Verified · sent on every map load and periodically, often inside embedded bundles
 
-### `45 36` — Other player spawn (pre-June `44 36`) ✅ class verified
-`id, mask1 u32, mask2, [len, name]`, then **class u32** (roster code; `19 00 00 00` = 25 = Sorcerer). All 52 spawns in a
-town capture decoded a class, and every class matched the players' own skills.
-Combat power (unverified): after the last `F4 CB 1F`, from +11, the first u32 in 1..10M followed by a u32 0 (prior art);
-values 10K–85K.
+| Field | Type | When | Meaning |
+|---|---|---|---|
+| id | `varint` | | the player's entity id |
+| mask1 | `u32` | | |
+| mask2 | `u8` | | bit 0 = name present |
+| name | `str8` | | |
+| server | `u16` | | 1000…2999 |
+| class | `u32` | | [roster class code](#roster-class-codes) |
+| — | `u8` | | |
+| level | `u32` | | |
+| … | | | further in the record, located by pattern: |
+| character id | `u32`, `00 00`, `u16` server | | right after the character's position |
+| combat power | `u32`, `0 u32`, `u32`, `0 u32`, `05 01 91 00` | | found by the trailing bytes |
 
-### Own combat power ✅
-In the `33 36` self record: `cp u32, 0 u32, best? u32, 0 u32, 05 01 91 00` (searched by the trailer, offset varies).
-37,381 matches the armory's 37.38K; the following u32 (37,860) is probably the best value.
+### `45 36` — Player spawn
+Status: Verified (class) · Unconfirmed (combat power) · `44 36` before June 2026
 
-### `41 36` — Mob / summon spawn (pre-June `40 36`) ✅ code + HP verified
-```
-id varint, kind u8, 20 00, npcCode u24 LE, 00 00 02 | 00 40 02, x f32, y f32, z f32, ..., 01 curHP varint maxHP varint, ...
-```
-Live: `a0ea03 04 2000 110e20 000002 …` → entity 62752, kind 4, NPC 2100753 (Highland Odyle Sparkie), HP 119700.
-Kinds seen live: 4, 5 (mobs), 0x0C (NPC). Prior art says the u32 after the id is a mask, but the code overlaps it.
-- Kind = mask low byte: `0x0C/0x0D` NPC, `0x5F` summon/pet, `0x1C` effect entity, `0x1F/0x1D/0x5D` spirits/ground spells.
-- NPC code: scan ≤60 bytes for `00 40 02` or `00 00 02`; 3 bytes before = u24 LE code.
-  Then `01 <curHP varint> <maxHP varint>` within 64 bytes.
-- Summon owner: parent_key → owner record; fallback anchor `80 75 D5 2A BB 03 00 00` + caster varint.
+| Field | Type | When | Meaning |
+|---|---|---|---|
+| id | `varint` | | |
+| mask1 | `u32` | | |
+| mask2 | `u8` | | |
+| name | `str8` | `mask2 & 1` | |
+| class | `u32` | | [roster class code](#roster-class-codes) |
+| position | `pos` | | after the class code |
 
-### `42 36` — Death / despawn (pre-June `41 36`)
-`entity varint, varint (0), flag varint` — 1 loaded dead, 3 combat death, 7 left world.
+Earlier research places the combat power after the last `F4 CB 1F` marker: from 11 bytes on, the first `u32` in
+1…10,000,000 that is followed by a zero `u32`.
 
-### `04 8D` — Ownership / loot
-`summon_or_mob varint, 4 bytes, owner varint, server u16, len u8 name, len u8 server name`
+### `41 36` — NPC, monster and summon spawn
+Status: Verified · `40 36` before June 2026
 
-### HP
-- `00 8D` ✅ resource update: `entity varint, kind u8, ? u8, resource u8, value u32 [tail]`. Resource 0 = HP (mobs and us),
-  1 = MP (max 2,599 matched the HUD), 3/4/6 = other gauges. Max HP is not sent: learned from the highest HP seen
-  (9,016 matched the HUD).
-- `21 8D` ✅ combat state: `entity varint, 00, 01|00` (entered/left combat). For us it brackets the in-game Combat
-  Analysis clock (on ~0.2 s before the first hit, off 3–5 s after the last).
-- `01 91` ✅ field-boss table of the current map (repeats about once a second on field maps):
-  `00 00, map u32, count u8`, then per boss `state u8, spawn code varint (map × 100 + n, e.g. 101005),
-  [state 1: x f32, y f32, z f32], [0–1 extra byte], timestamp u64 ms`.
-  State 1 = alive (the timestamp is when it spawned); state 0 = dead (the timestamp is the announced respawn).
-  Verified: map 1010 had 24 entries (20 up, 4 dead with respawns 2–6 h ahead). Spawn code → NPC code comes from
-  NOIA2's published table (86 bosses on maps 1010/1110/1011/1111/20/22), built in as assets/gamedata/field_bosses.json.
-  Maps: 1010 Verteron, 1110 Altgard, 1011 Eltnen, 1111 Morheim, 20/22 Chaotic Lower/Middle Reshanta (assets/gamedata/maps).
-- `1B 92`: `actor varint, hp varint, hpMax varint`.
-- Scan: `8D <id varint> 02 01 00 <u32 LE curHP> 00 00 00 00` (NPC; `01 01 01` for local player).
+| Field | Type | Meaning |
+|---|---|---|
+| id | `varint` | |
+| kind | `u8` | see below |
+| — | `20 00` | |
+| npcCode | `u24` | the `u24` right before `00 40 02` or `00 00 02` (within the first 60 bytes) |
+| — | `00 00 02` or `00 40 02` | |
+| position | `pos` | |
+| … | | |
+| HP | `01`, `varint` hp, `varint` hpMax | within 64 bytes of the code |
 
-### Movement and positions ✅
-World units are about 1 cm (a melee fix lands 1.2 m from the dummy it hits; running is ~490 units/s), z is up.
-Positions were checked by comparing each record type against the same entity's `1C 37` track (median distance).
-```
-1C 37 move:      entity varint, mode u8 (4; 5 = one more byte follows), x f32, y f32, z f32,
-                 heading u16 (×360/65536), heading u16, 01            ~1/s per moving entity
-1D 37 steer:     entity varint, flags u8, i8 deltas …, heading u16 ×2  10 Hz velocity/steering, no position
-1A 37:           entity varint, 2 bytes, x, y, z                      (73 units from the 1C track)
-1B 37:           entity varint, [05] 03, x, y, z                       (106)
-2F 37 / 3C 37:   entity varint, u8, x, y, z     dash / leap / relocation; 3C is also sent for us (237)
-41 36 NPC spawn: position 9 bytes after the id (88); 45 36 player spawn: after the class code
-```
-**The server does not echo our own movement** (the client sends it, encrypted). Our position comes from
-self-cast buffs, `3C 37`, and spawn/identity records. A buff's x/y/z (`2A 38` added and `2B 38` refreshed) is where
-the target is only when the target cast it itself: within ~0.6 m of the server's `1C 37` fixes (median), against
-5–25 m off when someone else cast it (the caster's spot). Ticking self buffs give a fix every second — e.g. Chanter
-mantras (Undefeated / Sprint Mantra), whose casts (`02 38`) also carry our facing (median 0.2° from the direction of
-travel). Without such a buff: a fix every 1–3 s in combat, few outside it.
+| Kind | Entity | Kind | Entity |
+|---|---|---|---|
+| `04`, `05` | monsters | `1C` | effect entities |
+| `0C`, `0D` | NPCs | `1D`, `1F`, `5D` | spirits, ground spells |
+| `14` | boss helpers (deal damage, no owner) | `5F` | summons and pets |
 
-### Skill casts ✅
-```
-02 38: actor varint, 00, skill u32 (raw), sequence u8, kind u8, target varint, facing f32,
-       [kind 2: target x f32, y f32, z f32], …
-```
-Every entity in range, including buffs and heals that deal no damage (269/278 records name a known skill).
-Facing is in degrees, 0 = +X turning toward +Y (= `atan2(dy, dx)`; matches the bearing to the targeted ground
-position within 1° when our position fix is fresh). Our own casts are sent too, so this is our facing at each cast.
-`06 38` (actor, skill u32, …) follows each cast; its meaning (cooldown/resolution) is open.
+### `42 36` — Death and despawn
+Status: Verified
 
-### Ownership and legions ✅
-```
-04 8D long:  spawned varint, skill u32, owner varint, server u16, owner name (u8 len), legion (u8 len), …
-             links effects/spirits/summons to their owner; a 23-byte short form carries no owner
-33 8A:       entity varint, ~5–6 bytes, server u16, legion (u8 len), …   legion tag of nearby players
-03 8A:       00 00, legion (u8 len), leader (u8 len), counters, texts (u8/u16 len: introduction, notice, …)
-05 8A:       member entries: server u16, u32, name (u8 len), level u8, …, last login u64 ms
-```
+| Field | Type | Meaning |
+|---|---|---|
+| entity | `varint` | |
+| — | `varint` | 0 |
+| how | `varint` | 1 already dead when loaded, 3 died in combat, 7 left the area |
 
-### Dungeons ✅
-- Instances run on **their own server**: entering a dungeon moves the game stream to a new TCP connection
-  (e.g. 193.202.112.231 → 87.232.75.237, both port 13328) and back on leaving. The detector follows both switches.
-- Matchmaking arrives just before: `00 92` / `0D 92` member records (GUID string, server, name, legion), `26`/`27 92`, `1F 93`.
-- **Bodyless packets** (opcode only, e.g. `19 93`, `3F 8D`) occur around the switch; scanning them for embedded
-  bundles used to throw and stopped the meter.
-- A Ranger's **Explosion Trap** spawns as a summon (`41 36` kind 0x5F) without owner name, ~0.4 s after its owner
-  casts the skill of the same name (6/6): credited to that caster.
-- Bosses spawn helper entities (kinds 0x14/0x1C, no owner) that deal damage; they are not player rows.
+### `04 8D` — Ownership
+Status: Verified · links summons, spirits and effects to the player who made them (monsters are claimed this way too)
 
-### Inventory ✅ verified 2026-10-14 (login capture against the in-game cube)
-Our own character only. Item record: `item u32, count u64, container u8, slot u8`, 11 zero bytes, then for gear the
-enchant level in one of the next two bytes (staff +10, belt/rune +2 in the first; boots +5 in the second). Containers: `01` cube (bag, currencies included), `0B` equipped,
-`0F` warehouse, `04` quest items (souls).
-```
-11 56: whole inventory when entering the world — records of different lengths (gear carries more), so scan for them
-1B 56: one slot changed — 01, u8, 00, u32, u32, then the item record at offset 11 (count = new total, 0 = emptied)
-```
-Kinah is two items, `930100001` Kina (Bound) and `930100031` Kina; the currency bar shows their sum (cube only).
-`930100023` Enhance Stone, `930100003` Abyss Points. `15 57` lists dungeon rewards (item, count pairs).
-`83 56` (≈40 KB at login) carries item ids too (not decoded).
+| Field | Type | Meaning |
+|---|---|---|
+| spawned | `varint` | the summon, spirit or effect |
+| skill | `u32` | the skill that created it |
+| owner | `varint` | |
+| server | `u16` | |
+| owner name | `str8` | |
+| legion | `str8` | |
 
-### Ground loot ✅ verified 2026-10-31 (154 drops, 149 takes; souls from monsters, stronghold rewards)
-Both come in batches: a count byte, the records, one trailing byte.
-```
-1E 56 dropped (63 B each): drop id u32, x/y/z f32 (where it lies), x/y/z f32 (second spot, near the first),
-                           source entity u32 (likely the corpse), drop serial u32 (global, rising), item u32, count u32,
-                           02, owner character u32, 00 00, owner server u16, time u64 (Unix ms), 2 bytes
-1F 56 taken   (20 B each): drop id u32, source entity u32, drop serial u32, taker character u32 (0 = vanished),
-                           00 00, server u16
-```
-Character ids are the ones in `02 97` (and in our own `33 36`: `id u32, 00 00, server u16` after our position).
-Souls (`5346600xx`, "Soul: Krall Warrior (Bound)") are picked up like any drop but never appear in the cube, so the
-run's loot counts our takes as well as what the bag gained.
+A 23-byte short form carries no owner.
 
-The inventory list arrives within the first second of the world connection, before the detector locks: the pipeline
-keeps the last 10 s of every unlocked connection and decodes it on lock.
+### Legions
+Status: Verified
 
-### World objects and hidden cubes ✅ verified 2026-10-14 (one cube opened, one more seen)
-```
-34 36: object in range — entity varint, kind u8, u8, code u32, x f32, y f32, z f32, …
-38 36 / 37 36: we start interacting (object, us)
-3A 36: interaction done — object varint, actor varint, u8, …, item u32 used up (last 4 bytes; 0 = none)
-35 36: object state changed (e.g. 04 03 after opening)
-```
-Hidden cubes are objects with code 1200039 (both sightings); opening one uses up item 630900003 (Key: Hidden Cube),
-then `1E 56` drops the loot from the cube's position. Measured: we stood 0.9 m from the cube while opening it; the
-nearest aion2hub cube markers were 70 m and 33 m off (their monsters match within 0.5 m, so their cube spots are
-approximate).
+| Opcode | Record | Fields |
+|---|---|---|
+| `33 8A` | legion tag of a player in range | `entity varint`, 5–6 bytes, `server u16`, `legion str8`, … |
+| `03 8A` | legion details | `00 00`, `legion str8`, `leader str8`, counters, texts (`u8` or `u16` length: introduction, notice …) |
+| `05 8A` | legion roster | per member: `server u16`, `u32`, `name str8`, `level u8`, …, last login `time` |
 
-### Party and group finder
-- `01 97`: group finder board (listings with names and recruitment texts, ~6 KB pages; not decoded).
-- `02 97` ✅ our party after every change: a header, then per member `flag u8 (0C/1C here, 0E/1E elsewhere or
-  offline), slot u8, character u32, 00 00, 2 bytes, name len u8, name, class u32 (roster code), level u32, …`.
-  It outlives a party: members not seen inside an instance are not counted for a run.
-- `0B`/`0D 97`: a player joined (not decoded).
+## Positions
 
-### Other
-- `00 36`: server clock, u64 ms, 20 Hz.
-- `0C 91`: per-map table next to `01 91`. On 2026-10-31 it carried one entry, repeated: map u32 (1010), 01 01,
-  x/y/z f32, time u64 — something placed on the map with a time (an event or portal?; not decoded).
+Status: Verified
 
-### Buffs (abnormals)
-```
-2A 38 added:   entity varint, 01, flags u8, instance varint, abnormal u32, length i64 ms (-1 never),
-               end i64 server-epoch ms (4102412400000 = never), caster varint, level u8,
-               [flags&2: skill u32], u8 (2 = reapplied), x f32, y f32, z f32
-2B 38 changed: entity varint, flags u8, instance ... (same from abnormal on)
-2C 38 removed: entity varint, n u8, n × (kind u8, instance varint, reason u8,
-               [kind&7==7: by varint, skill u32, effect u32])   reason 1 = expired
-```
+World units are about **1 cm**; z points up. Headings in `u16` are `× 360 / 65536` degrees.
 
-### Stats, map, party
-- `4A 36` own stats / `49 36` all stats: list of `(stat u16, value i32)`.
-- `21 36` map load: `u32 count, u32 mapId, u64, x/y/z f32, facing f32`, then the **content code** at byte 43:
-  0 open world, 30 sealed dungeon (also 400001, the last one), 79 expedition, 37/38/40/65 stronghold, 72/80 other
-  instances, 12 a reload inside an instance. Map ranges: 3100xx sealed dungeons, 6000xx expeditions, 15xxxx
-  strongholds (152xxx–154xxx seen), 200xxx/210xxx an ascension instance chain.
-- `23 36 00…` zone change (entity 0 = self teleport) → encounter reset.
-- `02 97` party roster (members with name, class, level, gear score, combat power).
-- `21 8D` boss battle toggle (TK era): `id varint, varint, toggle varint` (1 start / 0 end).
-- Ping: `03 36 00 00 <i64 LE>` client timestamp echo.
+| Opcode | Record | Fields | Rate |
+|---|---|---|---|
+| `1C 37` | move | `entity varint`, `mode u8` (5 = one more byte follows), `pos`, `heading u16` × 2, `01` | ~1 / s per moving entity |
+| `1D 37` | steer | `entity varint`, `flags u8`, `i8` deltas …, `heading u16` × 2 | ~10 / s, no absolute position |
+| `1A 37` | position | `entity varint`, 2 bytes, `pos` | |
+| `1B 37` | position | `entity varint`, [`05`] `03`, `pos` | |
+| `2F 37` | dash, leap | `entity varint`, `u8`, `pos` | |
+| `3C 37` | relocation | `entity varint`, `u8`, `pos` | also sent for the player |
 
-### Instance stages and objectives ✅ verified 2026-11-01 (11 strongholds, entry to exit)
-```
-38 36 / 3A 36  we use the entry portal (an object); 47 36: self varint, 02, content code (as in 21 36), then 21 36
-00 61  map u32, stage u8, from u64, to u64 (Unix ms)
-       2 running (from = entering) · 3 cleared (to = from + 10 s: the automatic exit) · 4 leaving (to = + 10 min)
-2E 92  map event started: event id u32, name len u8, name ("World_L1_GarrisonTerritory_R3_MapEvent"), …, time u64
-2D 92  event progress: event id u32, state u8 (2 running, 3 done), 01, step u8 (1, 2, …), n u8, n counters, 08, …
-2F 92  event id u32: the event ended (we left)
-05 40  bodyless, right before the exit's map load
-```
-Stronghold keys: `GarrisonTerritory_R1…R5` = maps 152000…152005, `H` = 153xxx, `D` = 154xxx. R3 is Forest Shade
-Execution Site, R4 Renegade Hideout. A step starts when the one before is done, so the step changes are objective
-splits; stage 3 marks the clear.
+**The server does not echo the player's own movement**: it travels in the encrypted direction. The player's position
+can only be followed through records about it: self-cast buffs (`2A`/`2B 38`, well under a metre off), relocations
+(`3C 37`), spawn and identity records, and cast records.
 
-### Seen, not decoded (2026-10-31, 30 MB stronghold and field capture)
-About 140 of 218 opcodes carry nothing we use yet. The frequent ones and what they look like:
-```
-1D 37  24k  13 B  movement (velocity?), every moving entity
-06 38  15k  10 B  entity varint, u32 (an effect or skill), counter u16 (1, 2, 3 …) — stacks or combo steps
-03 38   300 37 B  caster varint, 00, target varint, u32, counter, …, x/y/z f32 — an effect placed at a position
-09 38   260 33 B  caster, u32, 01 02, target, x/y/z f32 — like 03 38
-0E 38   160 47 B  caster, 02, target, u32, counter, two positions — something travelling from one spot to another
-01 38 / 18 38 / 19 38 / 34 38 / 31 38 / 3B 38 / 3D 38   our own skill state in combat (varints in the 300000 range,
-                  pairs "a → b" in 18 38): cooldowns or chain steps; 3B/3D 38 are 2-byte acks right after each
-35 36 / 37 36 / 38 36 / 6D 8D / 44 37 / 46 37  entity varint with our id (ef54) — targeting and interaction with objects
-84 56   1.8k 19 B  01, u64, u64 Unix ms, u8 — per item, with a time (cooldowns? acquisition?)
-05 E0   150 16 B  entity, 03 01, max u32 (150), current u32 falling by 2 — a gauge (flight time?)
-2D 92   244 30 B  entity, 00 02 01 01, counter u8 rising 1 … n — stacks on an entity
-07 95    95 14 B  entity varint, u32 (20000 / 10000), 01 — a timer in ms?
-15 8D    59 ~55 B  dialogue keys ("Talk_L1_Garrison_D4_…", strongholds), entity at the end
-24 E3 / 01 43     ids around 10044–10047 with start/end times (u64 Unix ms) — event or season schedule
-```
+## World
 
-## 4. IDs & classes
+### `21 36` — Map load
+Status: Verified
 
-- Entity ids are session-scoped; **reissued on zone change**.
-- Ids > 1,000,000 in spawn records map to `(id & 0x3FFF) | 0x4000`.
-- Player skill id: 8 digits `CC SS NNNN`. Base skill = `raw - raw % 10000`; low digits encode specialisation choices.
-- Class prefix CC: 11 Gladiator, 12 Templar, 13 Assassin, 14 Ranger, 15 Sorcerer, 16 Elementalist,
-  17 Cleric, 18 Chanter, 19 Fighter.
-- Roster/job class codes (4 per class): 5–8 Gladiator, 9–12 Templar, 13–16 Ranger, 17–20 Assassin,
-  21–24 Elementalist, 25–28 Sorcerer, 29–32 Cleric, 33–36 Chanter, 45–48 Fighter.
+| Field | Type | Meaning |
+|---|---|---|
+| count | `u32` | |
+| map | `u32` | see [Map ids](#map-ids) |
+| — | `u64` | |
+| position | `pos` | where the player appears |
+| facing | `f32` | |
+| … | | |
+| content | `u8` | at offset 43, see below |
 
-## 5. Encounter rules (prior art)
+| Content code | Place |
+|---|---|
+| 0 | open world |
+| 12 | reload inside the current instance |
+| 30 | sealed dungeon |
+| 37, 38, 40, 65 | stronghold |
+| 72, 80 | other instances (e.g. ascension instances) |
+| 79 | expedition |
 
-- DPS = damage / max(lastHit − firstHit, 1 s).
-- New fight on a target after 30 s idle; reset on zone change (with lull/debounce).
-- First hit on a known boss clears trash segment.
-- Merge summon damage into owner.
-- Sanity check: on boss kill, total damage ≈ 97–107% of boss max HP.
-- Validate against the in-game Combat Analysis window (official personal meter since 2026-04-01).
+The content code also arrives just before the map load in `47 36` (`self varint`, `02`, `content u8`).
 
-## 6. Data (skill / NPC names)
+### `23 36` — Zone change
+Status: Verified
 
-Needs skill-id → name, NPC code → name/isBoss, DoT allowlist. Prior art extracts these from the game client.
-Plan: write our own extractor rather than copying GPL'd JSON.
+A body starting with `00` (entity 0) is the player's own teleport or zone change. Entity ids are reissued from here on.
 
-## 7. Policy notes
+### Time
+Status: Verified
 
-- No known bans for passive meters; NCSoft hasn't ruled on them explicitly.
-- NCSoft (May 2026) threatened action against **publishing other players' damage without consent**.
-  → Keep data local by default; any upload must be opt-in and self-only unless others consent.
+| Opcode | Record | Fields |
+|---|---|---|
+| `00 36` | server clock, ~20 / s | `u64` ms |
+| `03 36` | every 10 s | `00 00`, `u64` server uptime ms, `time` |
+
+### `01 91` — Field bosses of the current map
+Status: Verified · repeats about once a second on maps with field bosses
+
+`00 00`, `map u32`, `count u8`, then count times:
+
+| Field | Type | When | Meaning |
+|---|---|---|---|
+| state | `u8` | | 1 alive, 0 dead |
+| spawn code | `varint` | | `map × 100 + n` |
+| position | `pos` | state 1 | |
+| — | 0–1 byte | | |
+| time | `time` | | alive: when it spawned · dead: the announced respawn |
+
+### World objects
+Status: Verified · gathering nodes, portals, chests, hidden cubes
+
+| Opcode | Record | Fields |
+|---|---|---|
+| `34 36` | object in range | `entity varint`, `kind u8`, `u8`, `code u32`, `pos`, … |
+| `38 36`, `37 36` | the player starts using an object | `object varint`, `actor varint`, … |
+| `3A 36` | use finished | `object varint`, `actor varint`, `u8`, …, `item u32` used up (last 4 bytes, 0 = none) |
+| `35 36` | object state changed | `object varint`, state bytes (e.g. after opening) |
+
+Hidden cubes are objects with code `1200039`; opening one uses up item `630900003` (Key: Hidden Cube) and the loot
+drops at the cube's position.
+
+## Instances
+
+### `00 61` — Instance stage
+Status: Verified
+
+| Field | Type | Meaning |
+|---|---|---|
+| map | `u32` | |
+| stage | `u8` | see below |
+| from | `time` | |
+| to | `time` | 0 = open-ended |
+
+| Stage | Meaning |
+|---|---|
+| 2 | running; `from` = when it was entered |
+| 3 | **cleared**; `to` = `from` + 10 s, the automatic exit |
+| 4 | leaving; `to` = `from` + 10 min (likely the time until it can be entered again) |
+
+### Map events and objectives
+Status: Verified · instances with objectives (strongholds) run a map event
+
+| Opcode | Record | Fields |
+|---|---|---|
+| `2E 92` | event started | `event id u32`, `name str8` (e.g. `World_L1_GarrisonTerritory_R3_MapEvent`), …, `time` |
+| `2D 92` | progress | `event id u32`, `state u8` (2 running, 3 done), `01`, `step u8` (1, 2 …), `n u8`, n counters, `08`, … |
+| `2F 92` | event ended | `event id u32` |
+
+A step begins when the one before it is done, so step changes mark each objective's completion; state 3 closes the
+last one. Open-world events use the same records with a single step whose counter rises.
+
+### Entering and leaving
+
+| Step | Records |
+|---|---|
+| use the entry portal | `38 36` / `3A 36` on the portal object |
+| announce the place | `47 36` with the content code |
+| load it | `21 36`, then `00 61` stage 2 and `2E 92` |
+| clear | `2D 92` state 3, `00 61` stage 3 |
+| leave | `00 61` stage 4, bodyless `05 40`, `47 36`, `21 36` back to the open world, `2F 92` |
+
+Matchmaking for group content arrives just before entering: `00 92` / `0D 92` member records (an id string, server,
+name, legion), `26 92`, `27 92` and `1F 93`.
+
+## Items
+
+Inventory records describe the player's own character only.
+
+### Item record
+Status: Verified
+
+| Field | Type | Meaning |
+|---|---|---|
+| item | `u32` | |
+| count | `u64` | |
+| container | `u8` | see below |
+| slot | `u8` | |
+| — | 11 × `00` | |
+| enchant | `u8` | gear only, in one of the next two bytes |
+
+| Container | Holds |
+|---|---|
+| `01` | the cube (bag), currencies included |
+| `04` | quest items |
+| `0B` | equipped gear |
+| `0F` | warehouse |
+
+### Inventory
+Status: Verified
+
+| Opcode | Record | Fields |
+|---|---|---|
+| `11 56` | the whole inventory, on entering the world | item records of different lengths (gear carries more); scan for them |
+| `1B 56` | one slot changed | `01`, `u8`, `00`, `u32`, `u32`, then the item record at offset 11 (count = new total, 0 = emptied) |
+
+### Ground loot
+Status: Verified · both come in batches: a `u8` count, the records, one trailing byte
+
+**`1E 56` dropped**, 63 bytes each:
+
+| Field | Type | Meaning |
+|---|---|---|
+| drop id | `u32` | identifies the drop until it is taken |
+| position | `pos` | where it lies |
+| — | `pos` | a second spot nearby |
+| source | `u32` | likely the corpse it dropped from |
+| serial | `u32` | global, rising |
+| item | `u32` | |
+| count | `u32` | |
+| — | `02` | |
+| owner | `u32` | character id with the right to take it |
+| — | `00 00` | |
+| owner server | `u16` | |
+| time | `time` | |
+| — | 2 bytes | |
+
+**`1F 56` taken**, 20 bytes each:
+
+| Field | Type | Meaning |
+|---|---|---|
+| drop id | `u32` | as in `1E 56` |
+| source | `u32` | |
+| serial | `u32` | |
+| taker | `u32` | character id, 0 = it vanished |
+| — | `00 00` | |
+| server | `u16` | |
+
+Items that go to a separate collection (souls, `5346600xx`) are picked up like any drop but never appear in the cube;
+the take record is the only trace of them.
+
+### Other item records
+Status: Partly verified
+
+| Opcode | Record |
+|---|---|
+| `15 57` | rewards of a cleared instance as (item, count) pairs |
+| `83 56` | ~40 KB at login with item ids (not decoded) |
+| `84 56` | `01`, `u64`, `u64` time, `u8` per item: a cooldown or acquisition time (not decoded) |
+
+## Party
+
+### `02 97` — Party roster
+Status: Partly verified · sent after every change (join, leave, zone); it can outlive a party
+
+A header (party id, recruiting text), then per member:
+
+| Field | Type | Meaning |
+|---|---|---|
+| flag | `u8` | `0C`/`1C` nearby, `0E`/`1E` elsewhere or offline |
+| slot | `u8` | |
+| character | `u32` | character id |
+| — | `00 00`, 2 bytes | |
+| name | `str8` | |
+| class | `u32` | [roster class code](#roster-class-codes) |
+| level | `u32` | |
+
+`01 97` is the group finder board (listings with names and recruitment texts; not decoded). `0B 97` and `0D 97`
+announce a player joining (not decoded).
+
+## Not decoded yet
+
+Seen in normal play and described by shape only.
+
+| Opcode | Size | Shape | Probably |
+|---|---|---|---|
+| `06 38` | 10&nbsp;B | `entity varint`, `u32`, counter `u16` rising 1, 2, 3 … | stacks or combo steps |
+| `03 38` | ~37&nbsp;B | `caster varint`, `00`, `target varint`, `u32`, counter, …, `pos` | an effect placed at a position |
+| `09 38` | ~33&nbsp;B | `caster`, `u32`, `01 02`, `target`, `pos` | like `03 38` |
+| `0E 38` | ~47&nbsp;B | `caster`, `02`, `target`, `u32`, counter, two positions | something moving between two points |
+| `01 38` `18 38` `19 38` `31 38` `34 38` | 4–11&nbsp;B | the player's skill state; `18 38` pairs two values (a → b) | cooldowns or chain steps |
+| `3B 38` `3D 38` | 2&nbsp;B | `00 00` right after the records above | acknowledgements |
+| `35 36` `37 36` `6D 8D` `44 37` `46 37` | small | `entity varint` with the player's id | targeting and object interaction |
+| `05 E0` | 16&nbsp;B | `entity`, `03 01`, max `u32`, current `u32` falling by 2 | a gauge (flight time?) |
+| `07 95` | 14&nbsp;B | `entity varint`, `u32` (10000 / 20000), `01` | a timer in ms |
+| `0C 91` | ~30&nbsp;B | `map u32`, `01 01`, `pos`, `time` | something placed on the map with a time |
+| `15 8D` | ~55&nbsp;B | dialogue keys (`Talk_L1_Garrison_…`), entity at the end | NPC dialogue |
+| `24 E3` `01 43` | 50–130&nbsp;B | ids around 10044–10047 with start and end times | event or season schedule |
+
+## Identifiers
+
+### Skills
+
+Player skills have 8 digits, `CC SS NNNN`. The base skill is `raw − raw % 10000`; the low digits encode
+specialisation choices. NPC skills have 7 digits.
+
+| Prefix | Class | Prefix | Class |
+|---|---|---|---|
+| 11 | Gladiator | 16 | Elementalist |
+| 12 | Templar | 17 | Cleric |
+| 13 | Assassin | 18 | Chanter |
+| 14 | Ranger | 19 | Fighter |
+| 15 | Sorcerer | | |
+
+### Roster class codes
+
+Used in identity, spawn and roster records; four codes per class.
+
+| Codes | Class | Codes | Class |
+|---|---|---|---|
+| 5–8 | Gladiator | 25–28 | Sorcerer |
+| 9–12 | Templar | 29–32 | Cleric |
+| 13–16 | Ranger | 33–36 | Chanter |
+| 17–20 | Assassin | 45–48 | Fighter |
+| 21–24 | Elementalist | | |
+
+### Items
+
+| Item | Id |
+|---|---|
+| Kina (Bound) | `930100001` |
+| Kina | `930100031` |
+| Enhance Stone | `930100023` |
+| Abyss Points | `930100003` |
+| Key: Hidden Cube | `630900003` |
+
+The game's currency bar shows the sum of both Kina items in the cube.
+
+### Map ids
+
+| Range | Content |
+|---|---|
+| below 100000 | open world (e.g. 1010 Verteron, 1110 Altgard, 20 / 22 / 23 Reshanta) |
+| 152xxx, 153xxx, 154xxx | strongholds; map events `GarrisonTerritory_R1…R5`, `H1…H5`, `D1…D5` |
+| 200xxx, 210xxx | an ascension instance chain |
+| 3100xx, 400001 | sealed dungeons |
+| 6000xx | expeditions |
+| 800xxx, 900xxx | other instances |
+
+## Prior work
+
+This reference builds on public research by other passive meters (facts only, no code taken):
+[A2Tools-DPS-Meter](https://github.com/taengu/A2Tools-DPS-Meter) (GPL-3.0),
+[Aion2-Dps-Meter](https://github.com/TK-open-public/Aion2-Dps-Meter) (MIT; before the June 2026 changes) and
+[NOIA2](https://github.com/ZDYoung0519/NOIA2) (GPL-3.0). Also worth reading: nuriland/a2kit (a Go decoder) and
+lunixxx37/aion2-protocol-research.
