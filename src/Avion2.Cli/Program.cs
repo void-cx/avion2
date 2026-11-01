@@ -360,16 +360,20 @@ internal static class Commands
         bool showEvents = cli.Has("events");
         int printed = 0;
 
+        // Counted here, not by the decoder: its counters start over when the game connection is found again
+        var counts = new Dictionary<ushort, (int Packets, int Parsed, long Bytes)>();
         var pipeline = new GameCapturePipeline(_ => { }, (payload, depth, ts) =>
         {
             ushort opcode = Opcodes.Read(payload);
+            var decoded = new List<GameEvent>();
+            bool parsed = PacketParser.Parse(payload, ts, decoded.Add);
+            var (packets, parsedCount, bytes) = counts.GetValueOrDefault(opcode);
+            counts[opcode] = (packets + 1, parsedCount + (parsed ? 1 : 0), bytes + payload.Length);
             if (summaryOnly || printed >= limit || (onlyOpcode is { } wanted && wanted != opcode))
             {
                 return;
             }
 
-            var decoded = new List<GameEvent>();
-            bool parsed = PacketParser.Parse(payload, ts, decoded.Add);
             if (unparsedOnly && parsed)
             {
                 return;
@@ -394,10 +398,10 @@ internal static class Commands
         }
 
         Console.WriteLine();
-        Console.WriteLine("Opcode histogram:");
-        foreach (var (opcode, count) in pipeline.Decoder.Stats.OpcodeCounts.OrderByDescending(kv => kv.Value))
+        Console.WriteLine("Opcode histogram (packets · parsed into events · average size):");
+        foreach (var (opcode, (packets, parsedCount, bytes)) in counts.OrderByDescending(kv => kv.Value.Packets))
         {
-            Console.WriteLine($"  {Opcodes.Format(opcode)}  {count,8:N0}");
+            Console.WriteLine($"  {Opcodes.Format(opcode)}  {packets,8:N0}  {parsedCount,8:N0}  {bytes / Math.Max(1, packets),6:N0} B");
         }
 
         return 0;

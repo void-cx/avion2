@@ -199,8 +199,21 @@ enchant level in one of the next two bytes (staff +10, belt/rune +2 in the first
 1B 56: one slot changed — 01, u8, 00, u32, u32, then the item record at offset 11 (count = new total, 0 = emptied)
 ```
 Kinah is two items, `930100001` Kina (Bound) and `930100031` Kina; the currency bar shows their sum (cube only).
-`930100023` Enhance Stone, `930100003` Abyss Points. `15 57` lists dungeon rewards (item, count pairs);
-`1E 56` is loot on the ground (entity, positions, item). `83 56` (≈40 KB at login) carries item ids too (not decoded).
+`930100023` Enhance Stone, `930100003` Abyss Points. `15 57` lists dungeon rewards (item, count pairs).
+`83 56` (≈40 KB at login) carries item ids too (not decoded).
+
+### Ground loot ✅ verified 2026-10-31 (154 drops, 149 takes; souls from monsters, stronghold rewards)
+Both come in batches: a count byte, the records, one trailing byte.
+```
+1E 56 dropped (63 B each): drop id u32, x/y/z f32 (where it lies), x/y/z f32 (second spot, near the first),
+                           source entity u32 (likely the corpse), drop serial u32 (global, rising), item u32, count u32,
+                           02, owner character u32, 00 00, owner server u16, time u64 (Unix ms), 2 bytes
+1F 56 taken   (20 B each): drop id u32, source entity u32, drop serial u32, taker character u32 (0 = vanished),
+                           00 00, server u16
+```
+Character ids are the ones in `02 97` (and in our own `33 36`: `id u32, 00 00, server u16` after our position).
+Souls (`5346600xx`, "Soul: Krall Warrior (Bound)") are picked up like any drop but never appear in the cube, so the
+run's loot counts our takes as well as what the bag gained.
 
 The inventory list arrives within the first second of the world connection, before the detector locks: the pipeline
 keeps the last 10 s of every unlocked connection and decodes it on lock.
@@ -217,13 +230,17 @@ then `1E 56` drops the loot from the cube's position. Measured: we stood 0.9 m f
 nearest aion2hub cube markers were 70 m and 33 m off (their monsters match within 0.5 m, so their cube spots are
 approximate).
 
-### Party and group finder (not decoded yet)
-- `01 97`: group finder board (listings with names and recruitment texts, ~6 KB pages).
-- `02 97`: our party; `0B`/`0D 97`: a player joined.
+### Party and group finder
+- `01 97`: group finder board (listings with names and recruitment texts, ~6 KB pages; not decoded).
+- `02 97` ✅ our party after every change: a header, then per member `flag u8 (0C/1C here, 0E/1E elsewhere or
+  offline), slot u8, character u32, 00 00, 2 bytes, name len u8, name, class u32 (roster code), level u32, …`.
+  It outlives a party: members not seen inside an instance are not counted for a run.
+- `0B`/`0D 97`: a player joined (not decoded).
 
 ### Other
 - `00 36`: server clock, u64 ms, 20 Hz.
-- `0C 91`: per-map table next to `01 91` (empty in all captures so far).
+- `0C 91`: per-map table next to `01 91`. On 2026-10-31 it carried one entry, repeated: map u32 (1010), 01 01,
+  x/y/z f32, time u64 — something placed on the map with a time (an event or portal?; not decoded).
 
 ### Buffs (abnormals)
 ```
@@ -237,11 +254,33 @@ approximate).
 
 ### Stats, map, party
 - `4A 36` own stats / `49 36` all stats: list of `(stat u16, value i32)`.
-- `21 36` map load: `u32 count, u32 mapId`. Dungeon ids 600000–699999.
+- `21 36` map load: `u32 count, u32 mapId, u64, x/y/z f32, facing f32`, then the **content code** at byte 43:
+  0 open world, 30 sealed dungeon (also 400001, the last one), 79 expedition, 37/38/40/65 stronghold, 72/80 other
+  instances, 12 a reload inside an instance. Map ranges: 3100xx sealed dungeons, 6000xx expeditions, 15xxxx
+  strongholds (152xxx–154xxx seen), 200xxx/210xxx an ascension instance chain.
 - `23 36 00…` zone change (entity 0 = self teleport) → encounter reset.
 - `02 97` party roster (members with name, class, level, gear score, combat power).
 - `21 8D` boss battle toggle (TK era): `id varint, varint, toggle varint` (1 start / 0 end).
 - Ping: `03 36 00 00 <i64 LE>` client timestamp echo.
+
+### Seen, not decoded (2026-10-31, 30 MB stronghold and field capture)
+About 140 of 218 opcodes carry nothing we use yet. The frequent ones and what they look like:
+```
+1D 37  24k  13 B  movement (velocity?), every moving entity
+06 38  15k  10 B  entity varint, u32 (an effect or skill), counter u16 (1, 2, 3 …) — stacks or combo steps
+03 38   300 37 B  caster varint, 00, target varint, u32, counter, …, x/y/z f32 — an effect placed at a position
+09 38   260 33 B  caster, u32, 01 02, target, x/y/z f32 — like 03 38
+0E 38   160 47 B  caster, 02, target, u32, counter, two positions — something travelling from one spot to another
+01 38 / 18 38 / 19 38 / 34 38 / 31 38 / 3B 38 / 3D 38   our own skill state in combat (varints in the 300000 range,
+                  pairs "a → b" in 18 38): cooldowns or chain steps; 3B/3D 38 are 2-byte acks right after each
+35 36 / 37 36 / 38 36 / 6D 8D / 44 37 / 46 37  entity varint with our id (ef54) — targeting and interaction with objects
+84 56   1.8k 19 B  01, u64, u64 Unix ms, u8 — per item, with a time (cooldowns? acquisition?)
+05 E0   150 16 B  entity, 03 01, max u32 (150), current u32 falling by 2 — a gauge (flight time?)
+2D 92   244 30 B  entity, 00 02 01 01, counter u8 rising 1 … n — stacks on an entity
+07 95    95 14 B  entity varint, u32 (20000 / 10000), 01 — a timer in ms?
+15 8D    59 ~55 B  dialogue keys ("Talk_L1_Garrison_D4_…", strongholds), entity at the end
+24 E3 / 01 43     ids around 10044–10047 with start/end times (u64 Unix ms) — event or season schedule
+```
 
 ## 4. IDs & classes
 

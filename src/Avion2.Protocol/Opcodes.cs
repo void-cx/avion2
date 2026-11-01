@@ -50,6 +50,8 @@ public static class Opcodes
     // Inventory (56 family, our own character)
     public const ushort InventoryList = 0x1156;
     public const ushort InventoryItem = 0x1B56;
+    public const ushort LootDrop = 0x1E56;
+    public const ushort LootTaken = 0x1F56;
 
     // Legion (8A family)
     public const ushort LegionDetails = 0x038A;

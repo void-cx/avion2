@@ -98,7 +98,11 @@ public sealed record SelfIdentityEvent(
     ushort ServerId,
     GameClass Class,
     uint Level,
-    uint? CombatPower = null) : GameEvent(TimestampMs);
+    uint? CombatPower = null) : GameEvent(TimestampMs)
+{
+    /// <summary>Our character id (as in the party roster and loot records); null when it was not found.</summary>
+    public uint? CharacterId { get; init; }
+}
 
 /// <param name="CombatPower">Unverified: read with the prior-art rule (u32 after the <c>F4 CB 1F</c> marker).</param>
 public sealed record PlayerSpawnEvent(
@@ -146,6 +150,17 @@ public enum DeathKind : byte
 }
 
 public sealed record DeathEvent(long TimestampMs, uint EntityId, DeathKind Kind) : GameEvent(TimestampMs);
+
+/// <summary>
+/// <c>1E 56</c>: an item dropped on the ground (from a corpse or chest) for <paramref name="OwnerCharacterId"/> to take.
+/// </summary>
+/// <param name="DropId">Identifies the drop until it is taken (<see cref="LootTakenEvent"/>).</param>
+/// <param name="SourceId">Most likely the entity it dropped from (not confirmed).</param>
+public sealed record LootDropEvent(long TimestampMs, uint DropId, uint SourceId, uint ItemId, uint Count, uint OwnerCharacterId,
+    ushort OwnerServerId, Vec3 Position) : GameEvent(TimestampMs);
+
+/// <summary><c>1F 56</c>: a drop left the ground; taken by <paramref name="TakerCharacterId"/>, or 0 when it just vanished.</summary>
+public sealed record LootTakenEvent(long TimestampMs, uint DropId, uint TakerCharacterId) : GameEvent(TimestampMs);
 
 /// <summary>A member of our party (<c>02 97</c>); <paramref name="CharacterId"/> is the character, not the entity id.</summary>
 public sealed record PartyMember(byte Slot, uint CharacterId, string Name, GameClass Class, bool Online);

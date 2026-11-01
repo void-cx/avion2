@@ -323,6 +323,18 @@ public sealed class RunTracker
     /// <summary>English names of the monsters killed in the current run (to name runs without a boss).</summary>
     private readonly HashSet<string> _killed = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>What we picked up from the ground in the current run (also items the bag never shows, like souls).</summary>
+    private readonly Dictionary<uint, long> _picked = new();
+
+    /// <summary>We picked an item up (from <see cref="LootTracker"/>).</summary>
+    public void OnPickup(LootPickup pickup)
+    {
+        if (Current is { } run && pickup.TimestampMs >= run.StartMs)
+        {
+            _picked[pickup.ItemId] = _picked.GetValueOrDefault(pickup.ItemId) + pickup.Count;
+        }
+    }
+
     /// <summary>Players seen in the current run: the roster can outlive a party, so only members seen inside are kept.</summary>
     private readonly HashSet<string> _seen = new();
 
@@ -543,7 +555,8 @@ public sealed class RunTracker
     private void Rematch(DungeonRun run)
     {
         var bosses = run.Bosses.Select(b => (b.Npc, b.Npc is { } code ? EnglishName?.Invoke(code) ?? b.Name : b.Name));
-        if (Catalog.Match(bosses, _killed) is { } dungeon)
+        // Strongholds are not in the dungeon table: their monsters (shared with dungeons nearby) would only mislead
+        if (Catalog.Match(bosses, run.Kind == ContentKind.Stronghold ? null : _killed) is { } dungeon)
         {
             run.DungeonSlug = dungeon.Slug;
         }
@@ -569,17 +582,30 @@ public sealed class RunTracker
             run.Kinah = (long)_inventory.Kinah - (long)before;
         }
 
+        // Loot: what the bag gained, and what we picked up from the ground (the larger of the two per item: pickups
+        // miss rewards that go straight into the bag, the bag misses souls)
+        var loot = new Dictionary<uint, long>(_picked);
         if (_bagAtStart is { } start && _inventory.IsKnown)
         {
             foreach (var (item, count) in Bag())
             {
                 long delta = count - start.GetValueOrDefault(item);
-                if (delta > 0 && item is not ItemIds.Kinah and not ItemIds.KinahBound)
+                if (delta > 0)
                 {
-                    run.Loot.Add(new RunItem(item, delta));
+                    loot[item] = Math.Max(delta, loot.GetValueOrDefault(item));
                 }
             }
         }
+
+        foreach (var (item, count) in loot)
+        {
+            if (item is not ItemIds.Kinah and not ItemIds.KinahBound)
+            {
+                run.Loot.Add(new RunItem(item, count));
+            }
+        }
+
+        _picked.Clear();
 
         // Party members fought with us; without fights, being seen inside is enough
         run.Party.RemoveAll(m => run.Fights > 0 ? !_fought.Contains(m.Name) : !_seen.Contains(m.Name));

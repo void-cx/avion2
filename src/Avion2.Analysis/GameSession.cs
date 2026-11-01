@@ -10,7 +10,11 @@ public sealed class GameSession
         Registry = new EntityRegistry(data);
         Tracker = new CombatTracker(Registry, options);
         Runs = new RunTracker(Registry, Tracker, Inventory);
+        Loot.PickedUp += Runs.OnPickup;
     }
+
+    /// <summary>Items on the ground and the ones we pick up.</summary>
+    public LootTracker Loot { get; } = new();
 
     /// <summary>Dungeon / expedition / instance runs, from entering to leaving.</summary>
     public RunTracker Runs { get; }
@@ -55,6 +59,7 @@ public sealed class GameSession
         Registry.Apply(e);
         Tracker.Apply(e);
         Runs.Apply(e);
+        Loot.Apply(e, Registry.SelfName);
         Recorder.Apply(e);
         Legion.Apply(e);
         Positions.Apply(e);

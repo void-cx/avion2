@@ -129,6 +129,37 @@ public class RunTests
     }
 
     [Fact]
+    public void GroundLootWeTakeCountsForTheRun()
+    {
+        // 1E 56 / 1F 56 as recorded (a soul dropped and taken by character 110141)
+        byte[] drop = Convert.FromHexString(
+            "0159540000b372c847b4c5e1c700640846083dc8475cefe1c7007808461e4800004c8d2d00a143de1f01000000023dae0100000029051219a791a1010000010301");
+        byte[] taken = Convert.FromHexString("01595400001e4800004c8d2d003dae01000000290500");
+        var events = new List<GameEvent>();
+        Assert.True(Avion2.Protocol.Parsers.InventoryParsers.ParseLootDrop(drop, 1_000, events.Add));
+        Assert.True(Avion2.Protocol.Parsers.InventoryParsers.ParseLootTaken(taken, 2_000, events.Add));
+        var dropped = Assert.IsType<LootDropEvent>(events[0]);
+        Assert.Equal((21593u, 534660001u, 1u, 110141u, (ushort)1321), (dropped.DropId, dropped.ItemId, dropped.Count, dropped.OwnerCharacterId, dropped.OwnerServerId));
+        Assert.Equal(110141u, Assert.IsType<LootTakenEvent>(events[1]).TakerCharacterId);
+
+        var session = Session();
+        session.Apply(new SelfIdentityEvent(0, Me, "TestDaeva", 1321, GameClass.Chanter, 30) { CharacterId = 110141 });
+        DungeonRun? run = null;
+        session.Runs.RunEnded += r => run = r;
+        session.Apply(new MapLoadEvent(500, 152003, 37));
+        events.ForEach(session.Apply);
+        session.Runs.Finish(70_000);
+        Assert.Equal(new RunItem(534660001, 1), Assert.Single(run!.Loot));
+    }
+
+    [Fact]
+    public void FindsTheCharacterIdBeforeTheServer()
+    {
+        byte[] tail = Convert.FromHexString("df8200000808bd475e57e4c700e80e46323001000000290500e80e4601");
+        Assert.Equal(77874u, Avion2.Protocol.Parsers.RecordParsers.FindCharacterId(tail, 1321));
+    }
+
+    [Fact]
     public void ParsesPartyRoster()
     {
         // header, then two entries (flag, slot, character id, 00 00, 2 bytes, name, class code, level) and an empty slot

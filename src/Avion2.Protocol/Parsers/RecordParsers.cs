@@ -62,8 +62,32 @@ public static class RecordParsers
         r.TryU32(out uint classCode);
         r.TrySkip(1);
         r.TryU32(out uint level);
-        emit(new SelfIdentityEvent(ts, id, name, server, GameClasses.FromRosterCode(classCode), level, FindSelfCombatPower(body)));
+        emit(new SelfIdentityEvent(ts, id, name, server, GameClasses.FromRosterCode(classCode), level, FindSelfCombatPower(body))
+        {
+            CharacterId = FindCharacterId(body, server),
+        });
         return true;
+    }
+
+    /// <summary>
+    /// The character id sits after our position, right before the server id: <c>id u32, 00 00, server u16</c>
+    /// (e.g. <c>32 30 01 00 00 00 29 05</c>). The first such spot with a plausible id is taken.
+    /// </summary>
+    public static uint? FindCharacterId(ReadOnlySpan<byte> body, ushort server)
+    {
+        for (int i = 4; i + 4 <= body.Length; i++)
+        {
+            if (body[i] == 0 && body[i + 1] == 0 && body[i + 2] == (byte)server && body[i + 3] == (byte)(server >> 8))
+            {
+                uint id = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(body[(i - 4)..]);
+                if (id is >= 1_000 and < 100_000_000)
+                {
+                    return id;
+                }
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

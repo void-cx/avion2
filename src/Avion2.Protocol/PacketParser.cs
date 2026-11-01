@@ -65,6 +65,8 @@ public static class PacketParser
             Opcodes.WorldObject => WorldParsers.ParseWorldObject(body, timestampMs, emit),
             Opcodes.InteractionDone => WorldParsers.ParseInteractionDone(body, timestampMs, emit),
             Opcodes.InventoryItem => InventoryParsers.ParseInventoryItem(body, timestampMs, emit),
+            Opcodes.LootDrop => InventoryParsers.ParseLootDrop(body, timestampMs, emit),
+            Opcodes.LootTaken => InventoryParsers.ParseLootTaken(body, timestampMs, emit),
             Opcodes.ServerClock => WorldParsers.ParseServerClock(body, timestampMs, emit),
             Opcodes.BuffAdded => WorldParsers.ParseBuff(body, timestampMs, emit, added: true),
             Opcodes.BuffChanged => WorldParsers.ParseBuff(body, timestampMs, emit, added: false),
