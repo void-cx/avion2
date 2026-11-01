@@ -39,6 +39,7 @@ PAGE = """<!doctype html>
     <nav>
       <a href="../#features">Features</a>
       <a href="./">Protocol</a>
+      <a href="../changelog/">Changelog</a>
       <a href="../#install">Install</a>
       <a href="{repo}">GitHub</a>
     </nav>
@@ -61,7 +62,7 @@ PAGE = """<!doctype html>
   </main>
 
   <footer>
-    <p>AVION2 · <a href="{repo}">void-cx/avion2</a> · GPL-3.0</p>
+    <p>AVION2 · <a href="{repo}">void-cx/avion2</a> · <a href="../changelog/">Changelog</a> · GPL-3.0</p>
     <p class="fine">Not affiliated with NCSOFT. AION is a trademark of NCSOFT Corporation.</p>
   </footer>
 

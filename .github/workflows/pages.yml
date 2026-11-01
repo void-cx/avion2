@@ -1,10 +1,13 @@
 name: Pages
 
-# The website (site/) on GitHub Pages, with the protocol wiki built from docs/PROTOCOL.md
+# The website (site/) on GitHub Pages, with the protocol wiki built from docs/PROTOCOL.md and the changelog from the
+# GitHub releases
 on:
   push:
     branches: [main]
-    paths: [site/**, docs/PROTOCOL.md, tools/build_wiki.py, .github/workflows/pages.yml]
+    paths: [site/**, docs/PROTOCOL.md, tools/build_wiki.py, tools/build_changelog.py, .github/workflows/pages.yml]
+  release:
+    types: [published, edited] # the changelog is built from the releases
   workflow_dispatch:
 
 permissions:
@@ -17,7 +20,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Only main may deploy to Pages: a published or edited release (which runs on its tag) rebuilds main instead
+  release:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - run: gh workflow run pages.yml --ref main --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   deploy:
+    if: github.event_name != 'release'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -31,6 +46,10 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/wiki"
           "$RUNNER_TEMP/wiki/bin/pip" install --quiet markdown==3.7
           "$RUNNER_TEMP/wiki/bin/python" tools/build_wiki.py
+      - name: Changelog
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: '"$RUNNER_TEMP/wiki/bin/python" tools/build_changelog.py'
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

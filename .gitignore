@@ -14,3 +14,5 @@ data/*.json
 artifacts/
 # built by the Pages workflow from docs/PROTOCOL.md (tools/build_wiki.py)
 site/protocol/
+# built by the Pages workflow from the GitHub releases (tools/build_changelog.py)
+site/changelog/
