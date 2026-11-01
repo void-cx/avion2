@@ -365,6 +365,38 @@ public static class RecordParsers
         return true;
     }
 
+    /// <summary>
+    /// <c>6F 8D</c>: 00, u8, station varint, recipe u32, outcome u8 (bit 0 the first race succeeds, bit 2 a combo race
+    /// follows, bit 3 the combo succeeds: 01 success, 05 a combo that fails, 0D a combo that succeeds), 00, then each
+    /// race: steps u8, the steps (10 bytes each: kind u8, 00, two equal u32), 00.
+    /// </summary>
+    public static bool ParseCraftStart(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body, 2);
+        if (body.Length < 2 || body[0] != 0 || !r.TryVarint(out uint station) || station == 0 || !r.TryU32(out uint recipe) ||
+            !r.TryU8(out byte outcome) || !r.TryU8(out _) || !r.TryU8(out byte steps))
+        {
+            return false;
+        }
+
+        bool combo = (outcome & 4) != 0;
+        emit(new CraftStartEvent(ts, station, recipe, combo ? (outcome & 8) != 0 : (outcome & 1) != 0, combo, steps));
+        return true;
+    }
+
+    /// <summary><c>71 8D</c>: result u8 (0 success, 1 combo success, 2 failed), u8, station varint, u8.</summary>
+    public static bool ParseCraftEnd(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryU8(out byte result) || result > 2 || !r.TryU8(out _) || !r.TryVarint(out uint station) || station == 0)
+        {
+            return false;
+        }
+
+        emit(new CraftEndEvent(ts, station, result));
+        return true;
+    }
+
     /// <summary><c>00 61</c>: map u32, stage u8, from u64 (Unix ms), to u64 (Unix ms, 0 = open).</summary>
     public static bool ParseInstanceStage(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {

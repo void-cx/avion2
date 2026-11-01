@@ -148,10 +148,10 @@ public partial class HudWindow : Window
         Canvas.SetLeft(BossInfo, target.X + target.W / 2 - BossInfo.DesiredSize.Width / 2);
         Canvas.SetTop(BossInfo, target.Y + target.H + h * 0.058);
 
-        // Bottom centre, just above the game's gathering panel (its title sits at ~76 % of the height)
+        // Bottom centre, just above the game's gathering panel (its title sits at ~76 % of the height) or crafting panel
         GatherBanner.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         Canvas.SetLeft(GatherBanner, w / 2 - GatherBanner.DesiredSize.Width / 2);
-        Canvas.SetTop(GatherBanner, h * 0.728 - GatherBanner.DesiredSize.Height);
+        Canvas.SetTop(GatherBanner, h * _gatherBottom - GatherBanner.DesiredSize.Height);
 
         CastBanner.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         // Centred under the boss bar, kept on screen when the bar is near an edge
@@ -461,19 +461,35 @@ public partial class HudWindow : Window
 
     private readonly DispatcherTimer _gatherTimer = new() { Interval = TimeSpan.FromSeconds(15) };
 
+    /// <summary>Where the outcome banner ends, as a share of the height: just above the game's progress panel.</summary>
+    private double _gatherBottom = 0.728;
+
     /// <summary>
     /// The outcome of the gathering that just started (the server decides it up front): "Will succeed" in green
     /// ("· Fine" when the item is the better grade), "Will fail" in red. Hidden when it ends (or after 15 s).
     /// </summary>
-    public void ShowGather(Avion2.Protocol.GatherStartEvent start)
+    public void ShowGather(Avion2.Protocol.GatherStartEvent start) =>
+        ShowOutcome(!start.Success ? "✖  Will fail" : start.Fine ? "✔  Will succeed · Fine" : "✔  Will succeed",
+            start.Success, start.Fine, 0.728, TimeSpan.FromSeconds(15));
+
+    /// <summary>
+    /// The same for a craft. Its panel sits lower (the title at ~84 % of the height), and a combo (the better recipe,
+    /// two items) runs a second race, so it can take twice as long; a failed combo yields nothing.
+    /// </summary>
+    public void ShowCraft(Avion2.Protocol.CraftStartEvent start) =>
+        ShowOutcome(!start.Success ? start.Combo ? "✖  Combo will fail" : "✖  Will fail" : start.Combo ? "✔  Will succeed · Combo ×2" : "✔  Will succeed",
+            start.Success, start.Combo, 0.81, TimeSpan.FromSeconds(60));
+
+    private void ShowOutcome(string text, bool success, bool better, double bottom, TimeSpan timeout)
     {
         if (!_state.Stored.HudGatherOutcome || GameWindow.ClientArea is not { } area)
         {
             return;
         }
 
-        var color = !start.Success ? Color.FromRgb(0xFF, 0x6B, 0x6B) : start.Fine ? Color.FromRgb(0xF0, 0xC8, 0x5A) : Color.FromRgb(0x5B, 0xD4, 0x8A);
-        GatherText.Text = !start.Success ? "✖  Will fail" : start.Fine ? "✔  Will succeed · Fine" : "✔  Will succeed";
+        var color = !success ? Color.FromRgb(0xFF, 0x6B, 0x6B) : better ? Color.FromRgb(0xF0, 0xC8, 0x5A) : Color.FromRgb(0x5B, 0xD4, 0x8A);
+        _gatherBottom = bottom;
+        GatherText.Text = text;
         GatherText.Foreground = new SolidColorBrush(color);
         GatherBanner.BorderBrush = new SolidColorBrush(Color.FromArgb(0xB0, color.R, color.G, color.B));
         GatherBanner.Visibility = Visibility.Visible;
@@ -483,6 +499,7 @@ public partial class HudWindow : Window
         }
 
         _gatherTimer.Stop();
+        _gatherTimer.Interval = timeout;
         _gatherTimer.Tick -= GatherTimeout;
         _gatherTimer.Tick += GatherTimeout;
         _gatherTimer.Start();
@@ -532,6 +549,7 @@ public partial class HudWindow : Window
         CastSkill.Text = "Skill name";
         CastBanner.Visibility = Visibility.Visible;
         CastBanner.Opacity = 1;
+        _gatherBottom = 0.728;
         GatherText.Text = "✔  Will succeed · Fine";
         GatherText.Foreground = new SolidColorBrush(Color.FromRgb(0xF0, 0xC8, 0x5A));
         GatherBanner.BorderBrush = new SolidColorBrush(Color.FromArgb(0xB0, 0xF0, 0xC8, 0x5A));

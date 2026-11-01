@@ -462,6 +462,35 @@ The server decides a gathering's **outcome when it starts**; the success and fai
 **Aborted:** no end record comes. Instead `39 36` (use interrupted: `object varint`, `u8`, `u8` (`06 19`),
 `actor varint`, `attempt u32`) arrives, with `3E 36` (`00 00`, `object varint`) and `6D 8D` (`object varint`).
 
+### Crafting
+Status: Verified · 27 crafts at cooking and alchemy stations, 4 of them combos
+
+Like gathering, the server decides a craft's **outcome when it starts**, including whether a **combo** follows: after the
+first race succeeds, a second race for the better recipe (two items) runs. A failed combo yields nothing.
+
+**`6F 8D` started:**
+
+| Field | Type | Meaning |
+|---|---|---|
+| — | `00`, `u8` | |
+| station | `varint` | the crafting station (object) |
+| recipe | `u32` | |
+| outcome | `u8` | bit 0 = the first race succeeds; bit 2 = a combo follows; bit 3 = the combo succeeds (`01` success, `05` combo that fails, `0D` combo that succeeds) |
+| — | `00` | |
+| races | | per race: steps `u8`, the steps (10 bytes each: kind `u8`, `00`, two equal `u32`), `00`; a second race when a combo follows |
+
+**`71 8D` ended:**
+
+| Field | Type | Meaning |
+|---|---|---|
+| result | `u8` | 0 success, 1 combo success (two items), 2 failed |
+| — | `u8` | |
+| station | `varint` | |
+| — | `u8` | |
+
+The materials leave the bag (`1B 56`) when the craft starts, the crafted item arrives with the end record. `7C 8D` and
+`7D 8D` follow with the craft's proficiency (craft type `u8`: 4 alchemy, 5 cooking, then points).
+
 ## Instances
 
 ### `00 61` — Instance stage

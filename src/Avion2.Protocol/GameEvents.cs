@@ -195,6 +195,18 @@ public sealed record InteractionInterruptedEvent(long TimestampMs, uint ObjectId
 /// <summary><c>33 8D</c>: the gathering ended: <paramref name="Result"/> 0 success, 1 success with the better grade, 2 failed.</summary>
 public sealed record GatherEndEvent(long TimestampMs, uint NodeId, byte Result, uint ItemId, uint Count) : GameEvent(TimestampMs);
 
+/// <summary>
+/// <c>6F 8D</c>: we started crafting a recipe at a station. As with gathering, the server decides the outcome up front
+/// (<paramref name="Success"/>), including whether a combo follows the first race (<paramref name="Combo"/>: the
+/// better recipe, two items; a failed combo yields nothing).
+/// </summary>
+/// <param name="Steps">How many steps the first success / fail race on screen has.</param>
+public sealed record CraftStartEvent(long TimestampMs, uint StationId, uint RecipeId, bool Success, bool Combo, int Steps)
+    : GameEvent(TimestampMs);
+
+/// <summary><c>71 8D</c>: the craft ended: <paramref name="Result"/> 0 success, 1 combo success (two items), 2 failed.</summary>
+public sealed record CraftEndEvent(long TimestampMs, uint StationId, byte Result) : GameEvent(TimestampMs);
+
 /// <summary>A member of our party (<c>02 97</c>); <paramref name="CharacterId"/> is the character, not the entity id.</summary>
 public sealed record PartyMember(byte Slot, uint CharacterId, string Name, GameClass Class, bool Online);
 

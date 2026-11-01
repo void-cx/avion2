@@ -28,6 +28,29 @@ public class GatherTests
         Assert.Equal((38571u, (byte)1, 610660030u, 1u), (end.NodeId, end.Result, end.ItemId, end.Count));
     }
 
+    [Theory]
+    // start records as recorded (header and the first race): cooking station 18103, recipe 514086002
+    [InlineData("0005b78d017254a41e01000203008f0000008f00000002000101000001010000", true, false)]
+    [InlineData("0005b78d017254a41e0d000704003e0000003e00000003008800000088000000", true, true)]
+    [InlineData("0005b78d017254a41e0500050500a8000000a8000000", false, true)]
+    public void TheCraftOutcomeIsInTheStartRecord(string hex, bool success, bool combo)
+    {
+        var events = new List<GameEvent>();
+        Assert.True(RecordParsers.ParseCraftStart(Convert.FromHexString(hex), 0, events.Add));
+        var start = Assert.IsType<CraftStartEvent>(Assert.Single(events));
+        Assert.Equal((18103u, 514086002u, success, combo), (start.StationId, start.RecipeId, start.Success, start.Combo));
+    }
+
+    [Fact]
+    public void TheCraftEndRecordHasTheResult()
+    {
+        // a failed combo at alchemy station 34277
+        var events = new List<GameEvent>();
+        Assert.True(RecordParsers.ParseCraftEnd(Convert.FromHexString("0205e58b0200"), 0, events.Add));
+        var end = Assert.IsType<CraftEndEvent>(Assert.Single(events));
+        Assert.Equal((34277u, (byte)2), (end.StationId, end.Result));
+    }
+
     [Fact]
     public void AnAbortedGatheringIsAnInterruptedUse()
     {

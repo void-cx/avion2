@@ -188,9 +188,14 @@ public sealed class MeterEngine : IDisposable
             {
                 InventoryChanged?.Invoke();
             }
-            else if (e is GatherStartEvent or GatherEndEvent)
+            else if (e is GatherStartEvent or GatherEndEvent or CraftStartEvent or CraftEndEvent)
             {
-                _gatherNode = e is GatherStartEvent start ? start.NodeId : null;
+                _gatherNode = e switch
+                {
+                    GatherStartEvent start => start.NodeId,
+                    CraftStartEvent craft => craft.StationId,
+                    _ => null,
+                };
                 Gathering?.Invoke(e);
             }
             else if (e is InteractionInterruptedEvent stop && stop.ObjectId == _gatherNode)
@@ -411,12 +416,13 @@ public sealed class MeterEngine : IDisposable
     public event Action<SelfHit>? HitTaken;
 
     /// <summary>
-    /// Our gathering started (<see cref="GatherStartEvent"/>, with its outcome), ended (<see cref="GatherEndEvent"/>)
-    /// or was aborted (<see cref="InteractionInterruptedEvent"/>). Capture thread.
+    /// Our gathering or craft started (<see cref="GatherStartEvent"/> / <see cref="CraftStartEvent"/>, with its
+    /// outcome), ended (<see cref="GatherEndEvent"/> / <see cref="CraftEndEvent"/>) or was aborted
+    /// (<see cref="InteractionInterruptedEvent"/>). Capture thread.
     /// </summary>
     public event Action<GameEvent>? Gathering;
 
-    /// <summary>The node of the gathering in progress, to recognise when it is aborted.</summary>
+    /// <summary>The node or crafting station in use, to recognise when it is aborted.</summary>
     private uint? _gatherNode;
 
     /// <summary>Raised on the capture thread for every skill cast (boss cast warnings).</summary>

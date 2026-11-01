@@ -189,8 +189,8 @@
                         <CheckBox x:Name="HudPartyBox" Content="The party's DPS right under the game's group list (needs the party frames calibrated)" Click="HudOption_Click" Margin="0,6,0,0" />
                         <CheckBox x:Name="HudBossBox" Content="Under the boss bar: exact HP, time to kill and the fight clock" Click="HudOption_Click" Margin="0,6,0,0" />
                         <CheckBox x:Name="HudCastBox" Content="Boss skills appear under the target frame" Click="HudOption_Click" Margin="0,6,0,0" />
-                        <CheckBox x:Name="HudGatherBox" Content="Gathering: show whether it will succeed as soon as it starts" Click="HudOption_Click" Margin="0,6,0,0"
-                                  ToolTip="The server decides a gathering's outcome when it starts; the bars on screen only play it out" />
+                        <CheckBox x:Name="HudGatherBox" Content="Gathering and crafting: show whether it will succeed as soon as it starts" Click="HudOption_Click" Margin="0,6,0,0"
+                                  ToolTip="The server decides the outcome (and whether a craft's combo works) when it starts; the bars on screen only play it out" />
                         <DockPanel Margin="0,10,0,0">
                             <Button DockPanel.Dock="Right" Content="Preview" Click="HudPreview_Click" Margin="8,0,0,0"
                                     ToolTip="Shows every effect on the game for a few seconds" />

@@ -323,6 +323,10 @@ public sealed class AppState
             {
                 Hud?.ShowGather(start);
             }
+            else if (e is Avion2.Protocol.CraftStartEvent craft)
+            {
+                Hud?.ShowCraft(craft);
+            }
             else
             {
                 Hud?.HideGather();
