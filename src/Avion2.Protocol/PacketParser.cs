@@ -57,6 +57,7 @@ public static class PacketParser
             Opcodes.InstanceStage => RecordParsers.ParseInstanceStage(body, timestampMs, emit),
             Opcodes.GatherStart => RecordParsers.ParseGatherStart(body, timestampMs, emit),
             Opcodes.GatherEnd => RecordParsers.ParseGatherEnd(body, timestampMs, emit),
+            Opcodes.InteractionInterrupted => RecordParsers.ParseInteractionInterrupted(body, timestampMs, emit),
             Opcodes.MapEventStart => RecordParsers.ParseMapEventStart(body, timestampMs, emit),
             Opcodes.MapEventProgress => RecordParsers.ParseMapEventProgress(body, timestampMs, emit),
             Opcodes.Position => RecordParsers.ParsePosition(body, timestampMs, emit),

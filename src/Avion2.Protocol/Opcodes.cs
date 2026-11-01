@@ -51,6 +51,7 @@ public static class Opcodes
     // World objects (hidden cubes, gather nodes, doors…)
     public const ushort WorldObject = 0x3436;
     public const ushort InteractionDone = 0x3A36;
+    public const ushort InteractionInterrupted = 0x3936;
 
     // Inventory (56 family, our own character)
     public const ushort InventoryList = 0x1156;

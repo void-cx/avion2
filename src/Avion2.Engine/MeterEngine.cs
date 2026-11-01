@@ -190,6 +190,12 @@ public sealed class MeterEngine : IDisposable
             }
             else if (e is GatherStartEvent or GatherEndEvent)
             {
+                _gatherNode = e is GatherStartEvent start ? start.NodeId : null;
+                Gathering?.Invoke(e);
+            }
+            else if (e is InteractionInterruptedEvent stop && stop.ObjectId == _gatherNode)
+            {
+                _gatherNode = null; // our gathering was aborted: no end record follows
                 Gathering?.Invoke(e);
             }
             else if (e is SkillCastEvent cast && Cast is { } onCast)
@@ -404,8 +410,14 @@ public sealed class MeterEngine : IDisposable
     /// <summary>Raised on the capture thread for every damaging hit we take.</summary>
     public event Action<SelfHit>? HitTaken;
 
-    /// <summary>Our gathering started (<see cref="GatherStartEvent"/>, with its outcome) or ended. Capture thread.</summary>
+    /// <summary>
+    /// Our gathering started (<see cref="GatherStartEvent"/>, with its outcome), ended (<see cref="GatherEndEvent"/>)
+    /// or was aborted (<see cref="InteractionInterruptedEvent"/>). Capture thread.
+    /// </summary>
     public event Action<GameEvent>? Gathering;
+
+    /// <summary>The node of the gathering in progress, to recognise when it is aborted.</summary>
+    private uint? _gatherNode;
 
     /// <summary>Raised on the capture thread for every skill cast (boss cast warnings).</summary>
     public event Action<SkillCastEvent, EntityInfo?>? Cast;

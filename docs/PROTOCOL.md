@@ -459,6 +459,9 @@ The server decides a gathering's **outcome when it starts**; the success and fai
 
 `3A 36` (use finished) follows on the node, and `1B 56` updates the bag.
 
+**Aborted:** no end record comes. Instead `39 36` (use interrupted: `object varint`, `u8`, `u8` (`06 19`),
+`actor varint`, `attempt u32`) arrives, with `3E 36` (`00 00`, `object varint`) and `6D 8D` (`object varint`).
+
 ## Instances
 
 ### `00 61` — Instance stage

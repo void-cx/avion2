@@ -186,6 +186,12 @@ public sealed record MapEventProgressEvent(long TimestampMs, uint EventId, byte 
 public sealed record GatherStartEvent(long TimestampMs, uint NodeId, uint Attempt, bool Success, bool Fine, int Steps)
     : GameEvent(TimestampMs);
 
+/// <summary>
+/// <c>39 36</c>: using an object was interrupted before it finished (e.g. an aborted gathering): the object, who used
+/// it, and which attempt on it.
+/// </summary>
+public sealed record InteractionInterruptedEvent(long TimestampMs, uint ObjectId, uint ActorId, uint Attempt) : GameEvent(TimestampMs);
+
 /// <summary><c>33 8D</c>: the gathering ended: <paramref name="Result"/> 0 success, 1 success with the better grade, 2 failed.</summary>
 public sealed record GatherEndEvent(long TimestampMs, uint NodeId, byte Result, uint ItemId, uint Count) : GameEvent(TimestampMs);
 

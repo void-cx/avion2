@@ -27,4 +27,14 @@ public class GatherTests
         var end = Assert.IsType<GatherEndEvent>(Assert.Single(events));
         Assert.Equal((38571u, (byte)1, 610660030u, 1u), (end.NodeId, end.Result, end.ItemId, end.Count));
     }
+
+    [Fact]
+    public void AnAbortedGatheringIsAnInterruptedUse()
+    {
+        // 39 36 as recorded: node 41082, 06 19, us (9710), attempt 3
+        var events = new List<GameEvent>();
+        Assert.True(RecordParsers.ParseInteractionInterrupted(Convert.FromHexString("fac0020619ee4b03000000"), 0, events.Add));
+        var stop = Assert.IsType<InteractionInterruptedEvent>(Assert.Single(events));
+        Assert.Equal((41082u, 9710u, 3u), (stop.ObjectId, stop.ActorId, stop.Attempt));
+    }
 }

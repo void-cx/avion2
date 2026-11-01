@@ -337,6 +337,20 @@ public static class RecordParsers
         return true;
     }
 
+    /// <summary><c>39 36</c>: object varint, u8, u8 (06 19 when a gathering was aborted), actor varint, attempt u32.</summary>
+    public static bool ParseInteractionInterrupted(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryVarint(out uint obj) || obj == 0 || !r.TryU8(out _) || !r.TryU8(out _) || !r.TryVarint(out uint actor) ||
+            !r.TryU32(out uint attempt))
+        {
+            return false;
+        }
+
+        emit(new InteractionInterruptedEvent(ts, obj, actor, attempt));
+        return true;
+    }
+
     /// <summary><c>33 8D</c>: result u8 (0 success, 1 fine success, 2 failed), u8, node varint, item u32, count u32, …</summary>
     public static bool ParseGatherEnd(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
