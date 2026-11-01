@@ -108,3 +108,33 @@ footer p { margin: 4px 0; }
   .top nav { gap: 14px; }
   main > section { padding-top: 52px; padding-bottom: 52px; }
 }
+
+/* Protocol wiki (site/protocol, built from docs/PROTOCOL.md) */
+.wiki { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 40px; padding: 40px max(16px, calc((100% - 1180px) / 2)) 72px; }
+.wiki-side { position: sticky; top: 76px; align-self: start; max-height: calc(100vh - 96px); overflow: auto; padding-right: 6px; }
+.wiki-filter { width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-size: 0.9rem; margin-bottom: 14px; }
+.wiki-filter:focus { outline: none; border-color: var(--gold); }
+.wiki-toc ul { list-style: none; margin: 0; padding: 0; }
+.wiki-toc ul ul { padding-left: 12px; margin: 2px 0 8px; border-left: 1px solid var(--line); }
+.wiki-toc li { margin: 2px 0; }
+.wiki-toc a { display: block; padding: 3px 8px; border-radius: 6px; color: var(--muted); font-size: 0.86rem; line-height: 1.35; }
+.wiki-toc > ul > li > a { color: var(--text); font-weight: 600; margin-top: 8px; }
+.wiki-toc a:hover { background: var(--card); color: var(--text); text-decoration: none; }
+.wiki-body { min-width: 0; }
+.wiki-body h1 { font-size: clamp(2rem, 5vw, 3rem); }
+.wiki-body h2 { font-size: 1.6rem; margin-top: 2.2em; padding-top: 0.4em; border-top: 1px solid var(--line); scroll-margin-top: 80px; }
+.wiki-body h3 { font-size: 1.1rem; margin-top: 1.8em; scroll-margin-top: 80px; }
+.wiki-body p, .wiki-body li { color: #cfd5df; }
+.wiki-body ul, .wiki-body ol { padding-left: 1.3em; }
+.wiki-body li { margin: 4px 0; }
+.wiki-body pre { background: #0a1222; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; }
+.wiki-body pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+.wiki-body hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+.verified { display: inline-block; font-family: var(--body); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #0b1a10; background: var(--green); border-radius: 999px; padding: 1px 8px; vertical-align: middle; }
+.wiki-toc .verified { display: none; }
+
+@media (max-width: 860px) {
+  .wiki { grid-template-columns: 1fr; gap: 20px; padding-top: 24px; }
+  .wiki-side { position: static; max-height: none; }
+  .wiki-toc { max-height: 260px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
+}

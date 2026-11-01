@@ -12,3 +12,5 @@ data/*.json
 # local Claude Code settings
 .claude/settings.local.json
 artifacts/
+# built by the Pages workflow from docs/PROTOCOL.md (tools/build_wiki.py)
+site/protocol/

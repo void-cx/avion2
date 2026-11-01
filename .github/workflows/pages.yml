@@ -1,10 +1,10 @@
 name: Pages
 
-# The website (site/) on GitHub Pages
+# The website (site/) on GitHub Pages, with the protocol wiki built from docs/PROTOCOL.md
 on:
   push:
     branches: [main]
-    paths: [site/**, .github/workflows/pages.yml]
+    paths: [site/**, docs/PROTOCOL.md, tools/build_wiki.py, .github/workflows/pages.yml]
   workflow_dispatch:
 
 permissions:
@@ -24,6 +24,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # the wiki shows when the notes last changed
+      - name: Protocol wiki
+        run: |
+          python3 -m venv "$RUNNER_TEMP/wiki"
+          "$RUNNER_TEMP/wiki/bin/pip" install --quiet markdown==3.7
+          "$RUNNER_TEMP/wiki/bin/python" tools/build_wiki.py
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
