@@ -139,7 +139,7 @@ public sealed class OverlaySettings
     /// <summary>Developer: recordings hold every connection of AION2.exe (login, lobby, world), not only the world.</summary>
     public bool RecordAllGameConnections { get; set; }
 
-    /// <summary>Developer: session recordings also save pictures of the game window, four a second.</summary>
+    /// <summary>Developer: session recordings also save pictures of the game window, two a second.</summary>
     public bool RecordScreen { get; set; }
 
     /// <summary>Delete saved fights / recordings older than this many days when AVION2 starts (0 = keep).</summary>

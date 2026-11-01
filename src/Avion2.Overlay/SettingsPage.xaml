@@ -249,7 +249,7 @@
                                Text="For protocol research. Session recordings (Record session on the home page) then hold every TCP connection that belongs to AION2.exe, found through Windows' connection list; nothing else from your PC. Start the capture before the game to get the login and the lobby. The game's own messages to its servers stay encrypted. Applies from the next capture start." />
                     <CheckBox x:Name="RecordScreenBox" Content="Record the game window with each session recording" Margin="0,12,0,0" />
                     <TextBlock Style="{StaticResource Hint}"
-                               Text="Four pictures a second, saved beside the recording (a folder named like it, one picture per moment, named by the same clock as the packets) to match the traffic with what was on screen. Only the game's area of the screen, and only while the game or AVION2 is in front. About 50 MB a minute; deleted with the recordings. Applies from the next capture start." />
+                               Text="Two pictures a second, saved beside the recording (a folder named like it, one picture per moment, named by the same clock as the packets) to match the traffic with what was on screen. Only the game's area of the screen, and only while the game or AVION2 is in front. About 35 MB a minute; deleted with the recordings. Applies from the next capture start." />
                 </StackPanel>
             </Border>
 

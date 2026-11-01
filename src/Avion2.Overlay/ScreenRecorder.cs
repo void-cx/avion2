@@ -7,14 +7,15 @@ using Avion2.Engine;
 namespace Avion2.Overlay;
 
 /// <summary>
-/// Developer: pictures of the game window beside a session recording (<c>session-….frames\&lt;unix ms&gt;.jpg</c>, four
+/// Developer: pictures of the game window beside a session recording (<c>session-….frames\&lt;unix ms&gt;.jpg</c>, two
 /// a second), so the traffic can be matched with what was on screen. Named by the same clock as the packets. Only the
 /// game's area of the screen, and only while the game (or AVION2) is in front: nothing else on the desktop is recorded.
 /// </summary>
 internal sealed class ScreenRecorder : IDisposable
 {
-    private const int PerSecond = 4;
-    private const int MaxWidth = 1920;
+    // A detailed 1080p scene is ~470 KB at full size; at 1600 px it's ~250 KB with the UI text still readable
+    private const int PerSecond = 2;
+    private const int MaxWidth = 1600;
 
     private readonly string _directory;
     private readonly ManualResetEventSlim _stop = new();
@@ -52,7 +53,7 @@ internal sealed class ScreenRecorder : IDisposable
                 }
             }
 
-            // Steady four a second; a slow frame skips ahead instead of piling up
+            // Steady two a second; a slow frame skips ahead instead of piling up
             next += interval;
             if (next < clock.Elapsed)
             {
@@ -68,7 +69,7 @@ internal sealed class ScreenRecorder : IDisposable
         BitmapSource frame = picture.PixelWidth > MaxWidth
             ? new TransformedBitmap(picture, new ScaleTransform((double)MaxWidth / picture.PixelWidth, (double)MaxWidth / picture.PixelWidth))
             : picture;
-        var encoder = new JpegBitmapEncoder { QualityLevel = 75 };
+        var encoder = new JpegBitmapEncoder { QualityLevel = 65 };
         encoder.Frames.Add(BitmapFrame.Create(frame));
         Directory.CreateDirectory(_directory);
         using var file = File.Create(Path.Combine(_directory, $"{ms}.jpg"));
