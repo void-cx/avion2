@@ -114,6 +114,7 @@ public partial class HudWindow : Window
         UpdateFlight(s);
         UpdateChains(s);
         UpdateOnYou(s);
+        UpdateGatherBlock(s);
         UpdateParty(s);
         UpdateBoss(s);
     }
@@ -626,9 +627,47 @@ public partial class HudWindow : Window
     /// The outcome of the gathering that just started (the server decides it up front): "Will succeed" in green
     /// ("· Fine" when the item is the better grade), "Will fail" in red. Hidden when it ends (or after 15 s).
     /// </summary>
-    public void ShowGather(Avion2.Protocol.GatherStartEvent start) =>
-        ShowOutcome(!start.Success ? "✖  Will fail" : start.Fine ? "✔  Will succeed · Fine" : "✔  Will succeed",
+    /// <remarks>
+    /// Aborting too often gets gathering blocked for a minute, so after a few aborts a failing one says so.
+    /// </remarks>
+    public void ShowGather(Avion2.Protocol.GatherStartEvent start)
+    {
+        string fail = _status()?.GatherAborts >= GatherLimit.WarnAt ? "✖  Will fail · aborting again may block gathering for 60 s" : "✖  Will fail";
+        ShowOutcome(!start.Success ? fail : start.Fine ? "✔  Will succeed · Fine" : "✔  Will succeed",
             start.Success, start.Fine, 0.728, TimeSpan.FromSeconds(15));
+    }
+
+    /// <summary>Whether the gathering banner currently shows the block countdown.</summary>
+    private bool _blockShown;
+
+    /// <summary>
+    /// While the game blocks gathering for aborting too often: "Gathering blocked · 42 s" where the outcome shows,
+    /// counting down; hidden when it ends.
+    /// </summary>
+    private void UpdateGatherBlock(EngineStatus? status)
+    {
+        long? blocked = _state.Stored.HudGatherOutcome ? status?.GatherBlockedMs : null;
+        if (blocked is not { } ms)
+        {
+            if (_blockShown)
+            {
+                _blockShown = false;
+                HideGather();
+            }
+
+            return;
+        }
+
+        string text = $"✖  Gathering blocked · {Math.Ceiling(ms / 1000.0):0} s";
+        if (_blockShown && GatherText.Text == text)
+        {
+            return;
+        }
+
+        _blockShown = true;
+        _gatherTimer.Stop();
+        SetBanner(text, Color.FromRgb(0xFF, 0x6B, 0x6B), 0.728);
+    }
 
     /// <summary>
     /// The same for a craft. Its panel sits lower (the title at ~84 % of the height), and a combo (the better recipe,
@@ -640,22 +679,14 @@ public partial class HudWindow : Window
 
     private void ShowOutcome(string text, bool success, bool better, double bottom, TimeSpan timeout)
     {
-        if (!_state.Stored.HudGatherOutcome || GameWindow.ClientArea is not { } area)
+        if (!_state.Stored.HudGatherOutcome || GameWindow.ClientArea is null)
         {
             return;
         }
 
         var color = !success ? Color.FromRgb(0xFF, 0x6B, 0x6B) : better ? Color.FromRgb(0xF0, 0xC8, 0x5A) : Color.FromRgb(0x5B, 0xD4, 0x8A);
-        _gatherBottom = bottom;
-        GatherText.Text = text;
-        GatherText.Foreground = new SolidColorBrush(color);
-        GatherBanner.BorderBrush = new SolidColorBrush(Color.FromArgb(0xB0, color.R, color.G, color.B));
-        GatherBanner.Visibility = Visibility.Visible;
-        if (Layout(area) is { } layout)
-        {
-            Arrange(layout);
-        }
-
+        _blockShown = false;
+        SetBanner(text, color, bottom);
         _gatherTimer.Stop();
         _gatherTimer.Interval = timeout;
         _gatherTimer.Tick -= GatherTimeout;
@@ -663,8 +694,22 @@ public partial class HudWindow : Window
         _gatherTimer.Start();
     }
 
+    private void SetBanner(string text, Color color, double bottom)
+    {
+        _gatherBottom = bottom;
+        GatherText.Text = text;
+        GatherText.Foreground = new SolidColorBrush(color);
+        GatherBanner.BorderBrush = new SolidColorBrush(Color.FromArgb(0xB0, color.R, color.G, color.B));
+        GatherBanner.Visibility = Visibility.Visible;
+        if ((_preview ?? (GameWindow.ClientArea is { } area ? Layout(area) : null)) is { } layout)
+        {
+            Arrange(layout);
+        }
+    }
+
     public void HideGather()
     {
+        _blockShown = false; // a block still running shows again on the next tick
         _gatherTimer.Stop();
         GatherBanner.Visibility = Visibility.Collapsed;
     }

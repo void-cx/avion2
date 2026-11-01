@@ -78,6 +78,12 @@ public sealed record EngineStatus(
 
     /// <summary>The boss we have selected targets us.</summary>
     public bool BossOnYou { get; init; }
+
+    /// <summary>While the game blocks our gathering for aborting too often: how long it still lasts.</summary>
+    public long? GatherBlockedMs { get; init; }
+
+    /// <summary>Gatherings we aborted lately (see <see cref="GatherLimit"/>).</summary>
+    public int GatherAborts { get; init; }
 }
 
 /// <summary>
@@ -205,12 +211,26 @@ public sealed class MeterEngine : IDisposable
                     CraftStartEvent craft => craft.StationId,
                     _ => null,
                 };
+                _gatherIsNode = e is GatherStartEvent;
                 Gathering?.Invoke(e);
             }
             else if (e is InteractionInterruptedEvent stop && stop.ObjectId == _gatherNode)
             {
                 _gatherNode = null; // our gathering was aborted: no end record follows
+                if (_gatherIsNode && stop.ActorId == _session.Registry.SelfId)
+                {
+                    _gatherLimit.Aborted(stop.TimestampMs);
+                }
+
                 Gathering?.Invoke(e);
+            }
+            else if (e is BuffEvent buff && buff.EntityId == _session.Registry.SelfId)
+            {
+                _gatherLimit.Apply(buff);
+            }
+            else if (e is BuffRemovedEvent removed && removed.EntityId == _session.Registry.SelfId)
+            {
+                _gatherLimit.Apply(removed);
             }
             else if (e is FlightTimeEvent flight && flight.EntityId == _session.Registry.SelfId)
             {
@@ -355,7 +375,9 @@ public sealed class MeterEngine : IDisposable
                 SelfServer = registry.SelfId is { } selfId ? registry.Find(selfId)?.ServerId : null,
                 FlightLeftMs = _flight.LeftMs(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()),
                 Chains = _chains.Open(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), ChainSkillName),
-                BossOnYou = _selectedTarget != 0 && _selectedTarget == registry.SelfId && registry.Find(_selected) is { IsBoss: true },
+                GatherBlockedMs = _gatherLimit.BlockedMs(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()),
+                GatherAborts = _gatherLimit.RecentAborts(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()),
+                BossOnYou =_selectedTarget != 0 && _selectedTarget == registry.SelfId && registry.Find(_selected) is { IsBoss: true },
             };
         }
     }
@@ -474,6 +496,11 @@ public sealed class MeterEngine : IDisposable
 
     /// <summary>The node or crafting station in use, to recognise when it is aborted.</summary>
     private uint? _gatherNode;
+
+    /// <summary>Whether <see cref="_gatherNode"/> is a gathering node (aborting those too often blocks gathering).</summary>
+    private bool _gatherIsNode;
+
+    private readonly GatherLimit _gatherLimit = new();
 
     /// <summary>Raised on the capture thread for every skill cast (boss cast warnings).</summary>
     public event Action<SkillCastEvent, EntityInfo?>? Cast;
