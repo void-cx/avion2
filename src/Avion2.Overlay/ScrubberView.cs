@@ -255,7 +255,7 @@ public sealed class ScrubberView : FrameworkElement
             double top = laneTop + lane * laneHeight;
             dc.DrawRoundedRectangle(laneBack, null, new Rect(LabelWidth, top + 2, PlotWidth, laneHeight - 4), 3, 3);
             var color = LaneColor(e, accent);
-            var name = Text(e.Kind == TraceEntityKind.Self ? "You" : e.Name, 12,
+            var name = Text(e.Kind == TraceEntityKind.Self ? "You" : StreamerMode.Name(e), 12,
                 new SolidColorBrush(e.Id == SelectedActor || e.Kind == TraceEntityKind.Self ? color : Color.FromArgb(0xD0, color.R, color.G, color.B)));
             name.MaxTextWidth = LabelWidth - 10;
             name.MaxLineCount = 1;

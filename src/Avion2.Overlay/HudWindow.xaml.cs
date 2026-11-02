@@ -501,7 +501,7 @@ public partial class HudWindow : Window
         var rows = _demo
             ? [("You", Avion2.Protocol.GameClass.Chanter, 6279.0, 0.43, true), ("Party member", Avion2.Protocol.GameClass.Cleric, 4120.0, 0.28, false),
                ("Party member", Avion2.Protocol.GameClass.Gladiator, 2980.0, 0.2, false), ("Party member", Avion2.Protocol.GameClass.Ranger, 1310.0, 0.09, false)]
-            : (_snapshot()?.Rows ?? []).Where(r => r.Total > 0).Take(8).Select(r => (r.IsSelf ? r.Name : r.Name, r.Class, r.Dps, r.Share, r.IsSelf)).ToList();
+            : (_snapshot()?.Rows ?? []).Where(r => r.Total > 0).Take(8).Select(r => (StreamerMode.Name(r.Name, r.IsSelf), r.Class, r.Dps, r.Share, r.IsSelf)).ToList();
         if (rows.Count == 0)
         {
             PartyMeter.Visibility = Visibility.Collapsed;

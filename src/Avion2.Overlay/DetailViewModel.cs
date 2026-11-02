@@ -385,7 +385,7 @@ public sealed class DetailViewModel : Bindable
         Enumerable.Range(1, 5).Select(slot => (slots & (1 << slot)) != 0).ToList();
 
     private static string Label(string name, GameClass cls, bool isSelf) =>
-        $"{name}{(cls == GameClass.Unknown ? string.Empty : $" · {cls}")}{(isSelf ? " (you)" : string.Empty)}";
+        $"{StreamerMode.Name(name, isSelf)}{(cls == GameClass.Unknown ? string.Empty : $" · {cls}")}{(isSelf ? " (you)" : string.Empty)}";
 
     private static string Percent(double ratio) => (ratio * 100).ToString("0.0", CultureInfo.InvariantCulture) + "%";
 }

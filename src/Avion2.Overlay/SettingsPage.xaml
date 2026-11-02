@@ -85,6 +85,16 @@
                 </StackPanel>
             </Border>
 
+            <!-- Streamer mode -->
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="general">
+                <StackPanel>
+                    <TextBlock Text="Streamer mode" Style="{StaticResource Heading}" />
+                    <CheckBox x:Name="StreamerBox" Content="Hide player, character and legion names" />
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="For streams and screenshots: you show as &quot;You&quot;, other players as &quot;Player 2&quot;, &quot;Player 3&quot; … and every legion as &quot;Legion&quot;, in the overlay, the HUD effects, fights, replays, runs, the map and on the Characters page; the legion card is hidden. Fights and runs are still saved with the real names." />
+                </StackPanel>
+            </Border>
+
             <!-- Timers -->
             <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="alerts">
                 <StackPanel>

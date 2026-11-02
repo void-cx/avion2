@@ -329,7 +329,7 @@ public partial class DetailView : UserControl
             var color = ScrubberView.LaneColor(e, accent);
             double share = d.Value / (double)total;
             string who = e.Class == Avion2.Protocol.GameClass.Unknown ? string.Empty : $"{e.Class} · ";
-            return new PlayheadRow(e.Kind == TraceEntityKind.Self ? "You" : e.Name, who + share.ToString("P0", CultureInfo.InvariantCulture),
+            return new PlayheadRow(e.Kind == TraceEntityKind.Self ? "You" : StreamerMode.Name(e), who + share.ToString("P0", CultureInfo.InvariantCulture),
                 (d.Value / seconds).ToString("N0", CultureInfo.InvariantCulture), share, Brush(color), Brush(color, 0x38), e.Kind == TraceEntityKind.Self);
         }).ToList();
 
@@ -339,7 +339,7 @@ public partial class DetailView : UserControl
         {
             var e = players[Owner(h.ActorId)];
             string skill = Names.SkillName(h.SkillId);
-            string text = e.Kind == TraceEntityKind.Self ? skill : $"{e.Name} · {skill}";
+            string text = e.Kind == TraceEntityKind.Self ? skill : $"{StreamerMode.Name(e)} · {skill}";
             return new HitLine(TimeSpan.FromMilliseconds(Math.Max(0, h.T)).ToString(@"m\:ss\.f", CultureInfo.InvariantCulture), text,
                 h.Amount.ToString("N0", CultureInfo.InvariantCulture), Brush(ScrubberView.LaneColor(e, accent)), h.Critical ? critBrush : plain);
         }).ToList();

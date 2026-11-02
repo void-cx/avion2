@@ -205,7 +205,9 @@ public partial class HomeWindow : Window
             return;
         }
 
-        string who = status.SelfName ?? (status.SelfClass != GameClass.Unknown ? status.SelfClass.ToString() : "connected");
+        StreamerMode.Names.Self = status.SelfName ?? StreamerMode.Names.Self;
+        string who = status.SelfName is { } self ? StreamerMode.Name(self, self: true)
+            : status.SelfClass != GameClass.Unknown ? status.SelfClass.ToString() : "connected";
         if (status.SelfName is not null && status.SelfServer is { } server && Avion2.Engine.BundledGameData.Server(server) is { } info)
         {
             who = $"{who} · {info.Name}";

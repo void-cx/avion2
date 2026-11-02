@@ -18,6 +18,7 @@ internal static class DevShots
         state.PersistSettings = false;
         state.Stored.CubeFinder = true; // show every feature in the shots (settings are not saved in this run)
         state.Stored.OverlayAutoShow = "start";
+        StreamerMode.Set(true); // shots get shared: no real names
         home.WindowStartupLocation = WindowStartupLocation.Manual;
         home.Left = -20000;
         home.Show();

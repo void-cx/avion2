@@ -38,6 +38,23 @@ public partial class CharactersPage : UserControl
             }
         };
         ShowMessage("Pick a character on the left, or look one up by name.");
+        StreamerMode.Changed += () =>
+        {
+            foreach (var list in new[] { Mine, Results })
+            {
+                foreach (var row in list.ItemsSource as IEnumerable<CharacterRow> ?? [])
+                {
+                    row.Restate();
+                }
+            }
+
+            if (_sheet is { } sheet)
+            {
+                DataContext = null;
+                DataContext = sheet;
+                ShowTab();
+            }
+        };
     }
 
     private sealed record ServerChoice(ushort Id, string Label);
@@ -136,7 +153,7 @@ public partial class CharactersPage : UserControl
             return;
         }
 
-        ResultsLabel.Text = hits.Count == 0 ? $"NO ONE NAMED {name.ToUpperInvariant()} ON {server.Label.Split(' ')[0].ToUpperInvariant()}" : "RESULTS";
+        ResultsLabel.Text = hits.Count == 0 ? $"NO ONE NAMED {StreamerMode.Name(name).ToUpperInvariant()} ON {server.Label.Split(' ')[0].ToUpperInvariant()}" : "RESULTS";
         var rows = hits.Select(h => new CharacterRow(h.Name, h.ServerId, Protocol.GameClass.Unknown,
             $"Level {h.Level} · {(h.ServerName.Length > 0 ? h.ServerName : ServerName(h.ServerId))}")).ToList();
         Results.ItemsSource = rows;
@@ -159,7 +176,7 @@ public partial class CharactersPage : UserControl
         _current = (name, serverId);
         if (_sheet is null || !string.Equals(_sheet.Name, name, StringComparison.OrdinalIgnoreCase) || _sheet.Profile.ServerId != serverId)
         {
-            ShowMessage($"Loading {name}…");
+            ShowMessage($"Loading {StreamerMode.Name(name)}…");
         }
         else
         {
@@ -174,7 +191,7 @@ public partial class CharactersPage : UserControl
 
         if (lookup.Profile is not { } profile)
         {
-            ShowMessage(lookup.Problem ?? $"No character named {name}.");
+            ShowMessage(lookup.Problem?.Replace(name, StreamerMode.Name(name), StringComparison.Ordinal) ?? $"No character named {StreamerMode.Name(name)}.");
             return;
         }
 

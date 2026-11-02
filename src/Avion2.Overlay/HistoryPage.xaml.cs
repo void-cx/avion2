@@ -30,9 +30,9 @@ public sealed record FightSummary(HistoryRow Row, MeterRow? Player)
     public string Duration => Row.Duration;
     public string Crit => Player?.CritRate.ToString("P0", CultureInfo.InvariantCulture) ?? "–";
     public string Hits => Player?.Hits.ToString("N0", CultureInfo.InvariantCulture) ?? "–";
-    public string ShareLabel => Player is { IsSelf: false } p ? $"{p.Name}'s share of the damage" : "Your share of the damage";
+    public string ShareLabel => Player is { IsSelf: false } p ? $"{StreamerMode.Name(p.Name)}'s share of the damage" : "Your share of the damage";
     public string DpsLabel => Player is { IsSelf: false } ? "Top DPS" : "Your DPS";
-    public string SkillsLabel => Player is { IsSelf: false } p ? $"TOP SKILLS · {p.Name.ToUpperInvariant()}" : "TOP SKILLS";
+    public string SkillsLabel => Player is { IsSelf: false } p ? $"TOP SKILLS · {StreamerMode.Name(p.Name).ToUpperInvariant()}" : "TOP SKILLS";
 
     public IReadOnlyList<SkillBar> Skills
     {

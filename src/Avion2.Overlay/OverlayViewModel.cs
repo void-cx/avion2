@@ -39,6 +39,9 @@ public sealed class PlayerCard(uint actorId) : Bindable
     /// <summary>The player's server, for the armory (null while unknown).</summary>
     public ushort? ServerId { get; set; }
 
+    /// <summary>The real name, for the armory (<see cref="Name"/> is a stand-in in streamer mode).</summary>
+    public string RealName { get; set; } = string.Empty;
+
     public int Rank { get => _rank; set => Set(ref _rank, value); }
     public string Name { get => _name; set => Set(ref _name, value); }
     public string Emblem { get => _emblem; set => Set(ref _emblem, value); }
@@ -361,7 +364,7 @@ public sealed class OverlayViewModel : Bindable
         Status = status.Locked ? (status.InCombat ? "LIVE" : "IDLE") : "SEARCHING";
         UpdateLag(status.ServerSilenceMs);
         string self = status.SelfName is { } name
-            ? $"{name} · {status.SelfClass}" + (status.SelfNameIsGuess ? " (last session)" : string.Empty)
+            ? $"{StreamerMode.Name(name, self: true)} · {status.SelfClass}" + (status.SelfNameIsGuess ? " (last session)" : string.Empty)
             : status.SelfClass != GameClass.Unknown ? $"You · {status.SelfClass} (teleport once to show your name)"
             : "Waiting for your character…";
         Footer = status.Locked ? self : status.Message;
@@ -426,7 +429,7 @@ public sealed class OverlayViewModel : Bindable
     /// <summary>"‹Legion›", plus the server for players from another one ("‹Legion› · Agnita").</summary>
     private static string LegionAndServer(MeterRow row, ushort? ourServer)
     {
-        string legion = row.Legion is { Length: > 0 } name ? $"‹{name}›" : string.Empty;
+        string legion = StreamerMode.Legion(row.Legion) is { Length: > 0 } name ? $"‹{name}›" : string.Empty;
         if (row.IsSelf || row.ServerId is not { } server || server == ourServer || ourServer is null ||
             Avion2.Engine.BundledGameData.Server(server) is not { } info)
         {
@@ -516,7 +519,8 @@ public sealed class OverlayViewModel : Bindable
 
     private static void Fill(PlayerCard card, string name, GameClass cls, bool isSelf, uint? combatPower)
     {
-        card.Name = name;
+        card.RealName = name;
+        card.Name = StreamerMode.Name(name, isSelf);
         card.Emblem = Emblems[cls];
         card.Icon = ClassIcons.For(cls);
         card.ClassBrush = SolidBrushes[cls];

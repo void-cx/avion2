@@ -315,7 +315,7 @@ public partial class MainWindow : Window
     /// <summary>Right-click on a player: their armory page, or the fight details.</summary>
     private void Row_RightClick(object sender, MouseButtonEventArgs e)
     {
-        if (sender is not FrameworkElement { DataContext: PlayerCard card } element || card.Name.Length == 0)
+        if (sender is not FrameworkElement { DataContext: PlayerCard card } element || card.RealName.Length == 0)
         {
             return;
         }
@@ -327,7 +327,7 @@ public partial class MainWindow : Window
             IsEnabled = server is { } id && ArmoryClient.RegionCode(id) is not null,
             ToolTip = "Combat power, item level and gear from the official AION2 site",
         };
-        armory.Click += (_, _) => _state.ShowCharacter(card.Name, server!.Value);
+        armory.Click += (_, _) => _state.ShowCharacter(card.RealName, server!.Value);
         var details = new MenuItem { Header = "Fight details" };
         details.Click += (_, _) => OpenDetails(card.ActorId, _vm.Tab == OverlayTab.Taken ? 1 : 0);
         element.ContextMenu = new ContextMenu { Items = { armory, details }, PlacementTarget = element, IsOpen = true };

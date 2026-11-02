@@ -158,7 +158,7 @@ public sealed class TimelineView : FrameworkElement
 
             dc.DrawLine(tickPen, new Point(0, top + LaneHeight), new Point(RenderSize.Width, top + LaneHeight));
             var nameBrush = entity.Kind == TraceEntityKind.Boss ? new SolidColorBrush(Color.FromRgb(0xF0, 0x58, 0x4F)) : text;
-            var label = Text(entity.Kind == TraceEntityKind.Self ? $"{entity.Name} (you)" : entity.Name, 12, nameBrush);
+            var label = Text(StreamerMode.Titled(entity), 12, nameBrush);
             label.MaxTextWidth = LabelWidth - 12;
             label.Trimming = TextTrimming.CharacterEllipsis;
             label.MaxLineCount = 1;
@@ -178,7 +178,7 @@ public sealed class TimelineView : FrameworkElement
                 string skill = Data.SkillName(cast.SkillId);
                 _hitBoxes.Add((new Rect(x - 4, top, 8, LaneHeight),
                     $"{TimeSpan.FromMilliseconds(Math.Max(cast.T, 0)):m\\:ss\\.f} · {skill}" +
-                    (cast.ActorId != entity.Id ? $" ({trace.Entity(cast.ActorId)?.Name})" : string.Empty)));
+                    (cast.ActorId != entity.Id ? $" ({(trace.Entity(cast.ActorId) is { } actor ? StreamerMode.Name(actor) : null)})" : string.Empty)));
             }
         }
 

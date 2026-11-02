@@ -111,7 +111,7 @@ public sealed class DpsChart : FrameworkElement
             var brush = mine ? (Brush)FindResource("AccentBrush")
                 : new SolidColorBrush(players[id].Class == Avion2.Protocol.GameClass.Unknown ? Color.FromRgb(0x7F, 0xD8, 0xFF) : OverlayViewModel.ClassColor(players[id].Class));
             dc.DrawRectangle(brush, null, new Rect(x, 15, 10, 2));
-            var label = Text(mine ? "You" : players[id].Name, (Brush)FindResource("SecondaryTextBrush"));
+            var label = Text(mine ? "You" : StreamerMode.Name(players[id]), (Brush)FindResource("SecondaryTextBrush"));
             label.MaxTextWidth = 110;
             label.MaxLineCount = 1;
             label.Trimming = TextTrimming.CharacterEllipsis;

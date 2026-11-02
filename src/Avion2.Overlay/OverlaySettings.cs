@@ -104,6 +104,9 @@ public sealed class OverlaySettings
     /// <summary>Look for a newer release on GitHub at start (one small request; dev builds never do).</summary>
     public bool CheckForUpdates { get; set; } = true;
 
+    /// <summary>Streamer mode: player, character and legion names show as stand-ins everywhere.</summary>
+    public bool HideNames { get; set; }
+
     /// <summary>App theme id (<see cref="ThemeManager.Themes"/>): "aion2" or "void".</summary>
     public string Theme { get; set; } = "aion2";
 

@@ -410,7 +410,7 @@ public sealed class ReplayView : FrameworkElement
             y += 5;
         }
 
-        var name = text(self ? "You" : e.Name, 11, self ? new SolidColorBrush(accent) : ink, false);
+        var name = text(self ? "You" : StreamerMode.Name(e), 11, self ? new SolidColorBrush(accent) : ink, false);
         dc.DrawText(name, new Point(at.X - name.Width / 2, y));
     }
 
@@ -441,7 +441,7 @@ public sealed class ReplayView : FrameworkElement
         DrawBuffPips(dc, trace, e.Id, new Point(at.X, at.Y + r + 10), t);
 
         // Name, and the skill it is casting above it
-        var name = text(e.Name, 12, Brushes.White, true);
+        var name = text(StreamerMode.Name(e), 12, Brushes.White, true);
         double top = at.Y - r - 12 - name.Height;
         dc.DrawText(name, new Point(at.X - name.Width / 2, top));
         if (trace.Casts.LastOrDefault(c => c.ActorId == e.Id && c.T <= t && c.T > t - CastLabelMs) is { } cast &&
@@ -536,13 +536,13 @@ public sealed class ReplayView : FrameworkElement
         Func<string, double, Brush, bool, FormattedText> text, Brush muted, Brush ink)
     {
         static string K(long v) => v >= 10_000 ? (v / 1000.0).ToString("0.#", CultureInfo.InvariantCulture) + "K" : v.ToString("N0", CultureInfo.InvariantCulture);
-        string legion = e.Legion is { Length: > 0 } l ? $" ‹{l}›" : string.Empty;
+        string legion = StreamerMode.Legion(e.Legion) is { Length: > 0 } l ? $" ‹{l}›" : string.Empty;
         string kind = e.Kind switch
         {
             TraceEntityKind.Self => $"You · {e.Class}{legion}",
             TraceEntityKind.Player => (e.Class == GameClass.Unknown ? "Player" : $"Player · {e.Class}") + legion,
             TraceEntityKind.Boss => "Boss",
-            TraceEntityKind.Summon => $"Summon of {(e.OwnerId is { } o && _byId.TryGetValue(o, out var owner) ? owner.Name : "?")}",
+            TraceEntityKind.Summon => $"Summon of {(e.OwnerId is { } o && _byId.TryGetValue(o, out var owner) ? StreamerMode.Name(owner) : "?")}",
             _ => "Monster",
         };
 
@@ -583,7 +583,7 @@ public sealed class ReplayView : FrameworkElement
             lines.Add(("Effects: " + string.Join(", ", buffs), muted));
         }
 
-        var title = text(e.Kind == TraceEntityKind.Self ? $"{e.Name} (you)" : e.Name, 13, ink, true);
+        var title = text(StreamerMode.Titled(e), 13, ink, true);
         var formatted = lines.Select(x => text(x.Text, 11, x.Brush, false)).ToList();
         foreach (var f in formatted)
         {

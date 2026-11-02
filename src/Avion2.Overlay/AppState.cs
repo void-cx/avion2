@@ -19,6 +19,9 @@ public sealed class AppState
     {
         _baseOptions = baseOptions;
         Stored = OverlaySettings.Load();
+        // the last character we played is "You" until the meter sees which one it is today
+        StreamerMode.Names.Self = new CharacterStore().Characters.FirstOrDefault()?.Name;
+        StreamerMode.Set(Stored.HideNames);
         Settings = new OverlayViewModel();
         LoadSettings();
         History = new HistoryStore(baseOptions.HistoryDirectory);

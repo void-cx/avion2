@@ -60,7 +60,7 @@ public partial class ForgePage : UserControl
             .ToList();
         MyGear.ItemsSource = lines;
         MyGearPanel.Visibility = lines.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        MyGearTitle.Text = _state.Inventory?.Character is { } who ? $"Your gear ({who})" : "Your gear";
+        MyGearTitle.Text = _state.Inventory?.Character is { } who ? $"Your gear ({StreamerMode.Name(who)})" : "Your gear";
     }
 
     private void RefreshHave()
@@ -72,7 +72,7 @@ public partial class ForgePage : UserControl
         }
 
         var seen = DateTimeOffset.FromUnixTimeMilliseconds(inventory.UpdatedMs).ToLocalTime();
-        string who = inventory.Character is { } name ? $", {name}" : string.Empty;
+        string who = inventory.Character is { } name ? $", {StreamerMode.Name(name)}" : string.Empty;
         ulong stored = inventory.InWarehouse(ItemIds.EnhanceStone);
         string warehouse = stored > 0 ? $" (+{stored:N0} in the warehouse)" : string.Empty;
         HaveLine.Text = $"In your cube: {inventory.Count(ItemIds.EnhanceStone):N0} Enhance Stones{warehouse} and {inventory.Kinah:N0} Kinah" +

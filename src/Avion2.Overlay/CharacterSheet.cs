@@ -13,9 +13,16 @@ public sealed class CharacterRow(string name, ushort serverId, GameClass cls, st
     private string _detail = detail;
 
     public string Name { get; } = name;
+
+    /// <summary>The name as shown (a stand-in in streamer mode).</summary>
+    public string Shown => StreamerMode.Name(Name);
+
     public ushort ServerId { get; } = serverId;
     public ImageSource? Icon { get; } = ClassIcons.For(cls);
     public string Detail { get => _detail; set => Set(ref _detail, value); }
+
+    /// <summary>Streamer mode was switched: show the name again.</summary>
+    public void Restate() => OnPropertyChanged(nameof(Shown));
 }
 
 /// <summary>An item, skin or skill as a card: icon, name in its grade color, a line below.</summary>
@@ -36,6 +43,9 @@ public sealed class CharacterSheet(ArmoryProfile profile)
 
     public ArmoryProfile Profile { get; } = profile;
     public string Name => Profile.Name;
+
+    /// <summary>The name as shown (a stand-in in streamer mode).</summary>
+    public string Shown => StreamerMode.Name(Profile.Name);
     public string ServerName => Profile.ServerName;
     public string Level => Profile.Level.ToString(CultureInfo.InvariantCulture);
     public ImageSource? Portrait { get; } = WebImage(profile.ImageUrl, 180);
@@ -44,7 +54,7 @@ public sealed class CharacterSheet(ArmoryProfile profile)
     public string ClassLine => $"{Profile.ClassName}  ·  {Profile.Race}";
     public string ItemLevel => Profile.ItemLevel?.ToString("N0", CultureInfo.InvariantCulture) ?? "?";
     public string CombatPower => Profile.CombatPower.ToString("N0", CultureInfo.InvariantCulture);
-    public string Legion => Profile.Legion is { } legion ? $"‹{legion}›" : string.Empty;
+    public string Legion => StreamerMode.Legion(Profile.Legion) is { } legion ? $"‹{legion}›" : string.Empty;
 
     /// <summary>"64,358 CP · iLvl 1,415": for the sidebar.</summary>
     public string Summary => $"{CombatPower} CP · iLvl {ItemLevel}";

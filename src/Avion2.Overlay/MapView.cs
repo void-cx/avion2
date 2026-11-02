@@ -363,7 +363,7 @@ public sealed class MapView : FrameworkElement
                     dc.DrawEllipse(brush, OutlinePen, at, 4.5, 4.5);
                     if (_zoom >= 0.3)
                     {
-                        var name = Text(e.Name, 10.5, brush, FontWeights.SemiBold);
+                        var name = Text(StreamerMode.Name(e), 10.5, brush, FontWeights.SemiBold);
                         DrawOutlined(dc, name, new Point(at.X + 7, at.Y - name.Height / 2), brush, 2.6);
                     }
 
@@ -479,7 +479,7 @@ public sealed class MapView : FrameworkElement
             case LiveEntity e when Transform is { } t:
                 var p = t.ToImage(e.Position);
                 at = ToScreen(p.X, p.Y);
-                title = e.Kind == LiveKind.Self ? "You" : e.Name;
+                title = e.Kind == LiveKind.Self ? "You" : StreamerMode.Name(e);
                 lines.Add(e.Kind switch
                 {
                     LiveKind.Self or LiveKind.Player => e.Class == GameClass.Unknown ? "Player" : e.Class.ToString(),

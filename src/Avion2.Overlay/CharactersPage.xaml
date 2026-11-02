@@ -8,7 +8,7 @@
                 <Image DockPanel.Dock="Left" Source="{Binding Icon}" Width="22" Height="22" Margin="0,0,10,0" VerticalAlignment="Center"
                        RenderOptions.BitmapScalingMode="HighQuality" />
                 <StackPanel>
-                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Shown}" Foreground="{DynamicResource TextBrush}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                     <TextBlock Text="{Binding Detail}" Foreground="{DynamicResource MutedBrush}" FontSize="11" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
             </DockPanel>
@@ -145,7 +145,7 @@
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Name}" Style="{StaticResource PageTitle}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Shown}" Style="{StaticResource PageTitle}" VerticalAlignment="Center" />
                                 <Border Style="{StaticResource Pill}" Margin="12,0,0,0" VerticalAlignment="Center"><TextBlock Text="{Binding ServerName}" /></Border>
                                 <Button Style="{StaticResource QuietButton}" Content="Refresh" Margin="8,0,0,0" Padding="12,3" VerticalAlignment="Center"
                                         Click="Refresh_Click" ToolTip="Ask the official AION2 site again (it updates when the character logs out or changes zone)" />

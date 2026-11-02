@@ -38,6 +38,13 @@ public partial class SettingsPage : UserControl
             _state.SaveSettings();
         };
         VersionText.Text = $"Version {Avion2.Engine.UpdateChecker.CurrentVersion}";
+        StreamerBox.IsChecked = state.Stored.HideNames;
+        StreamerBox.Click += (_, _) =>
+        {
+            _state.Stored.HideNames = StreamerBox.IsChecked == true;
+            _state.SaveSettings();
+            StreamerMode.Set(_state.Stored.HideNames);
+        };
         RecordAllBox.IsChecked = state.Stored.RecordAllGameConnections;
         RecordAllBox.Click += (_, _) =>
         {

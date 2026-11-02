@@ -251,7 +251,7 @@ public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live 
     public Visibility MissingVisibility => Missing.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
 
     public IReadOnlyList<RunMemberRow> Party => row.Run.Party
-        .Select(m => new RunMemberRow(m.Name, m.Class == GameClass.Unknown ? "" : m.Class.ToString(), ClassIcons.For(m.Class)))
+        .Select(m => new RunMemberRow(StreamerMode.Name(m.Name), m.Class == GameClass.Unknown ? "" : m.Class.ToString(), ClassIcons.For(m.Class)))
         .ToList();
 
     public Visibility PartyVisibility => row.Run.Party.Count > 0 ? Visibility.Visible : Visibility.Collapsed;

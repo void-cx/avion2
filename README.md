@@ -35,6 +35,7 @@ Characters page asks the official AION2 site, when you open it).
 - **Server lag warning** when the game server freezes, also marked in each fight.
 - **Legion** tags on players and a legion card with your members.
 - Two themes: **AION2** and **VOID**. Skill and NPC names in 10 languages.
+- **Streamer mode**: player, character and legion names show as "You", "Player 2", … everywhere in the app.
 
 ## Install
 

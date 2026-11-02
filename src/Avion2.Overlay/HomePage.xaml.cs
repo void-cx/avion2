@@ -46,6 +46,11 @@ public partial class HomePage : UserControl
 
         state.MeterStateChanged += Refresh;
         state.LegionUpdated += RefreshLegion;
+        StreamerMode.Changed += () =>
+        {
+            RefreshCharacter();
+            RefreshLegion();
+        };
         state.UpdateAvailableChanged += RefreshUpdate;
         state.Fights.CollectionChanged += (_, _) => RefreshRecent();
         state.InventoryUpdated += RefreshCharacter;
@@ -128,7 +133,7 @@ public partial class HomePage : UserControl
             StatusDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, "LiveBrush");
             StatusTitle.Text = "Capturing · connected";
             string who = status.SelfName is { } name
-                ? $"{name} · {status.SelfClass}"
+                ? $"{StreamerMode.Name(name, self: true)} · {status.SelfClass}"
                 : status.SelfClass != GameClass.Unknown ? $"You · {status.SelfClass}" : "waiting for your character";
             StatusDetail.Text = $"{who} · {status.GamePackets:N0} game packets" +
                                 (status.Recorded > 0 ? $" · recording ({status.Recorded:N0} frames)" : string.Empty);
@@ -166,13 +171,13 @@ public partial class HomePage : UserControl
         var characters = new CharacterStore().Characters;
         CharactersValue.Text = characters.Count == 0
             ? "None yet: teleport once in game"
-            : string.Join("\n", characters.Take(3).Select(c => $"{c.Name} · {c.Class}"));
+            : string.Join("\n", characters.Take(3).Select(c => $"{StreamerMode.Name(c.Name)} · {c.Class}"));
         if (_state.Inventory is { IsKnown: true } inventory)
         {
             Wallet.Visibility = Visibility.Visible;
             KinahValue.Text = inventory.Kinah.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
             StonesValue.Text = inventory.Count(Avion2.Analysis.ItemIds.EnhanceStone).ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
-            InventoryAge.Text = inventory.Character is { } who ? who : string.Empty;
+            InventoryAge.Text = inventory.Character is { } who ? StreamerMode.Name(who) : string.Empty;
         }
         else
         {
@@ -269,7 +274,7 @@ public partial class HomePage : UserControl
     /// <summary>Our legion: name, leader, introduction and who logged in last (saved between sessions).</summary>
     private void RefreshLegion()
     {
-        if (_state.Legion is not { IsKnown: true } legion)
+        if (_state.Legion is not { IsKnown: true } legion || StreamerMode.On)
         {
             LegionCard.Visibility = Visibility.Collapsed;
             return;
