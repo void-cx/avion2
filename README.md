@@ -3,7 +3,8 @@
 A damage meter and fight analyzer for **AION2**. AVION2 reads the game's network traffic on your PC and shows who
 did how much damage, live and after every fight.
 
-It is passive: it never touches the game, its files or its memory, and sends nothing anywhere.
+It is passive: it never touches the game, its files or its memory, and sends nothing anywhere (only the
+Characters page asks the official AION2 site, when you open it).
 
 **Website and download:** https://avion2.void.cx
 
@@ -22,6 +23,9 @@ It is passive: it never touches the game, its files or its memory, and sends not
 - **Map** of every zone with teleports, gathering spots, monsters (with drops) and NPCs; you and the players around
   you live on it. Optional, off by default: a compass that finds hidden cubes (it uses
   cube positions the game sends before you can see them, which may count as an unfair advantage).
+- **Characters**: combat power, item level, gear, skills, Daevanion boards and stats of your characters and of
+  anyone you look up (or right-click in the meter). This is the one feature that goes online: it asks the official
+  AION2 site, only when you open a character.
 - **Gear Forge**: average and unlucky cost (materials, Kinah, attempts) to enchant or amplify any item.
 - **Low-HP alert** with its own sound.
 - **HUD effects** (beta, off by default): after a one-off calibration picture of the game, AVION2 draws on the

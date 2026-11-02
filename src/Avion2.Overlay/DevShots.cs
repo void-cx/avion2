@@ -141,6 +141,20 @@ internal static class DevShots
                 Shoot(home, "forge", directory, "forge-mine.png");
             }
 
+            home.ShowPage("characters");
+            if (home.CurrentPage is CharactersPage characters)
+            {
+                Pump(TimeSpan.FromSeconds(4)); // the official site answers, the icons arrive
+                foreach (string tab in new[] { "equipment", "skills", "daevanion", "stats", "cosmetics" })
+                {
+                    characters.SelectTab(tab);
+                    Pump(TimeSpan.FromSeconds(tab == "daevanion" ? 3 : 1.5));
+                    Save(home, Path.Combine(directory, $"characters-{tab}.png"));
+                }
+
+                characters.SelectTab("equipment");
+            }
+
             var traced = state.Fights.FirstOrDefault(f => f.Players > 1 && state.LoadTrace(f.Entry) is not null)
                          ?? state.Fights.FirstOrDefault(f => state.LoadTrace(f.Entry) is not null);
             if (traced is not null)

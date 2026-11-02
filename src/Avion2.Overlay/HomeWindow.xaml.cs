@@ -14,6 +14,7 @@ public partial class HomeWindow : Window
     private readonly HomePage _home;
     private readonly TimersPage _timers;
     private readonly ForgePage _forge;
+    private readonly CharactersPage _characters;
     private MapPage? _map;
     private readonly HistoryPage _history;
     private readonly RunsPage _runs;
@@ -32,6 +33,7 @@ public partial class HomeWindow : Window
         _home = new HomePage(state, row => ShowPage("history", row));
         _timers = new TimersPage(state, ShowOnMap, row => ShowPage("history", row));
         _forge = new ForgePage(state);
+        _characters = new CharactersPage(state);
         _history = new HistoryPage(state);
         _runs = new RunsPage(state, run =>
         {
@@ -41,6 +43,11 @@ public partial class HomeWindow : Window
         _settings = new SettingsPage(state);
 
         state.ShowPageRequested += page => ShowPage(page);
+        state.ShowCharacterRequested += (name, server) =>
+        {
+            ShowPage("characters");
+            _characters.Show(name, server);
+        };
         state.BackdropChanged += () =>
         {
             _playing = null; // force a reload of the (possibly new) file
@@ -115,6 +122,7 @@ public partial class HomeWindow : Window
         {
             "timers" => _timers,
             "forge" => _forge,
+            "characters" => _characters,
             "map" => _map ??= new MapPage(_state), // created on first visit: it loads the map pictures
             "history" => _history,
             "runs" => _runs,

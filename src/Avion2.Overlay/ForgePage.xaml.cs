@@ -266,32 +266,5 @@ public partial class ForgePage : UserControl
 
     private static string Number(double value) => value >= 100 ? Math.Round(value).ToString("N0") : value.ToString("0.#");
 
-    /// <summary>Item grade colors as in the game (Common → Epic).</summary>
-    private Brush GradeBrush(string kind)
-    {
-        string grade = kind.Split(' ')[0];
-        return grade switch
-        {
-            "Epic" => Frozen(Color.FromRgb(0xE0, 0x8A, 0x3C)),
-            "Unique" => Frozen(Color.FromRgb(0xE6, 0xC2, 0x5A)),
-            "Heroic" => Frozen(Color.FromRgb(0x5A, 0x9B, 0xE6)),
-            "Rare" => Frozen(Color.FromRgb(0x6C, 0xC4, 0x6C)),
-            "Common" => (Brush)FindResource("SecondaryTextBrush"),
-            _ => (Brush)FindResource("TitleBrush"),
-        };
-    }
-
-    private static readonly Dictionary<Color, Brush> Brushes = new();
-
-    private static Brush Frozen(Color color)
-    {
-        if (!Brushes.TryGetValue(color, out var brush))
-        {
-            brush = new SolidColorBrush(color);
-            brush.Freeze();
-            Brushes[color] = brush;
-        }
-
-        return brush;
-    }
+    private static Brush GradeBrush(string kind) => ItemGrades.Brush(kind.Split(' ')[0]);
 }

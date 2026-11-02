@@ -112,6 +112,9 @@ public static class BundledGameData
     /// <summary>The server with this id (as in player records, e.g. 1321 = Gauss), or null when unknown.</summary>
     public static ServerInfo? Server(ushort id) => ServerTable.Value.GetValueOrDefault(id);
 
+    /// <summary>Every known server by id.</summary>
+    public static IReadOnlyDictionary<ushort, ServerInfo> Servers => ServerTable.Value;
+
     /// <summary>An item's English name ("Enhance Stone"), or null when the table does not know it.</summary>
     public static string? ItemName(uint itemId) => ItemTable.Value.GetValueOrDefault(itemId);
 

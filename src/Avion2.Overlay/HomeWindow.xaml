@@ -30,6 +30,9 @@
                                  local:Ui.Icon="{StaticResource IconTimers}" Checked="Nav_Checked" />
                     <RadioButton Style="{StaticResource RailButton}" Content="Map" Tag="map" GroupName="Nav"
                                  local:Ui.Icon="{StaticResource IconMap}" Checked="Nav_Checked" />
+                    <RadioButton Style="{StaticResource RailButton}" Content="Characters" Tag="characters" GroupName="Nav"
+                                 local:Ui.Icon="{StaticResource IconCharacter}" Checked="Nav_Checked"
+                                 ToolTip="Your characters and anyone else's: combat power, item level, gear" />
                     <RadioButton Style="{StaticResource RailButton}" Content="Forge" Tag="forge" GroupName="Nav"
                                  local:Ui.Icon="{StaticResource IconForge}" Checked="Nav_Checked" ToolTip="Gear Forge" />
                     <RadioButton Style="{StaticResource RailButton}" Content="Runs" Tag="runs" GroupName="Nav"

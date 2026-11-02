@@ -35,6 +35,10 @@ public sealed class PlayerCard(uint actorId) : Bindable
     private double _ratio;
 
     public uint ActorId { get; } = actorId;
+
+    /// <summary>The player's server, for the armory (null while unknown).</summary>
+    public ushort? ServerId { get; set; }
+
     public int Rank { get => _rank; set => Set(ref _rank, value); }
     public string Name { get => _name; set => Set(ref _name, value); }
     public string Emblem { get => _emblem; set => Set(ref _emblem, value); }
@@ -440,10 +444,11 @@ public sealed class OverlayViewModel : Bindable
             var row = snapshot.Rows[i];
             Fill(card, row.Name, row.Class, row.IsSelf, row.CombatPower);
             card.Legion = LegionAndServer(row, snapshot.Self?.ServerId);
+            card.ServerId = row.ServerId;
             card.Value = Big(row.Dps);
             card.Share = Invariant($"{row.Share * 100:0.0}%");
             card.Stats = Invariant($"Dbl {row.DoubleRate * 100:0}%  Perf {row.PerfectRate * 100:0}%  Crit {row.CritRate * 100:0}%  Front {row.FrontRate * 100:0}%  Back {row.BackRate * 100:0}%");
-            card.Detail = Invariant($"{row.Total:N0} damage · {row.Hits} hits\nClick for details");
+            card.Detail = Invariant($"{row.Total:N0} damage · {row.Hits} hits\nClick for details · right-click for the armory");
             card.TargetRatio = row.Total / top;
         });
     }
@@ -459,7 +464,7 @@ public sealed class OverlayViewModel : Bindable
             card.Value = Big(row.Dtps);
             card.Share = Invariant($"{row.Share * 100:0.0}%");
             card.Stats = Invariant($"Hits {row.Hits}  Crits {row.Crits}  Parried {row.Parried}  Blocked {row.Blocked + row.PerfectBlocks}  Absorbed {Format(row.Absorbed)}");
-            card.Detail = Invariant($"{row.Total:N0} damage taken\nClick for details");
+            card.Detail = Invariant($"{row.Total:N0} damage taken\nClick for details · right-click for the armory");
             card.TargetRatio = row.Total / top;
         });
     }

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
@@ -309,6 +310,28 @@ public partial class MainWindow : Window
         {
             OpenDetails(id, _vm.Tab == OverlayTab.Taken ? 1 : 0);
         }
+    }
+
+    /// <summary>Right-click on a player: their armory page, or the fight details.</summary>
+    private void Row_RightClick(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: PlayerCard card } element || card.Name.Length == 0)
+        {
+            return;
+        }
+
+        ushort? server = card.ServerId ?? (card.IsSelf ? _engine.Status().SelfServer : null);
+        var armory = new MenuItem
+        {
+            Header = $"Armory: {card.Name}",
+            IsEnabled = server is { } id && ArmoryClient.RegionCode(id) is not null,
+            ToolTip = "Combat power, item level and gear from the official AION2 site",
+        };
+        armory.Click += (_, _) => _state.ShowCharacter(card.Name, server!.Value);
+        var details = new MenuItem { Header = "Fight details" };
+        details.Click += (_, _) => OpenDetails(card.ActorId, _vm.Tab == OverlayTab.Taken ? 1 : 0);
+        element.ContextMenu = new ContextMenu { Items = { armory, details }, PlacementTarget = element, IsOpen = true };
+        e.Handled = true;
     }
 
     internal void OpenDetails(uint? actorId, int tab)

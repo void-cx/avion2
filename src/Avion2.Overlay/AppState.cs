@@ -247,6 +247,14 @@ public sealed class AppState
 
     public void RequestPage(string page) => ShowPageRequested?.Invoke(page);
 
+    /// <summary>Characters from the official AION2 site, looked up on demand.</summary>
+    public ArmoryClient Armory { get; } = new();
+
+    /// <summary>Raised to open a character on the Characters page (name, server id).</summary>
+    public event Action<string, ushort>? ShowCharacterRequested;
+
+    public void ShowCharacter(string name, ushort serverId) => ShowCharacterRequested?.Invoke(name, serverId);
+
     /// <summary>Starts capturing and shows the overlay. Returns an error message, or null.</summary>
     public string? StartMeter(OverlayTab startTab = OverlayTab.Damage)
     {

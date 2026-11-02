@@ -11,6 +11,7 @@
     <Geometry x:Key="IconTimers">M12,7 V12 L15,14 M12,3 A9,9 0 1 0 12.01,3 Z</Geometry>
     <Geometry x:Key="IconMap">M9,4 L3,6 V20 L9,18 L15,20 L21,18 V4 L15,6 Z M9,4 V18 M15,6 V20</Geometry>
     <Geometry x:Key="IconForge">M5,20 L13,12 M13,4 L20,11 L17,14 L10,7 Z M4,21 H11</Geometry>
+    <Geometry x:Key="IconCharacter">M12,4 A4,4 0 1 0 12.01,4 Z M4,21 C4,16.5 7.5,14 12,14 C16.5,14 20,16.5 20,21</Geometry>
     <Geometry x:Key="IconHistory">M4,6 H20 M4,12 H20 M4,18 H14</Geometry>
     <Geometry x:Key="IconSettings">M4,7 H13 M17,7 H20 M15,5 V9 M4,17 H7 M11,17 H20 M9,15 V19</Geometry>
     <Geometry x:Key="IconSearch">M11,4 A7,7 0 1 0 11.01,4 Z M20,20 L16,16</Geometry>

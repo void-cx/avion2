@@ -177,7 +177,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Margin="0,0,0,4" Padding="6,4,8,0" CornerRadius="4" Background="{DynamicResource OverlayCardBrush}" BorderThickness="1"
-                                        Cursor="Hand" Tag="{Binding ActorId}" ToolTip="{Binding Detail}" MouseLeftButtonUp="Row_Click">
+                                        Cursor="Hand" Tag="{Binding ActorId}" ToolTip="{Binding Detail}" MouseLeftButtonUp="Row_Click" MouseRightButtonUp="Row_RightClick">
                                     <Border.Style>
                                         <Style TargetType="Border">
                                             <Setter Property="BorderBrush" Value="{DynamicResource OverlayCardBorderBrush}" />
@@ -256,7 +256,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Height="22" Margin="0,1" Background="Transparent" Cursor="Hand"
-                                      Tag="{Binding ActorId}" ToolTip="{Binding Detail}" MouseLeftButtonUp="Row_Click">
+                                      Tag="{Binding ActorId}" ToolTip="{Binding Detail}" MouseLeftButtonUp="Row_Click" MouseRightButtonUp="Row_RightClick">
                                     <Border Background="{Binding BarBrush}" CornerRadius="3" RenderTransformOrigin="0,0.5">
                                         <Border.RenderTransform>
                                             <ScaleTransform ScaleX="{Binding Ratio}" />
