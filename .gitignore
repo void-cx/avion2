@@ -16,3 +16,6 @@ artifacts/
 site/protocol/
 # built by the Pages workflow from the GitHub releases (tools/build_changelog.py)
 site/changelog/
+# written by the Pages workflow (tools/build_seo.py)
+site/sitemap.xml
+site/robots.txt

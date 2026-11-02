@@ -25,18 +25,65 @@ PAGE = """<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AION2 Protocol · AVION2</title>
+  <title>AION2 Network Protocol Reference · AVION2</title>
   <meta name="description" content="How AION2's game traffic is built: framing, compression and every packet AVION2 decodes, with what is verified and what is still open.">
-  <link rel="icon" href="../img/favicon.png">
+  <link rel="canonical" href="%SITE%/protocol/">
+  <meta name="theme-color" content="#070b14">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="AVION2">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:url" content="%SITE%/protocol/">
+  <meta property="og:title" content="AION2 Network Protocol Reference">
+  <meta property="og:description" content="Framing, compression and every AION2 packet AVION2 decodes, with what is verified and what is still open.">
+  <meta property="og:image" content="%SITE%/img/social.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="AVION2, damage meter and fight analyzer for AION2">
+  <meta property="article:modified_time" content="{updated}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AION2 Network Protocol Reference">
+  <meta name="twitter:description" content="Framing, compression and every AION2 packet AVION2 decodes, with what is verified and what is still open.">
+  <meta name="twitter:image" content="%SITE%/img/social.png">
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" href="../img/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+  <link rel="manifest" href="../site.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
   <link rel="stylesheet" href="../styles.css">
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@graph": [
+      {{
+        "@type": "TechArticle",
+        "headline": "AION2 Network Protocol Reference",
+        "description": "How AION2's game traffic is built: framing, compression and every packet AVION2 decodes.",
+        "url": "%SITE%/protocol/",
+        "image": "%SITE%/img/social.png",
+        "inLanguage": "en",
+        "dateModified": "{updated}",
+        "isPartOf": {{ "@id": "%SITE%/#website" }},
+        "author": {{ "@type": "Organization", "name": "void-cx", "url": "https://github.com/void-cx" }},
+        "publisher": {{ "@type": "Organization", "name": "void-cx", "url": "https://github.com/void-cx" }}
+      }},
+      {{
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {{ "@type": "ListItem", "position": 1, "name": "AVION2", "item": "%SITE%/" }},
+          {{ "@type": "ListItem", "position": 2, "name": "Protocol", "item": "%SITE%/protocol/" }}
+        ]
+      }}
+    ]
+  }}
+  </script>
 </head>
 <body>
   <header class="top">
     <a class="brand" href="../">✦ AVION2</a>
-    <nav>
+    <nav aria-label="Main">
       <a href="../#features">Features</a>
       <a href="./">Protocol</a>
       <a href="../changelog/">Changelog</a>

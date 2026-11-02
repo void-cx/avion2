@@ -24,18 +24,62 @@ PAGE = """<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Changelog · AVION2</title>
-  <meta name="description" content="What changed in each AVION2 release.">
-  <link rel="icon" href="../img/favicon.png">
+  <title>AVION2 Changelog · What's new in each release</title>
+  <meta name="description" content="What changed in each AVION2 release, newest first: new features, fixes and downloads for the AION2 damage meter. Latest: {latest}.">
+  <link rel="canonical" href="%SITE%/changelog/">
+  <meta name="theme-color" content="#070b14">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AVION2">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:url" content="%SITE%/changelog/">
+  <meta property="og:title" content="AVION2 Changelog">
+  <meta property="og:description" content="What changed in each AVION2 release. Latest: {latest}.">
+  <meta property="og:image" content="%SITE%/img/social.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="AVION2, damage meter and fight analyzer for AION2">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AVION2 Changelog">
+  <meta name="twitter:description" content="What changed in each AVION2 release. Latest: {latest}.">
+  <meta name="twitter:image" content="%SITE%/img/social.png">
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" href="../img/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+  <link rel="manifest" href="../site.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
   <link rel="stylesheet" href="../styles.css">
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@graph": [
+      {{
+        "@type": "WebPage",
+        "name": "AVION2 Changelog",
+        "description": "What changed in each AVION2 release.",
+        "url": "%SITE%/changelog/",
+        "inLanguage": "en",
+        "dateModified": "{modified}",
+        "isPartOf": {{ "@id": "%SITE%/#website" }},
+        "about": {{ "@id": "%SITE%/#app" }}
+      }},
+      {{
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {{ "@type": "ListItem", "position": 1, "name": "AVION2", "item": "%SITE%/" }},
+          {{ "@type": "ListItem", "position": 2, "name": "Changelog", "item": "%SITE%/changelog/" }}
+        ]
+      }}
+    ]
+  }}
+  </script>
 </head>
 <body>
   <header class="top">
     <a class="brand" href="../">✦ AVION2</a>
-    <nav>
+    <nav aria-label="Main">
       <a href="../#features">Features</a>
       <a href="../protocol/">Protocol</a>
       <a href="./">Changelog</a>
@@ -115,7 +159,9 @@ def main() -> int:
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8", newline="\n") as f:
-        f.write(PAGE.format(repo=REPO, releases="\n    ".join(parts)))
+        newest = releases[0] if releases else {}
+        f.write(PAGE.format(repo=REPO, releases="\n    ".join(parts), latest=html.escape(newest.get("tag_name", "")),
+                            modified=(newest.get("published_at") or "")[:10]))
     print(f"{len(releases)} releases → {OUT}", file=sys.stderr)
     return 0
 

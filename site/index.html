@@ -3,21 +3,79 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AVION2 · Damage meter for AION2</title>
+  <title>AVION2 · Free DPS meter and fight analyzer for AION2</title>
   <meta name="description" content="AVION2 is a free, open-source damage meter and fight analyzer for AION2: live DPS overlay, fight replays, dungeon run times, timers, a zone map with a hidden cube finder, and an enchant calculator.">
-  <meta property="og:title" content="AVION2 · Damage meter for AION2">
+  <link rel="canonical" href="%SITE%/">
+  <meta name="theme-color" content="#070b14">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AVION2">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:url" content="%SITE%/">
+  <meta property="og:title" content="AVION2 · Free DPS meter and fight analyzer for AION2">
   <meta property="og:description" content="Live DPS overlay, fight replays, dungeon runs with best times, timers, a zone map with Find My Cube, and an enchant calculator. Passive, local, open source.">
-  <meta property="og:image" content="img/compass.png">
-  <link rel="icon" href="img/favicon.png">
+  <meta property="og:image" content="%SITE%/img/social.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="AVION2, damage meter and fight analyzer for AION2, with a fight replay">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AVION2 · Free DPS meter and fight analyzer for AION2">
+  <meta name="twitter:description" content="Live DPS overlay, fight replays, dungeon runs with best times, timers, a zone map with Find My Cube, and an enchant calculator.">
+  <meta name="twitter:image" content="%SITE%/img/social.png">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="img/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
   <link rel="stylesheet" href="styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "%SITE%/#website",
+        "name": "AVION2",
+        "url": "%SITE%/",
+        "inLanguage": "en",
+        "publisher": { "@id": "%SITE%/#organization" }
+      },
+      {
+        "@type": "Organization",
+        "@id": "%SITE%/#organization",
+        "name": "void-cx",
+        "url": "https://github.com/void-cx",
+        "logo": "%SITE%/img/icon-256.png"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "%SITE%/#app",
+        "name": "AVION2",
+        "description": "Free, open-source damage meter and fight analyzer for AION2: live DPS overlay, fight replays, dungeon run times, timers, a zone map and an enchant calculator.",
+        "url": "%SITE%/",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Windows 10, Windows 11",
+        "softwareRequirements": "Npcap",
+        "downloadUrl": "https://github.com/void-cx/avion2/releases/latest",
+        "releaseNotes": "%SITE%/changelog/",
+        "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "image": "%SITE%/img/social.png",
+        "screenshot": ["%SITE%/img/replay.jpg", "%SITE%/img/runs.jpg", "%SITE%/img/map.jpg", "%SITE%/img/timers.jpg"],
+        "author": { "@id": "%SITE%/#organization" },
+        "sameAs": ["https://github.com/void-cx/avion2"]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <header class="top">
-    <a class="brand" href="#">✦ AVION2</a>
-    <nav>
+    <a class="brand" href="./">✦ AVION2</a>
+    <nav aria-label="Main">
       <a href="#cube">Find My Cube</a>
       <a href="#features">Features</a>
       <a href="#install">Install</a>
@@ -42,7 +100,7 @@
       </div>
 
       <figure class="shot">
-        <img src="img/overlay.png" width="390" height="264" alt="The live overlay during a boss fight: damage per player with crits, back attacks and the boss's HP">
+        <img src="img/overlay.png" width="389" height="263" fetchpriority="high" alt="The live overlay during a boss fight: damage per player with crits, back attacks and the boss's HP">
         <figcaption>The overlay in a raid · player names hidden</figcaption>
       </figure>
     </section>
@@ -53,7 +111,7 @@
         <h2>Find My Cube</h2>
         <p class="lede">Hidden cubes, found like a lost phone. AVION2 leads you to an area, and the moment the game shows a cube
           near you it switches to precision finding: distance, height and which way to turn.</p>
-        <img class="compass" src="img/compass.png" width="992" height="346" alt="The cube compass: heading to an area, searching it, a spotted cube 17 m ahead and 4 m up, and arrival">
+        <img class="compass" src="img/compass.png" width="992" height="346" decoding="async" alt="The cube compass: heading to an area, searching it, a spotted cube 17 m ahead and 4 m up, and arrival">
         <p class="fine optin">Optional and off by default. It uses cube positions the game sends to your PC before the cube is on
           your screen, which can be seen as an unfair advantage, so AVION2 asks you to confirm before switching it on.</p>
         <ol class="steps">
@@ -91,7 +149,7 @@
       </article>
 
       <article class="feature wide">
-        <img src="img/replay.jpg" width="1148" height="508" alt="The replay of a raid boss fight: every player and monster on a map, with who hit whom" loading="lazy">
+        <img src="img/replay.jpg" width="1148" height="508" alt="The replay of a raid boss fight: every player and monster on a map, with who hit whom" loading="lazy" decoding="async">
         <div>
           <h3>Fight replay</h3>
           <p>Watch any fight again from above: where everyone stood, who hit whom, and what each player was doing at that
@@ -100,7 +158,7 @@
       </article>
 
       <article class="feature wide">
-        <img src="img/runs.jpg" width="1264" height="761" alt="The Runs page: sealed dungeons with their times, and a run's boss kills, fight times and loot" loading="lazy">
+        <img src="img/runs.jpg" width="1264" height="761" alt="The Runs page: sealed dungeons with their times, and a run's boss kills, fight times and loot" loading="lazy" decoding="async">
         <div>
           <h3>Dungeon runs</h3>
           <p>Every sealed dungeon, expedition, stronghold and instance is timed from entering to leaving: boss kills with
@@ -110,7 +168,7 @@
       </article>
 
       <article class="feature wide">
-        <img src="img/gathering.jpg" width="840" height="227" alt="The gathering panel in the game with AVION2's banner above it: Will succeed · Fine" loading="lazy">
+        <img src="img/gathering.jpg" width="840" height="227" alt="The gathering panel in the game with AVION2's banner above it: Will succeed · Fine" loading="lazy" decoding="async">
         <div>
           <h3>Gathering and crafting</h3>
           <p>The game decides whether a gathering or a craft succeeds the moment it starts; the success and fail bars only
@@ -122,7 +180,7 @@
       </article>
 
       <article class="feature wide">
-        <img src="img/map.jpg" width="1264" height="761" alt="The map tab: Verteron with teleports, hidden cube areas and a monster card with its drops" loading="lazy">
+        <img src="img/map.jpg" width="1264" height="761" alt="The map tab: Verteron with teleports, hidden cube areas and a monster card with its drops" loading="lazy" decoding="async">
         <div>
           <h3>Map</h3>
           <p>Every zone with teleports, gathering spots, monsters with their drops and NPCs. You and the players around you
@@ -131,7 +189,7 @@
       </article>
 
       <article class="feature wide">
-        <img src="img/timers.jpg" width="1264" height="560" alt="The timers tab: next Spacetime Rift, events, Reshanta world bosses and field boss respawns" loading="lazy">
+        <img src="img/timers.jpg" width="1264" height="560" alt="The timers tab: next Spacetime Rift, events, Reshanta world bosses and field boss respawns" loading="lazy" decoding="async">
         <div>
           <h3>Timers</h3>
           <p>Spacetime Rifts, Beritra air raids, PvP events, resets, Reshanta world bosses and field boss respawns, in your time
@@ -140,7 +198,7 @@
       </article>
 
       <article class="feature wide">
-        <img src="img/forge.jpg" width="1264" height="560" alt="The Gear Forge: average and unlucky enchant costs per level" loading="lazy">
+        <img src="img/forge.jpg" width="1264" height="560" alt="The Gear Forge: average and unlucky enchant costs per level" loading="lazy" decoding="async">
         <div>
           <h3>Gear Forge</h3>
           <p>What it costs to enchant or amplify any item: average and unlucky materials, Kinah and attempts per level. It
@@ -149,7 +207,7 @@
       </article>
 
       <article class="feature wide">
-        <img src="img/home-void.jpg" width="1264" height="400" alt="The VOID theme" loading="lazy">
+        <img src="img/home-void.jpg" width="1264" height="400" alt="AVION2's home page in the VOID theme" loading="lazy" decoding="async">
         <div>
           <h3>Two themes</h3>
           <p>An AION2 look and the VOID theme. Skill and monster names in 10 languages.</p>

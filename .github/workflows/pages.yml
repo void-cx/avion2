@@ -5,7 +5,7 @@ name: Pages
 on:
   push:
     branches: [main]
-    paths: [site/**, docs/PROTOCOL.md, tools/build_wiki.py, tools/build_changelog.py, .github/workflows/pages.yml]
+    paths: [site/**, docs/PROTOCOL.md, tools/build_wiki.py, tools/build_changelog.py, tools/build_seo.py, .github/workflows/pages.yml]
   release:
     types: [published, edited] # the changelog is built from the releases
   workflow_dispatch:
@@ -50,6 +50,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: '"$RUNNER_TEMP/wiki/bin/python" tools/build_changelog.py'
+      - name: Search engines (site address, sitemap, robots.txt, checks)
+        run: '"$RUNNER_TEMP/wiki/bin/python" tools/build_seo.py'
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
