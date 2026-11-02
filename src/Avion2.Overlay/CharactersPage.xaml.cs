@@ -18,6 +18,9 @@ public partial class CharactersPage : UserControl
     private string _tab = "equipment";
     private int _board;
 
+    /// <summary>The sheet shows one of ours beside this character instead of the tabs.</summary>
+    private bool _comparing;
+
     /// <summary>The character being loaded or shown; a late answer for another one is dropped.</summary>
     private (string Name, ushort Server)? _current;
 
@@ -206,11 +209,65 @@ public partial class CharactersPage : UserControl
             _board = profile.Daevanion.FirstOrDefault()?.Id ?? 0;
         }
 
+        FillCompareWith(profile);
         ShowTab();
         if (Mine.ItemsSource is IEnumerable<CharacterRow> mine && mine.FirstOrDefault(r => r.Name == profile.Name && r.ServerId == profile.ServerId) is { } row)
         {
             row.Detail = $"{_sheet.Summary} · {ServerName(row.ServerId)}";
         }
+    }
+
+    /// <summary>Our characters to compare with: all but the one shown, the one played last first.</summary>
+    private void FillCompareWith(ArmoryProfile shown)
+    {
+        var picked = CompareWith.SelectedItem as CharacterRow;
+        var rows = (Mine.ItemsSource as IEnumerable<CharacterRow> ?? [])
+            .Where(r => !(string.Equals(r.Name, shown.Name, StringComparison.OrdinalIgnoreCase) && r.ServerId == shown.ServerId))
+            .ToList();
+        CompareWith.SelectionChanged -= CompareWith_SelectionChanged;
+        CompareWith.ItemsSource = rows;
+        CompareWith.SelectedItem = rows.FirstOrDefault(r => r.Name == picked?.Name && r.ServerId == picked?.ServerId) ?? rows.FirstOrDefault();
+        CompareWith.SelectionChanged += CompareWith_SelectionChanged;
+        CompareButton.Visibility = rows.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        if (rows.Count == 0)
+        {
+            _comparing = false;
+        }
+    }
+
+    private void Compare_Click(object sender, RoutedEventArgs e)
+    {
+        _comparing = !_comparing;
+        ShowTab();
+    }
+
+    private void CompareWith_SelectionChanged(object sender, SelectionChangedEventArgs e) => _ = CompareAsync();
+
+    private async Task CompareAsync()
+    {
+        if (_sheet is not { } sheet || CompareWith.SelectedItem is not CharacterRow row)
+        {
+            return;
+        }
+
+        CompareTheirs.Text = sheet.Shown;
+        CompareMessage.Text = $"Loading {row.Shown}…";
+        CompareSections.ItemsSource = null;
+        var lookup = await _state.Armory.LoadAsync(row.Name, row.ServerId);
+        if (_sheet != sheet || CompareWith.SelectedItem != row || !_comparing)
+        {
+            return;
+        }
+
+        if (lookup.Profile is not { } mine)
+        {
+            CompareMessage.Text = lookup.Problem?.Replace(row.Name, row.Shown, StringComparison.Ordinal) ?? $"No character named {row.Shown}.";
+            return;
+        }
+
+        CompareMessage.Text = string.Empty;
+        CompareSections.ItemsSource = CharacterSheet.Compare(CharacterComparison.Build(mine, sheet.Profile, BundledGameData.GearStats));
+        CompareScroll.ScrollToTop();
     }
 
     private void UpdateAge()
@@ -259,9 +316,18 @@ public partial class CharactersPage : UserControl
             return;
         }
 
-        CardsTab.Visibility = _tab is "equipment" or "skills" or "cosmetics" ? Visibility.Visible : Visibility.Collapsed;
-        StatsTab.Visibility = _tab == "stats" ? Visibility.Visible : Visibility.Collapsed;
-        DaevanionTab.Visibility = _tab == "daevanion" ? Visibility.Visible : Visibility.Collapsed;
+        CompareButton.Content = _comparing ? "Back to the sheet" : "Compare";
+        Tabs.Visibility = _comparing ? Visibility.Collapsed : Visibility.Visible;
+        CompareTab.Visibility = _comparing ? Visibility.Visible : Visibility.Collapsed;
+        CardsTab.Visibility = !_comparing && _tab is "equipment" or "skills" or "cosmetics" ? Visibility.Visible : Visibility.Collapsed;
+        StatsTab.Visibility = !_comparing && _tab == "stats" ? Visibility.Visible : Visibility.Collapsed;
+        DaevanionTab.Visibility = !_comparing && _tab == "daevanion" ? Visibility.Visible : Visibility.Collapsed;
+        if (_comparing)
+        {
+            _ = CompareAsync();
+            return;
+        }
+
         Groups.ItemsSource = _tab switch
         {
             "skills" => sheet.Skills,

@@ -36,6 +36,14 @@ public sealed record StatGroup(string Name, IReadOnlyList<StatCard> Items);
 
 public sealed record BoardTab(int Id, string Name, string Count, double Fraction, bool Selected);
 
+/// <summary>One side of a comparison line: an item (icon, name in its grade color, item level) or just a value.</summary>
+public sealed record CompareSide(string Title, string Line, Brush Brush, ImageSource? Icon, string? Tip);
+
+/// <summary>A line of the comparison: what we have, what they have, who is ahead and by how much.</summary>
+public sealed record CompareLine(string Label, CompareSide? Mine, CompareSide? Theirs, string Difference, Brush DifferenceBrush);
+
+public sealed record CompareSection(string Name, string? Note, IReadOnlyList<CompareLine> Lines);
+
 /// <summary>What the Characters page shows for one character from the official site.</summary>
 public sealed class CharacterSheet(ArmoryProfile profile)
 {
@@ -133,6 +141,77 @@ public sealed class CharacterSheet(ArmoryProfile profile)
     public IReadOnlyList<BoardTab> Boards(int selected) => Profile.Daevanion
         .Select(b => new BoardTab(b.Id, b.Name, $"{b.Open}/{b.Total}", b.Total > 0 ? (double)b.Open / b.Total : 0, b.Id == selected))
         .ToList();
+
+    /// <summary>Our character (<paramref name="c"/>.Mine) beside another: overview, gear by slot, stats, boards, skills.</summary>
+    public static IReadOnlyList<CompareSection> Compare(CharacterComparison c)
+    {
+        static string N(int value) => value.ToString("N0", CultureInfo.InvariantCulture);
+        CompareSide Value(string text) => new(text, string.Empty, Resource("TextBrush"), null, null);
+        CompareLine Line(string label, int mine, int theirs, string? mineText = null, string? theirsText = null) =>
+            WithDifference(label, Value(mineText ?? N(mine)), Value(theirsText ?? N(theirs)), theirs - mine);
+
+        var overview = new List<CompareLine>();
+        if (c.Mine.ItemLevel is { } myLevel && c.Theirs.ItemLevel is { } theirLevel)
+        {
+            overview.Add(Line("Item level", myLevel, theirLevel));
+        }
+
+        overview.Add(Line("Combat power", c.Mine.CombatPower, c.Theirs.CombatPower));
+        overview.Add(Line("Level", c.Mine.Level, c.Theirs.Level));
+        overview.Add(Line("Titles owned", c.Mine.TitlesOwned, c.Theirs.TitlesOwned));
+        var sections = new List<CompareSection> { new("Overview", null, overview) };
+
+        CompareSide? Item(ArmoryItem? item, int? level)
+        {
+            if (item is null)
+            {
+                return new CompareSide("—", string.Empty, Resource("MutedBrush"), null, "Nothing worn here");
+            }
+
+            var card = Card(item, string.Empty);
+            string line = string.Join(" · ", new[]
+            {
+                level is { } l ? $"iLvl {N(l)}" : null,
+                item.Exceed > 0 ? $"breakthrough {item.Exceed}" : null,
+            }.Where(s => s is not null));
+            return new CompareSide(card.Title, line, card.Brush, card.Icon, card.Tip);
+        }
+
+        sections.Add(new CompareSection("Gear", "Item level of each piece: its base level plus its enchant level.",
+            c.Gear.Select(g => WithDifference(SlotName(g.SlotName), Item(g.Mine, g.MineLevel), Item(g.Theirs, g.TheirsLevel), g.Difference)).ToList()));
+
+        if (c.Stats.Count > 0)
+        {
+            sections.Add(new CompareSection("Stats", null, c.Stats.Select(s => Line(s.Name, s.Mine, s.Theirs)).ToList()));
+        }
+
+        if (c.Boards.Count > 0)
+        {
+            sections.Add(new CompareSection("Daevanion", "Open nodes per board.",
+                c.Boards.Select(b => Line(b.Name, b.Mine, b.Theirs, $"{b.Mine}/{b.Total}", $"{b.Theirs}/{b.Total}")).ToList()));
+        }
+
+        if (c.SameClass)
+        {
+            var differ = c.Skills.Where(s => s.Difference != 0).ToList();
+            int same = c.Skills.Count - differ.Count;
+            string note = differ.Count == 0 ? "Every skill is at the same level." :
+                same > 0 ? $"Skills at different levels; {same} more at the same level." : "Skill levels.";
+            sections.Add(new CompareSection("Skills", note,
+                differ.Select(s => Line(s.Name, s.Mine, s.Theirs, s.Mine > 0 ? $"Level {s.Mine}" : "—", s.Theirs > 0 ? $"Level {s.Theirs}" : "—")).ToList()));
+        }
+
+        return sections;
+    }
+
+    /// <summary>"You +3" when we are ahead, "They +3" when they are, "Even"; nothing when it can't be told.</summary>
+    private static CompareLine WithDifference(string label, CompareSide? mine, CompareSide? theirs, int? difference) => difference switch
+    {
+        null => new CompareLine(label, mine, theirs, string.Empty, Resource("MutedBrush")),
+        0 => new CompareLine(label, mine, theirs, "Even", Resource("MutedBrush")),
+        < 0 => new CompareLine(label, mine, theirs, $"You +{(-difference.Value).ToString("N0", CultureInfo.InvariantCulture)}", Resource("LiveBrush")),
+        _ => new CompareLine(label, mine, theirs, $"They +{difference.Value.ToString("N0", CultureInfo.InvariantCulture)}", Resource("WarnBrush")),
+    };
 
     /// <summary>Passives always work; active and DP skills only from the skill bar.</summary>
     private static bool Slotted(ArmorySkill skill) => skill.Equipped || skill.Category == "Passive";

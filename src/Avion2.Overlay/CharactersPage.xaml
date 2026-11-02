@@ -43,6 +43,38 @@
             </Border>
         </DataTemplate>
 
+        <!-- One side of a comparison line: an item's icon, name and item level, or just a value; empty when missing -->
+        <DataTemplate x:Key="CompareSideTemplate">
+            <DockPanel Margin="0,0,12,0" ToolTip="{Binding Tip}">
+                <Image DockPanel.Dock="Left" Source="{Binding Icon}" Width="30" Height="30" Margin="0,0,10,0" VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality">
+                    <Image.Style>
+                        <Style TargetType="Image">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Icon}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Title}" Foreground="{Binding Brush}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Line}" Foreground="{DynamicResource MutedBrush}" FontSize="11" TextTrimming="CharacterEllipsis">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Line}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </DockPanel>
+        </DataTemplate>
+
         <!-- A toggle drawn as a small card: the sheet's tabs and the Daevanion boards -->
         <Style x:Key="CardToggle" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
@@ -149,6 +181,9 @@
                                 <Border Style="{StaticResource Pill}" Margin="12,0,0,0" VerticalAlignment="Center"><TextBlock Text="{Binding ServerName}" /></Border>
                                 <Button Style="{StaticResource QuietButton}" Content="Refresh" Margin="8,0,0,0" Padding="12,3" VerticalAlignment="Center"
                                         Click="Refresh_Click" ToolTip="Ask the official AION2 site again (it updates when the character logs out or changes zone)" />
+                                <Button x:Name="CompareButton" Style="{StaticResource QuietButton}" Content="Compare" Margin="8,0,0,0" Padding="12,3"
+                                        VerticalAlignment="Center" Click="Compare_Click" Visibility="Collapsed"
+                                        ToolTip="This character beside one of yours: gear, stats, Daevanion and skills" />
                             </StackPanel>
                             <TextBlock x:Name="Updated" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,4,0,0" />
                             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
@@ -232,6 +267,75 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
+
+                    <!-- Compare: one of ours beside this character, line by line -->
+                    <DockPanel x:Name="CompareTab" Visibility="Collapsed">
+                        <Border DockPanel.Dock="Top" Margin="28,0,28,12" Padding="16,10,16,10" Background="{DynamicResource PaneBrush}" CornerRadius="10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="100" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Compare with" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" />
+                                <ComboBox x:Name="CompareWith" Grid.Column="1" DisplayMemberPath="Shown" Margin="0,0,12,0" MaxWidth="240" HorizontalAlignment="Left"
+                                          MinWidth="160" SelectionChanged="CompareWith_SelectionChanged" ToolTip="Which of your characters" />
+                                <TextBlock x:Name="CompareTheirs" Grid.Column="2" Foreground="{DynamicResource TitleBrush}" FontWeight="SemiBold"
+                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                        </Border>
+                        <Grid>
+                            <ScrollViewer x:Name="CompareScroll" VerticalScrollBarVisibility="Auto" Padding="28,0,18,0">
+                                <ItemsControl x:Name="CompareSections">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource PaneBrush}" CornerRadius="10" Padding="16,12,16,8" Margin="0,0,0,14">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TitleBrush}" FontWeight="SemiBold" FontSize="14" />
+                                                    <TextBlock Text="{Binding Note}" Foreground="{DynamicResource MutedBrush}" FontSize="11" Margin="0,2,0,0" TextWrapping="Wrap">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Note}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <ItemsControl ItemsSource="{Binding Lines}" Margin="0,8,0,0">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Padding="0,6">
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="150" />
+                                                                            <ColumnDefinition Width="*" />
+                                                                            <ColumnDefinition Width="*" />
+                                                                            <ColumnDefinition Width="100" />
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <TextBlock Text="{Binding Label}" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center"
+                                                                                   TextTrimming="CharacterEllipsis" Margin="0,0,10,0" />
+                                                                        <ContentControl Grid.Column="1" Content="{Binding Mine}" ContentTemplate="{StaticResource CompareSideTemplate}" />
+                                                                        <ContentControl Grid.Column="2" Content="{Binding Theirs}" ContentTemplate="{StaticResource CompareSideTemplate}" />
+                                                                        <TextBlock Grid.Column="3" Text="{Binding Difference}" Foreground="{Binding DifferenceBrush}" FontWeight="SemiBold"
+                                                                                   HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                            <TextBlock x:Name="CompareMessage" Foreground="{DynamicResource MutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       TextWrapping="Wrap" TextAlignment="Center" MaxWidth="420" />
+                        </Grid>
+                    </DockPanel>
 
                     <!-- Daevanion: one board at a time, its open effects beside it -->
                     <DockPanel x:Name="DaevanionTab" Margin="28,0,28,8" Visibility="Collapsed">

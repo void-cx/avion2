@@ -24,8 +24,8 @@ Characters page asks the official AION2 site, when you open it).
   you live on it. Optional, off by default: a compass that finds hidden cubes (it uses
   cube positions the game sends before you can see them, which may count as an unfair advantage).
 - **Characters**: combat power, item level, gear, skills, Daevanion boards and stats of your characters and of
-  anyone you look up (or right-click in the meter). This is the one feature that goes online: it asks the official
-  AION2 site, only when you open a character.
+  anyone you look up (or right-click in the meter); Compare puts one of yours beside them, piece by piece. This is
+  the one feature that goes online: it asks the official AION2 site, only when you open a character.
 - **Gear Forge**: average and unlucky cost (materials, Kinah, attempts) to enchant or amplify any item, and the best next upgrades for your gear: the most item level for your Kinah.
 - **Low-HP alert** with its own sound.
 - **HUD effects** (beta, off by default): after a one-off calibration picture of the game, AVION2 draws on the
