@@ -107,6 +107,20 @@ public sealed class OverlaySettings
     /// <summary>Streamer mode: player, character and legion names show as stand-ins everywhere.</summary>
     public bool HideNames { get; set; }
 
+    /// <summary>OBS overlay: the page on http://localhost:<see cref="ObsPort"/>/overlay.</summary>
+    public bool ObsOverlay { get; set; }
+
+    public int ObsPort { get; set; } = Avion2.Engine.ObsServer.DefaultPort;
+
+    /// <summary>OBS overlay: other players show as "Player 2", … (streamer mode hides everything anyway).</summary>
+    public bool ObsHideOthers { get; set; } = true;
+
+    /// <summary>OBS overlay: our name and legion show as "You" and "Legion".</summary>
+    public bool ObsHideSelf { get; set; }
+
+    /// <summary>OBS overlay: what the page shows (the address Settings builds).</summary>
+    public Avion2.Engine.ObsPage ObsPage { get; set; } = new();
+
     /// <summary>App theme id (<see cref="ThemeManager.Themes"/>): "aion2" or "void".</summary>
     public string Theme { get; set; } = "aion2";
 

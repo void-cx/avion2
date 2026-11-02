@@ -45,6 +45,7 @@ public partial class SettingsPage : UserControl
             _state.SaveSettings();
             StreamerMode.Set(_state.Stored.HideNames);
         };
+        SetUpObs();
         RecordAllBox.IsChecked = state.Stored.RecordAllGameConnections;
         RecordAllBox.Click += (_, _) =>
         {
@@ -147,6 +148,129 @@ public partial class SettingsPage : UserControl
     }
 
     private void MoveNotifications_Click(object sender, RoutedEventArgs e) => _state.Notices.SetPositioning(true);
+
+    private sealed record ObsChoice<T>(T Value, string Label);
+
+    private bool _obsLoading;
+
+    private void SetUpObs()
+    {
+        var s = _state.Stored;
+        var page = s.ObsPage;
+        ObsViewBox.ItemsSource = new ObsChoice<string>[]
+        {
+            new("meter", "Meter"),
+            new("taken", "Damage taken"),
+            new("character", "Character card"),
+            new("character,meter", "Character card and meter"),
+            new("character,taken", "Character card and damage taken"),
+        };
+        ObsScaleBox.ItemsSource = new[] { 0.75, 1.0, 1.25, 1.5, 2.0 }.Select(v => new ObsChoice<double>(v, $"{v * 100:0} %")).ToList();
+        ObsThemeBox.ItemsSource = new ObsChoice<string?>[] { new(null, "Same as AVION2"), new("aion2", "AION2"), new("void", "VOID") };
+        ObsRowsBox.ItemsSource = Enumerable.Range(1, 12).ToList();
+
+        _obsLoading = true;
+        ObsBox.IsChecked = s.ObsOverlay;
+        ObsOthersBox.IsChecked = s.ObsHideOthers;
+        ObsSelfBox.IsChecked = s.ObsHideSelf;
+        ObsViewBox.SelectedItem = ObsViewBox.Items.Cast<ObsChoice<string>>().FirstOrDefault(c => c.Value == page.View) ?? ObsViewBox.Items[0];
+        ObsScaleBox.SelectedItem = ObsScaleBox.Items.Cast<ObsChoice<double>>().MinBy(c => Math.Abs(c.Value - page.Scale));
+        ObsThemeBox.SelectedItem = ObsThemeBox.Items.Cast<ObsChoice<string?>>().FirstOrDefault(c => c.Value == page.Theme) ?? ObsThemeBox.Items[0];
+        ObsRowsBox.SelectedItem = Math.Clamp(page.Rows, 1, 12);
+        ObsHeaderBox.IsChecked = page.Header;
+        ObsCompactBox.IsChecked = page.Compact;
+        ObsLineBox.IsChecked = page.Line;
+        ObsSessionBox.IsChecked = page.Session;
+        _obsLoading = false;
+
+        foreach (var box in new[] { ObsBox, ObsOthersBox, ObsSelfBox, ObsHeaderBox, ObsCompactBox, ObsLineBox, ObsSessionBox })
+        {
+            box.Click += (_, _) => ApplyObs();
+        }
+
+        foreach (var box in new[] { ObsViewBox, ObsScaleBox, ObsThemeBox, ObsRowsBox })
+        {
+            box.SelectionChanged += (_, _) => ApplyObs();
+        }
+
+        ObsPortBox.LostFocus += (_, _) => ApplyObs();
+        ObsPortBox.KeyDown += (_, e) =>
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                ApplyObs();
+            }
+        };
+        UpdateObs();
+    }
+
+    private void ApplyObs()
+    {
+        if (_obsLoading)
+        {
+            return;
+        }
+
+        var s = _state.Stored;
+        s.ObsOverlay = ObsBox.IsChecked == true;
+        s.ObsHideOthers = ObsOthersBox.IsChecked == true;
+        s.ObsHideSelf = ObsSelfBox.IsChecked == true;
+        if (int.TryParse(ObsPortBox.Text, out int port) && port is >= 1024 and <= 65535)
+        {
+            s.ObsPort = port;
+        }
+
+        var page = s.ObsPage;
+        page.View = (ObsViewBox.SelectedItem as ObsChoice<string>)?.Value ?? "meter";
+        page.Scale = (ObsScaleBox.SelectedItem as ObsChoice<double>)?.Value ?? 1;
+        page.Theme = (ObsThemeBox.SelectedItem as ObsChoice<string?>)?.Value;
+        page.Rows = ObsRowsBox.SelectedItem as int? ?? 8;
+        page.Header = ObsHeaderBox.IsChecked == true;
+        page.Compact = ObsCompactBox.IsChecked == true;
+        page.Line = ObsLineBox.IsChecked == true;
+        page.Session = ObsSessionBox.IsChecked == true;
+
+        _state.SaveSettings();
+        _state.Obs.Apply();
+        UpdateObs();
+    }
+
+    private void UpdateObs()
+    {
+        var page = _state.Stored.ObsPage;
+        ObsOptions.Visibility = ObsBox.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        ObsMeterOptions.Visibility = page.ShowsMeter ? Visibility.Visible : Visibility.Collapsed;
+        ObsCharacterOptions.Visibility = page.ShowsCharacter ? Visibility.Visible : Visibility.Collapsed;
+        ObsPortBox.Text = _state.Stored.ObsPort.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        ObsAddress.Text = _state.Obs.Address;
+        var (width, height) = page.SuggestedSize();
+        ObsSize.Text = $"Size in OBS: width {width}, height {height}";
+        ObsProblem.Text = _state.Obs.Problem ?? string.Empty;
+        ObsProblem.Visibility = _state.Obs.Problem is null ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    /// <summary>For the developer screenshots: the OBS card switched on, in view.</summary>
+    internal void ShowObs()
+    {
+        ObsBox.IsChecked = true;
+        ApplyObs();
+        ObsCard.BringIntoView();
+    }
+
+    private void OpenObsAddress_Click(object sender, RoutedEventArgs e) =>
+        Process.Start(new ProcessStartInfo(_state.Obs.Address) { UseShellExecute = true });
+
+    private void CopyObsAddress_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Clipboard.SetText(_state.Obs.Address);
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            // the clipboard is busy; the address can still be selected and copied by hand
+        }
+    }
 
     private async void CheckNow_Click(object sender, RoutedEventArgs e)
     {

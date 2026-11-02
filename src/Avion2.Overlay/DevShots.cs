@@ -210,6 +210,9 @@ internal static class DevShots
                 }
 
                 settingsPage.ShowSection("general");
+                settingsPage.ShowObs();
+                Pump(TimeSpan.FromMilliseconds(500));
+                Save(home, Path.Combine(directory, "settings-obs.png"));
             }
 
             // Switch the theme while everything is open: every window must restyle without a restart.

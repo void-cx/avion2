@@ -49,7 +49,12 @@ public sealed class AppState
         Timers = new TimerService(Settings, FieldBossOccurrences);
         Timers.Due += OnEventDue;
         Cubes = new CubeFinder(this);
+        Obs = new ObsOverlay(this);
+        Obs.Apply();
     }
+
+    /// <summary>The OBS overlay (Settings, General): a page on localhost for an OBS Browser Source.</summary>
+    public ObsOverlay Obs { get; }
 
     /// <summary>Find My Cube: the compass and what it leads to (runs with the capture, not with the Map page).</summary>
     public CubeFinder Cubes { get; }

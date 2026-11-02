@@ -95,6 +95,57 @@
                 </StackPanel>
             </Border>
 
+            <!-- OBS overlay -->
+            <Border x:Name="ObsCard" Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="general">
+                <StackPanel>
+                    <TextBlock Text="OBS overlay" Style="{StaticResource Heading}" />
+                    <CheckBox x:Name="ObsBox" Content="Show the meter and your character in OBS" />
+                    <StackPanel x:Name="ObsOptions" Margin="0,8,0,0">
+                        <CheckBox x:Name="ObsOthersBox" Content="Hide other players' names on it" />
+                        <CheckBox x:Name="ObsSelfBox" Content="Hide my name and legion on it" Margin="0,6,0,0" />
+                        <DockPanel Margin="0,10,0,0">
+                            <TextBlock Text="Port" Width="150" VerticalAlignment="Center" />
+                            <TextBox x:Name="ObsPortBox" Width="80" HorizontalAlignment="Left" MaxLength="5" />
+                        </DockPanel>
+                        <TextBlock Text="What it shows" Style="{StaticResource SectionLabel}" Margin="0,14,0,6" />
+                        <DockPanel>
+                            <TextBlock Text="Shows" Width="150" VerticalAlignment="Center" />
+                            <ComboBox x:Name="ObsViewBox" Width="240" HorizontalAlignment="Left" DisplayMemberPath="Label" />
+                        </DockPanel>
+                        <DockPanel Margin="0,8,0,0">
+                            <TextBlock Text="Size" Width="150" VerticalAlignment="Center" />
+                            <ComboBox x:Name="ObsScaleBox" Width="120" HorizontalAlignment="Left" DisplayMemberPath="Label" />
+                        </DockPanel>
+                        <DockPanel Margin="0,8,0,0">
+                            <TextBlock Text="Look" Width="150" VerticalAlignment="Center" />
+                            <ComboBox x:Name="ObsThemeBox" Width="180" HorizontalAlignment="Left" DisplayMemberPath="Label" />
+                        </DockPanel>
+                        <StackPanel x:Name="ObsMeterOptions">
+                            <DockPanel Margin="0,8,0,0">
+                                <TextBlock Text="Player rows" Width="150" VerticalAlignment="Center" />
+                                <ComboBox x:Name="ObsRowsBox" Width="80" HorizontalAlignment="Left" />
+                            </DockPanel>
+                            <CheckBox x:Name="ObsHeaderBox" Content="Fight name, timer and party DPS above the rows" Margin="0,8,0,0" />
+                            <CheckBox x:Name="ObsCompactBox" Content="Short numbers (48.2K instead of 48,213)" Margin="0,6,0,0" />
+                        </StackPanel>
+                        <StackPanel x:Name="ObsCharacterOptions">
+                            <CheckBox x:Name="ObsLineBox" Content="Character card on one line" Margin="0,8,0,0" />
+                            <CheckBox x:Name="ObsSessionBox" Content="Today's fights and this session's kinah and runs under the card" Margin="0,6,0,0" />
+                        </StackPanel>
+                        <TextBlock Text="Address for OBS" Style="{StaticResource SectionLabel}" Margin="0,14,0,6" />
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Open" Margin="6,0,0,0" Click="OpenObsAddress_Click" ToolTip="Opens the page in your browser" />
+                            <Button DockPanel.Dock="Right" Content="Copy" Margin="6,0,0,0" Click="CopyObsAddress_Click" />
+                            <TextBox x:Name="ObsAddress" IsReadOnly="True" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <TextBlock x:Name="ObsSize" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,6,0,0" />
+                        <TextBlock x:Name="ObsProblem" Foreground="{DynamicResource WarnBrush}" TextWrapping="Wrap" Margin="0,6,0,0" Visibility="Collapsed" />
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="In OBS: Sources → + → Browser, paste the address and enter the width and height shown above. Only this PC can open the page. Streamer mode hides every name on it too." />
+                </StackPanel>
+            </Border>
+
             <!-- Timers -->
             <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="alerts">
                 <StackPanel>

@@ -70,6 +70,12 @@ public sealed record EngineStatus(
     /// <summary>Our server (as in player records), once known.</summary>
     public ushort? SelfServer { get; init; }
 
+    /// <summary>Our combat power as the game sent it, once known.</summary>
+    public uint? SelfCombatPower { get; init; }
+
+    /// <summary>Our legion's name, once known.</summary>
+    public string? SelfLegion { get; init; }
+
     /// <summary>While we fly: how long until we land at the current rate of flight time; null on the ground.</summary>
     public long? FlightLeftMs { get; init; }
 
@@ -354,6 +360,7 @@ public sealed class MeterEngine : IDisposable
         {
             var registry = _session.Registry;
             var stats = _pipeline.Decoder.Stats;
+            var me = registry.SelfId is { } selfId ? registry.Find(selfId) : null;
             return new EngineStatus(
                 _message,
                 _pipeline.Detector.Locked is not null,
@@ -372,7 +379,9 @@ public sealed class MeterEngine : IDisposable
                     ? (long)System.Diagnostics.Stopwatch.GetElapsedTime(_lastServerTick).TotalMilliseconds
                     : 0)
             {
-                SelfServer = registry.SelfId is { } selfId ? registry.Find(selfId)?.ServerId : null,
+                SelfServer = me?.ServerId,
+                SelfCombatPower = me?.CombatPower,
+                SelfLegion = me?.Legion,
                 FlightLeftMs = _flight.LeftMs(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()),
                 Chains = _chains.Open(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), ChainSkillName),
                 GatherBlockedMs = _gatherLimit.BlockedMs(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()),

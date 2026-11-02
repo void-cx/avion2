@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AVION2 overlay</title>
+<style>
+@font-face { font-family: "Cinzel"; src: url("/fonts/Cinzel.ttf"); }
+@font-face { font-family: "Space Grotesk"; src: url("/fonts/SpaceGrotesk-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "Space Grotesk"; src: url("/fonts/SpaceGrotesk-Medium.ttf"); font-weight: 500; }
+@font-face { font-family: "Space Grotesk"; src: url("/fonts/SpaceGrotesk-Bold.ttf"); font-weight: 700; }
+@font-face { font-family: "JetBrains Mono"; src: url("/fonts/JetBrainsMono-Regular.ttf"); }
+
+:root {
+  --scale: 1;
+  --accent: #E8B04B;
+  --accent-text: #F3C76E;
+  --text: #F2EEE6;
+  --muted: #B9B2A5;
+  --panel: rgba(12, 10, 8, 0.62);
+  --track: rgba(255, 255, 255, 0.12);
+  --title-font: "Cinzel", "Segoe UI", sans-serif;
+  --font: "Segoe UI", system-ui, sans-serif;
+  --number-font: "Segoe UI", system-ui, sans-serif;
+  --radius: 4px;
+}
+:root[data-theme="void"] {
+  --accent: #B303F8;
+  --accent-text: #D27BFF;
+  --text: #F1EEF8;
+  --muted: #A9A3BC;
+  --panel: rgba(8, 6, 16, 0.64);
+  --title-font: "Space Grotesk", "Segoe UI", sans-serif;
+  --font: "Space Grotesk", "Segoe UI", sans-serif;
+  --number-font: "JetBrains Mono", Consolas, monospace;
+  --radius: 2px;
+}
+
+html, body { margin: 0; background: transparent; overflow: hidden; }
+body {
+  font: 400 calc(13px * var(--scale)) / 1.35 var(--font);
+  color: var(--text);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  padding: calc(4px * var(--scale));
+}
+.block + .block { margin-top: calc(8px * var(--scale)); }
+.panel { background: var(--panel); border-radius: var(--radius); padding: calc(5px * var(--scale)) calc(8px * var(--scale)); }
+.muted { color: var(--muted); }
+.num { font-family: var(--number-font); font-variant-numeric: tabular-nums; }
+.split { display: flex; justify-content: space-between; align-items: baseline; gap: calc(8px * var(--scale)); }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+.head .title { font-family: var(--title-font); font-weight: 700; color: var(--accent-text); font-size: 1.08em; }
+.head .sub { font-size: 0.92em; }
+.hp { height: calc(4px * var(--scale)); background: var(--track); border-radius: 2px; margin-top: calc(4px * var(--scale)); overflow: hidden; }
+.hp > div { height: 100%; background: #E24B4A; }
+
+.row { position: relative; background: var(--panel); border-radius: var(--radius); padding: calc(3px * var(--scale)) calc(7px * var(--scale)) calc(5px * var(--scale)); margin-top: calc(3px * var(--scale)); overflow: hidden; }
+.row .bar { position: absolute; left: 0; bottom: 0; height: calc(2px * var(--scale)); }
+.row.self .who { color: var(--accent-text); }
+.rank { color: var(--muted); display: inline-block; min-width: 1.1em; }
+.tag { font-size: 0.75em; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.35em; }
+.who { display: flex; align-items: baseline; }
+
+.card { display: flex; gap: calc(9px * var(--scale)); align-items: center; }
+.emblem { width: calc(34px * var(--scale)); height: calc(34px * var(--scale)); border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #16120C; text-shadow: none; font-size: 0.9em; }
+.card .name { font-family: var(--title-font); font-weight: 700; font-size: 1.15em; }
+.facts { margin-top: calc(5px * var(--scale)); }
+.facts .split + .split { margin-top: 1px; }
+.line { display: flex; gap: 0.5em; align-items: baseline; white-space: nowrap; }
+.line .name { font-weight: 700; }
+.plus { color: #97C459; }
+.minus { color: #F09595; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+"use strict";
+const query = new URLSearchParams(location.search);
+const views = (query.get("view") || "meter").split(",").map(v => v.trim().toLowerCase()).filter(Boolean);
+const rows = Math.max(1, Math.min(24, parseInt(query.get("rows") || "8", 10) || 8));
+const scale = Math.max(0.5, Math.min(4, parseFloat(query.get("scale") || "1") || 1));
+const showHeader = query.get("header") !== "0";
+const showIdle = query.get("idle") !== "0";
+const showSession = query.get("session") === "1";
+const compact = query.get("compact") === "1";
+const lineStyle = query.get("style") === "line";
+const themeOverride = query.get("theme");
+document.documentElement.style.setProperty("--scale", scale);
+
+const classes = {
+  gladiator: ["GL", "#C87B3E", "Gladiator"], templar: ["TE", "#D4B24A", "Templar"], ranger: ["RA", "#6BBF59", "Ranger"],
+  assassin: ["AS", "#9B59B6", "Assassin"], elementalist: ["EL", "#3FA7D6", "Elementalist"], sorcerer: ["SO", "#5C6BC0", "Sorcerer"],
+  cleric: ["CL", "#DDDDDD", "Cleric"], chanter: ["CH", "#4DB6AC", "Chanter"], fighter: ["FI", "#E57373", "Fighter"],
+  unknown: ["?", "#808890", ""],
+};
+const cls = id => classes[id] || classes.unknown;
+
+// like the app: full numbers up to a million, compact above (or always with ?compact=1)
+function short(v) {
+  if (v >= 1e9) return (v / 1e9).toFixed(2) + "B";
+  if (v >= 1e6) return (v / 1e6).toFixed(2) + "M";
+  if (v >= 1e4) return (v / 1e3).toFixed(1) + "K";
+  return Math.round(v).toString();
+}
+const full = v => Math.round(v).toLocaleString("en-US");
+const big = v => compact || v >= 1e6 ? short(v) : full(v);
+const percent = v => (v * 100).toFixed(1) + "%";
+function clock(seconds) {
+  const s = Math.floor(seconds), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, r = s % 60;
+  const two = n => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${two(m)}:${two(r)}` : `${two(m)}:${two(r)}`;
+}
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function idle(text) {
+  const block = el("div", "block");
+  if (showIdle) block.append(el("div", "panel muted", text));
+  return block;
+}
+
+function meter(state, taken) {
+  const fight = state.fight;
+  const list = fight ? (taken ? fight.taken : fight.meter) : [];
+  if (!fight || list.length === 0) {
+    return idle(state.running ? "Waiting for combat…" : "AVION2 isn't capturing");
+  }
+
+  const block = el("div", "block");
+  if (showHeader) {
+    const head = el("div", "head");
+    const top = el("div", "split");
+    top.append(el("span", "title ellipsis", fight.title), el("span", "num", clock(fight.seconds)));
+    const sub = el("div", "split sub muted");
+    sub.append(el("span", "", taken ? "Party taken/s" : "Party DPS"), el("span", "num", full(taken ? fight.partyTaken : fight.partyDps)));
+    head.append(top, sub);
+    if (fight.hp !== undefined && !taken) {
+      const hp = el("div", "hp"), fill = el("div");
+      fill.style.width = (fight.hp * 100) + "%";
+      hp.append(fill);
+      head.append(hp);
+    }
+    block.append(head);
+  }
+
+  const most = Math.max(1, list[0].total);
+  list.slice(0, rows).forEach((r, i) => {
+    const [tag, color] = cls(r.cls);
+    const row = el("div", r.self ? "row self" : "row");
+    const line = el("div", "split");
+    const who = el("span", "who ellipsis");
+    const tagNode = el("span", "tag", tag);
+    tagNode.style.color = color;
+    who.append(el("span", "rank", String(i + 1)), tagNode, el("span", "ellipsis", r.name));
+    line.append(who, el("span", "num", `${big(r.value)} · ${percent(r.share)}`));
+    const bar = el("div", "bar");
+    bar.style.width = (r.total / most * 100) + "%";
+    bar.style.background = color;
+    row.append(line, bar);
+    block.append(row);
+  });
+  return block;
+}
+
+function fact(label, value, className) {
+  const line = el("div", "split");
+  line.append(el("span", "muted", label), el("span", "num " + (className || ""), value));
+  return line;
+}
+
+function character(state) {
+  const me = state.me;
+  if (!me) {
+    return idle(state.running ? "Waiting for your character…" : "AVION2 isn't capturing");
+  }
+
+  const [tag, color, className] = cls(me.cls);
+  const block = el("div", "block");
+  const panel = el("div", "panel");
+  if (lineStyle) {
+    const line = el("div", "line");
+    const tagNode = el("span", "tag", tag);
+    tagNode.style.color = color;
+    const rest = [me.legion ? `‹${me.legion}›` : null, me.server, me.cp ? `⚔ ${full(me.cp)}` : null].filter(Boolean).join(" · ");
+    line.append(tagNode, el("span", "name", me.name), el("span", "muted ellipsis", rest));
+    panel.append(line);
+  } else {
+    const card = el("div", "card");
+    const emblem = el("div", "emblem", tag);
+    emblem.style.background = color;
+    const who = el("div", "ellipsis");
+    who.append(el("div", "name ellipsis", me.name), el("div", "muted ellipsis", [className, me.server].filter(Boolean).join(" · ")));
+    card.append(emblem, who);
+    panel.append(card);
+    const facts = el("div", "facts");
+    if (me.legion) facts.append(fact("Legion", `‹${me.legion}›`));
+    if (me.cp) facts.append(fact("Combat power", full(me.cp)));
+    if (me.map) facts.append(fact("Map", me.map));
+    if (facts.childElementCount) panel.append(facts);
+    if (me.hp !== undefined) {
+      const hp = el("div", "hp"), fill = el("div");
+      fill.style.width = (me.hp * 100) + "%";
+      fill.style.background = "#639922";
+      hp.append(fill);
+      panel.append(hp);
+    }
+  }
+  block.append(panel);
+
+  const s = state.session;
+  if (showSession && s) {
+    const stats = el("div", "panel facts");
+    stats.append(fact("Fights today", String(s.fightsToday)));
+    if (s.bestDpsToday) stats.append(fact("Best DPS today", full(s.bestDpsToday)));
+    if (s.kinah !== undefined) stats.append(fact("Kinah this session", (s.kinah >= 0 ? "+" : "−") + short(Math.abs(s.kinah)), s.kinah >= 0 ? "plus" : "minus"));
+    stats.append(fact("Runs this session", String(s.runs)));
+    stats.style.marginTop = `calc(4px * var(--scale))`;
+    block.append(stats);
+  }
+  return block;
+}
+
+const root = document.getElementById("root");
+function render(state) {
+  document.documentElement.dataset.theme = themeOverride || state.theme || "aion2";
+  const blocks = views.map(v => v === "character" ? character(state) : meter(state, v === "taken"));
+  root.replaceChildren(...blocks);
+}
+
+let busy = false;
+async function poll() {
+  if (busy) return;
+  busy = true;
+  try {
+    const response = await fetch("/state", { cache: "no-store" });
+    render(await response.json());
+  } catch {
+    render({ running: false });
+  } finally {
+    busy = false;
+  }
+}
+poll();
+setInterval(poll, 250);
+</script>
+</body>
+</html>

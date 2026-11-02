@@ -12,6 +12,11 @@ public partial class App : Application
         string[] args = e.Args;
         var state = new AppState(ParseArgs(args));
         ThemeManager.Apply(Get(args, "theme") ?? state.Stored.Theme); // --theme previews without saving
+        if (args.Contains("--obs")) // serves the OBS overlay for this run without saving it
+        {
+            state.Obs.Forced = true;
+            state.Obs.Apply();
+        }
         var home = new HomeWindow(state);
         MainWindow = home;
 

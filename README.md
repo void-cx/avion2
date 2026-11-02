@@ -36,6 +36,7 @@ Characters page asks the official AION2 site, when you open it).
 - **Legion** tags on players and a legion card with your members.
 - Two themes: **AION2** and **VOID**. Skill and NPC names in 10 languages.
 - **Streamer mode**: player, character and legion names show as "You", "Player 2", … everywhere in the app.
+- **OBS overlay**: the meter and your character card as an OBS Browser Source (`http://localhost:47421/overlay`), turned on in Settings. Only your own PC can open it.
 
 ## Install
 
