@@ -6,7 +6,7 @@ did how much damage, live and after every fight.
 It is passive: it never touches the game, its files or its memory, and sends nothing anywhere (only the
 Characters page asks the official AION2 site, when you open it).
 
-**Website and download:** https://avion2.void.cx
+**Website and download:** https://avion2.app
 
 ## Features
 

@@ -17,7 +17,7 @@ import time
 import urllib.parse
 
 # The site's one address: canonical links, the sitemap and social previews all use it
-SITE = "https://avion2.void.cx"
+SITE = "https://avion2.app"
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else os.path.join(ROOT, "site")
