@@ -89,26 +89,26 @@ public static class InventoryParsers
             return false;
         }
 
-        byte? enchant = null;
-        if (requireTail)
+        // The 11 bytes after the slot are (almost) all zero in every record seen; gear's level follows (slot updates
+        // carry it too, so an enchant shows at once)
+        int zeros = 0;
+        bool tail = i + 14 + RecordTail <= body.Length;
+        for (int k = 0; tail && k < RecordTail; k++)
         {
-            // The 11 bytes after the slot are (almost) all zero in every record seen
-            int zeros = 0;
-            for (int k = 0; k < RecordTail; k++)
-            {
-                zeros += body[i + 14 + k] == 0 ? 1 : 0;
-            }
+            zeros += body[i + 14 + k] == 0 ? 1 : 0;
+        }
 
-            if (zeros < RecordTail - 2)
-            {
-                return false;
-            }
+        tail &= zeros >= RecordTail - 2;
+        if (requireTail && !tail)
+        {
+            return false;
+        }
 
-            int levels = i + 14 + RecordTail + 1;
-            if (container is 0x0B or 0x0F && levels + 1 < body.Length && body[levels] <= 30 && body[levels + 1] <= 30)
-            {
-                enchant = body[levels] != 0 ? body[levels] : body[levels + 1];
-            }
+        byte? enchant = null;
+        int levels = i + 14 + RecordTail + 1;
+        if (tail && container is 0x0B or 0x0F && levels + 1 < body.Length && body[levels] <= 30 && body[levels + 1] <= 30)
+        {
+            enchant = body[levels] != 0 ? body[levels] : body[levels + 1];
         }
 
         item = new InventoryItem(id, count, container, slot, enchant);

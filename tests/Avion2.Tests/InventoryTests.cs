@@ -61,6 +61,21 @@ public class InventoryTests
     }
 
     [Fact]
+    public void EnchantingShowsInTheSlotUpdate()
+    {
+        // 1B 56 after enchanting the Pilgrim Cloak (slot 19) from +5 to +6: the record carries the new level
+        const string Cloak = "3fa38f0c" + "0100000000000000" + "0b13" + "000000000000000000000000" + "06" + "0000000000000000000000000033000000";
+        var update = Assert.IsType<InventoryItemEvent>(Assert.Single(Parse("1B56" + "01" + "0a00010103e70800000a" + Cloak)));
+        Assert.Equal(210740031u, update.Item.ItemId);
+        Assert.Equal((byte)6, update.Item.Enchant);
+
+        var inventory = new InventoryState();
+        inventory.Apply(new InventoryListEvent(1_000, [new InventoryItem(210740031, 1, InventoryItem.Equipped, 19, 5)]));
+        inventory.Apply(update);
+        Assert.Equal((byte)6, inventory.Equipped.Single().Enchant);
+    }
+
+    [Fact]
     public void SlotUpdateCarriesEveryChangedSlot()
     {
         // 1B 56 from a Daeva Pass reward: a Nightmare Dungeon Challenge Ticket (with an expiry time) and 20 Small Odyle Energy
@@ -74,6 +89,22 @@ public class InventoryTests
         var two = Parse("1B56" + "02" + Earrings + Kina).Cast<InventoryItemEvent>().ToList();
         Assert.Equal([310240030u, ItemIds.KinahBound], two.Select(e => e.Item.ItemId));
         Assert.Equal(7_340_896ul, two[1].Item.Count);
+    }
+
+    [Fact]
+    public void ListWithARepeatedSlotStillApplies()
+    {
+        // Real lists can name one slot twice (container 10, slot 0); the list must not be dropped
+        var inventory = new InventoryState();
+        Assert.True(inventory.Apply(new InventoryListEvent(1_000,
+        [
+            new InventoryItem(210740031, 1, InventoryItem.Equipped, 19, 6),
+            new InventoryItem(500100001, 3, 0x10, 0),
+            new InventoryItem(500100002, 5, 0x10, 0),
+        ])));
+
+        Assert.True(inventory.IsKnown);
+        Assert.Equal((byte)6, inventory.Equipped.Single().Enchant);
     }
 
     [Fact]

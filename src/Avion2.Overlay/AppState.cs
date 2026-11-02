@@ -357,7 +357,7 @@ public sealed class AppState
         };
         engine.FieldBossTable += table => Application.Current.Dispatcher.BeginInvoke(() =>
         {
-            if (FieldBosses.Apply(table) && PersistSettings)
+            if (FieldBosses.Apply(table) && KeepsGameState)
             {
                 FieldBosses.Save(FieldBossFile);
             }
@@ -528,7 +528,7 @@ public sealed class AppState
 
         Legion = legion;
         LegionUpdated?.Invoke();
-        if (PersistSettings)
+        if (KeepsGameState)
         {
             try
             {
@@ -713,7 +713,7 @@ public sealed class AppState
         var stored = CubeLog.Merge(cube);
         CubeLog.Codes = engine.CubeCodes().ToList();
 
-        if (PersistSettings)
+        if (KeepsGameState)
         {
             try
             {
@@ -787,7 +787,7 @@ public sealed class AppState
 
     private void SaveInventory()
     {
-        if (!PersistSettings || !_inventoryDirty || Inventory is null)
+        if (!KeepsGameState || !_inventoryDirty || Inventory is null)
         {
             return;
         }
@@ -1000,6 +1000,12 @@ public sealed class AppState
 
     /// <summary>False for developer render runs, so they never overwrite the user's settings.</summary>
     public bool PersistSettings { get; set; } = true;
+
+    /// <summary>
+    /// What the game told us (inventory, legion, field bosses, cubes) is saved only from the live game: a replay's
+    /// is old and would overwrite the current one.
+    /// </summary>
+    private bool KeepsGameState => PersistSettings && !IsReplay;
 
     public void SaveSettings()
     {

@@ -640,6 +640,7 @@ Status: Verified
 |---|---|---|
 | `11 56` | the whole inventory, on entering the world | item records of different lengths (gear carries more); scan for them |
 | `1B 56` | slots changed | `n u8`, then n changes: two flag bytes, `u32` (top byte 0), `00`, `u16`, `00`, the item record (count = new total, 0 = emptied). Records differ in length (gear carries stats, some items an expiry time), so after the first (at offset 11) the next is found by that shape. Rewards change up to 11 slots at once |
+| `1C 56`, `23 56` | an enchant attempt (with the `1B 56` of the item) | `1C 56` holds the item id with the old level and again with the new one; `23 56` ends with the new level and the item id. Not decoded: the `1B 56` record already carries the new level |
 
 ### Ground loot
 Status: Verified · both come in batches: a `u8` count, the records, one trailing byte

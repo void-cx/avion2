@@ -26,7 +26,7 @@ Characters page asks the official AION2 site, when you open it).
 - **Characters**: combat power, item level, gear, skills, Daevanion boards and stats of your characters and of
   anyone you look up (or right-click in the meter). This is the one feature that goes online: it asks the official
   AION2 site, only when you open a character.
-- **Gear Forge**: average and unlucky cost (materials, Kinah, attempts) to enchant or amplify any item.
+- **Gear Forge**: average and unlucky cost (materials, Kinah, attempts) to enchant or amplify any item, and the best next upgrades for your gear: the most item level for your Kinah.
 - **Low-HP alert** with its own sound.
 - **HUD effects** (beta, off by default): after a one-off calibration picture of the game, AVION2 draws on the
   game's own HUD: your HP bar pulses when low, the screen edges flash on big hits (with what hit you), boss HP and

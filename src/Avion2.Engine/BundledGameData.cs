@@ -129,6 +129,11 @@ public static class BundledGameData
     /// <summary>Enchant/amplify ladders per item (English names), parsed on first use.</summary>
     public static GearForge Forge => ForgeTable.Value;
 
+    private static readonly Lazy<GearStats> GearStatsTable = new(() => GearStats.Parse(Read("gear_stats.json")));
+
+    /// <summary>Item levels and the stats each enchant level adds, parsed on first use.</summary>
+    public static GearStats GearStats => GearStatsTable.Value;
+
     /// <summary>
     /// The tables for <paramref name="language"/>: each file from <paramref name="overrideDirectory"/> when it
     /// exists there, otherwise built in (English when a table has no translation).

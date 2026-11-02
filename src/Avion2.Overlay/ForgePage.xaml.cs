@@ -10,7 +10,9 @@ public sealed record ForgeItemLine(ForgeItem Item, string Name, string Detail, B
 
 public sealed record ForgeTile(string Label, string Average, string Note);
 
-public sealed record MyGearLine(ForgeItem Item, string Name, string Level, Brush Brush, int Enchant);
+public sealed record MyGearLine(ForgeItem Item, string Name, string Level, Brush Brush, int Enchant, byte Slot = 0);
+
+public sealed record UpgradeLine(GearUpgrade Upgrade, string Name, Brush Brush, string Gain, string Step, string Kinah, string Chance, string Materials, string Afford, string Detail);
 
 public sealed record ForgeStepLine(string Step, string Chance, string Pity, string Attempts, string Materials, string Gold, string Detail);
 
@@ -20,6 +22,7 @@ public partial class ForgePage : UserControl
     private const int MaxResults = 300;
 
     private readonly GearForge _forge = BundledGameData.Forge;
+    private readonly GearStats _stats = BundledGameData.GearStats;
     private readonly AppState _state;
     private ForgeItem? _item;
     private MyGearLine? _mine;
@@ -56,11 +59,83 @@ public partial class ForgePage : UserControl
         var lines = (_state.Inventory?.Equipped ?? [])
             .Select(i => (Slot: i, Item: _forge.Find(i.ItemId)))
             .Where(x => x.Item is not null)
-            .Select(x => new MyGearLine(x.Item!, x.Item!.Name, $"+{x.Slot.Enchant ?? 0}", GradeBrush(x.Item!.Kind), x.Slot.Enchant ?? 0))
+            .Select(x => new MyGearLine(x.Item!, x.Item!.Name, $"+{x.Slot.Enchant ?? 0}", GradeBrush(x.Item!.Kind), x.Slot.Enchant ?? 0, x.Slot.Slot))
             .ToList();
         MyGear.ItemsSource = lines;
         MyGearPanel.Visibility = lines.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         MyGearTitle.Text = _state.Inventory?.Character is { } who ? $"Your gear ({StreamerMode.Name(who)})" : "Your gear";
+        RefreshUpgrades();
+    }
+
+    /// <summary>The next enchant step of each equipped item, cheapest item level first, and what can't fail in total.</summary>
+    private void RefreshUpgrades()
+    {
+        var inventory = _state.Inventory;
+        var equipped = inventory?.Equipped.ToList() ?? [];
+        var upgrades = GearUpgrades.Next(equipped, _forge, _stats);
+        UpgradesCard.Visibility = equipped.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        if (equipped.Count == 0)
+        {
+            return;
+        }
+
+        var (safeLevels, safeKinah, safeMaterials) = GearUpgrades.SafeSteps(equipped, _forge);
+        UpgradesIntro.Text = safeLevels > 0
+            ? $"Every step that can't fail on your gear: +{safeLevels} item level for {Number(safeKinah)} Kinah and " +
+              string.Join(", ", safeMaterials.Select(m => Amount(m.Count, m.Name))) + "."
+            : upgrades.Count > 0 ? "Your gear is past the levels that can't fail; from here every step can fail and gets dearer."
+            : "Your gear is fully enchanted.";
+
+        _upgrades = upgrades.Select(u => new UpgradeLine(
+            u,
+            u.Item.Name,
+            GradeBrush(u.Item.Kind),
+            string.Join(" · ", u.Stats.Select(g => g.ToString()).Prepend($"+{u.ItemLevel} item level")),
+            $"+{u.From} → +{u.From + 1}",
+            $"{Number(u.Kinah)} Kinah",
+            u.Chance >= 100 ? "can't fail" : $"{u.Chance:0.#}% first try",
+            string.Join(", ", u.Materials.Select(m => $"{Number(m.Count)} {Short(m.Name)}")),
+            inventory is { IsKnown: true } ? CanAfford(u, inventory) ? "you have enough" : "not enough yet" : string.Empty,
+            $"{u.Item.Kind} · average Kinah and materials, failed attempts included")).ToList();
+        ShowUpgrades();
+    }
+
+    private const int TopUpgrades = 5;
+
+    private List<UpgradeLine> _upgrades = [];
+    private bool _allUpgrades;
+
+    private void ShowUpgrades()
+    {
+        UpgradeList.ItemsSource = _allUpgrades ? _upgrades : _upgrades.Take(TopUpgrades).ToList();
+        UpgradesMore.Visibility = _upgrades.Count > TopUpgrades ? Visibility.Visible : Visibility.Collapsed;
+        UpgradesMore.Content = _allUpgrades ? "Show the best 5" : $"Show all {_upgrades.Count}";
+    }
+
+    private void UpgradesMore_Click(object sender, RoutedEventArgs e)
+    {
+        _allUpgrades = !_allUpgrades;
+        ShowUpgrades();
+    }
+
+    private static bool CanAfford(GearUpgrade upgrade, InventoryState inventory) =>
+        inventory.Kinah >= upgrade.Kinah && upgrade.Materials.All(m => m.Id is not { } id || inventory.Count(id) >= m.Count);
+
+    /// <summary>"223,685 Enhance Stones", "8 × Noble Belt Enhance Scroll (Bound)".</summary>
+    private static string Amount(double count, string material) =>
+        material == "Enhance Stone" ? $"{Number(count)} Enhance Stones" : $"{Number(count)} × {material}";
+
+    /// <summary>"Enhance Stone" → "stones" for the narrow column.</summary>
+    private static string Short(string material) => material == "Enhance Stone" ? "stones" : material;
+
+    private void UpgradeList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (UpgradeList.SelectedItem is not UpgradeLine line)
+        {
+            return;
+        }
+
+        MyGear.SelectedItem = (MyGear.ItemsSource as IEnumerable<MyGearLine>)?.FirstOrDefault(l => l.Slot == line.Upgrade.Slot.Slot);
     }
 
     private void RefreshHave()
@@ -154,6 +229,7 @@ public partial class ForgePage : UserControl
         ItemName.Foreground = brush;
         ItemMeta.Text = Detail(item) + (_mine is { } mine ? $" · yours is +{mine.Enchant}" : string.Empty);
         Controls.IsEnabled = true;
+        Dispatcher.BeginInvoke(() => PlanCard.BringIntoView(), System.Windows.Threading.DispatcherPriority.Loaded);
 
         _updating = true;
         EnchantMode.IsEnabled = _forge.Ladder(_item, ForgeMode.Enchant) is not null;
@@ -231,6 +307,12 @@ public partial class ForgePage : UserControl
         var plan = GearForge.Plan(ladder, from, to);
         string verb = Mode == ForgeMode.Enchant ? "Enchanting" : "Amplifying";
         Summary.Text = $"{verb} {_item.Name} from +{from} to +{to} takes on average:";
+        if (Mode == ForgeMode.Enchant && _stats.Item(_item.Id) is { } info)
+        {
+            var gains = info.Effect is { } effect ? _stats.Gain(effect, from, to) : [];
+            Summary.Text = $"{verb} {_item.Name} from +{from} to +{to} adds {to - from} item level ({info.ItemLevel + from} → {info.ItemLevel + to})" +
+                           string.Concat(gains.Select(g => $", {g}")) + ". On average it takes:";
+        }
 
         var tiles = plan.Materials
             .Select(m => new ForgeTile(m.Name, Number(m.Average), $"unlucky: {Number(m.P90)}"))

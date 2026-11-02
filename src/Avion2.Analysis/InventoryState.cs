@@ -64,7 +64,13 @@ public sealed class InventoryState
         switch (e)
         {
             case InventoryListEvent list:
-                _slots = list.Items.ToDictionary(Key);
+                // A slot can come twice (seen in container 10, slot 0): the last one wins instead of losing the list
+                _slots = new Dictionary<string, InventoryItem>();
+                foreach (var item in list.Items)
+                {
+                    _slots[Key(item)] = item;
+                }
+
                 ListMs = UpdatedMs = list.TimestampMs;
                 return true;
             case InventoryItemEvent { Item: var item } update:

@@ -200,6 +200,8 @@ enchant level in one of the next two bytes (staff +10, belt/rune +2 in the first
 ```
 11 56: whole inventory when entering the world — records of different lengths (gear carries more), so scan for them
 1B 56: one slot changed — 01, u8, 00, u32, u32, then the item record at offset 11 (count = new total, 0 = emptied)
+enchanting (Pilgrim Cloak +5 → +6, 2026-11-02): 1B 56 with the gear record and its new level in the same place as in 11 56;
+  1C 56 has the item id with 05 and again with 06, 23 56 ends with 06 and the item id
 ```
 Kinah is two items, `930100001` Kina (Bound) and `930100031` Kina; the currency bar shows their sum (cube only).
 `930100023` Enhance Stone, `930100003` Abyss Points. `15 57` lists dungeon rewards (item, count pairs).
