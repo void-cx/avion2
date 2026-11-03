@@ -108,7 +108,7 @@ public sealed class ObsPage
 
         if (ShowsMeter)
         {
-            height += (Header ? 56 : 0) + Rows * 29 + 8;
+            height += (Header ? 78 : 0) + Rows * 29 + 8; // the header includes room for the boss cast row
         }
 
         return (RoundUp(320 * Scale), RoundUp(height * Scale));

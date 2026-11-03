@@ -54,6 +54,11 @@ body {
 .head .sub { font-size: 0.92em; }
 .hp { height: calc(4px * var(--scale)); background: var(--track); border-radius: 2px; margin-top: calc(4px * var(--scale)); overflow: hidden; }
 .hp > div { height: 100%; background: #E24B4A; }
+.cast { margin-top: calc(4px * var(--scale)); font-size: 0.92em; }
+.cast .bar { height: calc(3px * var(--scale)); background: var(--track); border-radius: 2px; margin-top: calc(2px * var(--scale)); overflow: hidden; }
+.cast .bar > div { height: 100%; background: #EF9F27; }
+.cast.stopped { color: var(--muted); }
+.cast.stopped .bar > div { background: var(--muted); }
 
 .row { position: relative; background: var(--panel); border-radius: var(--radius); padding: calc(3px * var(--scale)) calc(7px * var(--scale)) calc(5px * var(--scale)); margin-top: calc(3px * var(--scale)); overflow: hidden; }
 .row .bar { position: absolute; left: 0; bottom: 0; height: calc(2px * var(--scale)); }
@@ -126,6 +131,19 @@ function idle(text) {
   return block;
 }
 
+// The boss's wind-up under its HP bar: "Casting X" with the seconds left, or "Interrupted: X".
+function cast(c) {
+  const box = el("div", c.interrupted ? "cast stopped" : "cast");
+  const line = el("div", "split");
+  const text = c.interrupted ? (c.skill ? `Interrupted: ${c.skill}` : "Cast interrupted") : (c.skill ? `Casting ${c.skill}` : "Casting");
+  line.append(el("span", "ellipsis", text), el("span", "num", c.left !== undefined ? `${c.left.toFixed(1)} s` : ""));
+  const bar = el("div", "bar"), fill = el("div");
+  fill.style.width = (c.progress * 100) + "%";
+  bar.append(fill);
+  box.append(line, bar);
+  return box;
+}
+
 function meter(state, taken) {
   const fight = state.fight;
   const list = fight ? (taken ? fight.taken : fight.meter) : [];
@@ -146,6 +164,7 @@ function meter(state, taken) {
       fill.style.width = (fight.hp * 100) + "%";
       hp.append(fill);
       head.append(hp);
+      if (fight.cast) head.append(cast(fight.cast));
     }
     block.append(head);
   }

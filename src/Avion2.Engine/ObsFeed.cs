@@ -56,8 +56,12 @@ public static class ObsFeed
 
     /// <param name="running">The meter is capturing (false: the page says AVION2 isn't).</param>
     /// <param name="theme">The app's theme id, the page's default look.</param>
-    public static string Build(bool running, string theme, MeterSnapshot? fight, ObsCharacter? me, ObsSession? session, ObsNames names)
+    /// <param name="nowMs">Now, for the boss cast's progress (default: the clock).</param>
+    public static string Build(bool running, string theme, MeterSnapshot? fight, ObsCharacter? me, ObsSession? session, ObsNames names,
+        long? nowMs = null)
     {
+        long now = nowMs ?? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
         object? Fight() => fight is null ? null : new
         {
             title = fight.Title,
@@ -66,6 +70,7 @@ public static class ObsFeed
             partyDps = Math.Round(fight.TotalDps),
             partyTaken = fight.DurationSeconds > 0 ? Math.Round(fight.Incoming.Sum(i => i.Total) / fight.DurationSeconds) : 0,
             hp = fight.TargetMaxHp is { } max && fight.TargetHp is { } hp && max > 0 ? Math.Round(Math.Clamp((double)hp / max, 0, 1), 4) : (double?)null,
+            cast = fight.TargetHp is null ? null : Cast(fight.BossCast, now),
             meter = fight.Rows.Select(r => new
             {
                 name = names.Name(r.Name, r.IsSelf),
@@ -110,6 +115,28 @@ public static class ObsFeed
             },
         };
         return JsonSerializer.Serialize(state, Options);
+    }
+
+    /// <summary>
+    /// The boss's wind-up as the overlay shows it under the HP bar: the skill (null when it has no name), how far it
+    /// is (0..1), the seconds left, and whether it was interrupted (then it stays for a few seconds, without a time).
+    /// </summary>
+    private static object? Cast(BossCastInfo? cast, long now)
+    {
+        if (cast is null)
+        {
+            return null;
+        }
+
+        double length = Math.Max(1, cast.EndMs - cast.StartMs);
+        long at = cast.Interrupted ? cast.StoppedMs ?? now : now;
+        return new
+        {
+            skill = cast.Skill,
+            interrupted = cast.Interrupted,
+            progress = Math.Round(Math.Clamp((at - cast.StartMs) / length, 0, 1), 3),
+            left = cast.Interrupted ? (double?)null : Math.Round(Math.Max(0, cast.EndMs - now) / 1000.0, 1),
+        };
     }
 
     /// <summary>"gladiator", "unknown", … (the page's colours and tags).</summary>

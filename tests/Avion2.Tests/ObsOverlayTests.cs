@@ -105,6 +105,36 @@ public class ObsOverlayTests
         Assert.False(idle.RootElement.TryGetProperty("me", out _));
     }
 
+    [Theory]
+    [InlineData(false, "Earthquake", 0.4, 1.2)]
+    [InlineData(true, "Earthquake", 0.25, null)]
+    [InlineData(false, null, 0.4, 1.2)]
+    public void FeedCarriesTheBossCast(bool interrupted, string? skill, double progress, double? left)
+    {
+        var cast = new BossCastInfo(skill, StartMs: 10_000, EndMs: 12_000, StoppedMs: interrupted ? 10_500 : null, interrupted);
+        var fight = new MeterSnapshot(1, "Tahabata", 10, 10_000, 1000, 500, 1000, []) { BossCast = cast };
+
+        using var json = JsonDocument.Parse(ObsFeed.Build(true, "aion2", fight, null, null, new ObsNames(new NameMask()), nowMs: 10_800));
+        var c = json.RootElement.GetProperty("fight").GetProperty("cast");
+
+        Assert.Equal(interrupted, c.GetProperty("interrupted").GetBoolean());
+        Assert.Equal(progress, c.GetProperty("progress").GetDouble(), 3);
+        Assert.Equal(skill is not null, c.TryGetProperty("skill", out _));
+        Assert.Equal(left, c.TryGetProperty("left", out var l) ? l.GetDouble() : null);
+    }
+
+    [Fact]
+    public void FeedHasNoCastWithoutABoss()
+    {
+        var fight = new MeterSnapshot(1, "Mob", 10, 10_000, 1000, null, null, [])
+        {
+            BossCast = new BossCastInfo("Earthquake", 10_000, 12_000, null, false),
+        };
+
+        using var json = JsonDocument.Parse(ObsFeed.Build(true, "aion2", fight, null, null, new ObsNames(new NameMask()), nowMs: 10_800));
+        Assert.False(json.RootElement.GetProperty("fight").TryGetProperty("cast", out _));
+    }
+
     [Fact]
     public void AddressCarriesOnlyWhatDiffersFromTheDefaults()
     {
