@@ -45,6 +45,23 @@
                     <RadioButton Style="{StaticResource SideItem}" Content="Other instances" Tag="other" GroupName="RunView"
                                  local:Ui.Icon="{StaticResource IconDungeon}" Checked="View_Checked"
                                  ToolTip="Ascension instances, trials, arenas and places AVION2 does not know yet" />
+                    <StackPanel x:Name="CeilingPanel" Visibility="Collapsed"
+                                ToolTip="Each share of an expedition's reward cube you open adds a point (two when you open it double). With enough points you pick the guaranteed reward. As the game sent it at your last world entry.">
+                        <TextBlock Text="GUARANTEED REWARDS" Style="{StaticResource SectionLabel}" Margin="14,20,0,8" />
+                        <ItemsControl x:Name="CeilingList" Margin="14,0,12,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Margin="0,0,0,8">
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding Value}" Foreground="{Binding ValueBrush}" FontWeight="SemiBold" Margin="8,0,0,0" />
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Detail}" Foreground="{DynamicResource MutedBrush}" FontSize="12" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -213,6 +230,24 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                             </StackPanel>
+
+                            <StackPanel Visibility="{Binding CubeVisibility}">
+                                <TextBlock Text="REWARD CUBE" Style="{StaticResource SectionLabel}" Margin="0,22,0,8" />
+                                <TextBlock Text="{Binding CubeHeader}" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,8" />
+                                <ItemsControl ItemsSource="{Binding CubeItems}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="0,0,0,6">
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Count}" Foreground="{DynamicResource SecondaryTextBrush}" />
+                                                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                            <TextBlock Text="{Binding Ceiling}" Visibility="{Binding CeilingVisibility}" Foreground="{DynamicResource MutedBrush}"
+                                       FontSize="12" TextWrapping="Wrap" Margin="0,8,0,0"
+                                       ToolTip="As the game sent it at your last world entry (not as it was at the time of this run)" />
 
                             <StackPanel Visibility="{Binding LootVisibility}" Margin="0,0,0,12">
                                 <TextBlock Text="LOOT" Style="{StaticResource SectionLabel}" Margin="0,22,0,8" />

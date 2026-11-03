@@ -1,0 +1,666 @@
+{
+ "source": "https://github.com/SkeeveAN/Aion-DPS-Meter (Backend/src/data/aion2/boss_loot.json, bosses.json)",
+ "table": "client tables (RewardOdEnergyCube, RewardPackage, RewardPackageItem, NpcData.Portrait), EU client 2.0.7",
+ "cubes": [
+  {
+   "dungeon": "Arkanis",
+   "slug": "shattered-arkanis",
+   "name": "Shattered Arkanis",
+   "mode": "grade1",
+   "modeName": "Grade 1",
+   "odyle": 40,
+   "final": 2330709,
+   "npcs": [
+    2330707,
+    2330708,
+    2330709
+   ],
+   "ceiling": null
+  },
+  {
+   "dungeon": "Arkanis",
+   "slug": "shattered-arkanis",
+   "name": "Shattered Arkanis",
+   "mode": "grade2",
+   "modeName": "Grade 2",
+   "odyle": 40,
+   "final": 2350709,
+   "npcs": [
+    2350707,
+    2350708,
+    2350709
+   ],
+   "ceiling": null
+  },
+  {
+   "dungeon": "Arkanis",
+   "slug": "shattered-arkanis",
+   "name": "Shattered Arkanis",
+   "mode": "grade3",
+   "modeName": "Grade 3",
+   "odyle": 40,
+   "final": 2353709,
+   "npcs": [
+    2353707,
+    2353708,
+    2353709
+   ],
+   "ceiling": null
+  },
+  {
+   "dungeon": "Arkanis",
+   "slug": "shattered-arkanis",
+   "name": "Shattered Arkanis",
+   "mode": "grade4",
+   "modeName": "Grade 4",
+   "odyle": 40,
+   "final": 2356709,
+   "npcs": [
+    2356707,
+    2356708,
+    2356709
+   ],
+   "ceiling": null
+  },
+  {
+   "dungeon": "BakronIsland",
+   "slug": "vakron-sky-island",
+   "name": "Vakron Sky Island",
+   "mode": "conquest",
+   "modeName": "Conquest",
+   "odyle": 40,
+   "final": 2300812,
+   "npcs": [
+    2300810,
+    2300811,
+    2300812
+   ],
+   "ceiling": {
+    "after": 21,
+    "claims": 0,
+    "items": [
+     632510016,
+     210130052,
+     210230052,
+     210330052,
+     210430052,
+     210530052,
+     210630052,
+     210730052
+    ]
+   }
+  },
+  {
+   "dungeon": "BakronIsland",
+   "slug": "vakron-sky-island",
+   "name": "Vakron Sky Island",
+   "mode": "conquest-hard",
+   "modeName": "Conquest - Hard",
+   "odyle": 40,
+   "final": 2320812,
+   "npcs": [
+    2320810,
+    2320811,
+    2320812
+   ],
+   "ceiling": {
+    "after": 28,
+    "claims": 0,
+    "items": [
+     115030052,
+     210130052,
+     210230052,
+     210330052,
+     210430052,
+     210530052,
+     210630052,
+     210730052,
+     536630001
+    ]
+   }
+  },
+  {
+   "dungeon": "BakronIsland",
+   "slug": "vakron-sky-island",
+   "name": "Vakron Sky Island",
+   "mode": "explore",
+   "modeName": "Exploration",
+   "odyle": 40,
+   "final": 2310812,
+   "npcs": [
+    2310810,
+    2310811,
+    2310812
+   ],
+   "ceiling": {
+    "after": 3,
+    "claims": 1,
+    "items": [
+     210130052,
+     210230052,
+     210330052,
+     210430052,
+     210530052,
+     210630052,
+     210730052
+    ]
+   }
+  },
+  {
+   "dungeon": "DeusCenter",
+   "slug": "deus-research-base",
+   "name": "Deus Research Base",
+   "mode": "grade1",
+   "modeName": "Grade 1",
+   "odyle": 40,
+   "final": 2320601,
+   "npcs": [
+    2320601,
+    2320615,
+    2320616
+   ],
+   "ceiling": null
+  },
+  {
+   "dungeon": "DeusCenter",
+   "slug": "deus-research-base",
+   "name": "Deus Research Base",
+   "mode": "grade2",
+   "modeName": "Grade 2",
+   "odyle": 40,
+   "final": 2340601,
+   "npcs": [
+    2340601,
+    2340615,
+    2340616
+   ],
+   "ceiling": null
+  },
+  {
+   "dungeon": "DeusCenter",
+   "slug": "deus-research-base",
+   "name": "Deus Research Base",
+   "mode": "grade3",
+   "modeName": "Grade 3",
+   "odyle": 40,
+   "final": 2343601,
+   "npcs": [
+    2343601,
+    2343615,
+    2343616
+   ],
+   "ceiling": null
+  },
+  {
+   "dungeon": "DeusCenter",
+   "slug": "deus-research-base",
+   "name": "Deus Research Base",
+   "mode": "grade4",
+   "modeName": "Grade 4",
+   "odyle": 40,
+   "final": 2346601,
+   "npcs": [
+    2346601,
+    2346615,
+    2346616
+   ],
+   "ceiling": null
+  },
+  {
+   "dungeon": "Draupnir",
+   "slug": "draupnir",
+   "name": "Draupnir",
+   "mode": "conquest",
+   "modeName": "Conquest",
+   "odyle": 40,
+   "final": 2300471,
+   "npcs": [
+    2300401,
+    2300403,
+    2300471
+   ],
+   "ceiling": {
+    "after": 14,
+    "claims": 0,
+    "items": [
+     632510015,
+     210130038,
+     210230038,
+     210330038,
+     210430038,
+     210530038,
+     210630038,
+     210730038
+    ]
+   }
+  },
+  {
+   "dungeon": "Draupnir",
+   "slug": "draupnir",
+   "name": "Draupnir",
+   "mode": "conquest-hard",
+   "modeName": "Conquest - Hard",
+   "odyle": 40,
+   "final": 2320471,
+   "npcs": [
+    2320401,
+    2320403,
+    2320471
+   ],
+   "ceiling": {
+    "after": 28,
+    "claims": 0,
+    "items": [
+     115030038,
+     210130038,
+     210230038,
+     210330038,
+     210430038,
+     210530038,
+     210630038,
+     210730038,
+     536630001
+    ]
+   }
+  },
+  {
+   "dungeon": "Draupnir",
+   "slug": "draupnir",
+   "name": "Draupnir",
+   "mode": "explore",
+   "modeName": "Exploration",
+   "odyle": 40,
+   "final": 2310471,
+   "npcs": [
+    2310401,
+    2310403,
+    2310471
+   ],
+   "ceiling": {
+    "after": 3,
+    "claims": 1,
+    "items": [
+     210130038,
+     210230038,
+     210330038,
+     210430038,
+     210530038,
+     210630038,
+     210730038
+    ]
+   }
+  },
+  {
+   "dungeon": "FireTemple",
+   "slug": "fire-temple",
+   "name": "Fire Temple",
+   "mode": "conquest",
+   "modeName": "Conquest",
+   "odyle": 40,
+   "final": 2300371,
+   "npcs": [
+    2300311,
+    2300312,
+    2300371
+   ],
+   "ceiling": {
+    "after": 28,
+    "claims": 0,
+    "items": [
+     632510014,
+     310130051,
+     310230053,
+     310330053
+    ]
+   }
+  },
+  {
+   "dungeon": "FireTemple",
+   "slug": "fire-temple",
+   "name": "Fire Temple",
+   "mode": "conquest-hard",
+   "modeName": "Conquest - Hard",
+   "odyle": 40,
+   "final": 2320371,
+   "npcs": [
+    2320311,
+    2320312,
+    2320371
+   ],
+   "ceiling": {
+    "after": 28,
+    "claims": 0,
+    "items": [
+     110130051,
+     110230051,
+     110330051,
+     110430051,
+     110530051,
+     110630051,
+     110730051,
+     110830051,
+     310130051,
+     310230053,
+     310330053,
+     536630001
+    ]
+   }
+  },
+  {
+   "dungeon": "FireTemple",
+   "slug": "fire-temple",
+   "name": "Fire Temple",
+   "mode": "explore",
+   "modeName": "Exploration",
+   "odyle": 30,
+   "final": 2310371,
+   "npcs": [
+    2310311,
+    2310312,
+    2310371
+   ],
+   "ceiling": {
+    "after": 1,
+    "claims": 1,
+    "items": [
+     210140024,
+     210240024,
+     210340024,
+     210440024,
+     210540024,
+     210640024,
+     210740024
+    ]
+   }
+  },
+  {
+   "dungeon": "HornCave",
+   "slug": "ferocious-horn-den",
+   "name": "Ferocious Horn Den",
+   "mode": "conquest",
+   "modeName": "Conquest",
+   "odyle": 40,
+   "final": 2300910,
+   "npcs": [
+    2300908,
+    2300909,
+    2300910
+   ],
+   "ceiling": {
+    "after": 28,
+    "claims": 0,
+    "items": [
+     632510017,
+     210130053,
+     210230053,
+     210330053,
+     210430053,
+     210530053,
+     210630053,
+     210730053
+    ]
+   }
+  },
+  {
+   "dungeon": "HornCave",
+   "slug": "ferocious-horn-den",
+   "name": "Ferocious Horn Den",
+   "mode": "conquest-hard",
+   "modeName": "Conquest - Hard",
+   "odyle": 40,
+   "final": 2320910,
+   "npcs": [
+    2320908,
+    2320909,
+    2320910
+   ],
+   "ceiling": {
+    "after": 28,
+    "claims": 0,
+    "items": [
+     115030053,
+     210130053,
+     210230053,
+     210330053,
+     210430053,
+     210530053,
+     210630053,
+     210730053,
+     536630001
+    ]
+   }
+  },
+  {
+   "dungeon": "HornCave",
+   "slug": "ferocious-horn-den",
+   "name": "Ferocious Horn Den",
+   "mode": "explore",
+   "modeName": "Exploration",
+   "odyle": 40,
+   "final": 2310910,
+   "npcs": [
+    2310908,
+    2310909,
+    2310910
+   ],
+   "ceiling": {
+    "after": 3,
+    "claims": 1,
+    "items": [
+     210130053,
+     210230053,
+     210330053,
+     210430053,
+     210530053,
+     210630053,
+     210730053
+    ]
+   }
+  },
+  {
+   "dungeon": "KraoCave",
+   "slug": "krao-cave",
+   "name": "Krao Cave",
+   "mode": "conquest",
+   "modeName": "Conquest",
+   "odyle": 40,
+   "final": 2300171,
+   "npcs": [
+    2300104,
+    2300108,
+    2300171
+   ],
+   "ceiling": {
+    "after": 14,
+    "claims": 0,
+    "items": [
+     632510012,
+     310130049,
+     310230051,
+     310330051
+    ]
+   }
+  },
+  {
+   "dungeon": "KraoCave",
+   "slug": "krao-cave",
+   "name": "Krao Cave",
+   "mode": "conquest-hard",
+   "modeName": "Conquest - Hard",
+   "odyle": 40,
+   "final": 2320171,
+   "npcs": [
+    2320104,
+    2320108,
+    2320171
+   ],
+   "ceiling": {
+    "after": 28,
+    "claims": 0,
+    "items": [
+     110130049,
+     110230049,
+     110330049,
+     110430049,
+     110530049,
+     110630049,
+     110730049,
+     110830049,
+     310130049,
+     310230051,
+     310330051,
+     536630001
+    ]
+   }
+  },
+  {
+   "dungeon": "KraoCave",
+   "slug": "krao-cave",
+   "name": "Krao Cave",
+   "mode": "explore",
+   "modeName": "Exploration",
+   "odyle": 20,
+   "final": 2310171,
+   "npcs": [
+    2310104,
+    2310108,
+    2310171
+   ],
+   "ceiling": {
+    "after": 1,
+    "claims": 1,
+    "items": [
+     210140022,
+     210240022,
+     210340022,
+     210440022,
+     210540022,
+     210640022,
+     210740022
+    ]
+   }
+  },
+  {
+   "dungeon": "ReforgedAbyss",
+   "slug": "abyssal-forge-ludra",
+   "name": "Abyssal Forge: Ludra",
+   "mode": "conquest",
+   "modeName": "Conquest",
+   "odyle": 40,
+   "final": 2301014,
+   "npcs": [
+    2301014
+   ],
+   "ceiling": {
+    "after": 4,
+    "claims": 0,
+    "items": [
+     602500001,
+     536900001,
+     110130060,
+     110230060,
+     110330060,
+     110430060,
+     110530060,
+     110630060,
+     110730060,
+     110830060,
+     115030058,
+     210130058,
+     210230058,
+     210330058,
+     210430058,
+     210530058,
+     210630058,
+     210730058,
+     310130060,
+     310230062,
+     310330062
+    ]
+   }
+  },
+  {
+   "dungeon": "UruguguCanyon",
+   "slug": "urugugu-canyon",
+   "name": "Urugugu Canyon",
+   "mode": "conquest",
+   "modeName": "Conquest",
+   "odyle": 40,
+   "final": 2300218,
+   "npcs": [
+    2300206,
+    2300207,
+    2300218
+   ],
+   "ceiling": {
+    "after": 21,
+    "claims": 0,
+    "items": [
+     632510013,
+     310130050,
+     310230052,
+     310330052
+    ]
+   }
+  },
+  {
+   "dungeon": "UruguguCanyon",
+   "slug": "urugugu-canyon",
+   "name": "Urugugu Canyon",
+   "mode": "conquest-hard",
+   "modeName": "Conquest - Hard",
+   "odyle": 40,
+   "final": 2320218,
+   "npcs": [
+    2320206,
+    2320207,
+    2320218
+   ],
+   "ceiling": {
+    "after": 28,
+    "claims": 0,
+    "items": [
+     110130050,
+     110230050,
+     110330050,
+     110430050,
+     110530050,
+     110630050,
+     110730050,
+     110830050,
+     310130050,
+     310230052,
+     310330052,
+     536630001
+    ]
+   }
+  },
+  {
+   "dungeon": "UruguguCanyon",
+   "slug": "urugugu-canyon",
+   "name": "Urugugu Canyon",
+   "mode": "explore",
+   "modeName": "Exploration",
+   "odyle": 20,
+   "final": 2310218,
+   "npcs": [
+    2310206,
+    2310207,
+    2310218
+   ],
+   "ceiling": {
+    "after": 1,
+    "claims": 1,
+    "items": [
+     210140023,
+     210240023,
+     210340023,
+     210440023,
+     210540023,
+     210640023,
+     210740023
+    ]
+   }
+  }
+ ]
+}

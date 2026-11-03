@@ -295,6 +295,10 @@ public sealed class DungeonRun
     [JsonPropertyName("used")]
     public List<RunItem> Used { get; set; } = [];
 
+    /// <summary>What the expedition's reward cube gave (<c>15 57</c>); null when it was not opened (or not seen).</summary>
+    [JsonPropertyName("cube")]
+    public RunCube? Cube { get; set; }
+
     /// <summary>False when the run ended without leaving (capture stopped, game closed).</summary>
     [JsonPropertyName("left")]
     public bool Left { get; set; }
@@ -445,6 +449,10 @@ public sealed class RunTracker
             case InstanceStageEvent { Stage: 3 } stage when Current is { } cleared && cleared.Maps.Contains(stage.MapId):
                 cleared.ClearedMs ??= stage.TimestampMs - cleared.StartMs;
                 RunChanged?.Invoke(cleared);
+                break;
+            case CubeRewardEvent { Result: 0 } reward when Current is { } opened:
+                opened.Cube = RunCube.Merge(opened.Cube, reward);
+                RunChanged?.Invoke(opened);
                 break;
             case MapEventStartEvent started when Current is { } withEvent:
                 withEvent.EventName ??= started.Name;

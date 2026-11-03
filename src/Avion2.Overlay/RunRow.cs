@@ -92,7 +92,7 @@ public sealed record RunMemberRow(string Name, string ClassName, ImageSource? Ic
 public sealed record RunLootRow(string Name, string Count);
 
 /// <summary>The selected run in the detail pane (or the live one).</summary>
-public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live = false)
+public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live = false, RewardCeilings? ceilings = null)
 {
     /// <summary>
     /// How a boss kill compares with the same boss in the best run here: "−0:12" (faster) or "+0:05"; null when the
@@ -275,6 +275,37 @@ public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live 
         .ToList();
 
     public Visibility UsedVisibility => row.Run.Used.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary>The expedition's reward cube: "Opened ×2 · 80 Odyle" (the Odyle from the cube table).</summary>
+    public string CubeHeader
+    {
+        get
+        {
+            if (row.Run.Cube is not { } cube)
+            {
+                return string.Empty;
+            }
+
+            string opened = $"Opened ×{cube.Shares.ToString(CultureInfo.InvariantCulture)}";
+            return ceilings?.CubeOf(row.Run) is { Odyle: > 0 } info
+                ? $"{opened} · {(cube.Shares * info.Odyle).ToString("N0", CultureInfo.InvariantCulture)} Odyle · {info.ModeName}"
+                : opened;
+        }
+    }
+
+    /// <summary>What the cube gave, in the game's order (Kinah and Enhance Stones first).</summary>
+    public IReadOnlyList<RunLootRow> CubeItems => (row.Run.Cube?.Items ?? [])
+        .Select(i => new RunLootRow(ItemName(i.ItemId), $"× {i.Count.ToString("N0", CultureInfo.InvariantCulture)}"))
+        .ToList();
+
+    public Visibility CubeVisibility => row.Run.Cube is not null ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary>The guaranteed reward of this expedition for the run's character, as the game last sent it.</summary>
+    public string Ceiling => ceilings?.For(row.Run) is { } progress
+        ? $"Guaranteed reward: {progress.Value} · {progress.Status}"
+        : string.Empty;
+
+    public Visibility CeilingVisibility => Ceiling.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
 
     private static string ItemName(uint id) => BundledGameData.ItemName(id) ?? $"Item {id}";
 

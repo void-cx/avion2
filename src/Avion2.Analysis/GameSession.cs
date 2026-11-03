@@ -51,6 +51,9 @@ public sealed class GameSession
     /// <summary>Who is in our party, with their HP and where they are.</summary>
     public PartyTracker Party { get; } = new();
 
+    /// <summary>Our guaranteed-reward counters of the expedition reward cubes.</summary>
+    public RewardTracker Rewards { get; } = new();
+
     /// <summary>The trace of an encounter (finished or running).</summary>
     public FightTrace Trace(Encounter encounter) =>
         Recorder.Build(encounter, Registry, encounter.Final?.Title ?? MeterView.Build(encounter, Registry).Title);
@@ -117,6 +120,7 @@ public sealed class GameSession
         Recorder.Apply(e);
         Legion.Apply(e);
         Party.Apply(e, Registry);
+        Rewards.Apply(e);
         Positions.Apply(e);
         Casts.Apply(e);
         Cubes.Apply(e, Registry.SelfId, Positions.MapId ?? Registry.MapId, Registry.DisplayName);

@@ -344,6 +344,12 @@ internal static class Commands
                                   string.Join(" ", run.Steps.Select(Clock)) + (run.EventName is { } name ? $" · {name}" : ""));
             }
 
+            if (run.Cube is { } cube)
+            {
+                Console.WriteLine($"    cube ×{cube.Shares}: " +
+                                  string.Join(", ", cube.Items.Select(i => $"{BundledGameData.ItemName(i.ItemId) ?? i.ItemId.ToString()} {i.Count:N0}")));
+            }
+
             foreach (var boss in run.Bosses)
             {
                 Console.WriteLine($"    {Clock(boss.AtMs)}  {boss.Name} ({boss.Npc})" +

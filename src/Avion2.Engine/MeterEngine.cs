@@ -149,9 +149,11 @@ public sealed class MeterEngine : IDisposable
         runs.RunChanged += run => RunChanged?.Invoke(run.Copy());
         runs.RunEnded += run => RunEnded?.Invoke(run.Copy(), _options.Runs?.Add(run) != false);
         var anonymizer = _options.AnonymizeNames ? new NameAnonymizer() : null;
+        _session.Rewards.Cubes = BundledGameData.Cubes;
         if (anonymizer is null)
         {
             _session.Registry.SetKnownCharacters(characters.Characters);
+            _session.Rewards.Changed += () => RewardsChanged?.Invoke(); // never keep counters under "You"
         }
 
         _session.Registry.CharacterIdentified += character =>
@@ -516,6 +518,18 @@ public sealed class MeterEngine : IDisposable
         lock (_sync)
         {
             _session.Cubes.CubeCodes.UnionWith(codes);
+        }
+    }
+
+    /// <summary>Raised on the capture thread when our guaranteed-reward counters changed (<see cref="Ceilings"/> has them).</summary>
+    public event Action? RewardsChanged;
+
+    /// <summary>Our guaranteed-reward counters as seen this session (a copy), and the expedition maps whose cube was learned.</summary>
+    public (CeilingState Ceilings, IReadOnlyDictionary<uint, string> Maps) Ceilings()
+    {
+        lock (_sync)
+        {
+            return (_session.Rewards.Ceilings.Copy(), new Dictionary<uint, string>(_session.Rewards.LearnedMaps));
         }
     }
 

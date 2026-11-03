@@ -124,6 +124,11 @@ public static class BundledGameData
     /// <summary>An NPC's English name (the dungeon table is English).</summary>
     public static string? EnglishNpcName(uint code) => EnglishNpcTable.Value.Npcs.GetValueOrDefault(code)?.Name;
 
+    private static readonly Lazy<CubeTable> CubeRewardTable = new(() => CubeTable.Parse(Read("cube_rewards.json")));
+
+    /// <summary>The expeditions' reward cubes (bosses, Odyle per share, guaranteed reward), parsed on first use.</summary>
+    public static CubeTable Cubes => CubeRewardTable.Value;
+
     private static readonly Lazy<GearForge> ForgeTable = new(() => GearForge.Parse(Read("gear_forge.json")));
 
     /// <summary>Enchant/amplify ladders per item (English names), parsed on first use.</summary>

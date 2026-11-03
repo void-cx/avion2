@@ -57,6 +57,7 @@ public sealed class AppState
         Timers = new TimerService(Settings, FieldBossOccurrences, WorldEvents);
         Timers.Due += OnEventDue;
         Cubes = new CubeFinder(this);
+        Ceilings = new RewardCeilings(this, () => KeepsGameState);
         Obs = new ObsOverlay(this);
         Obs.Apply();
     }
@@ -161,6 +162,9 @@ public sealed class AppState
 
     /// <summary>Saved dungeon runs, newest first.</summary>
     public ObservableCollection<RunRow> Runs { get; } = new();
+
+    /// <summary>The guaranteed rewards of the expedition reward cubes, per character.</summary>
+    public RewardCeilings Ceilings { get; }
 
     /// <summary>The run in progress (inside a dungeon, expedition or other instance), or null.</summary>
     public Avion2.Analysis.DungeonRun? LiveRun { get; private set; }
@@ -334,6 +338,7 @@ public sealed class AppState
             var legion = engine.Legion();
             Application.Current.Dispatcher.BeginInvoke(() => UpdateLegion(legion));
         };
+        Ceilings.Attach(engine);
         engine.TeachCubeCodes(CubeLog.Codes);
         engine.CubeSeen += cube => Application.Current.Dispatcher.BeginInvoke(() => OnCube(cube, engine));
         engine.InventoryChanged += () =>

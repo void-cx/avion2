@@ -34,6 +34,7 @@ public partial class RunsPage : UserControl
         state.Runs.CollectionChanged += OnRunsChanged;
         state.LiveRunChanged += UpdateLive;
         state.ViewedCharacterChanged += Refresh;
+        state.Ceilings.Updated += ShowCeilings;
         _clock.Tick += (_, _) => UpdateLive();
         IsVisibleChanged += (_, _) =>
         {
@@ -48,6 +49,24 @@ public partial class RunsPage : UserControl
             }
         };
         Refresh();
+    }
+
+    /// <summary>The viewed character's guaranteed rewards in the sidebar (hidden until the game sent them).</summary>
+    private void ShowCeilingList()
+    {
+        var rows = _state.Ceilings.Viewed.Select(CeilingRow.From).ToList();
+        CeilingList.ItemsSource = rows;
+        CeilingPanel.Visibility = rows.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    /// <summary>New counters: the sidebar and the selected run's line.</summary>
+    private void ShowCeilings()
+    {
+        ShowCeilingList();
+        if (Pane.DataContext is RunSummary { Live: false } shown && RenameBox.Visibility != Visibility.Visible)
+        {
+            ShowInPane(new RunSummary(shown.Row, Mine.ToList(), ceilings: _state.Ceilings));
+        }
     }
 
     private bool Best => _view == "best";
@@ -89,6 +108,7 @@ public partial class RunsPage : UserControl
         }
 
         RunList.Tag = Best ? "best" : null;
+        ShowCeilingList();
         foreach (var view in Views.Children.OfType<RadioButton>())
         {
             int count = (string)view.Tag switch
@@ -155,7 +175,7 @@ public partial class RunsPage : UserControl
         if (Selected is { } row)
         {
             _showingLive = false;
-            ShowInPane(new RunSummary(row, Mine.ToList()));
+            ShowInPane(new RunSummary(row, Mine.ToList(), ceilings: _state.Ceilings));
         }
         else if (!_showingLive)
         {
@@ -216,7 +236,7 @@ public partial class RunsPage : UserControl
         LiveDetail.Text = $"{row.Category} · {bosses} · {deaths}{pace}";
         if (_showingLive)
         {
-            ShowInPane(new RunSummary(row, Mine.ToList(), live: true));
+            ShowInPane(new RunSummary(row, Mine.ToList(), live: true, ceilings: _state.Ceilings));
         }
     }
 
