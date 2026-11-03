@@ -24,7 +24,9 @@
                 <Ellipse x:Name="NavDot" DockPanel.Dock="Bottom" Width="8" Height="8" Margin="0,0,0,10" Fill="{DynamicResource IdleBrush}"
                          ToolTip="{Binding Text, Source={x:Static local:ShellStatus.Current}}" />
                 <!-- Whose gear, fights, runs and legion the pages show -->
+                <!-- (stretched: the Fluent theme's buttons align left) -->
                 <Button x:Name="CharacterPick" DockPanel.Dock="Bottom" Height="70" Margin="0,0,0,6" Cursor="Hand" FocusVisualStyle="{x:Null}"
+                        HorizontalAlignment="Stretch" MinWidth="0" Padding="0"
                         Foreground="{DynamicResource MutedBrush}" Click="CharacterPick_Click" Visibility="Collapsed">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
