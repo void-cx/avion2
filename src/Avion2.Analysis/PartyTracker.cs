@@ -244,7 +244,7 @@ public sealed class PartyTracker
         registry.Find(entityId) is not { Name: { Length: > 0 } name } || name == member.Name;
 
     private static Vec3? OnThisMap(PartyMemberView member, uint? mapId) =>
-        member.Status is { } status && mapId is { } map && status.MapId == map && status.Position.IsPlausible ? status.Position : null;
+        member.Status is { } status && mapId is { } map && status.MapId == map && status.Position.IsWorldPoint ? status.Position : null;
 
     private bool IsSelf(Member m, EntityRegistry registry) =>
         m.EntityId != 0 && m.EntityId == registry.SelfId || (registry.SelfName ?? _selfName) is { } me && m.Name == me;

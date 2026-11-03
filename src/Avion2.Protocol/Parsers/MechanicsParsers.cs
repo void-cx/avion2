@@ -118,13 +118,8 @@ public static class MechanicsParsers
         return true;
     }
 
-    /// <summary>
-    /// Finite world coordinates away from the origin. Unlike <see cref="Vec3.IsPlausible"/> a height near 0 is fine:
-    /// the air raid's telegraphs lie at z ≈ -4.
-    /// </summary>
-    private static bool IsWorldPoint(Vec3 p) =>
-        float.IsFinite(p.X) && float.IsFinite(p.Y) && float.IsFinite(p.Z) && Math.Abs(p.X) < 1_000_000 && Math.Abs(p.Y) < 1_000_000 &&
-        Math.Abs(p.Z) < 200_000 && (Math.Abs(p.X) > 100 || Math.Abs(p.Y) > 100);
+    /// <summary>A world position; a height near 0 is fine (the air raid's telegraphs lie at z ≈ -4).</summary>
+    private static bool IsWorldPoint(Vec3 p) => p.IsWorldPoint;
 
     private static bool TryVec3(ref SpanReader r, out Vec3 position)
     {

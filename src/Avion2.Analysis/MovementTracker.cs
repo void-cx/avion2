@@ -53,7 +53,7 @@ public sealed class MovementTracker
 
                 break;
             // Buff positions are where the buff landed (within ~0.6 m), not the server's movement track
-            case PositionEvent { Source: not (PositionSource.Buff or PositionSource.Offset), Position.IsPlausible: true } key:
+            case PositionEvent { Source: not (PositionSource.Buff or PositionSource.Offset), Position.IsWorldPoint: true } key:
                 _tracks[key.EntityId] = (key.Position, key.TimestampMs);
                 break;
             case DeathEvent { Kind: DeathKind.LeftWorld } gone:

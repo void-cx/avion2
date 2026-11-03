@@ -25,7 +25,6 @@ public static partial class Opcodes
     public const ushort MoveRelative = 0x1A37;
     public const ushort MoveSteer = 0x1B37;
     public const ushort Move = 0x1C37;
-    public const ushort MoveVelocity = 0x1D37;
     public const ushort Dash = 0x2F37;
     public const ushort Relocate = 0x3C37;
 

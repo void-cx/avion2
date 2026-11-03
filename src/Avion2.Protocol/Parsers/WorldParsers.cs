@@ -32,7 +32,7 @@ public static class WorldParsers
     {
         var r = new SpanReader(body);
         if (!r.TryVarint(out uint id) || !r.TryU8(out byte flags) || ((flags & 1) != 0 && !r.TrySkip(1)) ||
-            !TryVec3(ref r, out var position) || !r.TryU16(out ushort heading))
+            !TryWorldPoint(ref r, out var position) || !r.TryU16(out ushort heading))
         {
             return false;
         }
@@ -61,7 +61,7 @@ public static class WorldParsers
             _ => 1,
         };
 
-        if (!r.TrySkip(skip) || !TryVec3(ref r, out var position))
+        if (!r.TrySkip(skip) || !TryWorldPoint(ref r, out var position))
         {
             return false;
         }
@@ -325,6 +325,19 @@ public static class WorldParsers
 
         position = new Vec3(x, y, z);
         return position.IsPlausible;
+    }
+
+    /// <summary>A position in a fixed-layout movement record (a height near 0 allowed, see <see cref="Vec3.IsWorldPoint"/>).</summary>
+    private static bool TryWorldPoint(ref SpanReader r, out Vec3 position)
+    {
+        position = default;
+        if (!r.TryF32(out float x) || !r.TryF32(out float y) || !r.TryF32(out float z))
+        {
+            return false;
+        }
+
+        position = new Vec3(x, y, z);
+        return position.IsWorldPoint;
     }
 
     /// <summary>

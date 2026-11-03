@@ -121,11 +121,23 @@ public sealed record PlayerSpawnEvent(
 /// <summary>A world position (≈ cm; z is height).</summary>
 public readonly record struct Vec3(float X, float Y, float Z)
 {
-    /// <summary>Plausible world coordinates (filters out the floats that turn up when scanning a record).</summary>
-    public bool IsPlausible =>
+    /// <summary>
+    /// A world position read from a record with a fixed layout: finite, in range, away from the map's origin, and
+    /// no tiny value like 8e-28 (what a read at the wrong offset gives; no real coordinate in centimetres is that
+    /// small). A height near 0 is fine: some instances have their floor there.
+    /// </summary>
+    public bool IsWorldPoint =>
         float.IsFinite(X) && float.IsFinite(Y) && float.IsFinite(Z) &&
         Math.Abs(X) < 1_000_000 && Math.Abs(Y) < 1_000_000 && Z is > -50_000 and < 200_000 &&
-        (Math.Abs(X) > 100 || Math.Abs(Y) > 100) && Math.Abs(Z) > 10;
+        (Math.Abs(X) > 100 || Math.Abs(Y) > 100) && !Tiny(X) && !Tiny(Y) && !Tiny(Z);
+
+    /// <summary>
+    /// <see cref="IsWorldPoint"/> and a height away from 0, for positions found by scanning a record (where three
+    /// floats near the origin are more likely noise than a floor at height 0).
+    /// </summary>
+    public bool IsPlausible => IsWorldPoint && Math.Abs(Z) > 10;
+
+    private static bool Tiny(float v) => v != 0 && Math.Abs(v) < 0.01f;
 
     public float DistanceTo(Vec3 other)
     {

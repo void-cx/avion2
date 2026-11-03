@@ -128,7 +128,7 @@ public static class MovementParsers
         }
 
         var position = new Vec3(x, y, z);
-        if (!position.IsPlausible)
+        if (!position.IsWorldPoint)
         {
             return false;
         }

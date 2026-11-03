@@ -235,7 +235,7 @@ public sealed class LivePositions
                 // Where we last stood on the ground: a better height than an older fix's (x and y and their age stay)
                 _fixes[ground.EntityId] = (known.Position with { Z = ground.Z }, known.Ms);
                 break;
-            case PositionEvent { Position.IsPlausible: true } p:
+            case PositionEvent { Position.IsWorldPoint: true } p:
                 Fix(p.EntityId, p.Position, p.TimestampMs);
                 break;
             case NpcSpawnEvent { Position: { IsPlausible: true } at } spawn:

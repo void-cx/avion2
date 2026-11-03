@@ -179,6 +179,14 @@ public class WorldTests
         Assert.IsType<PositionEvent>(events[1]);
     }
 
+    [Theory]
+    [InlineData(-8e-28f, 41_000f, 2_100f, false)] // a spawn read at the wrong offset
+    [InlineData(41_000f, 3e-30f, 2_100f, false)]
+    [InlineData(0f, 41_000f, 2_100f, true)]
+    [InlineData(41_000f, -52_300f, 2_100f, true)]
+    public void TinyCoordinatesAreNotPositions(float x, float y, float z, bool plausible) =>
+        Assert.Equal(plausible, new Vec3(x, y, z).IsPlausible);
+
     /// <summary>u8 length + UTF-8, as hex.</summary>
     private static string Text(string value)
     {
