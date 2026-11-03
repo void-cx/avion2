@@ -142,6 +142,15 @@ public sealed class GameSession
             Legion.Character = _named?.Name ?? Registry.SelfName;
         }
 
+        // The Legion Hall record comes at most map loads, also before our name at login: only taken while we are the
+        // entity the game last named (the next map load sends it again)
+        if (e is LegionHallInfoEvent hall && _named is { } self && self.Id == Registry.SelfId &&
+            (Legion.Character is null || Legion.Character == self.Name))
+        {
+            Legion.Character = self.Name;
+            Legion.ApplyHall(hall);
+        }
+
         if (Inventory.Apply(e) && e is InventoryListEvent)
         {
             Inventory.Character = _named is { } n && n.Id == Registry.SelfId ? n.Name : null;

@@ -157,6 +157,7 @@ public sealed record NpcSpawnEvent(
     string? InlineName,
     Vec3? Position = null) : GameEvent(TimestampMs);
 
+/// <summary>The despawn act of <c>42 36</c> (NpcDisappear_NT): how the entity left.</summary>
 public enum DeathKind : byte
 {
     Unknown = 0,
@@ -171,13 +172,19 @@ public sealed record DeathEvent(long TimestampMs, uint EntityId, DeathKind Kind,
 /// <summary>
 /// <c>1E 56</c>: an item dropped on the ground (from a corpse or chest) for <paramref name="OwnerCharacterId"/> to take.
 /// </summary>
-/// <param name="DropId">Identifies the drop until it is taken (<see cref="LootTakenEvent"/>).</param>
-/// <param name="SourceId">Most likely the entity it dropped from (not confirmed).</param>
-public sealed record LootDropEvent(long TimestampMs, uint DropId, uint SourceId, uint ItemId, uint Count, uint OwnerCharacterId,
+/// <param name="SourceId">
+/// The entity it dropped from (a monster or a chest): every drop of one chest has the same one, and the drops of a monster
+/// come right after its death. Not unique per drop.
+/// </param>
+/// <param name="Uid">The drop's own id (global and rising), as in the take (<see cref="LootTakenEvent"/>) and in our
+/// pick-up answer (<see cref="LootPickedEvent"/>).</param>
+/// <param name="Position">Where the item lies (near its source).</param>
+public sealed record LootDropEvent(long TimestampMs, uint SourceId, long Uid, uint ItemId, uint Count, uint OwnerCharacterId,
     ushort OwnerServerId, Vec3 Position) : GameEvent(TimestampMs);
 
 /// <summary><c>1F 56</c>: a drop left the ground; taken by <paramref name="TakerCharacterId"/>, or 0 when it just vanished.</summary>
-public sealed record LootTakenEvent(long TimestampMs, uint DropId, uint TakerCharacterId) : GameEvent(TimestampMs);
+/// <param name="Uid">The drop's uid, as in <see cref="LootDropEvent.Uid"/>.</param>
+public sealed record LootTakenEvent(long TimestampMs, uint SourceId, long Uid, uint TakerCharacterId) : GameEvent(TimestampMs);
 
 /// <summary>
 /// <c>00 61</c>: the stage of the instance we are in. 2 = running (from entering), 3 = cleared (to = the automatic

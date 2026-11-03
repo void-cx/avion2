@@ -248,6 +248,7 @@
                         </DockPanel>
                         <TextBlock x:Name="LegionIntro" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,0,0,10" MaxHeight="54"
                                    TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="LegionRent" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,10" Visibility="Collapsed" />
                         <ItemsControl x:Name="LegionMembers">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><UniformGrid Columns="3" /></ItemsPanelTemplate>

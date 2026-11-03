@@ -140,9 +140,9 @@ public static class InventoryParsers
     }
 
     /// <summary>
-    /// <c>1E 56</c>: count u8, then per drop (63 bytes): drop id u32, position x/y/z f32, a second position, source
-    /// entity u32, drop serial u32, item id u32, count u32, 02, owner character u32, 00 00, owner server u16, time u64,
-    /// 2 bytes. One trailing byte.
+    /// <c>1E 56</c>: count u8, then per drop (63 bytes): source entity u32, the source's position x/y/z f32, the item's
+    /// own position, drop uid i64, item id u32, count u32, owner type u8, owner character u32, 00 00, owner server u16,
+    /// time u64, 2 bytes. One trailing byte.
     /// </summary>
     public static bool ParseLootDrop(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
@@ -156,20 +156,17 @@ public static class InventoryParsers
         for (int n = 0; n < body[0]; n++)
         {
             var r = new SpanReader(body, 1 + n * Size);
-            if (!r.TryU32(out uint dropId) || !r.TryF32(out float x) || !r.TryF32(out float y) || !r.TryF32(out float z))
-            {
-                return false;
-            }
-
-            r.Position += 12; // the second position
-            if (!r.TryU32(out uint source) || !r.TryU32(out _) || !r.TryU32(out uint itemId) || itemId == 0 ||
+            r.TryU32(out uint source);
+            r.Position += 12; // the source's position
+            if (!r.TryF32(out float x) || !r.TryF32(out float y) || !r.TryF32(out float z) ||
+                !r.TryI64(out long uid) || !r.TryU32(out uint itemId) || itemId == 0 ||
                 !r.TryU32(out uint count) || !r.TryU8(out _) || !r.TryU32(out uint owner) || !r.TryU16(out _) ||
                 !r.TryU16(out ushort server))
             {
                 return false;
             }
 
-            drops.Add(new LootDropEvent(ts, dropId, source, itemId, count, owner, server, new Vec3(x, y, z)));
+            drops.Add(new LootDropEvent(ts, source, uid, itemId, count, owner, server, new Vec3(x, y, z)));
         }
 
         drops.ForEach(emit);
@@ -177,8 +174,8 @@ public static class InventoryParsers
     }
 
     /// <summary>
-    /// <c>1F 56</c>: count u8, then per drop (20 bytes): drop id u32, source entity u32, drop serial u32, taker character
-    /// u32 (0 = it vanished), 00 00, server u16. One trailing byte.
+    /// <c>1F 56</c>: count u8, then per drop (20 bytes): source entity u32, drop uid i64, taker character u32 (0 = it
+    /// vanished), 00 00, server u16. One trailing byte.
     /// </summary>
     public static bool ParseLootTaken(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
@@ -191,10 +188,10 @@ public static class InventoryParsers
         for (int n = 0; n < body[0]; n++)
         {
             var r = new SpanReader(body, 1 + n * Size);
-            r.TryU32(out uint dropId);
-            r.Position += 8;
+            r.TryU32(out uint source);
+            r.TryI64(out long uid);
             r.TryU32(out uint taker);
-            emit(new LootTakenEvent(ts, dropId, taker));
+            emit(new LootTakenEvent(ts, source, uid, taker));
         }
 
         return true;

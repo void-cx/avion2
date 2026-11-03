@@ -32,7 +32,39 @@ public sealed class LegionState
 
     public long UpdatedMs { get; set; }
 
+    /// <summary>
+    /// When the rent of the legion's Legion Hall ends (Unix ms, from <c>45 8A</c>); 0 when the game said there is no hall;
+    /// null while no such record was seen.
+    /// </summary>
+    public long? HallRentEndsMs { get; set; }
+
     public bool IsKnown => Name is not null;
+
+    /// <summary>
+    /// "Legion Hall rent ends in N days (date)" for the card, or null when no rent is known. A rent that ran out (as
+    /// last seen) says so.
+    /// </summary>
+    public string? HallRentText(DateTimeOffset now)
+    {
+        if (HallRentEndsMs is not ({ } ms and > 0))
+        {
+            return null;
+        }
+
+        var ends = DateTimeOffset.FromUnixTimeMilliseconds(ms).ToOffset(now.Offset);
+        string date = ends.ToString("ddd, dd MMM", System.Globalization.CultureInfo.InvariantCulture);
+        var left = ends - now;
+        if (left <= TimeSpan.Zero)
+        {
+            return $"Legion Hall rent ended {date}";
+        }
+
+        string inText = left.TotalDays >= 2 ? $"{(int)left.TotalDays} days"
+            : left.TotalDays >= 1 ? "1 day"
+            : left.TotalHours >= 1 ? $"{(int)left.TotalHours} h"
+            : "less than an hour";
+        return $"Legion Hall rent ends in {inText} ({date})";
+    }
 
     /// <summary>Forgets the legion (we switched to another character).</summary>
     public void Clear()
@@ -41,6 +73,7 @@ public sealed class LegionState
         Texts = new();
         _members.Clear();
         UpdatedMs = 0;
+        HallRentEndsMs = null;
     }
 
     /// <summary>Raised when something changed (capture thread).</summary>
@@ -67,5 +100,20 @@ public sealed class LegionState
                 Changed?.Invoke();
                 break;
         }
+    }
+
+    /// <summary>
+    /// The Legion Hall record (<c>45 8A</c>). It does not name the character, so the caller applies it only while it is
+    /// sure whose it is.
+    /// </summary>
+    public void ApplyHall(LegionHallInfoEvent hall)
+    {
+        if (hall.Result != 0)
+        {
+            return;
+        }
+
+        HallRentEndsMs = hall.HallId != 0 && hall.RentEndsMs > 0 ? hall.RentEndsMs : 0;
+        Changed?.Invoke();
     }
 }

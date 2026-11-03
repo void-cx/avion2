@@ -207,7 +207,7 @@ public sealed class MeterEngine : IDisposable
             {
                 WorldEvent?.Invoke(e);
             }
-            else if (e is LegionDetailsEvent or LegionRosterEvent)
+            else if (e is LegionDetailsEvent or LegionRosterEvent or LegionHallInfoEvent)
             {
                 LegionChanged?.Invoke();
             }
@@ -485,8 +485,12 @@ public sealed class MeterEngine : IDisposable
         lock (_sync)
         {
             var legion = _session.Legion;
-            return legion.IsKnown || legion.Members.Count > 0
-                ? new LegionState { Character = legion.Character, Name = legion.Name, Leader = legion.Leader, Texts = legion.Texts.ToList(), Members = legion.Members, UpdatedMs = legion.UpdatedMs }
+            return legion.IsKnown || legion.Members.Count > 0 || legion.HallRentEndsMs is not null
+                ? new LegionState
+                {
+                    Character = legion.Character, Name = legion.Name, Leader = legion.Leader, Texts = legion.Texts.ToList(), Members = legion.Members,
+                    UpdatedMs = legion.UpdatedMs, HallRentEndsMs = legion.HallRentEndsMs,
+                }
                 : null;
         }
     }

@@ -305,7 +305,7 @@ public partial class HomePage : UserControl
         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
     }
 
-    /// <summary>Our legion: name, leader, introduction and who logged in last (saved between sessions).</summary>
+    /// <summary>Our legion: name, leader, introduction, the Legion Hall rent and who logged in last (saved between sessions).</summary>
     private void RefreshLegion()
     {
         if (_state.Legion is not { IsKnown: true } legion || StreamerMode.On)
@@ -325,6 +325,8 @@ public partial class HomePage : UserControl
         }.OfType<string>());
         LegionIntro.Text = legion.Texts.FirstOrDefault() ?? string.Empty;
         LegionIntro.Visibility = LegionIntro.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        LegionRent.Text = legion.HallRentText(now) ?? string.Empty;
+        LegionRent.Visibility = LegionRent.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
         LegionMembers.ItemsSource = members.Take(15).Select(m => new LegionLine(m.Name, Seen(m.LastOnlineMs, now))).ToList();
     }
 

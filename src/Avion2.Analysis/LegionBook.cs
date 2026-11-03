@@ -26,6 +26,7 @@ public sealed class LegionBook
         {
             legion.Name ??= old.Name;
             legion.Leader ??= old.Leader;
+            legion.HallRentEndsMs ??= old.HallRentEndsMs;
             if (legion.Texts.Count == 0)
             {
                 legion.Texts = old.Texts;

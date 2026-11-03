@@ -247,7 +247,10 @@ public static class RecordParsers
         return null;
     }
 
-    /// <summary><c>42 36</c>: entity varint, varint, kind varint (1 loaded dead, 3 combat death, 7 left world).</summary>
+    /// <summary>
+    /// <c>42 36</c> NpcDisappear_NT: entity varint, reason varint (0 in every record), despawn act varint (1 loaded dead,
+    /// 3 combat death, 7 left world).
+    /// </summary>
     public static bool ParseDeath(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
         var r = new SpanReader(body);

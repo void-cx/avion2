@@ -185,7 +185,7 @@ public class RunTests
         Assert.True(Avion2.Protocol.Parsers.InventoryParsers.ParseLootDrop(drop, 1_000, events.Add));
         Assert.True(Avion2.Protocol.Parsers.InventoryParsers.ParseLootTaken(taken, 2_000, events.Add));
         var dropped = Assert.IsType<LootDropEvent>(events[0]);
-        Assert.Equal((21593u, 534660001u, 1u, 110141u, (ushort)1321), (dropped.DropId, dropped.ItemId, dropped.Count, dropped.OwnerCharacterId, dropped.OwnerServerId));
+        Assert.Equal((21593u, 534660001u, 1u, 110141u, (ushort)1321), (dropped.SourceId, dropped.ItemId, dropped.Count, dropped.OwnerCharacterId, dropped.OwnerServerId));
         Assert.Equal(110141u, Assert.IsType<LootTakenEvent>(events[1]).TakerCharacterId);
 
         var session = Session();
