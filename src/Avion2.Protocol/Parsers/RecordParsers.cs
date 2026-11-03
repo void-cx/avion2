@@ -90,6 +90,19 @@ public static class RecordParsers
         return null;
     }
 
+    /// <summary><c>56 36</c>: our combat power u64 and the highest it has been u64.</summary>
+    public static bool ParseSelfCombatPower(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryI64(out long power) || !r.TryI64(out long best) || power is <= 0 or >= 10_000_000 || best is < 0 or >= 10_000_000)
+        {
+            return false;
+        }
+
+        emit(new SelfCombatPowerEvent(ts, (uint)power, (uint)best));
+        return true;
+    }
+
     /// <summary>
     /// Our combat power: <c>cp u32, 0 u32, best? u32, 0 u32, 05 01 91 00</c> (verified against the armory:
     /// 37,381 → 37.38K). Its offset varies with the record's contents, so the trailer is searched.
@@ -271,9 +284,10 @@ public static class RecordParsers
     }
 
     /// <summary>
-    /// <c>02 97</c>: a header (party id, recruiting text), then one entry per slot: flag u8 (<c>0C</c>/<c>1C</c> here,
-    /// <c>0E</c>/<c>1E</c> elsewhere / offline), slot u8, character id u32, <c>00 00</c>, 2 bytes, name length u8, name,
-    /// class u32 (roster code), level u32, ... Empty slots are zeros, so entries are found by their shape.
+    /// <c>02 97</c>, the group-finder room we sit in (not the party): a header (room number, recruiting text), then one
+    /// entry per slot: field mask u8 (<c>02</c> ready, <c>04</c>/<c>08</c> servers, <c>10</c> inside the instance),
+    /// slot u8, character id u32, <c>00 00</c>, 2 bytes, name length u8, name, class u32 (roster code), level u32, ...
+    /// Empty slots are zeros, so entries are found by their shape.
     /// </summary>
     public static bool ParsePartyRoster(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
@@ -301,7 +315,7 @@ public static class RecordParsers
 
             if (members.All(m => m.CharacterId != characterId))
             {
-                members.Add(new PartyMember(body[i + 1], characterId, name, cls, (flag & 0x02) == 0));
+                members.Add(new PartyMember(body[i + 1], characterId, name, cls));
             }
 
             i = r.Position - 1;
@@ -314,6 +328,128 @@ public static class RecordParsers
 
         emit(new PartyRosterEvent(ts, members));
         return true;
+    }
+
+    /// <summary>
+    /// <c>00 92</c>, our party (sent after every change): mask u8 (bit 0: 9 more bytes after the header), party key i64,
+    /// leader i64, size u32, 4 rule bytes, [9 bytes], member count varint, members (see
+    /// <see cref="TryPartyMember"/>), reason u8.
+    /// </summary>
+    public static bool ParsePartyInfo(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        var bits = new Bits();
+        if (!r.TryU8(out byte mask) || (mask & ~1) != 0 || !r.TrySkip(8 + 8 + 4 + 4 + ((mask & 1) != 0 ? 9 : 0)) ||
+            !r.TryVarint(out uint count) || count is 0 or > 40)
+        {
+            return false;
+        }
+
+        var members = new List<PartyMember>((int)count);
+        for (int i = 0; i < count; i++)
+        {
+            if (!TryPartyMember(ref r, ref bits, out var member))
+            {
+                return false;
+            }
+
+            members.Add(member);
+        }
+
+        emit(new PartyRosterEvent(ts, members));
+        return true;
+    }
+
+    /// <summary><c>0D 92</c> (a member joined) and <c>22 92</c> (a member came back with a new entity id): one member.</summary>
+    public static bool ParsePartyMemberJoined(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        var r = new SpanReader(body);
+        var bits = new Bits();
+        if (!TryPartyMember(ref r, ref bits, out var member))
+        {
+            return false;
+        }
+
+        emit(new PartyMemberJoinedEvent(ts, member));
+        return true;
+    }
+
+    /// <summary>
+    /// A party member: mask u8 (01 legion, 02 emblem, 04 rebirth skills), slot u8, entity id u32 (0 elsewhere),
+    /// 2 × server u16, account (skipped, never kept), character i64, name, class u32, hp varint, max hp varint,
+    /// 6 × u32 (mp, ap, dp and their maxima), map i64, subzone u32, position, alive (bit), [legion], [emblem u32],
+    /// level, conqueror level, item level (u32), can loot (bit), logged in (bit), [rebirth skills], combat power i64,
+    /// latency u8. Strings are a varint length and UTF-8.
+    /// </summary>
+    private static bool TryPartyMember(ref SpanReader r, ref Bits bits, out PartyMember member)
+    {
+        member = null!;
+        if (!r.TryU8(out byte mask) || (mask & ~7) != 0 || !r.TryU8(out byte slot) || !r.TryU32(out uint entity) ||
+            !r.TrySkip(4) || !TrySkipString(ref r) || !r.TryI64(out long character) ||
+            !r.TryVarint(out uint nameLength) || !r.TryUtf8((int)nameLength, out string name) ||
+            !r.TryU32(out uint classCode) || !r.TryVarint(out _) || !r.TryVarint(out _) ||
+            !r.TrySkip(24 + 8 + 4 + 12) || !bits.TryRead(ref r, out _) ||
+            ((mask & 1) != 0 && !TrySkipString(ref r)) || ((mask & 2) != 0 && !r.TrySkip(4)) ||
+            !r.TrySkip(12) || !bits.TryRead(ref r, out _) || !bits.TryRead(ref r, out bool online))
+        {
+            return false;
+        }
+
+        if ((mask & 4) != 0)
+        {
+            if (!r.TryVarint(out uint skills) || skills > 32)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < skills; i++)
+            {
+                if (!r.TryU8(out byte skillMask) || !r.TrySkip(5 + ((skillMask & 1) != 0 ? 4 : 0)))
+                {
+                    return false;
+                }
+            }
+        }
+
+        if (!r.TrySkip(8 + 1))
+        {
+            return false;
+        }
+
+        member = new PartyMember(slot, (uint)character, name, GameClasses.FromRosterCode(classCode), online, entity);
+        return true;
+    }
+
+    private static bool TrySkipString(ref SpanReader r) => r.TryVarint(out uint length) && r.TrySkip((int)length);
+
+    /// <summary>Bools in party records are bits of a byte shared across the message, low bit first: a new byte comes
+    /// where a bool is needed and the previous one is used up.</summary>
+    private struct Bits
+    {
+        private byte _value;
+        private int _used;
+
+        public Bits()
+        {
+            _used = 8;
+        }
+
+        public bool TryRead(ref SpanReader r, out bool value)
+        {
+            if (_used >= 8)
+            {
+                if (!r.TryU8(out _value))
+                {
+                    value = false;
+                    return false;
+                }
+
+                _used = 0;
+            }
+
+            value = (_value >> _used++ & 1) != 0;
+            return true;
+        }
     }
 
     /// <summary>

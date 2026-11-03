@@ -120,6 +120,16 @@ public sealed class EntityRegistry
     {
         switch (e)
         {
+            case SelfCombatPowerEvent power:
+                // Sent when our combat power changes, also just before the identity of a character we switch to
+                _selfPower = (power.CombatPower, _confirmedName, power.TimestampMs);
+                if (SelfId is { } me)
+                {
+                    GetOrAdd(me).CombatPower = power.CombatPower;
+                }
+
+                break;
+
             case SelfIdentityEvent self:
             {
                 SelfId = self.EntityId;
@@ -141,7 +151,15 @@ public sealed class EntityRegistry
                 info.Kind = EntityKind.Player;
                 info.Name = self.Name;
                 info.ServerId = self.ServerId;
-                info.CombatPower = self.CombatPower ?? info.CombatPower;
+                uint? power = _selfPower is { } p && (p.Name == self.Name || self.TimestampMs - p.At is >= 0 and <= 10_000)
+                    ? p.CombatPower
+                    : null;
+                if (power is not null)
+                {
+                    _selfPower = (power.Value, self.Name, _selfPower!.Value.At);
+                }
+
+                info.CombatPower = power ?? self.CombatPower ?? info.CombatPower;
                 if (self.Class != GameClass.Unknown)
                 {
                     info.Class = self.Class;
@@ -185,19 +203,6 @@ public sealed class EntityRegistry
             case SkillCastEvent cast when Find(cast.ActorId)?.Kind is EntityKind.Player || cast.ActorId == SelfId:
                 // Remembered so a summon that appears right after (e.g. Explosion Trap) can be credited to its caster.
                 _recentCasts[_data.SkillName(cast.SkillId)] = (cast.ActorId, cast.TimestampMs);
-                break;
-
-            case OwnershipEvent claim:
-                // Only summons/effects belong to the claimant; monsters are claimed too (loot/first hit).
-                if (Find(claim.EntityId) is { Kind: EntityKind.Summon } summon)
-                {
-                    summon.OwnerId ??= claim.OwnerId;
-                }
-                else if (Find(claim.EntityId) is null or { Kind: EntityKind.Unknown })
-                {
-                    _claims[claim.EntityId] = claim.OwnerId; // applied if it turns out to be a summon
-                }
-
                 break;
 
             case SummonLinkEvent link when link.SummonId != link.OwnerId:
@@ -332,8 +337,8 @@ public sealed class EntityRegistry
         }
     }
 
-    /// <summary>Ownership claims for entities not spawned yet; used only if they spawn as summons.</summary>
-    private readonly Dictionary<uint, uint> _claims = new();
+    /// <summary>Our latest combat power (<c>56 36</c>), the character it was for, and when.</summary>
+    private (uint CombatPower, string? Name, long At)? _selfPower;
 
     /// <summary>Last player to cast each skill (by name), for crediting summons that spawn without an owner.</summary>
     private readonly Dictionary<string, (uint Actor, long At)> _recentCasts = new(StringComparer.Ordinal);
@@ -362,11 +367,6 @@ public sealed class EntityRegistry
             case 0x5F or 0x1C or 0x1D or 0x1F or 0x5D:
                 info.Kind = EntityKind.Summon;
                 info.OwnerName = npc.InlineName ?? info.OwnerName;
-                if (info.OwnerId is null && _claims.Remove(npc.EntityId, out uint claimant))
-                {
-                    info.OwnerId = claimant;
-                }
-
                 CreditToCaster(info, npc);
                 break;
             default:

@@ -35,8 +35,9 @@ public class RunTests
     {
         session.Apply(new NpcSpawnEvent(ts - 10_000, id, 0x0C, npc, 100_000, null, new Vec3(0, 0, 0)));
         session.Apply(new DamageEvent(ts - 9_000, Me, id, 16040000, 16040000, 60_000, HitType.Normal, HitFlags.None, 1, 0));
-        session.Apply(new DamageEvent(ts - 1_000, Me, id, 16040000, 16040000, 40_000, HitType.Normal, HitFlags.None, 1, 0));
-        session.Apply(new DeathEvent(ts, id, DeathKind.Combat));
+        session.Apply(new DamageEvent(ts, Me, id, 16040000, 16040000, 40_000, HitType.Normal, HitFlags.None, 1, 0));
+        // The death record is the body being removed, about 4 s after the killing blow
+        session.Apply(new DeathEvent(ts + 4_000, id, DeathKind.Combat));
     }
 
     [Theory]
@@ -77,6 +78,51 @@ public class RunTests
         Assert.Equal(9_000, boss.FightMs);
         Assert.Equal(1, run.Fights);
         Assert.Equal(100_000, run.Damage);
+    }
+
+    [Fact]
+    public void DeathRecordsTimeKillsAndCountOurDeaths()
+    {
+        var session = Session();
+        session.Apply(new MapLoadEvent(10_000, 310042, 30));
+        session.Apply(new NpcSpawnEvent(20_000, Boss, 0x0C, 2700988, 100_000, null, new Vec3(0, 0, 0)));
+        session.Apply(new DamageEvent(65_000, Me, Boss, 16040000, 16040000, 60_000, HitType.Normal, HitFlags.None, 1, 0));
+
+        // Our own death: only the death record says so (players get no despawn)
+        session.Apply(new KillEvent(25_000, Me, 0, 0, 2700988, 1));
+
+        // The boss dies; its killing blow comes just after the death record, the despawn seconds later
+        session.Apply(new KillEvent(70_000, Boss, 16040000, Me, null, 1));
+        session.Apply(new DamageEvent(70_200, Me, Boss, 16040000, 16040000, 40_000, HitType.Normal, HitFlags.None, 1, 0));
+        session.Apply(new DeathEvent(73_400, Boss, DeathKind.Combat));
+        session.Tracker.Tick(74_000);
+
+        var run = session.Runs.Current!;
+        Assert.Equal([15_000L], run.Deaths);
+        var boss = Assert.Single(run.Bosses);
+        Assert.Equal(60_000, boss.AtMs);
+    }
+
+    [Fact]
+    public void BossFightKeepsTheKillingBlowThatFollowsTheDeathRecord()
+    {
+        var session = new GameSession(new GameData(new Dictionary<uint, string>(),
+            new Dictionary<uint, NpcData> { [2700999] = new("Big Boss", IsBoss: true) }));
+        session.Apply(new SelfIdentityEvent(0, Me, "TestDaeva", 1304, GameClass.Chanter, 30));
+        var ended = new List<Encounter>();
+        session.Tracker.EncounterEnded += ended.Add;
+        session.Apply(new NpcSpawnEvent(1_000, Boss, 0x0C, 2700999, 100_000, null, new Vec3(0, 0, 0)));
+        session.Apply(new DamageEvent(2_000, Me, Boss, 16040000, 16040000, 60_000, HitType.Normal, HitFlags.None, 1, 0));
+        session.Apply(new KillEvent(3_000, Boss, 16040000, Me, null, 1));
+        session.Apply(new DamageEvent(3_200, Me, Boss, 16040000, 16040000, 40_000, HitType.Normal, HitFlags.None, 1, 0));
+        Assert.Empty(ended);
+        session.Tracker.Tick(4_600);
+
+        var fight = Assert.Single(ended);
+        Assert.Equal(EncounterEnd.BossKilled, fight.End);
+        Assert.Equal(100_000, fight.Targets[Boss].Total);
+        session.Apply(new DeathEvent(6_400, Boss, DeathKind.Combat)); // the despawn changes nothing
+        Assert.Single(ended);
     }
 
     [Fact]
@@ -201,7 +247,9 @@ public class RunTests
         Assert.True(RecordParsers.ParsePartyRoster(body, 5, events.Add));
         var roster = Assert.IsType<PartyRosterEvent>(Assert.Single(events));
         Assert.Collection(roster.Members,
-            m => Assert.Equal(("Ann", GameClass.Chanter, true), (m.Name, m.Class, m.Online)),
-            m => Assert.Equal(("Bob", GameClass.Gladiator, false), (m.Name, m.Class, m.Online)));
+            m => Assert.Equal(("Ann", GameClass.Chanter), (m.Name, m.Class)),
+            m => Assert.Equal(("Bob", GameClass.Gladiator), (m.Name, m.Class)));
+        // The room's flag byte is a field mask (02 = ready), not online/offline: the room does not say
+        Assert.All(roster.Members, m => Assert.Null(m.Online));
     }
 }

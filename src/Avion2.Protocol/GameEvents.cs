@@ -22,7 +22,8 @@ namespace Avion2.Protocol;
 [JsonDerivedType(typeof(BuffEvent), "buff")]
 [JsonDerivedType(typeof(BuffRemovedEvent), "buffRemoved")]
 [JsonDerivedType(typeof(LegionTagEvent), "legionTag")]
-[JsonDerivedType(typeof(OwnershipEvent), "ownership")]
+[JsonDerivedType(typeof(KillEvent), "kill")]
+[JsonDerivedType(typeof(SelfCombatPowerEvent), "selfCombatPower")]
 [JsonDerivedType(typeof(ServerClockEvent), "clock")]
 [JsonDerivedType(typeof(LegionDetailsEvent), "legion")]
 [JsonDerivedType(typeof(LegionRosterEvent), "legionRoster")]
@@ -149,7 +150,8 @@ public enum DeathKind : byte
     LeftWorld = 7,
 }
 
-public sealed record DeathEvent(long TimestampMs, uint EntityId, DeathKind Kind) : GameEvent(TimestampMs);
+/// <param name="AtKill">Timed at the kill (from the death record <c>04 8D</c>), not at the despawn a few seconds later.</param>
+public sealed record DeathEvent(long TimestampMs, uint EntityId, DeathKind Kind, bool AtKill = false) : GameEvent(TimestampMs);
 
 /// <summary>
 /// <c>1E 56</c>: an item dropped on the ground (from a corpse or chest) for <paramref name="OwnerCharacterId"/> to take.
@@ -219,11 +221,19 @@ public sealed record TargetSelectedEvent(long TimestampMs, uint TargetId) : Game
 /// <summary><c>35 38</c>: whom our selected target <paramref name="EntityId"/> targets; 0 = nobody.</summary>
 public sealed record TargetOfTargetEvent(long TimestampMs, uint EntityId, uint TargetId) : GameEvent(TimestampMs);
 
-/// <summary>A member of our party (<c>02 97</c>); <paramref name="CharacterId"/> is the character, not the entity id.</summary>
-public sealed record PartyMember(byte Slot, uint CharacterId, string Name, GameClass Class, bool Online);
+/// <summary>A member of our party or group-finder room; <paramref name="CharacterId"/> is the character, not the entity id.</summary>
+/// <param name="Online">Logged in (from the party record); null when the record does not say (the finder room).</param>
+/// <param name="EntityId">The member's entity id in our zone, 0 when elsewhere or not known.</param>
+public sealed record PartyMember(byte Slot, uint CharacterId, string Name, GameClass Class, bool? Online = null, uint EntityId = 0);
 
-/// <summary>Our party as the game sends it after every change (join, leave, zone); includes ourselves.</summary>
+/// <summary>
+/// Our party (<c>00 92</c>, after every change) or our group-finder room (<c>02 97</c>, every few seconds while we sit
+/// in one); includes ourselves.
+/// </summary>
 public sealed record PartyRosterEvent(long TimestampMs, IReadOnlyList<PartyMember> Members) : GameEvent(TimestampMs);
+
+/// <summary><c>0D 92</c> / <c>22 92</c>: a member joined the party, or came back with a new entity id.</summary>
+public sealed record PartyMemberJoinedEvent(long TimestampMs, PartyMember Member) : GameEvent(TimestampMs);
 
 /// <param name="ContentCode">The map's content type as the game sends it: 0 open world, 30 sealed dungeon, 79 expedition,
 /// 37/38 stronghold, 72/80 other instances, 12 a reload inside an instance (0 when the record is too short).</param>
@@ -312,11 +322,19 @@ public sealed record BuffEvent(
 /// <summary><c>2C 38</c>: abnormals ended on an entity.</summary>
 public sealed record BuffRemovedEvent(long TimestampMs, uint EntityId, IReadOnlyList<uint> Instances) : GameEvent(TimestampMs);
 
+/// <summary><c>56 36</c>: our combat power changed (and the highest it has been).</summary>
+public sealed record SelfCombatPowerEvent(long TimestampMs, uint CombatPower, uint Best) : GameEvent(TimestampMs);
+
 /// <summary>
-/// <c>04 8D</c>: an entity is claimed by a player. Sent for that player's summons and effects, but also for monsters
-/// (looks like loot/first-hit ownership), so it only links entities that spawned as summons.
+/// <c>04 8D</c>: <paramref name="VictimId"/> died. The despawn (<c>42 36</c>) follows a few seconds later.
 /// </summary>
-public sealed record OwnershipEvent(long TimestampMs, uint EntityId, uint OwnerId) : GameEvent(TimestampMs);
+/// <param name="SkillId">The killing skill, 0 for damage over time or no cause.</param>
+/// <param name="KillerId">The player who killed it, 0 when not said (an NPC killer, or a kill by a party member in a
+/// big fight).</param>
+/// <param name="KillerNpcCode">The NPC that killed it, if one did.</param>
+/// <param name="Reason">1 a hit, 3 damage over time, 0 no cause.</param>
+public sealed record KillEvent(long TimestampMs, uint VictimId, uint SkillId, uint KillerId, uint? KillerNpcCode, byte Reason)
+    : GameEvent(TimestampMs);
 
 /// <summary><c>33 8A</c> (and the owner part of <c>04 8D</c>): an entity's legion.</summary>
 public sealed record LegionTagEvent(long TimestampMs, uint EntityId, ushort ServerId, string Legion) : GameEvent(TimestampMs);

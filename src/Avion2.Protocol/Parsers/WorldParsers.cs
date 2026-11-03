@@ -25,13 +25,13 @@ public static class WorldParsers
     }
 
     /// <summary>
-    /// <c>1C 37</c>: entity varint, mode u8 (4; 5 is followed by one more byte), x f32, y f32, z f32,
-    /// heading u16, heading u16, 01.
+    /// <c>1C 37</c>: entity varint, flags u8 (bit 0: a state byte follows; otherwise it comes at the end),
+    /// x f32, y f32, z f32, heading u16, heading u16.
     /// </summary>
     public static bool ParseMove(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
         var r = new SpanReader(body);
-        if (!r.TryVarint(out uint id) || !r.TryU8(out byte mode) || (mode == 5 && !r.TrySkip(1)) ||
+        if (!r.TryVarint(out uint id) || !r.TryU8(out byte flags) || ((flags & 1) != 0 && !r.TrySkip(1)) ||
             !TryVec3(ref r, out var position) || !r.TryU16(out ushort heading))
         {
             return false;
@@ -42,8 +42,8 @@ public static class WorldParsers
     }
 
     /// <summary>
-    /// Records with a position at a fixed offset after the entity: <c>1A 37</c> / <c>1B 37</c> (+2; <c>1B</c> with
-    /// a 1-byte header when its first byte is not 05), <c>2F 37</c> and <c>3C 37</c> (+1).
+    /// Records with a position after a flags byte: <c>1A 37</c> (flags, a byte, [a byte if flags bit 0], position),
+    /// <c>1B 37</c> (flags, [a byte if flags bit 0], position), <c>2F 37</c> and <c>3C 37</c> (flags, position).
     /// </summary>
     public static bool ParsePositionAt(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit, ushort opcode)
     {
@@ -53,10 +53,11 @@ public static class WorldParsers
             return false;
         }
 
+        int extra = r.Rest[0] & 1;
         int skip = opcode switch
         {
-            Opcodes.MoveRelative => 2,
-            Opcodes.MoveSteer => r.Rest[0] == 0x05 ? 2 : 1,
+            Opcodes.MoveRelative => 2 + extra,
+            Opcodes.MoveSteer => 1 + extra,
             _ => 1,
         };
 
@@ -99,7 +100,7 @@ public static class WorldParsers
             }
         }
 
-        emit(new SkillCastEvent(ts, actor, raw - raw % 10_000, raw, target, at, facing));
+        emit(new SkillCastEvent(ts, actor, SkillIds.ToBase(raw), raw, target, at, facing));
         return true;
     }
 
@@ -205,30 +206,35 @@ public static class WorldParsers
     }
 
     /// <summary>
-    /// <c>04 8D</c> (long form): entity varint, u32, owner varint, server u16, owner name (u8 len), legion (u8 len).
-    /// Claims an entity for a player: their summons and effects, but monsters too (see <see cref="OwnershipEvent"/>).
+    /// <c>04 8D</c>, a death: victim varint, skill u32, killer varint, killer's server u16, killer's name and legion
+    /// (u8 len each, empty when not said), legion emblem u16, killer NPC code varint, u32, reason u8, u8.
     /// </summary>
-    public static bool ParseOwnership(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    public static bool ParseKill(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
         var r = new SpanReader(body);
-        if (!r.TryVarint(out uint spawned) || !r.TryU32(out _) || !r.TryVarint(out uint owner) || owner == 0 ||
-            !r.TryU16(out ushort server) || server is < 1000 or > 2999 ||
-            !r.TryU8(out byte nameLength) || nameLength is 0 or > 36 || !r.TryUtf8(nameLength, out _))
+        if (!r.TryVarint(out uint victim) || victim == 0 || !r.TryU32(out uint skill) || !r.TryVarint(out uint killer) ||
+            !r.TryU16(out ushort server) || !TryText(ref r, out _) || !TryText(ref r, out string legion) ||
+            !r.TrySkip(2) || !r.TryVarint(out uint npc))
         {
             return false;
         }
 
-        if (spawned != owner)
-        {
-            emit(new OwnershipEvent(ts, spawned, owner));
-        }
+        byte reason = r.TrySkip(4) && r.TryU8(out byte said) ? said : (byte)0;
 
-        if (r.TryU8(out byte legionLength) && legionLength is > 0 and <= 36 && r.TryUtf8(legionLength, out string legion))
+        emit(new KillEvent(ts, victim, skill, killer, npc == 0 ? null : npc, reason));
+        if (killer != 0 && server is >= 1000 and <= 2999 && legion.Length > 0)
         {
-            emit(new LegionTagEvent(ts, owner, server, legion));
+            emit(new LegionTagEvent(ts, killer, server, legion));
         }
 
         return true;
+    }
+
+    /// <summary>u8 length + UTF-8; length 0 is an empty text.</summary>
+    private static bool TryText(ref SpanReader r, out string text)
+    {
+        text = string.Empty;
+        return r.TryU8(out byte length) && length <= 64 && (length == 0 || r.TryUtf8(length, out text));
     }
 
     /// <summary><c>33 8A</c>: entity varint, a few bytes, server u16, legion (u8 len), …</summary>

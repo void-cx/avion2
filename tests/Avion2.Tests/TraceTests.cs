@@ -201,23 +201,17 @@ public class OwnershipTests
     }
 
     [Fact]
-    public void ClaimedMonstersStayMonsters()
+    public void KilledEntitiesDoNotBelongToTheirKiller()
     {
-        // Seen in a dungeon: 04 8D claims monsters for the player who hit them first. Their damage (e.g. a shield
-        // absorbing it, reported as a tick with the shield's skill) must not become that player's damage.
+        // 04 8D is a death naming the killer: neither a monster nor a summon becomes the killer's
         var session = Create();
         session.Apply(new NpcSpawnEvent(0, 700, 0x04, 2100456, 5_000, null));
-        session.Apply(new OwnershipEvent(10, 700, 200));
+        session.Apply(new KillEvent(10, 700, 0, 200, null, 1));
         Assert.Equal(700u, session.Registry.ResolveOwner(700));
-    }
 
-    [Fact]
-    public void ClaimedSummonsBelongToTheirOwnerEvenIfTheClaimCameFirst()
-    {
-        var session = Create();
-        session.Apply(new OwnershipEvent(10, 701, 200));
+        session.Apply(new KillEvent(10, 701, 0, 200, null, 1));
         session.Apply(new NpcSpawnEvent(20, 701, 0x5F, 2920110, 1, null));
-        Assert.Equal(200u, session.Registry.ResolveOwner(701));
+        Assert.Equal(701u, session.Registry.ResolveOwner(701));
     }
 }
 

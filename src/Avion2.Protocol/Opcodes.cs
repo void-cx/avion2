@@ -4,7 +4,7 @@ namespace Avion2.Protocol;
 /// Known opcodes, written in wire order: <c>0x0438</c> is the byte sequence <c>04 38</c>.
 /// See docs/PROTOCOL.md. Values reflect the post-June-2026 client.
 /// </summary>
-public static class Opcodes
+public static partial class Opcodes
 {
     public const ushort Bundle = 0xFFFF;
 
@@ -41,12 +41,16 @@ public static class Opcodes
     public const ushort PlayerSpawn = 0x4536;
     public const ushort AllStats = 0x4936;
     public const ushort OwnStats = 0x4A36;
+    public const ushort SelfCombatPower = 0x5636;
 
     public const ushort RemainingHp = 0x008D;
     public const ushort CombatToggle = 0x218D;
-    public const ushort Ownership = 0x048D;
+    public const ushort Kill = 0x048D;
     public const ushort HpUpdate = 0x1B92;
     public const ushort PartyRoster = 0x0297;
+    public const ushort PartyInfo = 0x0092;
+    public const ushort PartyAddMember = 0x0D92;
+    public const ushort PartyReconnectMember = 0x2292;
     public const ushort InstanceStage = 0x0061;
     public const ushort GatherStart = 0x318D;
     public const ushort GatherEnd = 0x338D;

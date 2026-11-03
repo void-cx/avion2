@@ -323,6 +323,9 @@ public sealed class RunTracker
     /// <summary>A gap without events after which an instance map starts a new run instead of continuing.</summary>
     private const long ContinueWithinMs = 20 * 60_000;
 
+    /// <summary>How long after its last hit a death record can belong to that kill (it comes about 4 s later).</summary>
+    private const long KillToDeathMs = 8_000;
+
     private readonly EntityRegistry _registry;
     private readonly InventoryState _inventory;
     private Dictionary<uint, long>? _bagAtStart;
@@ -352,6 +355,12 @@ public sealed class RunTracker
 
     /// <summary>Players who dealt damage in the run's fights: the best evidence of who was in the party.</summary>
     private readonly HashSet<string> _fought = new();
+
+    /// <summary>
+    /// The last hit on each entity: the death record (<c>42 36</c>) is the body being removed, about 4 s after the
+    /// killing blow, so a kill is timed by its last hit.
+    /// </summary>
+    private readonly Dictionary<uint, long> _lastHit = new();
 
     /// <summary>The fight that ended last: a boss kill closes its fight before the run hears of the kill.</summary>
     private (long Start, long Last)? _lastFight;
@@ -403,8 +412,12 @@ public sealed class RunTracker
             case MapLoadEvent map:
                 OnMap(map);
                 break;
+            case DamageEvent hit when Current is not null:
+                _lastHit[hit.TargetId] = hit.TimestampMs;
+                break;
             case DeathEvent { Kind: DeathKind.Combat } death when Current is { } run:
                 OnDeath(run, death);
+                _lastHit.Remove(death.EntityId);
                 break;
             case PlayerSpawnEvent player when Current is not null:
                 _seen.Add(player.Name);
@@ -425,6 +438,14 @@ public sealed class RunTracker
                 if (Current is { } inside && AddParty(inside))
                 {
                     RunChanged?.Invoke(inside);
+                }
+
+                break;
+            case PartyMemberJoinedEvent joined:
+                _roster = [.. _roster.Where(m => m.CharacterId != joined.Member.CharacterId), joined.Member];
+                if (Current is { } joinedInside && AddParty(joinedInside))
+                {
+                    RunChanged?.Invoke(joinedInside);
                 }
 
                 break;
@@ -518,9 +539,13 @@ public sealed class RunTracker
     private void OnDeath(DungeonRun run, DeathEvent death)
     {
         run.EndMs = Math.Max(run.EndMs, death.TimestampMs);
+        // A despawn without its death record comes seconds after the kill: then the last hit times it
+        long killedAt = !death.AtKill && _lastHit.TryGetValue(death.EntityId, out long hit) && death.TimestampMs - hit is >= 0 and <= KillToDeathMs
+            ? hit
+            : death.TimestampMs;
         if (death.EntityId == _registry.SelfId)
         {
-            run.Deaths.Add(death.TimestampMs - run.StartMs);
+            run.Deaths.Add(killedAt - run.StartMs);
             RunChanged?.Invoke(run);
             return;
         }
@@ -538,12 +563,12 @@ public sealed class RunTracker
         }
 
         string name = boss.Name ?? (boss.NpcCode is { } code ? _registry.Data.Npcs.GetValueOrDefault(code)?.Name : null) ?? "Boss";
-        long? fight = _lastFight is { } f && death.TimestampMs >= f.Start && death.TimestampMs <= f.Last + 5_000
-            ? death.TimestampMs - f.Start
+        long? fight = _lastFight is { } f && killedAt >= f.Start && killedAt <= f.Last + 5_000
+            ? killedAt - f.Start
             : null;
         // Copies of one boss (phases, clones) die several times: the split is the last kill
         run.Bosses.RemoveAll(b => b.Npc is { } npc ? npc == boss.NpcCode : b.Name == name);
-        run.Bosses.Add(new RunBoss(name, boss.NpcCode, death.TimestampMs - run.StartMs, fight));
+        run.Bosses.Add(new RunBoss(name, boss.NpcCode, killedAt - run.StartMs, fight));
         Rematch(run);
         RunChanged?.Invoke(run);
     }
@@ -654,6 +679,7 @@ public sealed class RunTracker
         }
 
         _picked.Clear();
+        _lastHit.Clear();
 
         // Party members fought with us; without fights, being seen inside is enough
         run.Party.RemoveAll(m => run.Fights > 0 ? !_fought.Contains(m.Name) : !_seen.Contains(m.Name));

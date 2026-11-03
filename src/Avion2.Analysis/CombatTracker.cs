@@ -218,6 +218,11 @@ public sealed class CombatTracker
 
     public void Apply(GameEvent e)
     {
+        if (_bossKilledAt is { } killed && e.TimestampMs >= killed)
+        {
+            Close(EncounterEnd.BossKilled);
+        }
+
         switch (e)
         {
             case DamageEvent damage:
@@ -243,6 +248,11 @@ public sealed class CombatTracker
     /// <summary>Closes the current encounter if it has been idle at <paramref name="nowMs"/>.</summary>
     public void Tick(long nowMs)
     {
+        if (_bossKilledAt is { } killed && nowMs >= killed)
+        {
+            Close(EncounterEnd.BossKilled);
+        }
+
         if (Current is { } current && nowMs - current.LastMs > _options.EncounterIdleMs)
         {
             Close(EncounterEnd.Idle);
@@ -430,7 +440,15 @@ public sealed class CombatTracker
         target.Killed = true;
         if (_registry.IsBoss(death.EntityId) && !_registry.IsDummy(death.EntityId))
         {
-            Close(EncounterEnd.BossKilled);
+            if (death.AtKill)
+            {
+                // The killing blow can come just after the death record: it still belongs to this fight
+                _bossKilledAt ??= death.TimestampMs + KillingBlowMs;
+            }
+            else
+            {
+                Close(EncounterEnd.BossKilled);
+            }
         }
     }
 
@@ -450,8 +468,15 @@ public sealed class CombatTracker
         return Current;
     }
 
+    /// <summary>How long after a boss's death record its fight stays open for the killing blow.</summary>
+    private const long KillingBlowMs = 1_500;
+
+    /// <summary>When the fight of a boss that just died closes.</summary>
+    private long? _bossKilledAt;
+
     private void Close(EncounterEnd reason)
     {
+        _bossKilledAt = null;
         if (Current is not { } current)
         {
             return;

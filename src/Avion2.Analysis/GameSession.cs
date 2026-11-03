@@ -47,6 +47,33 @@ public sealed class GameSession
 
     public void Apply(GameEvent e)
     {
+        switch (e)
+        {
+            // The death record (04 8D) is the death: the despawn (42 36) comes ~3.4 s later and never for players
+            case KillEvent kill:
+                _killed[kill.VictimId] = kill.TimestampMs;
+                ApplyOne(e);
+                ApplyOne(new DeathEvent(kill.TimestampMs, kill.VictimId, DeathKind.Combat, AtKill: true));
+                return;
+            case DeathEvent { Kind: DeathKind.Combat } death
+                when _killed.Remove(death.EntityId, out long at) && death.TimestampMs - at is >= 0 and <= KilledToDespawnMs:
+                return; // already applied at the kill
+            case ZoneChangeEvent:
+                _killed.Clear();
+                break;
+        }
+
+        ApplyOne(e);
+    }
+
+    /// <summary>How long after its death record an entity's despawn still belongs to that death.</summary>
+    private const long KilledToDespawnMs = 15_000;
+
+    /// <summary>Entities whose death record came, until their despawn does.</summary>
+    private readonly Dictionary<uint, long> _killed = new();
+
+    private void ApplyOne(GameEvent e)
+    {
         if (e is ZoneChangeEvent)
         {
             // Close (and freeze) the encounter before entity ids are forgotten.

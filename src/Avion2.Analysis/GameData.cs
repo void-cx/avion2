@@ -45,9 +45,23 @@ public sealed class GameData
 
     public string SkillName(uint skillId)
     {
+        // A class's basic actions (CC 00 NNNN) keep their id. CC000101 is the dodge done while sprinting (it gets the
+        // dodge's buff and follows a sprint) and has no name of its own; the tables call 18000101 "Basic Attack"
+        bool basicAction = skillId is >= 11_000_000 and <= 19_999_999 && skillId / 10_000 % 100 == 0;
+        if (basicAction && skillId % 10_000 == 101 && Skills.TryGetValue(skillId - 1, out var dodge))
+        {
+            return dodge;
+        }
+
         if (Skills.TryGetValue(skillId, out var name))
         {
             return name;
+        }
+
+        // Other variants take the name of their action (17000102 of 17000100)
+        if (basicAction && Skills.TryGetValue(skillId - skillId % 100, out var basic))
+        {
+            return basic;
         }
 
         return skillId == 0 ? "?" : $"Skill {skillId}";

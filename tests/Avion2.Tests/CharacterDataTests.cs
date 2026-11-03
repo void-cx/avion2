@@ -46,3 +46,34 @@ public class CharacterDataTests
         Assert.Equal(3, back.For("Doxylamin")!.Members.Count);
     }
 }
+
+/// <summary>Our combat power comes from <c>56 36</c>, also when it arrives just before the identity of a new character.</summary>
+public class SelfCombatPowerTests
+{
+    [Fact]
+    public void ParsesCurrentAndBest()
+    {
+        var power = Assert.IsType<SelfCombatPowerEvent>(Assert.Single(TestPackets.Parse("5636 f417000000000000 331a000000000000")));
+        Assert.Equal((6132u, 6707u), (power.CombatPower, power.Best));
+    }
+
+    [Fact]
+    public void FollowsOurCharacterAcrossZonesAndSwitches()
+    {
+        var session = new GameSession();
+        session.Apply(new SelfCombatPowerEvent(900, 6_100, 6_100)); // at login, before we know who we are
+        session.Apply(new SelfIdentityEvent(1_000, 100, "Doxylamin", 1321, GameClass.Chanter, 45));
+        Assert.Equal(6_100u, session.Registry.Find(100)!.CombatPower);
+
+        session.Apply(new SelfCombatPowerEvent(5_000, 6_200, 6_200));
+        Assert.Equal(6_200u, session.Registry.Find(100)!.CombatPower);
+
+        // A teleport much later: the same character keeps its power under its new entity id
+        session.Apply(new SelfIdentityEvent(600_000, 101, "Doxylamin", 1321, GameClass.Chanter, 45));
+        Assert.Equal(6_200u, session.Registry.Find(101)!.CombatPower);
+
+        // Another character later on: the old power is not theirs
+        session.Apply(new SelfIdentityEvent(900_000, 200, "Chiyu", 1321, GameClass.Cleric, 30));
+        Assert.Null(session.Registry.Find(200)!.CombatPower);
+    }
+}

@@ -26,6 +26,19 @@ public class WorldTests
         Assert.True(move.Position.IsPlausible);
     }
 
+    [Theory]
+    [InlineData("1C37 d2ff01 01 03 e98f6847 dcdb9646 000efa46 0040 0040")] // flags bit 0: a state byte before the position
+    [InlineData("1B37 d2ff01 01 03 e98f6847 dcdb9646 000efa46 0040 0040")]
+    [InlineData("1B37 d2ff01 04 e98f6847 dcdb9646 000efa46 0040 0040 01")] // otherwise it comes at the end
+    [InlineData("1A37 d2ff01 01 00 03 e98f6847 dcdb9646 000efa46 0040")] // a stop: flags, a byte, [state], position
+    [InlineData("1A37 d2ff01 00 00 e98f6847 dcdb9646 000efa46 0040")]
+    public void MoveFlagBit0AddsAByteBeforeThePosition(string hex)
+    {
+        var move = Assert.IsType<PositionEvent>(Assert.Single(Parse(hex)));
+        Assert.Equal(59535.9f, move.Position.X, 0.1f);
+        Assert.Equal(19309.9f, move.Position.Y, 0.1f);
+    }
+
     [Fact]
     public void ParsesSkillCastWithTargetPosition()
     {
@@ -45,6 +58,21 @@ public class WorldTests
         Assert.Equal(14817u, cast.ActorId);
         Assert.Equal(14817u, cast.TargetId);
         Assert.Null(cast.TargetPosition); // the floats here are not world coordinates
+    }
+
+    [Fact]
+    public void DodgeKeepsItsIdAndName()
+    {
+        // The same record is a dodge (14000101): basic actions (CC 00 NNNN) keep their id, not 14000000
+        var cast = Assert.IsType<SkillCastEvent>(Assert.Single(Parse("0238 e17300 e59fd500 ea 02 e173 101c1cbe 54dec742 c31168c0 00000000 904e01f403")));
+        Assert.Equal(14_000_101u, cast.SkillId);
+
+        var data = Avion2.Analysis.GameData.Parse(
+            """{"11000000": "Equip Gladiator Weapon", "11000100": "Dodge", "14000100": "Dodge", "18000100": "Dodge", "18000101": "Basic Attack"}""", null);
+        Assert.Equal("Dodge", data.SkillName(cast.SkillId));
+        Assert.Equal("Dodge", data.SkillName(11_000_101));
+        Assert.Equal("Dodge", data.SkillName(18_000_101)); // the sprint dodge, mislabelled in the tables
+        Assert.Equal("Equip Gladiator Weapon", data.SkillName(11_000_000));
     }
 
     [Fact]
@@ -84,18 +112,27 @@ public class WorldTests
     }
 
     [Fact]
-    public void OwnershipLinksSpawnedEntitiesToTheirOwnerAndLegion()
+    public void KillNamesVictimKillerAndTheKillersLegion()
     {
-        var events = Parse("048D ab8303 b01d1301 b152 2905 " + Text("TestDaeva") + Text("Legion") + "010000000000000100");
-        var claim = Assert.IsType<OwnershipEvent>(events[0]);
-        Assert.Equal(49579u, claim.EntityId);
-        Assert.Equal(10545u, claim.OwnerId);
+        // victim, skill, killer, server, name, legion, emblem, NPC killer (none), u32, reason (1 a hit), u8
+        var events = Parse("048D ab8303 b01d1301 b152 2905 " + Text("TestDaeva") + Text("Legion") + "0100 00 00000000 01 00");
+        var kill = Assert.IsType<KillEvent>(events[0]);
+        Assert.Equal((49579u, 10545u, 18_030_000u, (byte)1), (kill.VictimId, kill.KillerId, kill.SkillId, kill.Reason));
+        Assert.Null(kill.KillerNpcCode);
         var tag = Assert.IsType<LegionTagEvent>(events[1]);
         Assert.Equal(("Legion", (ushort)1321), (tag.Legion, tag.ServerId));
     }
 
-    [Fact]
-    public void ShortOwnershipFormIsIgnored() => Assert.Empty(Parse("048D 97aa02 0000000000000000000000 7e06 00000000"));
+    [Theory]
+    [InlineData("048D 97aa02 082a0401 84a002 0000 00 00 0000 beea8e01 00000000 01 02", 36_868u, 17_050_120u, 2_340_158u)] // killed by an NPC (die type 2: a player)
+    [InlineData("048D fbac01 f4eed500 00 0000 00 00 0000 00 00000000 01 02", 0u, 14_020_340u, null)] // killer not said (party, big fight)
+    public void KillWithoutAPlayerKiller(string hex, uint killer, uint skill, uint? npc)
+    {
+        var kill = Assert.IsType<KillEvent>(Assert.Single(Parse(hex)));
+        Assert.Equal(killer, kill.KillerId);
+        Assert.Equal(skill, kill.SkillId);
+        Assert.Equal(npc, kill.KillerNpcCode);
+    }
 
     [Fact]
     public void ParsesLegionTags()

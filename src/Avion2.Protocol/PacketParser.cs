@@ -32,8 +32,8 @@ public static class PacketParser
                 return RecordParsers.ParsePlayerSpawn(body, timestampMs, emit);
             case Opcodes.NpcSpawn:
                 return RecordParsers.ParseNpcSpawn(body, timestampMs, emit);
-            case Opcodes.Ownership:
-                return WorldParsers.ParseOwnership(body, timestampMs, emit);
+            case Opcodes.Kill:
+                return WorldParsers.ParseKill(body, timestampMs, emit);
             case Opcodes.LegionTag:
                 return WorldParsers.ParseLegionTag(body, timestampMs, emit);
             case Opcodes.LegionDetails:
@@ -54,6 +54,9 @@ public static class PacketParser
             Opcodes.Death => RecordParsers.ParseDeath(body, timestampMs, emit),
             Opcodes.MapLoad => RecordParsers.ParseMapLoad(body, timestampMs, emit),
             Opcodes.PartyRoster => RecordParsers.ParsePartyRoster(body, timestampMs, emit),
+            Opcodes.PartyInfo => RecordParsers.ParsePartyInfo(body, timestampMs, emit),
+            Opcodes.SelfCombatPower => RecordParsers.ParseSelfCombatPower(body, timestampMs, emit),
+            Opcodes.PartyAddMember or Opcodes.PartyReconnectMember => RecordParsers.ParsePartyMemberJoined(body, timestampMs, emit),
             Opcodes.InstanceStage => RecordParsers.ParseInstanceStage(body, timestampMs, emit),
             Opcodes.GatherStart => RecordParsers.ParseGatherStart(body, timestampMs, emit),
             Opcodes.GatherEnd => RecordParsers.ParseGatherEnd(body, timestampMs, emit),
@@ -86,7 +89,12 @@ public static class PacketParser
             Opcodes.Move => WorldParsers.ParseMove(body, timestampMs, emit),
             Opcodes.MoveRelative or Opcodes.MoveSteer or Opcodes.Dash or Opcodes.Relocate =>
                 WorldParsers.ParsePositionAt(body, timestampMs, emit, opcode),
-            _ => false,
+            // Each area's own records (see its file): false when the opcode is not one of them
+            _ => MechanicsParsers.TryParse(opcode, body, timestampMs, emit) ||
+                 MovementParsers.TryParse(opcode, body, timestampMs, emit) ||
+                 PartyParsers.TryParse(opcode, body, timestampMs, emit) ||
+                 ProgressParsers.TryParse(opcode, body, timestampMs, emit) ||
+                 WorldEventParsers.TryParse(opcode, body, timestampMs, emit),
         };
     }
 }
