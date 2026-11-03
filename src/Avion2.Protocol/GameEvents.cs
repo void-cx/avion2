@@ -369,7 +369,8 @@ public sealed record LegionRosterEvent(long TimestampMs, IReadOnlyList<LegionMem
 /// <summary>One inventory slot of our character.</summary>
 /// <param name="Container">01 cube (bag), 0B equipped, 0F warehouse; 04 seen for quest items.</param>
 /// <param name="Enchant">Enchant level of gear (+0…+15), null for stackables.</param>
-public sealed record InventoryItem(uint ItemId, ulong Count, byte Container, byte Slot, byte? Enchant = null)
+/// <param name="ItemLevel">Worn gear's own item level as the game counts it (base, enchant and any bonus); null when not sent.</param>
+public sealed record InventoryItem(uint ItemId, ulong Count, byte Container, byte Slot, byte? Enchant = null, uint? ItemLevel = null)
 {
     public const byte Cube = 0x01;
     public const byte Equipped = 0x0B;

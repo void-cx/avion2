@@ -54,9 +54,11 @@ public partial class HomePage : UserControl
         state.UpdateAvailableChanged += RefreshUpdate;
         state.Fights.CollectionChanged += (_, _) => RefreshRecent();
         state.InventoryUpdated += RefreshCharacter;
+        state.ProgressUpdated += RefreshProgress;
         state.ViewedCharacterChanged += () =>
         {
             RefreshCharacter();
+            RefreshProgress();
             RefreshLegion();
             RefreshRecent();
         };
@@ -68,6 +70,7 @@ public partial class HomePage : UserControl
             Refresh();
             RefreshRecent();
             RefreshCharacter();
+            RefreshProgress();
             _timer.Start();
         };
         Unloaded += (_, _) => _timer.Stop();
@@ -107,6 +110,11 @@ public partial class HomePage : UserControl
     private void Refresh()
     {
         RefreshComingUp();
+        if (DateTime.UtcNow - _progressShown > TimeSpan.FromMinutes(1))
+        {
+            RefreshProgress(); // today's and this week's counts end at the resets
+        }
+
         NpcapValue.Text = AppState.NpcapInstalled ? "Installed" : "Missing: install from npcap.com";
         NamesValue.Text = _state.SkillNames == 0
             ? "Not installed (Settings)"
@@ -190,6 +198,26 @@ public partial class HomePage : UserControl
             Wallet.Visibility = Visibility.Collapsed;
             InventoryAge.Text = string.Empty;
         }
+    }
+
+    private DateTime _progressShown;
+
+    /// <summary>Item level, today's and this week's caps, tickets, Daeva Pass, XP per hour and pet souls of the character shown.</summary>
+    private void RefreshProgress()
+    {
+        _progressShown = DateTime.UtcNow;
+        var progress = _state.Progress;
+        int? gear = progress is not null && _state.ViewedInventory is { Character: { } owner } inventory && owner == progress.Character
+            ? inventory.GearItemLevel
+            : null;
+        var stats = progress is null ? [] : Avion2.Analysis.ProgressSummary.Stats(progress, DateTimeOffset.Now, _state.Settings.Region, gear);
+        // Pets belong to the account: the newest roster of any character
+        string? pets = _state.Progresses.LatestPets() is { } roster ? Avion2.Analysis.ProgressSummary.Pets(roster, _state.PetName) : null;
+        ProgressStats.ItemsSource = stats;
+        PetLine.Text = pets ?? string.Empty;
+        PetLine.Visibility = pets is null ? Visibility.Collapsed : Visibility.Visible;
+        ProgressWho.Text = progress?.Character is { } who && stats.Count > 0 ? StreamerMode.Name(who) : string.Empty;
+        ProgressCard.Visibility = stats.Count > 0 || pets is not null ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void LastReplay_Click(object sender, RoutedEventArgs e)

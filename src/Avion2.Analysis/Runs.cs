@@ -291,6 +291,10 @@ public sealed class DungeonRun
     [JsonPropertyName("loot")]
     public List<RunItem> Loot { get; set; } = [];
 
+    /// <summary>Potions, scrolls and other items we used inside, with how often.</summary>
+    [JsonPropertyName("used")]
+    public List<RunItem> Used { get; set; } = [];
+
     /// <summary>False when the run ended without leaving (capture stopped, game closed).</summary>
     [JsonPropertyName("left")]
     public bool Left { get; set; }
@@ -457,6 +461,13 @@ public sealed class RunTracker
                 }
 
                 break;
+            case ItemUsedEvent used when Current is { } usedIn:
+                if (CountUse(usedIn, used))
+                {
+                    RunChanged?.Invoke(usedIn);
+                }
+
+                break;
             case PartyMemberJoinedEvent joined:
                 _roster = [.. _roster.Where(m => m.CharacterId != joined.Member.CharacterId), joined.Member];
                 if (Current is { } joinedInside && AddParty(joinedInside))
@@ -466,6 +477,31 @@ public sealed class RunTracker
 
                 break;
         }
+    }
+
+    /// <summary>The last use counted: both use records can come for one use, so the second is not counted again.</summary>
+    private (long Uid, uint Item, long At)? _lastUse;
+
+    private bool CountUse(DungeonRun run, ItemUsedEvent used)
+    {
+        if (used.TimestampMs < run.StartMs
+            || _lastUse is { } last && last.Uid == used.ItemUid && last.Item == used.ItemId && used.TimestampMs - last.At is >= 0 and <= 2_000)
+        {
+            return false;
+        }
+
+        _lastUse = (used.ItemUid, used.ItemId, used.TimestampMs);
+        int at = run.Used.FindIndex(u => u.ItemId == used.ItemId);
+        if (at < 0)
+        {
+            run.Used.Add(new RunItem(used.ItemId, 1));
+        }
+        else
+        {
+            run.Used[at] = run.Used[at] with { Count = run.Used[at].Count + 1 };
+        }
+
+        return true;
     }
 
     /// <summary>Ends the current run without leaving (capture stopped).</summary>

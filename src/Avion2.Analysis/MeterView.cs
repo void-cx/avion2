@@ -42,6 +42,9 @@ public sealed record MeterRow(
     public int FrontHits { get; init; }
     public uint? CombatPower { get; init; }
 
+    /// <summary>The player's item level, if the game told us (ours always, others' when they change gear nearby).</summary>
+    public uint? ItemLevel { get; init; }
+
     /// <summary>The player's legion, if the game told us.</summary>
     public string? Legion { get; init; }
 
@@ -295,6 +298,7 @@ public static class MeterView
                 MultiHits = actor.MultiHits,
                 FrontHits = actor.FrontHits,
                 CombatPower = info?.CombatPower,
+                ItemLevel = isSelf ? registry.SelfItemLevel ?? info?.ItemLevel : info?.ItemLevel,
                 Legion = info?.Legion,
                 ServerId = info?.ServerId,
                 Stagger = actor.Stagger,

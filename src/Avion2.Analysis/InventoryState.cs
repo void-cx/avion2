@@ -45,6 +45,15 @@ public sealed class InventoryState
     [JsonIgnore]
     public IEnumerable<InventoryItem> Equipped => _slots.Values.Where(i => i.Container == InventoryItem.Equipped).OrderBy(i => i.Slot);
 
+    /// <summary>
+    /// The item levels of the worn gear added up, as the game counts them; null when a piece's is not known (an
+    /// inventory saved by an older AVION2). The game's item level adds the Daevanion board points to this.
+    /// </summary>
+    [JsonIgnore]
+    public int? GearItemLevel => Equipped.ToList() is { Count: > 0 } gear && gear.All(i => i.ItemLevel is not null)
+        ? gear.Sum(i => (int)i.ItemLevel!.Value)
+        : null;
+
     /// <summary>Kinah in the cube, bound and tradable (what the game's currency bar shows).</summary>
     [JsonIgnore]
     public ulong Kinah => Count(ItemIds.Kinah) + Count(ItemIds.KinahBound);
@@ -82,7 +91,11 @@ public sealed class InventoryState
                 {
                     // Updates carry no levels: keep the ones from the list
                     _slots[Key(item)] = _slots.TryGetValue(Key(item), out var old) && old.ItemId == item.ItemId
-                        ? item with { Enchant = item.Enchant ?? old.Enchant }
+                        ? item with
+                        {
+                            Enchant = item.Enchant ?? old.Enchant,
+                            ItemLevel = item.ItemLevel ?? ((item.Enchant ?? old.Enchant) == old.Enchant ? old.ItemLevel : null),
+                        }
                         : item;
                 }
 

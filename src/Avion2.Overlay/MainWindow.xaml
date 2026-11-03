@@ -329,6 +329,8 @@
                                                        TextTrimming="CharacterEllipsis" MaxWidth="120" ToolTip="Legion, and the server for players from another one" />
                                             <TextBlock Text="{Binding CombatPower, StringFormat={}⚔ {0}}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" Margin="7,0,0,1" VerticalAlignment="Bottom"
                                                        Visibility="{Binding HasCombatPower, Converter={StaticResource BoolToVis}}" ToolTip="Combat power" />
+                                            <TextBlock Text="{Binding ItemLevel, StringFormat={}iLvl {0}}" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" Margin="7,0,0,1" VerticalAlignment="Bottom"
+                                                       Visibility="{Binding HasItemLevel, Converter={StaticResource BoolToVis}}" ToolTip="Item level (others' once they change gear nearby)" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
                                             <TextBlock Text="{Binding Value}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TitleBrush}" />

@@ -40,6 +40,14 @@ public sealed class GameSession
     /// <summary>Our own legion, as far as the game has told us this session.</summary>
     public LegionState Legion { get; } = new();
 
+    /// <summary>
+    /// Our character's progress (item level, daily and weekly counts, tickets, Daeva Pass, pet souls) as far as the
+    /// game has told us since the character entered the world.
+    /// </summary>
+    public CharacterProgress Progress { get; private set; } = new();
+
+    private readonly SoulItemLearner _soulItems = new();
+
     /// <summary>Who is in our party, with their HP and where they are.</summary>
     public PartyTracker Party { get; } = new();
 
@@ -138,6 +146,54 @@ public sealed class GameSession
         {
             Inventory.Character = _named is { } n && n.Id == Registry.SelfId ? n.Name : null;
         }
+
+        ApplyProgress(e);
+    }
+
+    /// <summary>
+    /// Keeps <see cref="Progress"/> on the right character: the records sent on entering the world start over when
+    /// they come for a character other than the one the game last named (a switch at the character screen), and the
+    /// next identity names them.
+    /// </summary>
+    private void ApplyProgress(GameEvent e)
+    {
+        if (e is SelfIdentityEvent { Name.Length: > 0 } named && Progress.Character != named.Name)
+        {
+            if (Progress.Character is not null)
+            {
+                StartProgress();
+            }
+
+            Progress.Character = named.Name;
+            if (_progressBefore is { } before && before.Character == named.Name)
+            {
+                Progress.ContinueSession(before); // the same character logged in again
+            }
+
+            _progressBefore = null;
+        }
+
+        if (e is KinahLimitEvent { Initial: true } or ContentTicketsEvent or PetRosterEvent or InventoryListEvent
+            && Progress.Character is not null && !(_named is { } n && n.Id == Registry.SelfId))
+        {
+            StartProgress();
+        }
+
+        if (_soulItems.Apply(e) is { } learned)
+        {
+            Progress.SoulItems[learned.Pet] = learned.Item;
+        }
+
+        Progress.Apply(e);
+    }
+
+    /// <summary>The progress before the last start over, until the game names whose the new one is.</summary>
+    private CharacterProgress? _progressBefore;
+
+    private void StartProgress()
+    {
+        _progressBefore = Progress.Character is not null ? Progress : _progressBefore;
+        Progress = new CharacterProgress { SoulItems = new Dictionary<uint, uint>(Progress.SoulItems) };
     }
 
     /// <summary>The running encounter, or the last finished one.</summary>

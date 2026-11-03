@@ -105,14 +105,38 @@ public static class InventoryParsers
         }
 
         byte? enchant = null;
+        uint? itemLevel = null;
         int levels = i + 14 + RecordTail + 1;
         if (tail && container is 0x0B or 0x0F && levels + 1 < body.Length && body[levels] <= 30 && body[levels + 1] <= 30)
         {
             enchant = body[levels] != 0 ? body[levels] : body[levels + 1];
+            if (container == 0x0B)
+            {
+                itemLevel = ItemLevel(body, levels, enchant.Value);
+            }
         }
 
-        item = new InventoryItem(id, count, container, slot, enchant);
+        item = new InventoryItem(id, count, container, slot, enchant, itemLevel);
         return true;
+    }
+
+    /// <summary>
+    /// Worn gear carries its own item level: a <c>u32</c> 14 bytes after the enchant level. The enchant sits in the
+    /// first or the second of its two bytes, and everything after it moves along with it; at +0 the item level
+    /// itself shows which (its low byte is never 0: item levels are below 256).
+    /// </summary>
+    private static uint? ItemLevel(ReadOnlySpan<byte> body, int levels, byte enchant)
+    {
+        int shift = body[levels] != 0 ? 0 : body[levels + 1] != 0 ? 1
+            : levels + 14 < body.Length && body[levels + 14] != 0 ? 0 : 1;
+        int at = levels + shift + 14;
+        if (at + 4 > body.Length)
+        {
+            return null;
+        }
+
+        uint level = BinaryPrimitives.ReadUInt32LittleEndian(body[at..]);
+        return level is > 0 and < 1_000 && level >= enchant ? level : null;
     }
 
     /// <summary>

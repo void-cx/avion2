@@ -66,6 +66,12 @@ public sealed class PlayerCard(uint actorId) : Bindable
     public string CombatPower { get => _combatPower; set => Set(ref _combatPower, value); }
     public bool HasCombatPower => _combatPower.Length > 0;
 
+    private string _itemLevel = string.Empty;
+
+    /// <summary>The player's item level, or empty while the game has not told us.</summary>
+    public string ItemLevel { get => _itemLevel; set => Set(ref _itemLevel, value); }
+    public bool HasItemLevel => _itemLevel.Length > 0;
+
     private string _legion = string.Empty;
 
     /// <summary>"‹Legion›", or empty.</summary>
@@ -87,6 +93,8 @@ public sealed class PlayerCard(uint actorId) : Bindable
     }
 
     public void NotifyCombatPower() => OnPropertyChanged(nameof(HasCombatPower));
+
+    public void NotifyItemLevel() => OnPropertyChanged(nameof(HasItemLevel));
 }
 
 /// <summary>
@@ -497,7 +505,7 @@ public sealed class OverlayViewModel : Bindable
         Sync(snapshot.Rows.Select(r => r.ActorId), (card, i) =>
         {
             var row = snapshot.Rows[i];
-            Fill(card, row.Name, row.Class, row.IsSelf, row.CombatPower);
+            Fill(card, row.Name, row.Class, row.IsSelf, row.CombatPower, row.ItemLevel);
             card.Legion = LegionAndServer(row, snapshot.Self?.ServerId);
             card.ServerId = row.ServerId;
             card.Value = Big(row.Dps);
@@ -515,7 +523,7 @@ public sealed class OverlayViewModel : Bindable
         Sync(incoming.Select(r => r.VictimId), (card, i) =>
         {
             var row = incoming[i];
-            Fill(card, row.Name, row.Class, row.IsSelf, null);
+            Fill(card, row.Name, row.Class, row.IsSelf, null, null);
             card.Value = Big(row.Dtps);
             card.Share = Invariant($"{row.Share * 100:0.0}%");
             card.Stats = Invariant($"Hits {row.Hits}  Crits {row.Crits}  Parried {row.Parried}  Blocked {row.Blocked + row.PerfectBlocks}  Absorbed {Format(row.Absorbed)}");
@@ -569,7 +577,7 @@ public sealed class OverlayViewModel : Bindable
         }
     }
 
-    private static void Fill(PlayerCard card, string name, GameClass cls, bool isSelf, uint? combatPower)
+    private static void Fill(PlayerCard card, string name, GameClass cls, bool isSelf, uint? combatPower, uint? itemLevel)
     {
         card.RealName = name;
         card.Name = StreamerMode.Name(name, isSelf);
@@ -583,6 +591,13 @@ public sealed class OverlayViewModel : Bindable
         {
             card.CombatPower = cp;
             card.NotifyCombatPower();
+        }
+
+        string level = itemLevel is { } il ? il.ToString(CultureInfo.InvariantCulture) : string.Empty;
+        if (level != card.ItemLevel)
+        {
+            card.ItemLevel = level;
+            card.NotifyItemLevel();
         }
     }
 

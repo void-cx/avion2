@@ -215,6 +215,20 @@ public sealed class MeterEngine : IDisposable
             {
                 // our name can come after the list: the saved inventory gets it then
                 InventoryChanged?.Invoke();
+                if (e is SelfIdentityEvent)
+                {
+                    ProgressChanged?.Invoke(); // the progress sent before our name gets it now
+                }
+            }
+            else if (e is SelfItemLevelEvent or KinahLimitEvent or AbyssPointLimitEvent or ContentTicketsEvent
+                     or ContentTicketChangedEvent or DaevaPassEvent or ExperienceEvent or PetRosterEvent or PetSoulsEvent
+                     or PetAcquiredEvent)
+            {
+                ProgressChanged?.Invoke();
+                if (e is PetAcquiredEvent pet)
+                {
+                    PetAcquired?.Invoke(pet);
+                }
             }
             else if (e is GatherStartEvent or GatherEndEvent or CraftStartEvent or CraftEndEvent)
             {
@@ -506,6 +520,21 @@ public sealed class MeterEngine : IDisposable
 
     /// <summary>Raised on the capture thread when our inventory changed (<see cref="Inventory"/> has it).</summary>
     public event Action? InventoryChanged;
+
+    /// <summary>Raised on the capture thread when our character's progress changed (<see cref="Progress"/> has it).</summary>
+    public event Action? ProgressChanged;
+
+    /// <summary>Raised on the capture thread when we acquired a pet.</summary>
+    public event Action<PetAcquiredEvent>? PetAcquired;
+
+    /// <summary>Our character's progress as seen this session (a copy).</summary>
+    public CharacterProgress Progress()
+    {
+        lock (_sync)
+        {
+            return _session.Progress.Copy();
+        }
+    }
 
     /// <summary>Our inventory as seen this session (a copy).</summary>
     public InventoryState Inventory()

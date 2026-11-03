@@ -10,7 +10,8 @@ public sealed record ForgeItemLine(ForgeItem Item, string Name, string Detail, B
 
 public sealed record ForgeTile(string Label, string Average, string Note);
 
-public sealed record MyGearLine(ForgeItem Item, string Name, string Level, Brush Brush, int Enchant, byte Slot = 0);
+/// <param name="ItemLevel">The piece's item level as the game counts it (from the inventory); null when not sent.</param>
+public sealed record MyGearLine(ForgeItem Item, string Name, string Level, Brush Brush, int Enchant, byte Slot = 0, uint? ItemLevel = null);
 
 public sealed record UpgradeLine(GearUpgrade Upgrade, string Name, Brush Brush, string Gain, string Step, string Kinah, string Chance, string Materials, string Afford, string Detail);
 
@@ -34,6 +35,7 @@ public partial class ForgePage : UserControl
         InitializeComponent();
         state.ViewedCharacterChanged += Refresh;
         state.InventoryUpdated += Refresh;
+        state.ProgressUpdated += RefreshMyGear;
         void Refresh()
         {
             RefreshMyGear();
@@ -62,11 +64,26 @@ public partial class ForgePage : UserControl
         var lines = (_state.ViewedInventory?.Equipped ?? [])
             .Select(i => (Slot: i, Item: _forge.Find(i.ItemId)))
             .Where(x => x.Item is not null)
-            .Select(x => new MyGearLine(x.Item!, x.Item!.Name, $"+{x.Slot.Enchant ?? 0}", GradeBrush(x.Item!.Kind), x.Slot.Enchant ?? 0, x.Slot.Slot))
+            .Select(x => new MyGearLine(x.Item!, x.Item!.Name,
+                $"+{x.Slot.Enchant ?? 0}" + (x.Slot.ItemLevel is { } level ? $" · {level}" : string.Empty),
+                GradeBrush(x.Item!.Kind), x.Slot.Enchant ?? 0, x.Slot.Slot, x.Slot.ItemLevel))
             .ToList();
         MyGear.ItemsSource = lines;
         MyGearPanel.Visibility = lines.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        MyGearTitle.Text = _state.ViewedInventory?.Character is { } who ? $"Your gear ({StreamerMode.Name(who)})" : "Your gear";
+        var inventory = _state.ViewedInventory;
+        string title = inventory?.Character is { } who ? $"Your gear ({StreamerMode.Name(who)})" : "Your gear";
+        // The game's item level: the gear's plus the Daevanion board points
+        MyGearTitle.ToolTip = null;
+        if (_state.Progress is { ItemLevel: { } total, Character: { } owner } && owner == inventory?.Character)
+        {
+            title += $" · item level {total}";
+            if (inventory.GearItemLevel is { } gear && gear <= total)
+            {
+                MyGearTitle.ToolTip = $"Gear {gear} + Daevanion {total - gear}";
+            }
+        }
+
+        MyGearTitle.Text = title;
         RefreshUpgrades();
     }
 
@@ -313,7 +330,9 @@ public partial class ForgePage : UserControl
         if (Mode == ForgeMode.Enchant && _stats.Item(_item.Id) is { } info)
         {
             var gains = info.Effect is { } effect ? _stats.Gain(effect, from, to) : [];
-            Summary.Text = $"{verb} {_item.Name} from +{from} to +{to} adds {to - from} item level ({info.ItemLevel + from} → {info.ItemLevel + to})" +
+            // Your piece can count more than the table's base plus enchant (the game sends its item level): start from that
+            int bonus = _mine is { ItemLevel: { } mine } && mine >= info.ItemLevel + _mine.Enchant ? (int)mine - info.ItemLevel - _mine.Enchant : 0;
+            Summary.Text = $"{verb} {_item.Name} from +{from} to +{to} adds {to - from} item level ({info.ItemLevel + bonus + from} → {info.ItemLevel + bonus + to})" +
                            string.Concat(gains.Select(g => $", {g}")) + ". On average it takes:";
         }
 

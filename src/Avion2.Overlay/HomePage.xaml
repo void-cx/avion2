@@ -144,6 +144,32 @@
                     </Border>
                 </UniformGrid>
 
+                <!-- Progress: only what the game has sent (today's and this week's counts while they last) -->
+                <Border x:Name="ProgressCard" Style="{StaticResource SurfaceCard}" Margin="0,0,0,16" Visibility="Collapsed">
+                    <StackPanel>
+                        <DockPanel Style="{StaticResource CardHead}">
+                            <TextBlock x:Name="ProgressWho" DockPanel.Dock="Right" Style="{StaticResource CardCaption}" />
+                            <TextBlock Text="Progress" Style="{StaticResource CardCaption}" />
+                        </DockPanel>
+                        <ItemsControl x:Name="ProgressStats">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,28,6" ToolTip="{Binding Tip}" ToolTipService.IsEnabled="{Binding HasTip}">
+                                        <TextBlock Text="{Binding Label}" Style="{StaticResource StatLabel}" />
+                                        <TextBlock Style="{StaticResource StatValue}">
+                                            <Run Text="{Binding Value, Mode=OneWay}" /><Run Text="{Binding Of, Mode=OneWay}" FontSize="12" FontWeight="Normal" Foreground="{DynamicResource MutedBrush}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock x:Name="PetLine" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0" Visibility="Collapsed" />
+                    </StackPanel>
+                </Border>
+
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*" />

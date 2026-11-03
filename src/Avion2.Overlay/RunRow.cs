@@ -268,6 +268,14 @@ public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live 
 
     public Visibility LootVisibility => row.Run.Loot.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
+    /// <summary>Potions and scrolls used inside (also the ones the game used by itself).</summary>
+    public IReadOnlyList<RunLootRow> Used => row.Run.Used
+        .OrderByDescending(i => i.Count)
+        .Select(i => new RunLootRow(ItemName(i.ItemId), $"× {i.Count.ToString("N0", CultureInfo.InvariantCulture)}"))
+        .ToList();
+
+    public Visibility UsedVisibility => row.Run.Used.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
     private static string ItemName(uint id) => BundledGameData.ItemName(id) ?? $"Item {id}";
 
     private static Brush Brush(string key) => Application.Current.TryFindResource(key) as Brush ?? Brushes.Gray;

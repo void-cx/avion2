@@ -341,6 +341,13 @@ public sealed class AppState
             var inventory = engine.Inventory();
             Application.Current.Dispatcher.BeginInvoke(() => UpdateInventory(inventory));
         };
+        engine.ProgressChanged += () =>
+        {
+            var progress = engine.Progress();
+            Application.Current.Dispatcher.BeginInvoke(() => UpdateProgress(progress));
+        };
+        engine.PetAcquired += pet => Application.Current.Dispatcher.BeginInvoke(() =>
+            Notices.Notify($"New pet: {PetName(pet.PetId)}", "Pet acquired"));
         engine.HitTaken += hit =>
         {
             if (Hud is not null)
@@ -881,6 +888,92 @@ public sealed class AppState
         }
     }
 
+    private static string ProgressFile => Path.Combine(InventoryDirectory, "progress.json");
+
+    /// <summary>Each character's progress (item level, Kinah and Abyss Points caps, tickets, Daeva Pass, pet souls); saved.</summary>
+    public Avion2.Analysis.ProgressBook Progresses { get; } = LoadProgress();
+
+    /// <summary>
+    /// The progress of the character the pages show: a picked character's, else the one the meter is following (named
+    /// by the game in this session; the last one played before that).
+    /// </summary>
+    public Avion2.Analysis.CharacterProgress? Progress =>
+        _viewing is { } name ? Progresses.For(name) : Progresses.For(_progressLive ?? _playing);
+
+    /// <summary>The character the meter's progress belongs to, once the game named it.</summary>
+    private string? _progressLive;
+
+    /// <summary>Raised on the UI thread when a character's progress changed.</summary>
+    public event Action? ProgressUpdated;
+
+    /// <summary>A pet's name, from the soul item it drops ("Soul: Zelophi (Bound)"), once AVION2 has seen one land in the bag.</summary>
+    public string PetName(uint pet)
+    {
+        string? item = Progresses.SoulItem(pet) is { } soul ? BundledGameData.ItemName(soul) : null;
+        if (item is null)
+        {
+            return $"Pet {pet}";
+        }
+
+        int colon = item.IndexOf(':');
+        string name = colon >= 0 ? item[(colon + 1)..].Trim() : item;
+        return name.EndsWith(" (Bound)", StringComparison.Ordinal) ? name[..^" (Bound)".Length] : name;
+    }
+
+    private static Avion2.Analysis.ProgressBook LoadProgress()
+    {
+        try
+        {
+            return File.Exists(ProgressFile)
+                ? System.Text.Json.JsonSerializer.Deserialize<Avion2.Analysis.ProgressBook>(File.ReadAllText(ProgressFile)) ?? new()
+                : new();
+        }
+        catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException or UnauthorizedAccessException)
+        {
+            return new();
+        }
+    }
+
+    private DateTime _progressSaved;
+    private bool _progressDirty;
+
+    private void UpdateProgress(Avion2.Analysis.CharacterProgress progress)
+    {
+        // Waits for our name: what came before it stays with the meter and is placed then
+        if (Progresses.Take(progress) is not { } merged)
+        {
+            return;
+        }
+
+        _progressLive = merged.Character;
+        ProgressUpdated?.Invoke();
+        _progressDirty = true;
+        if (DateTime.UtcNow - _progressSaved > TimeSpan.FromSeconds(10))
+        {
+            SaveProgress();
+        }
+    }
+
+    private void SaveProgress()
+    {
+        if (!KeepsGameState || !_progressDirty)
+        {
+            return;
+        }
+
+        _progressSaved = DateTime.UtcNow;
+        _progressDirty = false;
+        try
+        {
+            Directory.CreateDirectory(InventoryDirectory);
+            File.WriteAllText(ProgressFile, System.Text.Json.JsonSerializer.Serialize(Progresses));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _progressDirty = true; // next change tries again
+        }
+    }
+
     private readonly Dictionary<(uint Boss, uint Skill), DateTime> _bossCasts = new();
 
     /// <summary>A boss started a named skill: a notice (no sound), at most once per skill per 10 s.</summary>
@@ -1092,6 +1185,7 @@ public sealed class AppState
         }
 
         SaveInventory();
+        SaveProgress();
         var s = Stored;
         s.BackgroundOpacity = Settings.BackgroundOpacity;
         s.AllTargets = Settings.AllTargets;

@@ -26,6 +26,9 @@ public sealed class EntityInfo(uint id)
     public bool IsDummy { get; set; }
     public uint? CombatPower { get; set; }
 
+    /// <summary>The player's item level, from an equipment change seen nearby (<c>1C 56</c>).</summary>
+    public uint? ItemLevel { get; set; }
+
     /// <summary>Legion name (<c>33 8A</c> / <c>04 8D</c>).</summary>
     public string? Legion { get; set; }
 }
@@ -49,6 +52,9 @@ public sealed class EntityRegistry
     private GameClass _selfClass;
 
     public uint? SelfId { get; private set; }
+
+    /// <summary>Our item level as the game shows it (<c>1D 56</c>, sent on entering the world and on every change).</summary>
+    public uint? SelfItemLevel { get; private set; }
 
     /// <summary>Our name: confirmed by an identity record, else guessed from characters seen in earlier sessions.</summary>
     public string? SelfName => _confirmedName ?? GuessCharacter()?.Name;
@@ -167,6 +173,14 @@ public sealed class EntityRegistry
 
                 break;
             }
+
+            case SelfItemLevelEvent level:
+                SelfItemLevel = level.ItemLevel;
+                break;
+
+            case EquipmentChangedEvent equipment:
+                GetOrAdd(equipment.EntityId).ItemLevel = equipment.ItemLevel;
+                break;
 
             case SelfHintEvent hint:
             {
