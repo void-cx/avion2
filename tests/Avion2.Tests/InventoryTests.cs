@@ -108,6 +108,57 @@ public class InventoryTests
     }
 
     [Fact]
+    public void ListIsNamedAfterTheCharacterItBelongsTo()
+    {
+        var session = new GameSession();
+        session.Apply(new SelfIdentityEvent(1_000, 100, "Doxylamin", 1321, GameClass.Chanter, 45));
+        session.Apply(new InventoryListEvent(2_000, [new InventoryItem(110830047, 1, InventoryItem.Equipped, 1, 10)]));
+        Assert.Equal("Doxylamin", session.Inventory.Character);
+
+        // Switching characters: the game points at the new entity, sends its list, and names it seconds later
+        session.Apply(new SelfHintEvent(2_500, 200));
+        session.Apply(new InventoryListEvent(3_000, [new InventoryItem(110760001, 1, InventoryItem.Equipped, 1, 0)]));
+        Assert.Null(session.Inventory.Character);
+        session.Apply(new SelfIdentityEvent(4_000, 200, "Chiyu", 1321, GameClass.Cleric, 7));
+        Assert.Equal("Chiyu", session.Inventory.Character);
+    }
+
+    [Fact]
+    public void EachCharacterKeepsItsOwnInventory()
+    {
+        static InventoryState List(string? who, long ms, uint item, byte enchant)
+        {
+            var inventory = new InventoryState { Character = who };
+            inventory.Apply(new InventoryListEvent(ms, [new InventoryItem(item, 1, InventoryItem.Equipped, 1, enchant)]));
+            return inventory;
+        }
+
+        var book = new InventoryBook();
+        book.Take(List("Doxylamin", 1_000, 110830047, 10));
+
+        // Chiyu logs in: shown at once, kept once the game names it; Doxylamin's stays as it was
+        var unnamed = List(null, 2_000, 110760001, 0);
+        Assert.Same(unnamed, book.Take(unnamed));
+        Assert.Null(book.For("Chiyu"));
+        book.Take(List("Chiyu", 2_000, 110760001, 0));
+        Assert.Equal((byte)10, book.For("Doxylamin")!.Equipped.Single().Enchant);
+        Assert.Equal("Chiyu", book.Latest!.Character);
+
+        // Slot updates seen before a list wait for our name, then go on top of that character's saved inventory
+        var updates = new InventoryState();
+        updates.Apply(new InventoryItemEvent(3_000, new InventoryItem(ItemIds.KinahBound, 500, InventoryItem.Cube, 1)));
+        Assert.Null(book.Take(updates));
+        updates.Character = "Doxylamin";
+        var merged = book.Take(updates)!;
+        Assert.Equal(500ul, merged.Kinah);
+        Assert.Equal((byte)10, merged.Equipped.Single().Enchant);
+        Assert.Equal(0ul, book.For("Chiyu")!.Kinah);
+
+        var back = System.Text.Json.JsonSerializer.Deserialize<InventoryBook>(System.Text.Json.JsonSerializer.Serialize(book))!;
+        Assert.Equal(["Doxylamin", "Chiyu"], back.All.Select(i => i.Character));
+    }
+
+    [Fact]
     public void InventorySurvivesSaving()
     {
         var inventory = new InventoryState { Character = "Doxylamin" };

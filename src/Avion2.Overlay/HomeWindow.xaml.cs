@@ -60,14 +60,68 @@ public partial class HomeWindow : Window
             state.SaveSettings();
         };
         _timer.Tick += (_, _) => UpdateNavStatus();
+        state.ViewedCharacterChanged += UpdateCharacterPick;
+        StreamerMode.Changed += UpdateCharacterPick;
         Loaded += (_, _) =>
         {
+            UpdateCharacterPick();
             UpdateNavStatus();
             UpdateBackdrop();
             _timer.Start();
         };
 
         NavLinks.First().IsChecked = true;
+    }
+
+    /// <summary>The rail's character: whose data the pages show (accented while it is not the one in game).</summary>
+    private void UpdateCharacterPick()
+    {
+        var characters = _state.OurCharacters;
+        CharacterPick.Visibility = characters.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
+        if (_state.ViewedCharacter is not { } name)
+        {
+            return;
+        }
+
+        CharacterPick.ApplyTemplate();
+
+        var known = characters.FirstOrDefault(c => c.Name == name);
+        if (CharacterPick.Template.FindName("PickIcon", CharacterPick) is Image icon)
+        {
+            icon.Source = ClassIcons.For(known?.Class ?? GameClass.Unknown);
+        }
+
+        if (CharacterPick.Template.FindName("PickName", CharacterPick) is TextBlock label)
+        {
+            label.Text = StreamerMode.Name(name, self: !_state.ViewsOther);
+        }
+
+        CharacterPick.Tag = _state.ViewsOther ? "other" : null;
+        CharacterPick.ToolTip = _state.ViewsOther
+            ? $"Showing {StreamerMode.Name(name)}'s gear, fights, runs and legion; {StreamerMode.Name(_state.PlayingCharacter ?? "?", self: true)} is in game. Click to switch."
+            : $"Showing the gear, fights, runs and legion of {StreamerMode.Name(name, self: true)}. Click to see another character's.";
+    }
+
+    private void CharacterPick_Click(object sender, RoutedEventArgs e)
+    {
+        var menu = new ContextMenu { PlacementTarget = CharacterPick, Placement = System.Windows.Controls.Primitives.PlacementMode.Right };
+        menu.Items.Add(new MenuItem { Header = "Show the data of", IsEnabled = false });
+        foreach (var character in _state.OurCharacters)
+        {
+            bool playing = character.Name == _state.PlayingCharacter;
+            var item = new MenuItem
+            {
+                Header = StreamerMode.Name(character.Name, self: playing) + (playing ? "  ·  in game" : string.Empty),
+                IsCheckable = true,
+                IsChecked = character.Name == _state.ViewedCharacter,
+                Icon = new Image { Source = ClassIcons.For(character.Class), Width = 18, Height = 18 },
+            };
+            string name = character.Name;
+            item.Click += (_, _) => _state.View(name);
+            menu.Items.Add(item);
+        }
+
+        menu.IsOpen = true;
     }
 
     /// <summary>The rail's page buttons (Settings sits at the bottom of the rail).</summary>

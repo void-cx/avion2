@@ -161,6 +161,8 @@ public sealed class MeterEngine : IDisposable
                 return; // never remember "You" as a character
             }
 
+            CharacterIdentified?.Invoke(character);
+
             // Identity records repeat; only touch the file when something changed.
             var latest = characters.Characters.FirstOrDefault();
             if (latest is null || latest.Name != character.Name || latest.Class != character.Class ||
@@ -205,8 +207,9 @@ public sealed class MeterEngine : IDisposable
             {
                 LegionChanged?.Invoke();
             }
-            else if (e is InventoryListEvent or InventoryItemEvent)
+            else if (e is InventoryListEvent or InventoryItemEvent or SelfIdentityEvent)
             {
+                // our name can come after the list: the saved inventory gets it then
                 InventoryChanged?.Invoke();
             }
             else if (e is GatherStartEvent or GatherEndEvent or CraftStartEvent or CraftEndEvent)
@@ -452,7 +455,7 @@ public sealed class MeterEngine : IDisposable
         {
             var legion = _session.Legion;
             return legion.IsKnown || legion.Members.Count > 0
-                ? new LegionState { Name = legion.Name, Leader = legion.Leader, Texts = legion.Texts.ToList(), Members = legion.Members, UpdatedMs = legion.UpdatedMs }
+                ? new LegionState { Character = legion.Character, Name = legion.Name, Leader = legion.Leader, Texts = legion.Texts.ToList(), Members = legion.Members, UpdatedMs = legion.UpdatedMs }
                 : null;
         }
     }
@@ -480,6 +483,9 @@ public sealed class MeterEngine : IDisposable
             _session.Cubes.CubeCodes.UnionWith(codes);
         }
     }
+
+    /// <summary>Raised on the capture thread whenever the game names our character (repeats; not when anonymizing).</summary>
+    public event Action<KnownCharacter>? CharacterIdentified;
 
     /// <summary>Raised on the capture thread when our inventory changed (<see cref="Inventory"/> has it).</summary>
     public event Action? InventoryChanged;

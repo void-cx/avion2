@@ -41,6 +41,14 @@ public partial class CharactersPage : UserControl
             }
         };
         ShowMessage("Pick a character on the left, or look one up by name.");
+        state.ViewedCharacterChanged += () =>
+        {
+            // picking a character in the rail opens it here
+            if (Mine.ItemsSource is IEnumerable<CharacterRow> rows && rows.FirstOrDefault(r => r.Name == state.ViewedCharacter) is { } row)
+            {
+                Mine.SelectedItem = row;
+            }
+        };
         StreamerMode.Changed += () =>
         {
             foreach (var list in new[] { Mine, Results })
@@ -83,7 +91,8 @@ public partial class CharactersPage : UserControl
 
         if (_current is null && rows.Count > 0)
         {
-            Mine.SelectedIndex = 0; // the character played last
+            // the character picked in the rail, else the one played last
+            Mine.SelectedItem = rows.FirstOrDefault(r => r.Name == _state.ViewedCharacter) ?? rows[0];
         }
 
         _ = FillSummariesAsync(rows);
@@ -226,7 +235,8 @@ public partial class CharactersPage : UserControl
             .ToList();
         CompareWith.SelectionChanged -= CompareWith_SelectionChanged;
         CompareWith.ItemsSource = rows;
-        CompareWith.SelectedItem = rows.FirstOrDefault(r => r.Name == picked?.Name && r.ServerId == picked?.ServerId) ?? rows.FirstOrDefault();
+        CompareWith.SelectedItem = rows.FirstOrDefault(r => r.Name == picked?.Name && r.ServerId == picked?.ServerId)
+                                   ?? rows.FirstOrDefault(r => r.Name == _state.ViewedCharacter) ?? rows.FirstOrDefault();
         CompareWith.SelectionChanged += CompareWith_SelectionChanged;
         CompareButton.Visibility = rows.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         if (rows.Count == 0)

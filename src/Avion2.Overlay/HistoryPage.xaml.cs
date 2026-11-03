@@ -64,6 +64,7 @@ public partial class HistoryPage : UserControl
         _all.GroupDescriptions.Add(new PropertyGroupDescription(nameof(HistoryRow.Day)));
         FightList.ItemsSource = _all;
         state.Fights.CollectionChanged += OnFightsChanged;
+        state.ViewedCharacterChanged += Refresh;
         Refresh();
     }
 
@@ -81,6 +82,9 @@ public partial class HistoryPage : UserControl
 
     private bool Best => BestMode.IsChecked == true;
 
+    /// <summary>The fights of the character the pages show.</summary>
+    private IEnumerable<HistoryRow> Mine => _state.ViewedFights;
+
     /// <summary>Shows only the fights started between two times (a dungeon run's fights).</summary>
     public void ShowRange(long fromMs, long toMs, string label)
     {
@@ -95,6 +99,11 @@ public partial class HistoryPage : UserControl
     private bool Matches(object item)
     {
         if (item is not HistoryRow row)
+        {
+            return false;
+        }
+
+        if (!_state.Shows(row.Entry.Snapshot.Self?.Name))
         {
             return false;
         }
@@ -115,7 +124,7 @@ public partial class HistoryPage : UserControl
     {
         if (Best)
         {
-            FightList.ItemsSource = HistoryRow.BestPerBoss(_state.Fights).Where(Matches).ToList();
+            FightList.ItemsSource = HistoryRow.BestPerBoss(Mine).Where(Matches).ToList();
         }
         else
         {
@@ -129,8 +138,8 @@ public partial class HistoryPage : UserControl
 
         FightList.Tag = Best ? "best" : null;
         int shown = FightList.Items.Count;
-        int bests = HistoryRow.BestPerBoss(_state.Fights).Count;
-        Ui.SetCount(AllMode, _state.Fights.Count.ToString("N0", CultureInfo.InvariantCulture));
+        int bests = HistoryRow.BestPerBoss(Mine).Count;
+        Ui.SetCount(AllMode, Mine.Count().ToString("N0", CultureInfo.InvariantCulture));
         Ui.SetCount(BestMode, bests.ToString("N0", CultureInfo.InvariantCulture));
         Shown.Text = Best ? $"{shown} targets" : $"{shown} fights";
 
@@ -139,6 +148,7 @@ public partial class HistoryPage : UserControl
             : "Saved on this PC only. Fights include other players' names, so ask before sharing.";
         NoFights.Visibility = shown == 0 ? Visibility.Visible : Visibility.Collapsed;
         NoFights.Text = _state.Fights.Count == 0 ? "No fights saved yet. Fights are saved when they end."
+            : !Mine.Any() ? $"No fights of {StreamerMode.Name(_state.ViewedCharacter ?? string.Empty)} yet. Pick another character in the rail on the left."
             : Best && bests == 0 ? "No records yet: they come from fights of 20 s or more where you dealt damage."
             : "Nothing matches the search or the period.";
     }

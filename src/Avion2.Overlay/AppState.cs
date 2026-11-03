@@ -19,6 +19,13 @@ public sealed class AppState
     {
         _baseOptions = baseOptions;
         Stored = OverlaySettings.Load();
+        Inventory = Inventories.Latest;
+        foreach (var known in new CharacterStore().Characters)
+        {
+            _ourNames.Add(known.Name);
+        }
+
+        _playing = new CharacterStore().Characters.FirstOrDefault()?.Name ?? Inventory?.Character;
         // the last character we played is "You" until the meter sees which one it is today
         StreamerMode.Names.Self = new CharacterStore().Characters.FirstOrDefault()?.Name;
         StreamerMode.Set(Stored.HideNames);
@@ -314,6 +321,7 @@ public sealed class AppState
             LiveRunChanged?.Invoke();
         });
         engine.FightSaved += entry => Application.Current.Dispatcher.BeginInvoke(() => Fights.Insert(0, new HistoryRow(entry)));
+        engine.CharacterIdentified += character => Application.Current.Dispatcher.BeginInvoke(() => Identified(character));
         engine.LegionChanged += () =>
         {
             var legion = engine.Legion();
@@ -478,68 +486,117 @@ public sealed class AppState
     public int DeleteRecordings() => Recordings.Delete(inUse: Engine is not null ? CurrentRecording : null);
 
     private static string LegionFile =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "legion.json");
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "legions.json");
 
-    /// <summary>Our legion (name, leader, texts, members with last login); saved, so Home shows it between sessions.</summary>
-    public Avion2.Analysis.LegionState? Legion { get; private set; } = LoadLegion();
+    /// <summary>Each character's legion (name, leader, texts, members with last login); saved, so Home shows it between sessions.</summary>
+    public Avion2.Analysis.LegionBook Legions { get; } = LoadLegions();
 
-    /// <summary>Raised on the UI thread when <see cref="Legion"/> changed.</summary>
+    /// <summary>The legion of the character the pages show.</summary>
+    public Avion2.Analysis.LegionState? Legion => Legions.For(ViewedCharacter);
+
+    /// <summary>Raised on the UI thread when a legion changed.</summary>
     public event Action? LegionUpdated;
 
-    private static Avion2.Analysis.LegionState? LoadLegion()
+    private static Avion2.Analysis.LegionBook LoadLegions()
     {
+        // (legion.json of AVION2 before 0.4.15 did not say whose legion it was: the game sends it again on the next teleport)
         try
         {
             return File.Exists(LegionFile)
-                ? System.Text.Json.JsonSerializer.Deserialize<Avion2.Analysis.LegionState>(File.ReadAllText(LegionFile))
-                : null;
+                ? System.Text.Json.JsonSerializer.Deserialize<Avion2.Analysis.LegionBook>(File.ReadAllText(LegionFile)) ?? new()
+                : new();
         }
         catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException or UnauthorizedAccessException)
         {
-            return null;
+            return new();
         }
     }
 
     private void UpdateLegion(Avion2.Analysis.LegionState? legion)
     {
-        if (legion is null)
+        if (legion is null || !Legions.Take(legion))
         {
             return;
         }
 
-        // Keep what we knew if this session only sent part of it (e.g. a member page but no details).
-        if (Legion is { } old)
-        {
-            legion.Name ??= old.Name;
-            legion.Leader ??= old.Leader;
-            if (legion.Texts.Count == 0)
-            {
-                legion.Texts = old.Texts;
-            }
-
-            var members = old.Members.ToDictionary(m => m.Name);
-            foreach (var member in legion.Members)
-            {
-                members[member.Name] = member;
-            }
-
-            legion.Members = members.Values.ToList();
-        }
-
-        Legion = legion;
         LegionUpdated?.Invoke();
         if (KeepsGameState)
         {
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(LegionFile)!);
-                File.WriteAllText(LegionFile, System.Text.Json.JsonSerializer.Serialize(legion));
+                File.WriteAllText(LegionFile, System.Text.Json.JsonSerializer.Serialize(Legions));
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 // shown again next session once the game resends it
             }
         }
+    }
+
+    private string? _playing;
+    private string? _viewing;
+    private readonly HashSet<string> _ourNames = new(StringComparer.Ordinal);
+
+    /// <summary>The character in game, or the one played last while the meter has not seen one.</summary>
+    public string? PlayingCharacter => _playing;
+
+    /// <summary>
+    /// The character the pages show (gear, fights, runs, legion): the one in game unless another was picked. Only
+    /// what is shown changes; the meter keeps saving everything for the character actually played.
+    /// </summary>
+    public string? ViewedCharacter => _viewing ?? _playing;
+
+    /// <summary>True while the pages show another character than the one in game.</summary>
+    public bool ViewsOther => _viewing is not null;
+
+    /// <summary>Raised on the UI thread when <see cref="ViewedCharacter"/> changed (picked, or another one in game).</summary>
+    public event Action? ViewedCharacterChanged;
+
+    /// <summary>Our characters, played last first.</summary>
+    public IReadOnlyList<Avion2.Analysis.KnownCharacter> OurCharacters => new CharacterStore().Characters;
+
+    /// <summary>Shows another character's data; null or the one in game follows the game again.</summary>
+    public void View(string? name)
+    {
+        string? viewing = name is null || name == _playing ? null : name;
+        if (viewing == _viewing)
+        {
+            return;
+        }
+
+        _viewing = viewing;
+        ViewedCharacterChanged?.Invoke();
+    }
+
+    /// <summary>The inventory of the character the pages show.</summary>
+    public Avion2.Analysis.InventoryState? ViewedInventory => _viewing is { } name ? Inventories.For(name) : Inventory;
+
+    /// <summary>
+    /// Whether something of a character (a fight's "you", a run) belongs on the pages: the viewed character's, and
+    /// anything whose character is unknown or not one of ours (older saves).
+    /// </summary>
+    public bool Shows(string? character) =>
+        character is null || ViewedCharacter is null || character == ViewedCharacter || !_ourNames.Contains(character);
+
+    /// <summary>The fights of the character the pages show (newest first).</summary>
+    public IEnumerable<HistoryRow> ViewedFights => Fights.Where(f => Shows(f.Entry.Snapshot.Self?.Name));
+
+    private void Identified(Avion2.Analysis.KnownCharacter character)
+    {
+        _ourNames.Add(character.Name);
+        if (character.Name == _playing)
+        {
+            return;
+        }
+
+        _playing = character.Name;
+        if (_viewing == _playing)
+        {
+            _viewing = null;
+        }
+
+        ViewedCharacterChanged?.Invoke();
     }
 
     private static string CubeFile =>
@@ -729,26 +786,42 @@ public sealed class AppState
         CubeUpdated?.Invoke(stored);
     }
 
-    private static string InventoryFile =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "inventory.json");
+    private static string InventoryDirectory =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2");
 
-    /// <summary>Our inventory: live while the meter runs, otherwise as last seen (saved between sessions).</summary>
-    public Avion2.Analysis.InventoryState? Inventory { get; private set; } = LoadInventory();
+    private static string InventoryFile => Path.Combine(InventoryDirectory, "inventories.json");
+
+    /// <summary>Every character's inventory as last seen (saved between sessions).</summary>
+    public Avion2.Analysis.InventoryBook Inventories { get; } = LoadInventories();
+
+    /// <summary>The inventory of the character played now (live while the meter runs), else of the one played last.</summary>
+    public Avion2.Analysis.InventoryState? Inventory { get; private set; }
 
     /// <summary>Raised on the UI thread when <see cref="Inventory"/> changed.</summary>
     public event Action? InventoryUpdated;
 
-    private static Avion2.Analysis.InventoryState? LoadInventory()
+    private static Avion2.Analysis.InventoryBook LoadInventories()
     {
         try
         {
-            return File.Exists(InventoryFile)
-                ? System.Text.Json.JsonSerializer.Deserialize<Avion2.Analysis.InventoryState>(File.ReadAllText(InventoryFile))
-                : null;
+            if (File.Exists(InventoryFile))
+            {
+                return System.Text.Json.JsonSerializer.Deserialize<Avion2.Analysis.InventoryBook>(File.ReadAllText(InventoryFile)) ?? new();
+            }
+
+            // AVION2 before 0.4.15 kept one inventory (the character played last) in inventory.json
+            var book = new Avion2.Analysis.InventoryBook();
+            string old = Path.Combine(InventoryDirectory, "inventory.json");
+            if (File.Exists(old) && System.Text.Json.JsonSerializer.Deserialize<Avion2.Analysis.InventoryState>(File.ReadAllText(old)) is { } single)
+            {
+                book.Add(single);
+            }
+
+            return book;
         }
         catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException or UnauthorizedAccessException)
         {
-            return null;
+            return new();
         }
     }
 
@@ -757,24 +830,13 @@ public sealed class AppState
 
     private void UpdateInventory(Avion2.Analysis.InventoryState inventory)
     {
-        // Slot updates before this session's full list only make sense on top of the saved one
-        if (!inventory.IsKnown)
+        // Each character keeps its own; slot updates wait until we know whose inventory they change
+        if (Inventories.Take(inventory) is not { } shown)
         {
-            if (Inventory is null)
-            {
-                return;
-            }
-
-            var merged = Inventory.Copy();
-            foreach (var item in inventory.Items)
-            {
-                merged.Apply(new Avion2.Protocol.InventoryItemEvent(inventory.UpdatedMs, item));
-            }
-
-            inventory = merged;
+            return;
         }
 
-        Inventory = inventory;
+        Inventory = shown;
         InventoryUpdated?.Invoke();
 
         // Loot changes counts every few seconds: write at most every 10 s (SaveSettings writes the rest on exit)
@@ -787,7 +849,7 @@ public sealed class AppState
 
     private void SaveInventory()
     {
-        if (!KeepsGameState || !_inventoryDirty || Inventory is null)
+        if (!KeepsGameState || !_inventoryDirty)
         {
             return;
         }
@@ -796,8 +858,8 @@ public sealed class AppState
         _inventoryDirty = false;
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(InventoryFile)!);
-            File.WriteAllText(InventoryFile, System.Text.Json.JsonSerializer.Serialize(Inventory));
+            Directory.CreateDirectory(InventoryDirectory);
+            File.WriteAllText(InventoryFile, System.Text.Json.JsonSerializer.Serialize(Inventories));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

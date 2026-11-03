@@ -33,6 +33,7 @@ public partial class RunsPage : UserControl
         RunList.ItemsSource = _all;
         state.Runs.CollectionChanged += OnRunsChanged;
         state.LiveRunChanged += UpdateLive;
+        state.ViewedCharacterChanged += Refresh;
         _clock.Tick += (_, _) => UpdateLive();
         IsVisibleChanged += (_, _) =>
         {
@@ -51,6 +52,9 @@ public partial class RunsPage : UserControl
 
     private bool Best => _view == "best";
 
+    /// <summary>The runs of the character the pages show.</summary>
+    private IEnumerable<RunRow> Mine => _state.Runs.Where(r => _state.Shows(r.Run.Character));
+
     private bool Matches(object item)
     {
         if (item is not RunRow row)
@@ -59,7 +63,7 @@ public partial class RunsPage : UserControl
         }
 
         string query = Search?.Text.Trim() ?? string.Empty;
-        return (_view is "all" or "best" || row.Group == _view) &&
+        return _state.Shows(row.Run.Character) && (_view is "all" or "best" || row.Group == _view) &&
                (query.Length == 0 || row.Title.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                 row.Category.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                 row.Run.Bosses.Any(b => b.Name.Contains(query, StringComparison.OrdinalIgnoreCase))) &&
@@ -72,7 +76,7 @@ public partial class RunsPage : UserControl
     {
         if (Best)
         {
-            RunList.ItemsSource = RunRow.BestPerPlace(_state.Runs).Where(Matches).ToList();
+            RunList.ItemsSource = RunRow.BestPerPlace(Mine).Where(Matches).ToList();
         }
         else
         {
@@ -89,9 +93,9 @@ public partial class RunsPage : UserControl
         {
             int count = (string)view.Tag switch
             {
-                "all" => _state.Runs.Count,
-                "best" => RunRow.BestPerPlace(_state.Runs).Count,
-                var group => _state.Runs.Count(r => r.Group == group),
+                "all" => Mine.Count(),
+                "best" => RunRow.BestPerPlace(Mine).Count,
+                var group => Mine.Count(r => r.Group == group),
             };
             Ui.SetCount(view, count.ToString("N0", CultureInfo.InvariantCulture));
         }
@@ -104,7 +108,8 @@ public partial class RunsPage : UserControl
         NoRuns.Visibility = shown == 0 ? Visibility.Visible : Visibility.Collapsed;
         NoRuns.Text = _state.Runs.Count == 0
             ? "No runs yet. Start the capture and enter a dungeon, expedition or other instance: the run is saved when you leave."
-            : Best && RunRow.BestPerPlace(_state.Runs).Count == 0
+            : !Mine.Any() ? $"No runs of {StreamerMode.Name(_state.ViewedCharacter ?? string.Empty)} yet. Pick another character in the rail on the left."
+            : Best && RunRow.BestPerPlace(Mine).Count == 0
                 ? "No best times yet: they come from runs where you killed a boss and left normally."
                 : "Nothing matches the view, the search or the period.";
     }
@@ -150,7 +155,7 @@ public partial class RunsPage : UserControl
         if (Selected is { } row)
         {
             _showingLive = false;
-            ShowInPane(new RunSummary(row, _state.Runs));
+            ShowInPane(new RunSummary(row, Mine.ToList()));
         }
         else if (!_showingLive)
         {
@@ -192,7 +197,7 @@ public partial class RunsPage : UserControl
         LiveClock.Text = row.Duration;
         string bosses = run.Bosses.Count == 1 ? "1 boss" : $"{run.Bosses.Count} bosses";
         string deaths = run.Deaths.Count == 1 ? "1 death" : $"{run.Deaths.Count} deaths";
-        var best = RunRow.BestPerPlace(_state.Runs.Where(r => r.PlaceKey == row.PlaceKey)).FirstOrDefault();
+        var best = RunRow.BestPerPlace(Mine.Where(r => r.PlaceKey == row.PlaceKey)).FirstOrDefault();
         string pace = string.Empty;
         if (best is not null)
         {
@@ -211,7 +216,7 @@ public partial class RunsPage : UserControl
         LiveDetail.Text = $"{row.Category} · {bosses} · {deaths}{pace}";
         if (_showingLive)
         {
-            ShowInPane(new RunSummary(row, _state.Runs, live: true));
+            ShowInPane(new RunSummary(row, Mine.ToList(), live: true));
         }
     }
 

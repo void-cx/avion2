@@ -25,6 +25,9 @@ public sealed class GameSession
     /// <summary>Our inventory (from entering the world, kept current by slot updates).</summary>
     public InventoryState Inventory { get; } = new();
 
+    /// <summary>The entity the game last named as us, and that name.</summary>
+    private (uint Id, string Name)? _named;
+
     /// <summary>Hidden cubes in range and the ones we open.</summary>
     public CubeTracker Cubes { get; } = new();
 
@@ -64,9 +67,31 @@ public sealed class GameSession
         Legion.Apply(e);
         Positions.Apply(e);
         Cubes.Apply(e, Registry.SelfId, Positions.MapId ?? Registry.MapId, Registry.DisplayName);
-        if (Inventory.Apply(e))
+        // The list comes at login a few seconds before our name, and after a character switch the old name is still
+        // around: a new list keeps the name only while we are the entity the game last named, else waits for it (as do
+        // slot updates seen before any list, so they land on the right character's saved inventory)
+        if (e is SelfIdentityEvent { Name.Length: > 0 } named)
         {
-            Inventory.Character = Registry.SelfId is { } self ? Registry.Find(self)?.Name ?? Inventory.Character : Inventory.Character;
+            if (Legion.Character is { } of && of != named.Name)
+            {
+                Legion.Clear(); // another character: its legion comes next, the old one must not mix in
+            }
+
+            _named = (named.EntityId, named.Name);
+            if (Inventory.Character is null)
+            {
+                Inventory.Character = named.Name;
+            }
+        }
+
+        if (e is LegionDetailsEvent or LegionRosterEvent)
+        {
+            Legion.Character = _named?.Name ?? Registry.SelfName;
+        }
+
+        if (Inventory.Apply(e) && e is InventoryListEvent)
+        {
+            Inventory.Character = _named is { } n && n.Id == Registry.SelfId ? n.Name : null;
         }
     }
 

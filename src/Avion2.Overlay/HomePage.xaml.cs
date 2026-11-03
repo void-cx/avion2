@@ -54,6 +54,12 @@ public partial class HomePage : UserControl
         state.UpdateAvailableChanged += RefreshUpdate;
         state.Fights.CollectionChanged += (_, _) => RefreshRecent();
         state.InventoryUpdated += RefreshCharacter;
+        state.ViewedCharacterChanged += () =>
+        {
+            RefreshCharacter();
+            RefreshLegion();
+            RefreshRecent();
+        };
         _timer.Tick += (_, _) => Refresh();
         Loaded += (_, _) =>
         {
@@ -154,8 +160,8 @@ public partial class HomePage : UserControl
 
     private void RefreshRecent()
     {
-        Recent.ItemsSource = _state.Fights.Take(6).ToList();
-        var last = _state.Fights.FirstOrDefault();
+        Recent.ItemsSource = _state.ViewedFights.Take(6).ToList();
+        var last = _state.ViewedFights.FirstOrDefault();
         NoFights.Visibility = last is null ? Visibility.Visible : Visibility.Collapsed;
         LastStats.Visibility = last is null ? Visibility.Collapsed : Visibility.Visible;
         LastReplay.IsEnabled = last is not null;
@@ -172,7 +178,7 @@ public partial class HomePage : UserControl
         CharactersValue.Text = characters.Count == 0
             ? "None yet: teleport once in game"
             : string.Join("\n", characters.Take(3).Select(c => $"{StreamerMode.Name(c.Name)} · {c.Class}"));
-        if (_state.Inventory is { IsKnown: true } inventory)
+        if (_state.ViewedInventory is { IsKnown: true } inventory)
         {
             Wallet.Visibility = Visibility.Visible;
             KinahValue.Text = inventory.Kinah.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
@@ -188,7 +194,7 @@ public partial class HomePage : UserControl
 
     private void LastReplay_Click(object sender, RoutedEventArgs e)
     {
-        if (_state.Fights.FirstOrDefault() is not { } last)
+        if (_state.ViewedFights.FirstOrDefault() is not { } last)
         {
             return;
         }

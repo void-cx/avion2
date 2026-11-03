@@ -32,7 +32,9 @@ public partial class ForgePage : UserControl
     {
         _state = state;
         InitializeComponent();
-        state.InventoryUpdated += () =>
+        state.ViewedCharacterChanged += Refresh;
+        state.InventoryUpdated += Refresh;
+        void Refresh()
         {
             RefreshMyGear();
             RefreshHave();
@@ -40,7 +42,8 @@ public partial class ForgePage : UserControl
             {
                 Calculate();
             }
-        };
+        }
+
         Loaded += (_, _) =>
         {
             if (ItemList.ItemsSource is null)
@@ -56,21 +59,21 @@ public partial class ForgePage : UserControl
     /// <summary>Equipped gear the Forge knows, at its current levels (from the inventory the game sent).</summary>
     private void RefreshMyGear()
     {
-        var lines = (_state.Inventory?.Equipped ?? [])
+        var lines = (_state.ViewedInventory?.Equipped ?? [])
             .Select(i => (Slot: i, Item: _forge.Find(i.ItemId)))
             .Where(x => x.Item is not null)
             .Select(x => new MyGearLine(x.Item!, x.Item!.Name, $"+{x.Slot.Enchant ?? 0}", GradeBrush(x.Item!.Kind), x.Slot.Enchant ?? 0, x.Slot.Slot))
             .ToList();
         MyGear.ItemsSource = lines;
         MyGearPanel.Visibility = lines.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        MyGearTitle.Text = _state.Inventory?.Character is { } who ? $"Your gear ({StreamerMode.Name(who)})" : "Your gear";
+        MyGearTitle.Text = _state.ViewedInventory?.Character is { } who ? $"Your gear ({StreamerMode.Name(who)})" : "Your gear";
         RefreshUpgrades();
     }
 
     /// <summary>The next enchant step of each equipped item, cheapest item level first, and what can't fail in total.</summary>
     private void RefreshUpgrades()
     {
-        var inventory = _state.Inventory;
+        var inventory = _state.ViewedInventory;
         var equipped = inventory?.Equipped.ToList() ?? [];
         var upgrades = GearUpgrades.Next(equipped, _forge, _stats);
         UpgradesCard.Visibility = equipped.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -140,7 +143,7 @@ public partial class ForgePage : UserControl
 
     private void RefreshHave()
     {
-        if (_state.Inventory is not { IsKnown: true } inventory)
+        if (_state.ViewedInventory is not { IsKnown: true } inventory)
         {
             HaveLine.Visibility = Visibility.Collapsed;
             return;
@@ -332,7 +335,7 @@ public partial class ForgePage : UserControl
         Results.Visibility = Visibility.Visible;
 
         // What the inventory covers (on average)
-        if (_state.Inventory is { IsKnown: true } inventory)
+        if (_state.ViewedInventory is { IsKnown: true } inventory)
         {
             int reach = GearForge.Reach(ladder, from, inventory.Kinah, inventory.Count);
             ReachLine.Text = reach >= to ? $"You have enough for +{to} on average."

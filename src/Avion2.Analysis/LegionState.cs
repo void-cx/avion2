@@ -7,6 +7,9 @@ public sealed class LegionState
 {
     private readonly Dictionary<string, LegionMember> _members = new(StringComparer.Ordinal);
 
+    /// <summary>The character the legion is of (ours, as the game named us when it sent the legion).</summary>
+    public string? Character { get; set; }
+
     public string? Name { get; set; }
 
     public string? Leader { get; set; }
@@ -30,6 +33,15 @@ public sealed class LegionState
     public long UpdatedMs { get; set; }
 
     public bool IsKnown => Name is not null;
+
+    /// <summary>Forgets the legion (we switched to another character).</summary>
+    public void Clear()
+    {
+        Character = Name = Leader = null;
+        Texts = new();
+        _members.Clear();
+        UpdatedMs = 0;
+    }
 
     /// <summary>Raised when something changed (capture thread).</summary>
     public event Action? Changed;
