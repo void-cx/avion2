@@ -11,9 +11,24 @@ public sealed class TraceRecorder
     private const long KeepMs = 20 * 60_000;
     private const long LeadInMs = 2_000;
     private const long TailMs = 1_500;
-    private const int MinPointSpacingMs = 200;
 
-    private readonly List<PositionEvent> _positions = new();
+    /// <summary>One position per entity and 100 ms slot (the server's movement tick): replays run at up to 10 Hz.</summary>
+    private const int SlotMs = 100;
+
+    /// <summary>
+    /// At most this many positions are kept (≈ 24 bytes each). Around many moving players and monsters the 10 Hz
+    /// tracks would fill <see cref="KeepMs"/> with millions; then only the last minutes are kept (at least
+    /// <see cref="MinKeepMs"/>), so a very long fight in a crowd loses the positions of its start.
+    /// </summary>
+    private const int MaxPositions = 600_000;
+    private const long MinKeepMs = 2 * 60_000;
+
+    private readonly record struct Sample(long Ms, Vec3 Position, PositionSource Source);
+
+    /// <summary>Positions per entity, in time order, at most one per <see cref="SlotMs"/> slot.</summary>
+    private readonly Dictionary<uint, List<Sample>> _tracks = new();
+    private int _positionCount;
+    private readonly List<RotateEvent> _turns = new();
     private readonly List<SkillCastEvent> _casts = new();
     private readonly List<DamageEvent> _hits = new();
     private readonly List<HealEvent> _heals = new();
@@ -34,7 +49,10 @@ public sealed class TraceRecorder
         switch (e)
         {
             case PositionEvent position:
-                _positions.Add(position);
+                AddPosition(position);
+                break;
+            case RotateEvent turn:
+                _turns.Add(turn);
                 break;
             case SkillCastEvent cast:
                 _casts.Add(cast);
@@ -75,13 +93,21 @@ public sealed class TraceRecorder
         if (e.TimestampMs - _lastPruneMs > 10_000)
         {
             Prune(e.TimestampMs - KeepMs);
+            // Around many moving entities: keep fewer minutes of positions rather than letting them grow
+            for (long keep = KeepMs / 2; _positionCount > MaxPositions && keep >= MinKeepMs; keep /= 2)
+            {
+                PrunePositions(e.TimestampMs - keep);
+            }
+
             _lastPruneMs = e.TimestampMs;
         }
     }
 
     public void Clear()
     {
-        _positions.Clear();
+        _tracks.Clear();
+        _positionCount = 0;
+        _turns.Clear();
         _casts.Clear();
         _hits.Clear();
         _heals.Clear();
@@ -156,6 +182,10 @@ public sealed class TraceRecorder
             Deaths = InWindow(_deaths, start, end)
                 .Where(d => ids.Contains(d.EntityId))
                 .Select(d => new TraceDeath(T(d.TimestampMs), d.EntityId))
+                .ToList(),
+            Turns = InWindow(_turns, start, end)
+                .Where(r => ids.Contains(r.EntityId))
+                .Select(r => new TraceTurn(T(r.TimestampMs), r.EntityId, r.Facing))
                 .ToList(),
             Windups = Windups(ids, start, end, T),
             Telegraphs = InWindow(_telegraphs, start, end)
@@ -255,48 +285,83 @@ public sealed class TraceRecorder
         return new TraceEntity(id, name, kind, cls, info?.Legion, owner != id ? owner : null, maxHp, track);
     }
 
-    /// <summary>Fixes inside the window (thinned to one per 200 ms) plus the last one before it, so everyone has a start.</summary>
+    /// <summary>
+    /// Keeps the newest position per entity and 100 ms slot. Out-of-order positions (older than the entity's last
+    /// one) are dropped so tracks stay sorted.
+    /// </summary>
+    private void AddPosition(PositionEvent p)
+    {
+        if (!_tracks.TryGetValue(p.EntityId, out var track))
+        {
+            _tracks[p.EntityId] = track = new List<Sample>();
+        }
+
+        var sample = new Sample(p.TimestampMs, p.Position, p.Source);
+        if (track.Count > 0)
+        {
+            long last = track[^1].Ms;
+            if (p.TimestampMs < last)
+            {
+                return;
+            }
+
+            if (p.TimestampMs / SlotMs == last / SlotMs)
+            {
+                track[^1] = sample;
+                return;
+            }
+        }
+
+        track.Add(sample);
+        _positionCount++;
+    }
+
+    /// <summary>Positions inside the window (at most one per 100 ms) plus the last one before it, so everyone has a start.</summary>
     private List<TracePoint> InTrack(uint id, long start, long end, Func<long, int> t)
     {
         var points = new List<TracePoint>();
-        PositionEvent? before = null;
-        foreach (var p in _positions)
+        if (!_tracks.TryGetValue(id, out var track))
         {
-            if (p.EntityId != id)
-            {
-                continue;
-            }
-
-            if (p.TimestampMs < start)
-            {
-                before = p;
-                continue;
-            }
-
-            if (p.TimestampMs > end)
-            {
-                break;
-            }
-
-            if (points.Count > 0 && t(p.TimestampMs) - points[^1].T < MinPointSpacingMs)
-            {
-                points[^1] = Point(p, t);
-                continue;
-            }
-
-            points.Add(Point(p, t));
+            return points;
         }
 
-        if (before is not null)
+        int first = FirstAtOrAfter(track, start);
+        if (first > 0)
         {
-            points.Insert(0, Point(before, t) with { T = Math.Max(t(before.TimestampMs), -60_000) });
+            var before = track[first - 1];
+            points.Add(Point(before, t) with { T = Math.Max(t(before.Ms), -60_000) });
+        }
+
+        for (int i = first; i < track.Count && track[i].Ms <= end; i++)
+        {
+            points.Add(Point(track[i], t));
         }
 
         return points;
     }
 
-    private static TracePoint Point(PositionEvent p, Func<long, int> t) =>
-        new(t(p.TimestampMs), (int)p.Position.X, (int)p.Position.Y, (int)p.Position.Z, p.Source);
+    /// <summary>Index of the first sample at or after <paramref name="ms"/> (binary search; the track is sorted).</summary>
+    private static int FirstAtOrAfter(List<Sample> track, long ms)
+    {
+        int lo = 0, hi = track.Count;
+        while (lo < hi)
+        {
+            int mid = (lo + hi) / 2;
+            if (track[mid].Ms < ms)
+            {
+                lo = mid + 1;
+            }
+            else
+            {
+                hi = mid;
+            }
+        }
+
+        return lo;
+    }
+
+    private static TracePoint Point(Sample p, Func<long, int> t) =>
+        new(t(p.Ms), (int)p.Position.X, (int)p.Position.Y, (int)p.Position.Z, p.Source);
 
     /// <summary>Buff intervals overlapping the window: added → removed (or its duration, or the window end).</summary>
     private List<TraceBuff> BuffIntervals(HashSet<uint> ids, long start, long end, Func<long, int> t)
@@ -368,9 +433,35 @@ public sealed class TraceRecorder
     private static IEnumerable<T> InWindow<T>(List<T> events, long start, long end) where T : GameEvent =>
         events.Where(e => e.TimestampMs >= start && e.TimestampMs <= end);
 
+    /// <summary>Positions kept now (all entities).</summary>
+    public int PositionCount => _positionCount;
+
+    private void PrunePositions(long before)
+    {
+        _positionCount = 0;
+        foreach (var (id, track) in _tracks)
+        {
+            int old = FirstAtOrAfter(track, before);
+            if (old == track.Count)
+            {
+                _tracks.Remove(id);
+                continue;
+            }
+
+            track.RemoveRange(0, old);
+            if (track.Capacity > 64 && track.Count < track.Capacity / 4)
+            {
+                track.TrimExcess();
+            }
+
+            _positionCount += track.Count;
+        }
+    }
+
     private void Prune(long before)
     {
-        _positions.RemoveAll(e => e.TimestampMs < before);
+        PrunePositions(before);
+        _turns.RemoveAll(e => e.TimestampMs < before);
         _casts.RemoveAll(e => e.TimestampMs < before);
         _hits.RemoveAll(e => e.TimestampMs < before);
         _heals.RemoveAll(e => e.TimestampMs < before);

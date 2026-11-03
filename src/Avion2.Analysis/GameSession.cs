@@ -67,7 +67,16 @@ public sealed class GameSession
         }
 
         ApplyOne(e);
+        // Offsets become positions (10 Hz) for the replay and the live map; nothing else uses positions
+        if (Movement.Apply(e) is { } moved)
+        {
+            Recorder.Apply(moved);
+            Positions.Apply(moved);
+        }
     }
+
+    /// <summary>Adds up the 10 Hz movement offsets of other players and monsters into positions.</summary>
+    public MovementTracker Movement { get; } = new();
 
     /// <summary>How long after its death record an entity's despawn still belongs to that death.</summary>
     private const long KilledToDespawnMs = 15_000;

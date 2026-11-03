@@ -33,7 +33,7 @@ public partial class MapPage : UserControl
     ];
 
     private readonly AppState _state;
-    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(500) };
+    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(250) }; // positions come at up to 10 Hz
     private readonly Dictionary<string, BitmapSource?> _images = new();
     private bool _loading;
 
@@ -208,8 +208,8 @@ public partial class MapPage : UserControl
             : View.Transform is null
                 ? "Live positions appear once the game sends this map's field boss table (stay a moment on the map)."
                 : View.SelfPoint is null
-                    ? $"{players} players nearby. Your own dot appears after a teleport, buff or skill (the game doesn't send your movement)."
-                    : $"{players} players nearby. Your dot updates on teleports, buffs and skills.";
+                    ? $"{players} players nearby. Your own dot appears after a teleport, buff, skill, stop or fall (the game doesn't send your movement)."
+                    : $"{players} players nearby. Your dot updates on teleports, buffs, skills, stops and falls.";
     }
 
     private readonly Dictionary<string, CheckBox> _groupBoxes = new();

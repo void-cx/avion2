@@ -31,6 +31,9 @@ namespace Avion2.Protocol;
 [JsonDerivedType(typeof(WorldObjectEvent), "worldObject")]
 [JsonDerivedType(typeof(InteractionDoneEvent), "interactionDone")]
 [JsonDerivedType(typeof(InventoryItemEvent), "inventoryItem")]
+[JsonDerivedType(typeof(MoveOffsetEvent), "moveOffset")]
+[JsonDerivedType(typeof(RotateEvent), "rotate")]
+[JsonDerivedType(typeof(GroundHeightEvent), "groundHeight")]
 public abstract record GameEvent(long TimestampMs);
 
 public enum HitType : byte
@@ -290,17 +293,26 @@ public enum PositionSource : byte
 {
     /// <summary><c>1C 37</c>: the server's absolute fix (about once a second per moving entity).</summary>
     Move,
-    /// <summary><c>1A</c>/<c>1B 37</c>: movement with a position.</summary>
+    /// <summary><c>1A</c>/<c>1B 37</c>: movement with a position (also <c>3E</c>/<c>3F</c>/<c>40 37</c>, mostly ours).</summary>
     Steer,
-    /// <summary><c>2F</c>/<c>3C 37</c>: dash, leap or relocation (also sent for us).</summary>
+    /// <summary><c>2F</c>/<c>3C 37</c>: dash, leap or relocation (also sent for us); <c>30 37</c>: a dodge roll starts.</summary>
     Dash,
     /// <summary>Spawn records.</summary>
     Spawn,
     /// <summary>Where a buff landed on the entity (<c>2A 38</c>); our own position comes mostly from these.</summary>
     Buff,
+    /// <summary>Jump, fall, glide or flight keyframes (<c>1E</c>, <c>1F</c>, <c>23</c>, <c>24</c>, <c>28</c>, <c>29 37</c>).</summary>
+    Air,
+    /// <summary>Swim keyframes (<c>36</c>/<c>37 37</c>).</summary>
+    Swim,
+    /// <summary>Added up from 10 Hz movement offsets since the last keyframe (Analysis, not a record of its own).</summary>
+    Offset,
 }
 
-/// <summary>Where an entity is. The server does not echo our own movement; we get fixes from buffs, dashes and spawns.</summary>
+/// <summary>
+/// Where an entity is. The server does not stream our own movement; we get fixes from buffs, stops, falls, dashes and
+/// spawns.
+/// </summary>
 /// <param name="Heading">Degrees (0..360), if the record has one.</param>
 public sealed record PositionEvent(long TimestampMs, uint EntityId, Vec3 Position, float? Heading, PositionSource Source) : GameEvent(TimestampMs);
 

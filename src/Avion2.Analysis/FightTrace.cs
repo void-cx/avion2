@@ -28,6 +28,9 @@ public sealed record TraceEntity(
 /// <param name="Facing">Where the caster faced, degrees (0 = +X, turning toward +Y); null in older traces.</param>
 public sealed record TraceCast(int T, uint ActorId, uint SkillId, uint? TargetId, float? Facing = null);
 
+/// <summary>An entity turned to <paramref name="Facing"/> (degrees, 0 = +X turning toward +Y; <c>4E 36</c>, also sent for us).</summary>
+public sealed record TraceTurn(int T, uint EntityId, float Facing);
+
 /// <param name="Back">A back attack (false in older traces).</param>
 public sealed record TraceHit(int T, uint ActorId, uint TargetId, uint SkillId, long Amount, bool Critical, bool Back = false);
 
@@ -107,6 +110,9 @@ public sealed class FightTrace
     /// <summary>Deaths during the fight (monsters disappear from the replay at these).</summary>
     public List<TraceDeath> Deaths { get; init; } = new();
 
+    /// <summary>Turns (exact facings) in time order; empty in older traces.</summary>
+    public List<TraceTurn> Turns { get; init; } = new();
+
     /// <summary>Dead at <paramref name="t"/>: died before it, and not seen moving since (ids can come back).</summary>
     public bool IsDeadAt(uint id, int t)
     {
@@ -126,7 +132,15 @@ public sealed class FightTrace
     public int? FixAgeMs(uint id, int t)
     {
         var track = Entity(id)?.Track;
-        return track is { Count: > 0 } ? track.Min(p => Math.Abs(p.T - t)) : null;
+        if (track is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        int index = LastAtOrBefore(track, t);
+        int before = index >= 0 ? t - track[index].T : int.MaxValue;
+        int after = index + 1 < track.Count ? track[index + 1].T - t : int.MaxValue;
+        return Math.Min(before, after);
     }
 
     /// <summary>The entity's last cast at or before <paramref name="t"/>.</summary>
@@ -181,7 +195,7 @@ public sealed class FightTrace
             return null;
         }
 
-        int index = track.FindLastIndex(p => p.T <= t);
+        int index = LastAtOrBefore(track, t);
         if (index < 0)
         {
             var first = track[0];
@@ -200,12 +214,48 @@ public sealed class FightTrace
         return (a.X + (b.X - a.X) * f, a.Y + (b.Y - a.Y) * f, estimated);
     }
 
+    /// <summary>Index of the last sample at or before <paramref name="t"/>, -1 if none (the track is in time order).</summary>
+    private static int LastAtOrBefore(List<TracePoint> track, int t)
+    {
+        int lo = 0, hi = track.Count;
+        while (lo < hi)
+        {
+            int mid = (lo + hi) / 2;
+            if (track[mid].T <= t)
+            {
+                lo = mid + 1;
+            }
+            else
+            {
+                hi = mid;
+            }
+        }
+
+        return lo - 1;
+    }
+
     /// <summary>
-    /// Where an entity faces at <paramref name="t"/>, degrees (0 = +X, turning toward +Y): the direction it moved in
-    /// the last 0.8 s when it moved at least a metre, else its last cast's facing (within 4 s). Null when unknown.
+    /// Where an entity faces at <paramref name="t"/>, degrees (0 = +X, turning toward +Y): a cast's or turn's exact
+    /// facing from the last second, else the direction it moved in the last 0.8 s when it moved at least a metre,
+    /// else the last exact facing within 4 s. Null when unknown.
     /// </summary>
     public float? FacingAt(uint id, int t)
     {
+        var cast = Casts.LastOrDefault(c => c.ActorId == id && c.T <= t && c.T > t - 4_000 && c.Facing is not null);
+        var turn = Turns.LastOrDefault(r => r.EntityId == id && r.T <= t && r.T > t - 4_000);
+        (int T, float Facing)? exact = (cast, turn) switch
+        {
+            ({ Facing: { } f } c, { } r) => c.T >= r.T ? (c.T, f) : (r.T, r.Facing),
+            ({ Facing: { } f } c, null) => (c.T, f),
+            (_, { } r) => (r.T, r.Facing),
+            _ => null,
+        };
+
+        if (exact is { } recent && t - recent.T <= 1_000)
+        {
+            return recent.Facing;
+        }
+
         if (PositionAt(id, t) is { } now && PositionAt(id, t - 800) is { } before)
         {
             double dx = now.X - before.X, dy = now.Y - before.Y;
@@ -215,7 +265,7 @@ public sealed class FightTrace
             }
         }
 
-        return Casts.LastOrDefault(c => c.ActorId == id && c.T <= t && c.T > t - 4_000 && c.Facing is not null)?.Facing;
+        return exact?.Facing;
     }
 
     /// <summary>Buffs and debuffs on <paramref name="id"/> at <paramref name="t"/>.</summary>

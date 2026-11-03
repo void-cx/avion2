@@ -184,13 +184,17 @@ public sealed record LiveEntity(uint Id, string Name, LiveKind Kind, GameClass C
     float? Facing = null, long FacingAgeMs = 0);
 
 /// <summary>
-/// Latest position per entity for the live map (moves, spawns, buff positions). The game does not echo our own
-/// movement, so our position updates only on teleports, buffs and skills. Not thread-safe.
+/// Latest position per entity for the live map (moves at up to 10 Hz, spawns, buff positions). The game does not
+/// stream our own movement, so our position updates on buffs, stops, falls, teleports and skills, and our height also
+/// from where we last stood on the ground. Not thread-safe.
 /// </summary>
 public sealed class LivePositions
 {
     private readonly Dictionary<uint, (Vec3 Position, long Ms)> _fixes = new();
     private readonly Dictionary<uint, (float Degrees, long Ms)> _facing = new();
+
+    /// <summary>Where the current stretch of travel began (the direction of travel is measured from it).</summary>
+    private readonly Dictionary<uint, (Vec3 Position, long Ms)> _travelFrom = new();
 
     /// <summary>Two fixes at least this far apart (cm) and this close in time give a direction of travel.</summary>
     private const float MinTravelCm = 300;
@@ -215,11 +219,20 @@ public sealed class LivePositions
             case ZoneChangeEvent:
                 _fixes.Clear();
                 _facing.Clear();
+                _travelFrom.Clear();
                 _dead.Clear();
                 break;
             case SkillCastEvent { Facing: { } facing } cast:
                 // Exact: the direction the actor faced when using the skill
                 _facing[cast.ActorId] = (facing, cast.TimestampMs);
+                break;
+            case RotateEvent turn:
+                // Exact too: where the entity turned (also sent for us)
+                _facing[turn.EntityId] = (turn.Facing, turn.TimestampMs);
+                break;
+            case GroundHeightEvent ground when _fixes.TryGetValue(ground.EntityId, out var known) && ground.TimestampMs > known.Ms:
+                // Where we last stood on the ground: a better height than an older fix's (x and y and their age stay)
+                _fixes[ground.EntityId] = (known.Position with { Z = ground.Z }, known.Ms);
                 break;
             case PositionEvent { Position.IsPlausible: true } p:
                 Fix(p.EntityId, p.Position, p.TimestampMs);
@@ -238,13 +251,21 @@ public sealed class LivePositions
 
     private void Fix(uint id, Vec3 position, long ms)
     {
-        // Direction of travel from the previous fix, unless a skill told us the facing since then
-        if (_fixes.TryGetValue(id, out var before) && ms - before.Ms is > 0 and <= MaxTravelGapMs &&
-            before.Position.DistanceTo(position) >= MinTravelCm &&
-            (!_facing.TryGetValue(id, out var known) || known.Ms <= before.Ms))
+        // Direction of travel since the stretch began (fixes come up to 10 times a second, a few dm apart), unless a
+        // skill or turn told us the facing since then
+        if (!_travelFrom.TryGetValue(id, out var from) || ms - from.Ms is < 0 or > MaxTravelGapMs)
         {
-            float degrees = MathF.Atan2(position.Y - before.Position.Y, position.X - before.Position.X) * 180 / MathF.PI;
-            _facing[id] = ((degrees + 360) % 360, ms);
+            _travelFrom[id] = (position, ms);
+        }
+        else if (from.Position.DistanceTo(position) >= MinTravelCm)
+        {
+            if (ms > from.Ms && (!_facing.TryGetValue(id, out var known) || known.Ms <= from.Ms))
+            {
+                float degrees = MathF.Atan2(position.Y - from.Position.Y, position.X - from.Position.X) * 180 / MathF.PI;
+                _facing[id] = ((degrees + 360) % 360, ms);
+            }
+
+            _travelFrom[id] = (position, ms);
         }
 
         _fixes[id] = (position, ms);
