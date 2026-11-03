@@ -133,7 +133,7 @@ public partial class TimersPage : UserControl
         var shown = items
             .Where(i => _view == "next" || i.Kind == _view)
             .Where(i => query.Length == 0 || i.Name.Contains(query, StringComparison.OrdinalIgnoreCase) || i.Where.Contains(query, StringComparison.OrdinalIgnoreCase))
-            .OrderBy(i => i.At < now ? 1 : 0) // coming up first, then what is up already
+            .OrderBy(i => i.Key.StartsWith("live:", StringComparison.Ordinal) ? 0 : i.At < now ? 2 : 1) // on now, coming up, then what is up already
             .ThenBy(i => i.At < now ? -i.At.ToUnixTimeMilliseconds() : i.At.ToUnixTimeMilliseconds())
             .Take(_view == "next" ? 30 : 200)
             .ToList();
@@ -157,7 +157,7 @@ public partial class TimersPage : UserControl
         }
     }
 
-    /// <summary>Every timer as a row: field bosses (live), world bosses, events and the next rift.</summary>
+    /// <summary>Every timer as a row: field bosses (live), world bosses, events (and those on now) and the next rift.</summary>
     private List<TimerItem> Lines(DateTimeOffset now, IReadOnlyList<Occurrence> upcoming)
     {
         var lines = new List<TimerItem>();
@@ -200,9 +200,32 @@ public partial class TimersPage : UserControl
             item.Category = worldBoss ? "World boss" : AppState.CategoryLabel(o.Event.Category);
             item.At = o.StartsAt;
             item.Rule = GameSchedule.Describe(o.Event) + " server time";
-            item.Source = "Fixed server schedule";
+            item.Source = o.Source ?? "Fixed server schedule";
             Tone(item, o.StartsAt - now < TimeSpan.FromMinutes(15) ? "soon" : "later", worldBoss ? "Scheduled" : item.Category);
             item.In = "in " + Countdown(o.StartsAt - now);
+            lines.Add(item);
+        }
+
+        // Events on right now, with the phase times the game sent
+        foreach (var live in _state.Timers.Live(now))
+        {
+            var item = Item($"live:{live.Key}", "event");
+            item.Name = live.Name;
+            item.Where = AppState.CategoryLabel(live.Category);
+            item.Category = AppState.CategoryLabel(live.Category);
+            item.At = live.StartedAt;
+            string phaseEnd = live.PhaseEndsAt.ToLocalTime().ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+            item.Rule = live.Phase > 0 ? $"Phase {live.Phase} until {phaseEnd} your time" : $"Until {phaseEnd} your time";
+            item.Source = live.Ids.Count switch
+            {
+                0 => "Announced by the game",
+                1 => $"Sent by the game (event {live.Ids[0]})",
+                _ => $"Sent by the game ({live.Ids.Count} events open)",
+            };
+            Tone(item, "up", "On now");
+            item.In = live.EndsAt is { } end
+                ? $"until {end.ToLocalTime():HH:mm}"
+                : $"phase {live.Phase} until {live.PhaseEndsAt.ToLocalTime():HH:mm:ss}";
             lines.Add(item);
         }
 

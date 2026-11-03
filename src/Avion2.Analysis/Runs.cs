@@ -295,6 +295,13 @@ public sealed class DungeonRun
     [JsonPropertyName("left")]
     public bool Left { get; set; }
 
+    /// <summary>
+    /// How we left: true = through the instance's exit (<c>05 40</c>), false = moved out another way (a teleport, the
+    /// automatic exit, a relogin); null = not left, or saved before AVION2 told the two apart.
+    /// </summary>
+    [JsonPropertyName("exit")]
+    public bool? UsedExit { get; set; }
+
     [JsonIgnore]
     public long DurationMs => Math.Max(0, EndMs - StartMs);
 
@@ -372,6 +379,12 @@ public sealed class RunTracker
     /// <summary>When we loaded an open-world map; the run ends at the zone change that follows (the last fight closes there).</summary>
     private long? _leftAt;
 
+    /// <summary>When we last used an instance's exit (<c>05 40</c>, in the same instant as the map load out).</summary>
+    private long? _exitAt;
+
+    /// <summary>How far an exit reply may come before the map load out (3.5 s seen once; the same instant otherwise).</summary>
+    private const long ExitBeforeLoadMs = 10_000;
+
     public RunTracker(EntityRegistry registry, CombatTracker tracker, InventoryState inventory)
     {
         _registry = registry;
@@ -411,6 +424,9 @@ public sealed class RunTracker
         {
             case MapLoadEvent map:
                 OnMap(map);
+                break;
+            case MapExitEvent { Result: 0 } exit:
+                _exitAt = exit.TimestampMs;
                 break;
             case DamageEvent hit when Current is not null:
                 _lastHit[hit.TargetId] = hit.TimestampMs;
@@ -639,6 +655,9 @@ public sealed class RunTracker
     {
         run.EndMs = Math.Max(run.EndMs, endMs);
         run.Left = left;
+        // endMs is the map load out when we left: the exit reply comes with it (or a few seconds before)
+        run.UsedExit = left ? _exitAt is { } exit && exit >= endMs - ExitBeforeLoadMs && exit <= endMs + 1_000 : null;
+        _exitAt = null;
         run.Character ??= _registry.SelfName ?? _inventory.Character;
         if (run.Class == GameClass.Unknown)
         {

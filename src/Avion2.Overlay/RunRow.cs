@@ -144,7 +144,12 @@ public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live 
 
     public string Ending => row.Run.ClearedMs is { } cleared ? $"Cleared at {RunRow.Clock(cleared)}"
         : live ? "In progress"
-        : row.Run.Left ? "Left the instance"
+        : row.Run.Left ? row.Run.UsedExit switch
+        {
+            true => "Left through the exit",
+            false => "Left without the exit", // a teleport, the automatic exit or a relogin
+            null => "Left the instance",
+        }
         : "Capture stopped inside";
 
     public string PartyText => row.Run.Party.Count == 0 ? "Solo" : $"Party of {row.Run.Party.Count + 1}";

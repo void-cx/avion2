@@ -49,9 +49,9 @@ public class ScheduleTests
     [Fact]
     public void HourlyEvents()
     {
-        // Beritra Air Raid on the half hour ("in 05m 27s"), field events on the hour ("in 35m 27s").
-        Assert.Equal(TimeSpan.FromSeconds(5 * 60 + 27), GameSchedule.Next(Event(ServerRegion.Europe, "beritra"), Now, ServerRegion.Europe) - Now);
-        Assert.Equal(TimeSpan.FromSeconds(35 * 60 + 27), GameSchedule.Next(Event(ServerRegion.Europe, "field"), Now, ServerRegion.Europe) - Now);
+        // Dimensional Invasion on the half hour ("in 05m 27s"), the Shugo Festival on the hour ("in 35m 27s").
+        Assert.Equal(TimeSpan.FromSeconds(5 * 60 + 27), GameSchedule.Next(Event(ServerRegion.Europe, "invasion"), Now, ServerRegion.Europe) - Now);
+        Assert.Equal(TimeSpan.FromSeconds(35 * 60 + 27), GameSchedule.Next(Event(ServerRegion.Europe, "shugo"), Now, ServerRegion.Europe) - Now);
     }
 
     [Fact]

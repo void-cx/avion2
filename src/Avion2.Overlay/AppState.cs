@@ -53,7 +53,8 @@ public sealed class AppState
         }
 
         FieldBosses = Avion2.Analysis.FieldBossBoard.Load(FieldBossFile);
-        Timers = new TimerService(Settings, FieldBossOccurrences);
+        WorldEvents = Avion2.Analysis.WorldEventBoard.Load(WorldEventFile);
+        Timers = new TimerService(Settings, FieldBossOccurrences, WorldEvents);
         Timers.Due += OnEventDue;
         Cubes = new CubeFinder(this);
         Obs = new ObsOverlay(this);
@@ -68,6 +69,12 @@ public sealed class AppState
 
     private static string FieldBossFile =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "field_bosses.json");
+
+    private static string WorldEventFile =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "world_events.json");
+
+    /// <summary>The announced Airspace Battle (saved) and the field events open now, for the Timers page.</summary>
+    public Avion2.Analysis.WorldEventBoard WorldEvents { get; }
 
     /// <summary>Latest field boss table per map; saved, so respawn times survive restarts.</summary>
     public Avion2.Analysis.FieldBossBoard FieldBosses { get; }
@@ -368,6 +375,13 @@ public sealed class AppState
             if (FieldBosses.Apply(table) && KeepsGameState)
             {
                 FieldBosses.Save(FieldBossFile);
+            }
+        });
+        engine.WorldEvent += e => Application.Current.Dispatcher.BeginInvoke(() =>
+        {
+            if (WorldEvents.Apply(e) && KeepsGameState)
+            {
+                WorldEvents.Save(WorldEventFile);
             }
         });
 

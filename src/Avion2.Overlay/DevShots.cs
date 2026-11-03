@@ -37,7 +37,7 @@ internal static class DevShots
                 Save(running, Path.Combine(directory, "overlay.png"));
                 _ = state.NoticeSound(); // builds the notification sound (writes notice.wav) without playing it
                 state.Notices.Notify("Spacetime Rift in 5 min (14:00)", "Spacetime Rift");
-                state.Notices.Notify("Beritra Air Raid in 5 min (13:30)", "Boss raid");
+                state.Notices.Notify("Dimensional Invasion in 5 min (13:30)", "Boss raid");
                 state.Notices.Left = -20000;
                 Pump(TimeSpan.FromMilliseconds(900));
                 Save(state.Notices, Path.Combine(directory, "notices.png"));

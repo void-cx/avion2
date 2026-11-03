@@ -37,7 +37,8 @@ public sealed record ScheduledEvent(
     public static int[] EveryHour { get; } = Enumerable.Range(0, 24).ToArray();
 }
 
-public sealed record Occurrence(ScheduledEvent Event, DateTimeOffset StartsAt);
+/// <param name="Source">Where the time comes from when the game sent it; null = the fixed timetable.</param>
+public sealed record Occurrence(ScheduledEvent Event, DateTimeOffset StartsAt, string? Source = null);
 
 /// <summary>
 /// The fixed AION2 event timetable per server region. Source: aion2hub.com's rift timer and world boss
@@ -52,6 +53,17 @@ public static class GameSchedule
     private static readonly int[] GlobalRiftHours = [0, 3, 6, 9, 12, 15, 18, 21];
     private static readonly int[] KoreaTaiwanRiftHours = [2, 5, 8, 11, 14, 17, 20, 23];
     private static readonly DayOfWeek[] Daily = [];
+
+    public const string AirspaceKey = "airspace";
+    public const string InvasionKey = "invasion";
+    public const string ShugoKey = "shugo";
+    public const string AirspaceBattle = "Airspace Battle";
+
+    /// <summary>The :30 field event (ids 1201xx–1203xx): one of three variants each hour, Beritra Air Raid among them.</summary>
+    public const string DimensionalInvasion = "Dimensional Invasion";
+
+    /// <summary>The :00 field event (ids 110101–110901): nine minigames open at once.</summary>
+    public const string ShugoFestival = "Shugo Festival";
 
     private static readonly TimeZoneInfo CentralEurope = Zone("Central European Standard Time", "Europe/Berlin");
     private static readonly TimeSpan EuropeAhead = TimeSpan.FromHours(7);
@@ -90,8 +102,8 @@ public static class GameSchedule
         var events = new List<ScheduledEvent>
         {
             new("rift", "Spacetime Rift", ScheduleCategory.Rift, global ? GlobalRiftHours : KoreaTaiwanRiftHours, 0, Daily),
-            new("beritra", "Beritra Air Raid", ScheduleCategory.BossRaid, ScheduledEvent.EveryHour, 30, Daily),
-            new("field", "Field events (Shugo defense, minigames)", ScheduleCategory.FieldEvent, ScheduledEvent.EveryHour, 0, Daily),
+            new(InvasionKey, DimensionalInvasion, ScheduleCategory.BossRaid, ScheduledEvent.EveryHour, 30, Daily),
+            new(ShugoKey, ShugoFestival, ScheduleCategory.FieldEvent, ScheduledEvent.EveryHour, 0, Daily),
             new("daily-reset", "Daily reset", ScheduleCategory.Reset, [global ? 16 : 5], 0, Daily),
             new("weekly-reset", "Weekly reset", ScheduleCategory.Reset, [global ? 16 : 5], 0, [DayOfWeek.Wednesday]),
         };
@@ -105,6 +117,13 @@ public static class GameSchedule
             events.Add(new("abyss-rift-zone", "Abyss Rift Zone", ScheduleCategory.Pvp, [22], 0, [DayOfWeek.Tuesday, DayOfWeek.Thursday]));
             events.Add(new("rift-domination", "Spacetime Rift Domination", ScheduleCategory.Pvp, [20, 23], 0,
                 [DayOfWeek.Monday, DayOfWeek.Thursday, DayOfWeek.Saturday]));
+        }
+
+        if (region == ServerRegion.Europe)
+        {
+            // Only seen on Europe: the game announced Wed 17:00–17:10 Central European time (Thu 00:00 server time) on
+            // 2026-10-14 and 11-04. The announcement itself (01 43) replaces this slot once the meter has seen it.
+            events.Add(new(AirspaceKey, AirspaceBattle, ScheduleCategory.Pvp, [0], 0, [DayOfWeek.Thursday]));
         }
 
         events.AddRange(WorldBosses(global));

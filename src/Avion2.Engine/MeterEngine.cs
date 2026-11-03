@@ -203,6 +203,10 @@ public sealed class MeterEngine : IDisposable
             {
                 FieldBossTable?.Invoke(table);
             }
+            else if (e is AirspaceBattleEvent or FieldEventListEvent or FieldEventChangedEvent)
+            {
+                WorldEvent?.Invoke(e);
+            }
             else if (e is LegionDetailsEvent or LegionRosterEvent)
             {
                 LegionChanged?.Invoke();
@@ -328,6 +332,9 @@ public sealed class MeterEngine : IDisposable
 
     /// <summary>Raised on the capture thread for every field boss table (about once a second on field maps).</summary>
     public event Action<FieldBossTableEvent>? FieldBossTable;
+
+    /// <summary>Raised on the capture thread for the game's event schedule: the Airspace Battle (<c>01 43</c>) and field events (<c>00 60</c>, <c>01 60</c>).</summary>
+    public event Action<GameEvent>? WorldEvent;
 
     /// <summary>Raised on the capture thread when an encounter ends (and was saved, if saving is on).</summary>
     public event Action<HistoryEntry>? FightSaved;

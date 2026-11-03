@@ -11,21 +11,32 @@ public sealed class TimerService
 {
     private readonly OverlayViewModel _settings;
     private readonly Func<DateTimeOffset, IEnumerable<Occurrence>>? _extra;
+    private readonly WorldEventBoard? _world;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(1) };
     private readonly HashSet<(string Key, DateTimeOffset StartsAt)> _notified = new();
 
     /// <param name="extra">More occurrences to notify about (field boss respawns).</param>
-    public TimerService(OverlayViewModel settings, Func<DateTimeOffset, IEnumerable<Occurrence>>? extra = null)
+    /// <param name="world">What the game announced (the Airspace Battle, field events open now).</param>
+    public TimerService(OverlayViewModel settings, Func<DateTimeOffset, IEnumerable<Occurrence>>? extra = null, WorldEventBoard? world = null)
     {
         _settings = settings;
         _extra = extra;
+        _world = world;
         _timer.Tick += (_, _) => Tick(DateTimeOffset.Now);
         _timer.Start();
     }
 
     public event Action<Occurrence>? Due;
 
-    public IReadOnlyList<Occurrence> Upcoming(DateTimeOffset now) => GameSchedule.Upcoming(_settings.Region, now);
+    /// <summary>The next start of every event, soonest first; times the game announced replace the fixed ones.</summary>
+    public IReadOnlyList<Occurrence> Upcoming(DateTimeOffset now)
+    {
+        var timetable = GameSchedule.Upcoming(_settings.Region, now);
+        return _world?.Adjust(timetable, _settings.Region, now) ?? timetable;
+    }
+
+    /// <summary>Events on right now, with the phase times the game sent.</summary>
+    public IReadOnlyList<LiveEvent> Live(DateTimeOffset now) => _world?.Live(_settings.Region, now) ?? [];
 
     public IReadOnlyList<DateTimeOffset> NextRifts(DateTimeOffset now, int count) => GameSchedule.NextRifts(_settings.Region, now, count);
 
