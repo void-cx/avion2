@@ -348,4 +348,11 @@ public partial class RunsPage : UserControl
             RunList.SelectedIndex = 0;
         }
     }
+
+    /// <summary>Developer shots: scrolls the selected run's details to its reward cube.</summary>
+    internal void ShowCube()
+    {
+        UpdateLayout();
+        CubeSection.BringIntoView();
+    }
 }

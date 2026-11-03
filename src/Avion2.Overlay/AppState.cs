@@ -313,6 +313,7 @@ public sealed class AppState
             SaveHistory = _baseOptions.SaveHistory,
             ReplayPath = _baseOptions.ReplayPath,
             ReplaySpeed = _baseOptions.ReplaySpeed,
+            ReplayFromMs = _baseOptions.ReplayFromMs,
             AnonymizeNames = _baseOptions.AnonymizeNames,
             Runs = _baseOptions.SaveHistory ? RunLog : null,
         });

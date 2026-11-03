@@ -64,7 +64,7 @@ public partial class App : Application
 
     /// <summary>
     /// Same options as <c>avion2 live</c>: --device 7,9 --record x.pcap --log x.jsonl --data dir;
-    /// plus --start, --replay x.pcap [--speed 2] [--history-dir dir] and --tab taken.
+    /// plus --start, --replay x.pcap [--speed 2] [--from minutes] [--history-dir dir] and --tab taken.
     /// </summary>
     private static EngineOptions ParseArgs(string[] args) => new()
     {
@@ -78,5 +78,6 @@ public partial class App : Application
         // Replays are for UI work: only save their fights when a history directory is given explicitly.
         SaveHistory = Get(args, "replay") is null || Get(args, "history-dir") is not null,
         ReplaySpeed = double.TryParse(Get(args, "speed"), CultureInfo.InvariantCulture, out double speed) && speed > 0 ? speed : 1.0,
+        ReplayFromMs = double.TryParse(Get(args, "from"), CultureInfo.InvariantCulture, out double from) && from > 0 ? (long)(from * 60_000) : 0,
     };
 }

@@ -190,6 +190,8 @@ internal static class DevShots
             {
                 runsPage.SelectFirst();
                 Shoot(home, "runs", directory, "runs-selected.png");
+                runsPage.ShowCube();
+                Shoot(home, "runs", directory, "runs-cube.png");
             }
 
             var update = new UpdateWindow(state, new Avion2.Engine.ReleaseInfo(new Version(9, 9, 9), "v9.9.9", "https://github.com", null,

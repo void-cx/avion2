@@ -40,6 +40,10 @@ public sealed class EngineOptions
 
     public double ReplaySpeed { get; init; } = 1.0;
 
+    /// <summary>Where a replay starts playing, in ms from the recording's start: everything before it is fed at once, with
+    /// its real gaps (so fights keep their real lengths), and the rest plays at <see cref="ReplaySpeed"/>.</summary>
+    public long ReplayFromMs { get; init; }
+
     /// <summary>Developer aid: no real player or legion names anywhere (shareable screenshots, see <see cref="NameAnonymizer"/>).</summary>
     public bool AnonymizeNames { get; init; }
 
@@ -186,7 +190,7 @@ public sealed class MeterEngine : IDisposable
 
             // A replay at another speed than 1× compresses arrival times against the server clock: its delays and
             // freezes would be fiction, so such replays carry no connection data.
-            if (e is ServerClockEvent && _options.ReplayPath is not null && _options.ReplaySpeed != 1.0)
+            if (e is ServerClockEvent && _options.ReplayPath is not null && (_options.ReplaySpeed != 1.0 || _options.ReplayFromMs > 0))
             {
                 return;
             }
@@ -723,7 +727,8 @@ public sealed class MeterEngine : IDisposable
             foreach (var frame in PcapFile.Read(path))
             {
                 firstTs ??= frame.TimestampMs;
-                long offset = (long)((frame.TimestampMs - firstTs.Value) / _options.ReplaySpeed);
+                long played = frame.TimestampMs - firstTs.Value - _options.ReplayFromMs;
+                long offset = played < 0 ? played : (long)(played / _options.ReplaySpeed);
                 long wait = startNow + offset - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 if (wait > 0)
                 {
