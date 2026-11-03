@@ -18,6 +18,7 @@
                 <DataTrigger Binding="{Binding Tone}" Value="double"><Setter TargetName="Value" Property="Foreground" Value="#FACC15" /></DataTrigger>
                 <DataTrigger Binding="{Binding Tone}" Value="perfect"><Setter TargetName="Value" Property="Foreground" Value="#34D399" /></DataTrigger>
                 <DataTrigger Binding="{Binding Tone}" Value="hp"><Setter TargetName="Value" Property="Foreground" Value="#F87171" /></DataTrigger>
+                <DataTrigger Binding="{Binding Tone}" Value="stagger"><Setter TargetName="Value" Property="Foreground" Value="#A78BFA" /></DataTrigger>
             </DataTemplate.Triggers>
         </DataTemplate>
 
@@ -29,6 +30,7 @@
         <Style x:Key="Back" TargetType="TextBlock" BasedOn="{StaticResource Right}"><Setter Property="Foreground" Value="#22D3EE" /></Style>
         <Style x:Key="Double" TargetType="TextBlock" BasedOn="{StaticResource Right}"><Setter Property="Foreground" Value="#FACC15" /></Style>
         <Style x:Key="Perfect" TargetType="TextBlock" BasedOn="{StaticResource Right}"><Setter Property="Foreground" Value="#34D399" /></Style>
+        <Style x:Key="Stagger" TargetType="TextBlock" BasedOn="{StaticResource Right}"><Setter Property="Foreground" Value="#A78BFA" /></Style>
     </UserControl.Resources>
 
     <DockPanel>
@@ -78,6 +80,9 @@
                             <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding BreaksText}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" Margin="0,0,0,6"
+                               TextWrapping="Wrap" Visibility="{Binding BreaksText, Converter={StaticResource NotEmpty}}"
+                               ToolTip="Whose hit emptied the stagger gauge, and when (time since the fight started)" />
 
                     <DataGrid Background="{DynamicResource GridBackgroundBrush}" BorderBrush="{DynamicResource GridBorderBrush}" ItemsSource="{Binding Skills}" Margin="0,4,0,0" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single" CanUserResizeRows="False" RowHeight="28" HorizontalScrollBarVisibility="Auto" CanUserResizeColumns="True">
                         <DataGrid.Columns>
@@ -115,6 +120,7 @@
                             <DataGridTextColumn Header="Average" Binding="{Binding Average, StringFormat={}{0:N0}}" Width="80" MinWidth="80" ElementStyle="{StaticResource Right}" />
                             <DataGridTextColumn Header="Min" Binding="{Binding Min, StringFormat={}{0:N0}}" Width="72" MinWidth="72" ElementStyle="{StaticResource Right}" />
                             <DataGridTextColumn Header="Max" Binding="{Binding Max, StringFormat={}{0:N0}}" Width="80" MinWidth="80" ElementStyle="{StaticResource Right}" />
+                            <DataGridTextColumn Header="Stagger" Binding="{Binding StaggerText}" SortMemberPath="Stagger" Width="70" MinWidth="70" ElementStyle="{StaticResource Stagger}" />
                             <DataGridTemplateColumn Header="Total" Width="190" MinWidth="190" SortMemberPath="Total" SortDirection="Descending">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -182,7 +188,7 @@
                 <Grid Margin="16,6,16,16">
                 <DockPanel Margin="0,10,0,0">
                     <TextBlock DockPanel.Dock="Top" Opacity="0.7" FontSize="11" Margin="0,0,0,6" TextWrapping="Wrap"
-                               Text="Every skill cast, per player (summons count for their owner), with the main target's HP behind. Hover a mark for the skill." />
+                               Text="Every skill cast, per player (summons count for their owner), with the main target's HP behind. Amber bands on a boss's lane are its wind-ups (a cross: interrupted). Hover a mark for the skill." />
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <local:TimelineView x:Name="Timeline" Trace="{Binding Trace}" SelectedActor="{Binding SelectedActorId}" />
                     </ScrollViewer>

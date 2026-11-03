@@ -155,6 +155,11 @@
                                     <StackPanel><TextBlock Text="Hits" Style="{StaticResource StatLabel}" /><TextBlock Text="{Binding Hits}" Style="{StaticResource StatValue}" /></StackPanel>
                                 </UniformGrid>
                             </Border>
+                            <TextBlock Text="{Binding MechanicsText}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" Margin="0,12,0,0" TextWrapping="Wrap"
+                                       Visibility="{Binding MechanicsText, Converter={StaticResource NotEmpty}}"
+                                       ToolTip="Stagger: gauge points their hits took · dodges, with the ones done while sprinting" />
+                            <TextBlock Text="{Binding BreaksText}" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"
+                                       Visibility="{Binding BreaksVisibility}" />
                             <TextBlock Text="{Binding SkillsLabel}" Style="{StaticResource SectionLabel}" Margin="0,20,0,8" />
                             <ItemsControl ItemsSource="{Binding Skills}">
                                 <ItemsControl.ItemTemplate>

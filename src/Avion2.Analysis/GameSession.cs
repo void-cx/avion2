@@ -34,6 +34,9 @@ public sealed class GameSession
     /// <summary>Latest position per entity, for the live map.</summary>
     public LivePositions Positions { get; } = new();
 
+    /// <summary>NPC casts with a cast time, for the boss cast bar.</summary>
+    public NpcCastTracker Casts { get; } = new();
+
     /// <summary>Our own legion, as far as the game has told us this session.</summary>
     public LegionState Legion { get; } = new();
 
@@ -82,6 +85,7 @@ public sealed class GameSession
             Registry.Apply(e);
             Recorder.Apply(e);
             Positions.Apply(e);
+            Casts.Apply(e);
             Cubes.Apply(e, Registry.SelfId, Positions.MapId ?? Registry.MapId, Registry.DisplayName);
             return;
         }
@@ -93,6 +97,7 @@ public sealed class GameSession
         Recorder.Apply(e);
         Legion.Apply(e);
         Positions.Apply(e);
+        Casts.Apply(e);
         Cubes.Apply(e, Registry.SelfId, Positions.MapId ?? Registry.MapId, Registry.DisplayName);
         // The list comes at login a few seconds before our name, and after a character switch the old name is still
         // around: a new list keeps the name only while we are the entity the game last named, else waits for it (as do
@@ -127,7 +132,18 @@ public sealed class GameSession
     {
         if (Tracker.Current is { } current)
         {
-            return MeterView.Build(current, Registry, scope, nowMs);
+            var snapshot = MeterView.Build(current, Registry, scope, nowMs);
+            if (snapshot.TargetId is { } target && Casts.Of(target, nowMs ?? current.LastMs) is { } cast)
+            {
+                string skill = Registry.Data.SkillName(cast.SkillId);
+                bool named = !skill.StartsWith("Skill ", StringComparison.Ordinal) && skill.Trim('?', ' ').Length > 0;
+                snapshot = snapshot with
+                {
+                    BossCast = new BossCastInfo(named ? skill : null, cast.StartMs, cast.EndMs, cast.StoppedMs, cast.Interrupted),
+                };
+            }
+
+            return snapshot;
         }
 
         return Tracker.History.LastOrDefault()?.Final;

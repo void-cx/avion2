@@ -15,6 +15,9 @@ public sealed record SkillRow(uint SkillId, string Name, long Total, double Shar
 
     /// <summary>Bit n = specialisation slot n (1–5).</summary>
     public int SpecSlots { get; init; }
+
+    /// <summary>Stagger gauge points this skill took.</summary>
+    public long Stagger { get; init; }
 }
 
 public sealed record MeterRow(
@@ -45,6 +48,16 @@ public sealed record MeterRow(
     /// <summary>The player's server id (as in player records), if known.</summary>
     public ushort? ServerId { get; init; }
 
+    /// <summary>Stagger gauge points the player's hits took, and how often one of them broke a gauge.</summary>
+    public long Stagger { get; init; }
+
+    public int StaggerBreaks { get; init; }
+
+    /// <summary>Dodges during the fight (<see cref="SprintDodges"/>: the ones done while sprinting, counted apart).</summary>
+    public int Dodges { get; init; }
+
+    public int SprintDodges { get; init; }
+
     public double FrontRate => Hits == 0 ? 0 : (double)FrontHits / Hits;
 
     public double DoubleRate => Hits == 0 ? 0 : (double)Doubles / Hits;
@@ -71,7 +84,22 @@ public sealed record IncomingRow(
     int Shielded,
     int Misses,
     IReadOnlyList<IncomingSourceRow> Sources,
-    long Absorbed = 0);
+    long Absorbed = 0)
+{
+    /// <summary>Dodges during the fight, plain and while sprinting.</summary>
+    public int Dodges { get; init; }
+
+    public int SprintDodges { get; init; }
+}
+
+/// <summary>A stagger gauge broken during a fight.</summary>
+/// <param name="AtMs">Ms since the fight started.</param>
+/// <param name="Player">Who broke it (display name, as in the rows).</param>
+public sealed record StaggerBreakRow(int AtMs, string Target, uint ActorId, string Player, bool IsSelf, string Skill);
+
+/// <summary>The main target's cast with a cast time, live only (see <see cref="NpcCastTracker"/>).</summary>
+/// <param name="Skill">The skill's name; null when the name tables don't know it.</param>
+public sealed record BossCastInfo(string? Skill, long StartMs, long EndMs, long? StoppedMs, bool Interrupted);
 
 /// <param name="StartedAtMs">Unix ms of the encounter start.</param>
 /// <param name="Incoming">Damage taken from monsters, per player.</param>
@@ -94,6 +122,16 @@ public sealed record MeterSnapshot(
 
     /// <summary>The main target is a boss (its HP is <see cref="TargetHp"/>).</summary>
     public bool TargetIsBoss { get; init; }
+
+    /// <summary>The main target's entity id (the one whose HP is shown).</summary>
+    public uint? TargetId { get; init; }
+
+    /// <summary>Stagger gauges broken during the fight, in time order.</summary>
+    public IReadOnlyList<StaggerBreakRow> Breaks { get; init; } = [];
+
+    /// <summary>What the main target is casting right now (running fights only; not saved).</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public BossCastInfo? BossCast { get; init; }
 }
 
 public enum MeterScope
@@ -232,6 +270,7 @@ public static class MeterView
                     MultiHitDamage = s.MultiHitDamage,
                     MinHit = s.MinHit,
                     SpecSlots = s.SpecSlots,
+                    Stagger = s.Stagger,
                 })
                 .ToList();
 
@@ -258,6 +297,10 @@ public static class MeterView
                 CombatPower = info?.CombatPower,
                 Legion = info?.Legion,
                 ServerId = info?.ServerId,
+                Stagger = actor.Stagger,
+                StaggerBreaks = actor.StaggerBreaks,
+                Dodges = encounter.Dodges.GetValueOrDefault(actor.ActorId).Dodges,
+                SprintDodges = encounter.Dodges.GetValueOrDefault(actor.ActorId).Sprinting,
             });
         }
 
@@ -276,7 +319,29 @@ public static class MeterView
             BuildIncoming(encounter, registry, self, seconds))
         {
             TargetIsBoss = targetInfo?.IsBoss == true,
+            TargetId = primary?.TargetId,
+            Breaks = BuildBreaks(encounter, registry, self, targets),
         };
+    }
+
+    private static List<StaggerBreakRow> BuildBreaks(Encounter encounter, EntityRegistry registry, uint? self, List<TargetStats> targets)
+    {
+        var shown = targets.Select(t => t.TargetId).ToHashSet();
+        return encounter.Breaks
+            .Where(b => shown.Contains(b.TargetId))
+            .Select(b =>
+            {
+                uint owner = registry.ResolveOwner(b.ActorId);
+                bool isSelf = owner == self;
+                return new StaggerBreakRow(
+                    (int)Math.Max(0, b.TimestampMs - encounter.StartMs),
+                    registry.TargetName(b.TargetId),
+                    owner,
+                    isSelf ? registry.SelfName ?? registry.DisplayName(owner) : registry.DisplayName(owner),
+                    isSelf,
+                    registry.Data.SkillName(b.SkillId));
+            })
+            .ToList();
     }
 
     private static double Rate(int count, int total) => total == 0 ? 0 : (double)count / total;
@@ -325,7 +390,11 @@ public static class MeterView
                 stats.Shielded,
                 stats.Misses,
                 sources,
-                stats.Absorbed));
+                stats.Absorbed)
+            {
+                Dodges = encounter.Dodges.GetValueOrDefault(stats.VictimId).Dodges,
+                SprintDodges = encounter.Dodges.GetValueOrDefault(stats.VictimId).Sprinting,
+            });
         }
 
         rows.Sort((a, b) => b.Total.CompareTo(a.Total));

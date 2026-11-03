@@ -67,7 +67,8 @@ public sealed class TimelineView : FrameworkElement
             return new();
         }
 
-        var casts = trace.Casts.GroupBy(c => trace.OwnerOf(c.ActorId)).ToDictionary(g => g.Key, g => g.Count());
+        var casts = trace.Casts.Select(c => trace.OwnerOf(c.ActorId)).Concat(trace.Windups.Select(w => w.ActorId))
+            .GroupBy(id => id).ToDictionary(g => g.Key, g => g.Count());
         return trace.Entities
             .Where(e => e.Kind is TraceEntityKind.Self or TraceEntityKind.Player or TraceEntityKind.Boss)
             .Where(e => casts.ContainsKey(e.Id) || e.Kind == TraceEntityKind.Self)
@@ -164,6 +165,11 @@ public sealed class TimelineView : FrameworkElement
             label.MaxLineCount = 1;
             dc.DrawText(label, new Point(6, top + (LaneHeight - label.Height) / 2));
 
+            if (entity.Kind == TraceEntityKind.Boss)
+            {
+                DrawWindups(dc, trace, entity, top, X);
+            }
+
             foreach (var cast in trace.Casts)
             {
                 if (trace.OwnerOf(cast.ActorId) != entity.Id)
@@ -184,6 +190,47 @@ public sealed class TimelineView : FrameworkElement
 
         FormattedText Text(string s, double size, Brush brush) =>
             new(s, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, size, brush, dpi);
+    }
+
+    /// <summary>
+    /// A boss's casts with a cast time: a band from the start of the wind-up to when the skill goes off, cut short and
+    /// crossed out where it was interrupted (or ending in a dot where the boss died casting).
+    /// </summary>
+    private void DrawWindups(DrawingContext dc, FightTrace trace, TraceEntity boss, double top, Func<int, double> x)
+    {
+        var band = new SolidColorBrush(Color.FromArgb(0x4D, 0xF5, 0x9E, 0x0B));
+        var stopPen = new Pen(new SolidColorBrush(Color.FromRgb(0xF0, 0x58, 0x4F)), 2);
+        foreach (var windup in trace.Windups)
+        {
+            if (windup.ActorId != boss.Id)
+            {
+                continue;
+            }
+
+            int end = windup.StopT ?? windup.T + windup.CastMs;
+            double x0 = x(windup.T), x1 = Math.Max(x(end), x0 + 2);
+            var box = new Rect(x0, top + 3, x1 - x0, LaneHeight - 6);
+            dc.DrawRoundedRectangle(band, null, box, 2, 2);
+            string skill = Data.SkillName(windup.SkillId);
+            string when = TimeSpan.FromMilliseconds(Math.Max(windup.T, 0)).ToString(@"m\:ss\.f", CultureInfo.InvariantCulture);
+            string text = $"{when} · casting {skill} ({windup.CastMs / 1000.0:0.0} s)";
+            if (windup.StopT is not null)
+            {
+                if (windup.Interrupted)
+                {
+                    dc.DrawLine(stopPen, new Point(x1 - 4, top + 7), new Point(x1 + 4, top + LaneHeight - 7));
+                    dc.DrawLine(stopPen, new Point(x1 + 4, top + 7), new Point(x1 - 4, top + LaneHeight - 7));
+                    text += " · interrupted";
+                }
+                else
+                {
+                    dc.DrawEllipse(stopPen.Brush, null, new Point(x1, top + LaneHeight / 2), 2.5, 2.5);
+                    text += " · died while casting";
+                }
+            }
+
+            _hitBoxes.Add((new Rect(x0 - 2, top, x1 - x0 + 6, LaneHeight), text));
+        }
     }
 
     /// <summary>A stable colour per skill (hue from the id), so repeats of one skill line up visually.</summary>

@@ -18,6 +18,9 @@ public sealed class SkillStats(uint skillId)
     public long MinHit { get; internal set; }
     public bool IsOverTime { get; internal set; }
 
+    /// <summary>Stagger gauge points this skill took (see <see cref="StaggerTracker"/>).</summary>
+    public long Stagger { get; internal set; }
+
     /// <summary>Union of specialisation slots seen (bit n = slot n), see <see cref="SkillIds.SpecSlots"/>.</summary>
     public int SpecSlots { get; internal set; }
 
@@ -36,6 +39,7 @@ public sealed class SkillStats(uint skillId)
         MultiHits += other.MultiHits;
         MaxHit = Math.Max(MaxHit, other.MaxHit);
         IsOverTime |= other.IsOverTime;
+        Stagger += other.Stagger;
     }
 }
 
@@ -58,6 +62,11 @@ public sealed class ActorStats(uint actorId)
     public long LastMs { get; internal set; }
     public Dictionary<uint, SkillStats> Skills { get; } = new();
 
+    /// <summary>Stagger gauge points taken, and how often this actor's hit broke the gauge.</summary>
+    public long Stagger { get; internal set; }
+
+    public int StaggerBreaks { get; internal set; }
+
     /// <summary>Direct hits only; DoT ticks cannot crit or land from behind.</summary>
     public int DirectHits { get; internal set; }
 
@@ -79,6 +88,8 @@ public sealed class ActorStats(uint actorId)
         Parried += other.Parried;
         MultiHits += other.MultiHits;
         DirectHits += other.DirectHits;
+        Stagger += other.Stagger;
+        StaggerBreaks += other.StaggerBreaks;
         FirstMs = FirstMs == 0 ? other.FirstMs : Math.Min(FirstMs, other.FirstMs);
         LastMs = Math.Max(LastMs, other.LastMs);
         foreach (var (id, skill) in other.Skills)
@@ -160,6 +171,12 @@ public sealed class Encounter(int id, long startMs)
     public Dictionary<uint, SupportStats> Support { get; } = new();
     public Dictionary<uint, IncomingStats> Incoming { get; } = new();
 
+    /// <summary>Stagger gauges broken during the fight: when, whose gauge, and whose hit did it.</summary>
+    public List<StaggerCredit> Breaks { get; } = new();
+
+    /// <summary>Dodges per player (raw entity id): plain ones and ones done while sprinting.</summary>
+    public Dictionary<uint, (int Dodges, int Sprinting)> Dodges { get; } = new();
+
     /// <summary>When we entered combat (<c>21 8D</c>), if that happened just before the first hit.</summary>
     public long? CombatStartMs { get; internal set; }
 
@@ -200,6 +217,7 @@ public sealed class CombatTracker
     private readonly EntityRegistry _registry;
     private readonly TrackerOptions _options;
     private readonly List<Encounter> _history = new();
+    private readonly StaggerTracker _stagger = new();
     private int _nextId = 1;
     private bool _selfInCombat;
     private long _selfCombatSince;
@@ -223,10 +241,18 @@ public sealed class CombatTracker
             Close(EncounterEnd.BossKilled);
         }
 
+        if (_stagger.Apply(e) is { } credit)
+        {
+            ApplyStagger(credit);
+        }
+
         switch (e)
         {
             case DamageEvent damage:
                 ApplyDamage(damage);
+                break;
+            case SkillCastEvent cast when DodgeSkills.Kind(cast.RawSkillId) is > 0 and var kind:
+                ApplyDodge(cast, kind);
                 break;
             case HealEvent heal:
                 ApplyHeal(heal);
@@ -335,6 +361,41 @@ public sealed class CombatTracker
         if ((flags & HitFlags.Double) != 0) { stats.Doubles++; skill.Doubles++; }
         if ((flags & HitFlags.Parry) != 0) { stats.Parried++; skill.Parried++; }
         if ((flags & HitFlags.MultiHit) != 0) { stats.MultiHits++; skill.MultiHits++; skill.MultiHitDamage += damage.ExtraHitDamage; }
+    }
+
+    /// <summary>Credits a stagger drop to the hit's actor on that target (a hit always came first, so both exist).</summary>
+    private void ApplyStagger(StaggerCredit credit)
+    {
+        if (Current is not { } encounter || credit.TimestampMs - encounter.LastMs > _options.EncounterIdleMs ||
+            !encounter.Targets.TryGetValue(credit.TargetId, out var target) || !target.Actors.TryGetValue(credit.ActorId, out var stats))
+        {
+            return;
+        }
+
+        stats.Stagger += credit.Amount;
+        if (stats.Skills.TryGetValue(credit.SkillId, out var skill))
+        {
+            skill.Stagger += credit.Amount;
+        }
+
+        if (credit.Broke)
+        {
+            stats.StaggerBreaks++;
+            encounter.Breaks.Add(credit);
+        }
+    }
+
+    /// <summary>A player's dodge during a fight (not before the first hit, nor after the fight went idle).</summary>
+    private void ApplyDodge(SkillCastEvent cast, int kind)
+    {
+        if (Current is not { } encounter || cast.TimestampMs - encounter.LastMs > _options.EncounterIdleMs ||
+            (_registry.Find(cast.ActorId)?.Kind != EntityKind.Player && cast.ActorId != _registry.SelfId))
+        {
+            return;
+        }
+
+        var (dodges, sprinting) = encounter.Dodges.GetValueOrDefault(cast.ActorId);
+        encounter.Dodges[cast.ActorId] = kind == 2 ? (dodges, sprinting + 1) : (dodges + 1, sprinting);
     }
 
     /// <summary>Monster damage on a player. Starts an encounter: being hit first is still combat.</summary>

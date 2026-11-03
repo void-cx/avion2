@@ -180,6 +180,47 @@ public sealed class OverlayViewModel : Bindable
     public string HpText { get => _hpText; private set => Set(ref _hpText, value); }
     public string HpPercent { get => _hpPercent; private set => Set(ref _hpPercent, value); }
 
+    private string _castText = string.Empty;
+    private string _castLeft = string.Empty;
+    private double _castRatio;
+    private bool _castInterrupted;
+
+    /// <summary>Under the boss HP: "Casting Earthquake" while the boss winds up a skill, "Interrupted: Earthquake" after.</summary>
+    public string CastText { get => _castText; private set { if (Set(ref _castText, value)) OnPropertyChanged(nameof(HasCast)); } }
+
+    /// <summary>"1.2 s" left of the cast (empty once interrupted).</summary>
+    public string CastLeft { get => _castLeft; private set => Set(ref _castLeft, value); }
+
+    /// <summary>How far the cast is (0..1).</summary>
+    public double CastRatio { get => _castRatio; private set => Set(ref _castRatio, value); }
+
+    public bool CastInterrupted { get => _castInterrupted; private set => Set(ref _castInterrupted, value); }
+
+    public bool HasCast => _castText.Length > 0;
+
+    private void UpdateCast(BossCastInfo? cast)
+    {
+        if (cast is null)
+        {
+            CastText = string.Empty;
+            return;
+        }
+
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        CastInterrupted = cast.Interrupted;
+        if (cast.Interrupted)
+        {
+            CastText = cast.Skill is { } interrupted ? $"Interrupted: {interrupted}" : "Cast interrupted";
+            CastLeft = string.Empty;
+            CastRatio = Math.Clamp((double)((cast.StoppedMs ?? now) - cast.StartMs) / Math.Max(1, cast.EndMs - cast.StartMs), 0, 1);
+            return;
+        }
+
+        CastText = cast.Skill is { } skill ? $"Casting {skill}" : "Casting";
+        CastLeft = Invariant($"{Math.Max(0, cast.EndMs - now) / 1000.0:0.0} s");
+        CastRatio = Math.Clamp((double)(now - cast.StartMs) / Math.Max(1, cast.EndMs - cast.StartMs), 0, 1);
+    }
+
     /// <summary>Player cards, updated in place and kept in rank order.</summary>
     public ObservableCollection<PlayerCard> Rows { get; } = new();
 
@@ -397,6 +438,7 @@ public sealed class OverlayViewModel : Bindable
             Duration = "--:--";
             PartyValue = string.Empty;
             HasHp = false;
+            UpdateCast(null);
             return;
         }
 
@@ -424,6 +466,8 @@ public sealed class OverlayViewModel : Bindable
         {
             HasHp = false;
         }
+
+        UpdateCast(HasHp ? snapshot.BossCast : null);
     }
 
     /// <summary>"‹Legion›", plus the server for players from another one ("‹Legion› · Agnita").</summary>

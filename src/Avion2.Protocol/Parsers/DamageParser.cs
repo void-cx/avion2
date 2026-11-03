@@ -176,6 +176,11 @@ public static class DamageParser
             return true;
         }
 
+        if (layout == 0)
+        {
+            emit(new ValuelessHitEvent(ts, actor, target, rawSkill)); // marks the hit that took stagger
+        }
+
         if (layout == 0 && hitType is not (HitType.Miss or HitType.Resist))
         {
             return true; // effect tick without a damage value

@@ -313,6 +313,8 @@ public sealed class ReplayView : FrameworkElement
             }
         }
 
+        DrawTelegraphs(dc, trace, t, S, Text);
+
         // Units, back to front
         _dots.Clear();
         foreach (var e in trace.Entities.OrderBy(e => e.Kind switch
@@ -359,6 +361,31 @@ public sealed class ReplayView : FrameworkElement
         if (_inspected is { } inspected && _byId.TryGetValue(inspected, out var picked))
         {
             DrawInfoCard(dc, trace, picked, t, size, Text, muted, ink);
+        }
+    }
+
+    /// <summary>
+    /// Where NPC skills are about to land (<c>48 38</c>): a marker at each announced spot from when it was sent until
+    /// it lands, its ring closing in, with the seconds left. Only the spot is known, not the area's size or shape.
+    /// </summary>
+    private static void DrawTelegraphs(DrawingContext dc, FightTrace trace, int t, Func<double, double, Point> s,
+        Func<string, double, Brush, bool, FormattedText> text)
+    {
+        var red = Color.FromRgb(0xF0, 0x58, 0x4F);
+        foreach (var telegraph in trace.Telegraphs)
+        {
+            if (telegraph.T > t || telegraph.T + telegraph.DelayMs <= t)
+            {
+                continue;
+            }
+
+            var at = s(telegraph.X, telegraph.Y);
+            double progress = telegraph.DelayMs == 0 ? 1 : (t - telegraph.T) / (double)telegraph.DelayMs;
+            dc.DrawEllipse(WithAlpha(red, (byte)(40 + 70 * progress)), new Pen(WithAlpha(red, 200), 1.5), at, 9, 9);
+            double ring = 9 + 16 * (1 - progress);
+            dc.DrawEllipse(null, new Pen(WithAlpha(red, 160), 1.2) { DashStyle = new DashStyle([3, 2], 0) }, at, ring, ring);
+            var left = text(((telegraph.T + telegraph.DelayMs - t) / 1000.0).ToString("0.0", CultureInfo.InvariantCulture), 10, Brushes.White, true);
+            dc.DrawText(left, new Point(at.X - left.Width / 2, at.Y - left.Height / 2));
         }
     }
 

@@ -211,12 +211,13 @@ public class DamageParserTests
     }
 
     [Fact]
-    public void EffectTicksWithoutValueEmitNothing()
+    public void EffectTicksWithoutValueAreNotDamage()
     {
-        // Undefeated Mantra aura tick on ourselves: layout 0, no value.
+        // Undefeated Mantra aura tick on ourselves: layout 0, no value. Only the value-less entry (stagger marks).
         var events = new List<GameEvent>();
         Assert.True(PacketParser.Parse(Hex("0438 b152 00 00 b152 c58e1501 06 02 ffc46b6c 01000000 c253 01 00"), 0, events.Add));
-        Assert.Empty(events);
+        var entry = Assert.IsType<ValuelessHitEvent>(Assert.Single(events));
+        Assert.Equal(0x01158EC5u, entry.RawSkillId);
     }
 
     [Fact]

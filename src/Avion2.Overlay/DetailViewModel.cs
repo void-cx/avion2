@@ -61,8 +61,14 @@ public sealed class SkillLine(uint skillId) : Bindable
     private long _max;
     private long _total;
     private double _share;
+    private long _stagger;
 
     public uint SkillId { get; } = skillId;
+
+    /// <summary>Stagger gauge points the skill took; shown blank when 0.</summary>
+    public long Stagger { get => _stagger; set { if (Set(ref _stagger, value)) OnPropertyChanged(nameof(StaggerText)); } }
+
+    public string StaggerText => _stagger > 0 ? _stagger.ToString("N0", CultureInfo.InvariantCulture) : string.Empty;
     public string Name { get => _name; set => Set(ref _name, value); }
     public IReadOnlyList<bool> Spec { get => _spec; set => Set(ref _spec, value); }
     public int Hits { get => _hits; set => Set(ref _hits, value); }
@@ -222,6 +228,12 @@ public sealed class DetailViewModel : Bindable
     public IReadOnlyList<HitLine> RecentHits { get => _recentHits; set => Set(ref _recentHits, value); }
 
     public IReadOnlyList<StatTile> Tiles { get => _tiles; private set => Set(ref _tiles, value); }
+
+    private string _breaksText = string.Empty;
+
+    /// <summary>"Stagger broken 2×: You 0:42 (Judgment Thunder), …"; empty when no gauge broke.</summary>
+    public string BreaksText { get => _breaksText; private set => Set(ref _breaksText, value); }
+
     public IReadOnlyList<StatTile> TakenTiles { get => _takenTiles; private set => Set(ref _takenTiles, value); }
 
     public ObservableCollection<SkillLine> Skills { get; } = new();
@@ -239,10 +251,12 @@ public sealed class DetailViewModel : Bindable
             TakenTiles = [];
             Skills.Clear();
             Sources.Clear();
+            BreaksText = string.Empty;
             return;
         }
 
         Target = snapshot.Title;
+        BreaksText = Breaks(snapshot.Breaks);
 
         // Everyone who dealt or took damage can be inspected.
         var options = snapshot.Rows.Select(r => new PlayerOption(r.ActorId, Label(r.Name, r.Class, r.IsSelf)))
@@ -295,7 +309,14 @@ public sealed class DetailViewModel : Bindable
             new StatTile("Perfect", Percent(row.PerfectRate), "perfect"),
             new StatTile("Parried", Percent(row.ParryRate)),
             new StatTile("Multi-hit", Percent(row.MultiHitRate)),
+            new StatTile("Dodges", Dodges(row.Dodges, row.SprintDodges)),
         ];
+        if (snapshot.Rows.Any(r => r.Stagger > 0) || snapshot.Breaks.Count > 0)
+        {
+            // Only fights against something with a stagger gauge
+            Tiles = [.. Tiles, new StatTile("Stagger", row.Stagger.ToString("N0", CultureInfo.InvariantCulture), "stagger"),
+                new StatTile("Gauge broken", row.StaggerBreaks.ToString(CultureInfo.InvariantCulture), "stagger")];
+        }
 
         var seen = new HashSet<uint>();
         foreach (var skill in row.Skills)
@@ -323,6 +344,7 @@ public sealed class DetailViewModel : Bindable
             line.Max = skill.MaxHit;
             line.Total = skill.Total;
             line.Share = skill.Share;
+            line.Stagger = skill.Stagger;
         }
 
         foreach (var stale in Skills.Where(l => !seen.Contains(l.SkillId)).ToList())
@@ -351,6 +373,7 @@ public sealed class DetailViewModel : Bindable
             new StatTile("Shield hits", row.Shielded.ToString(CultureInfo.InvariantCulture)),
             new StatTile("Absorbed", row.Absorbed.ToString("N0", CultureInfo.InvariantCulture), "perfect"),
             new StatTile("Missed", row.Misses.ToString(CultureInfo.InvariantCulture)),
+            new StatTile("Dodges", Dodges(row.Dodges, row.SprintDodges)),
         ];
 
         var seen = new HashSet<string>();
@@ -379,6 +402,25 @@ public sealed class DetailViewModel : Bindable
         {
             Sources.Remove(stale);
         }
+    }
+
+    /// <summary>"14" or "14 (5 sprinting)": all dodges, with the ones done while sprinting.</summary>
+    public static string Dodges(int dodges, int sprinting) => sprinting > 0
+        ? string.Create(CultureInfo.InvariantCulture, $"{dodges + sprinting} ({sprinting} sprinting)")
+        : dodges.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>Who broke the stagger gauge and when, e.g. "Stagger broken 2×: You 0:42 (Judgment Thunder), …".</summary>
+    public static string Breaks(IReadOnlyList<StaggerBreakRow> breaks)
+    {
+        if (breaks.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var parts = breaks.Take(8).Select(b =>
+            $"{(b.IsSelf ? "You" : StreamerMode.Name(b.Player))} {TimeSpan.FromMilliseconds(b.AtMs).ToString(@"m\:ss", CultureInfo.InvariantCulture)} ({b.Skill})");
+        string more = breaks.Count > 8 ? $", +{breaks.Count - 8}" : string.Empty;
+        return $"Stagger broken {breaks.Count}×: {string.Join(", ", parts)}{more}";
     }
 
     private static IReadOnlyList<bool> SpecDots(int slots) =>

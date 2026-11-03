@@ -21,6 +21,9 @@ public sealed class TraceRecorder
     private readonly List<HpUpdateEvent> _hp = new();
     private readonly List<ServerClockEvent> _clock = new();
     private readonly List<DeathEvent> _deaths = new();
+    private readonly List<NpcCastEvent> _windups = new();
+    private readonly List<NpcCastStopEvent> _stops = new();
+    private readonly List<TelegraphEvent> _telegraphs = new();
 
     /// <summary>A gap this long between server ticks (normally 50 ms) counts as a freeze.</summary>
     public const int FreezeMs = 1_000;
@@ -54,6 +57,15 @@ public sealed class TraceRecorder
             case DeathEvent death:
                 _deaths.Add(death);
                 break;
+            case NpcCastEvent windup:
+                _windups.Add(windup);
+                break;
+            case NpcCastStopEvent stop:
+                _stops.Add(stop);
+                break;
+            case TelegraphEvent telegraph:
+                _telegraphs.Add(telegraph);
+                break;
             case ZoneChangeEvent:
                 // Entity ids are reissued: older events would point at the wrong entities.
                 Clear();
@@ -77,6 +89,9 @@ public sealed class TraceRecorder
         _hp.Clear();
         _clock.Clear();
         _deaths.Clear();
+        _windups.Clear();
+        _stops.Clear();
+        _telegraphs.Clear();
     }
 
     /// <summary>The trace of <paramref name="encounter"/> (finished or running) with names as the registry knows them now.</summary>
@@ -142,9 +157,29 @@ public sealed class TraceRecorder
                 .Where(d => ids.Contains(d.EntityId))
                 .Select(d => new TraceDeath(T(d.TimestampMs), d.EntityId))
                 .ToList(),
+            Windups = Windups(ids, start, end, T),
+            Telegraphs = InWindow(_telegraphs, start, end)
+                .Where(g => ids.Contains(g.CasterId))
+                .Select(g => new TraceTelegraph(T(g.TimestampMs), g.CasterId, g.SkillId, (int)g.Position.X, (int)g.Position.Y, g.Facing, g.DelayMs))
+                .ToList(),
             DelayMs = delays.Count > 0 ? delays[delays.Count / 2] : null,
             DelayP95Ms = delays.Count > 0 ? delays[(int)(delays.Count * 0.95)] : null,
         };
+    }
+
+    /// <summary>Casts with a cast time by participants, each with the stop (<c>0C 38</c>) that ended it early, if one did.</summary>
+    private List<TraceWindup> Windups(HashSet<uint> ids, long start, long end, Func<long, int> t)
+    {
+        var result = new List<TraceWindup>();
+        foreach (var w in InWindow(_windups, start, end).Where(w => ids.Contains(w.CasterId)))
+        {
+            var stop = _stops.FirstOrDefault(s => s.CasterId == w.CasterId && s.SkillId == w.SkillId &&
+                                                  s.TimestampMs >= w.TimestampMs && s.TimestampMs <= w.TimestampMs + w.CastMs + 300);
+            result.Add(new TraceWindup(t(w.TimestampMs), w.CasterId, w.SkillId, (int)w.CastMs,
+                stop is null ? null : t(stop.TimestampMs), stop is { CasterDied: false }));
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -343,5 +378,8 @@ public sealed class TraceRecorder
         _hp.RemoveAll(e => e.TimestampMs < before);
         _clock.RemoveAll(e => e.TimestampMs < before);
         _deaths.RemoveAll(e => e.TimestampMs < before);
+        _windups.RemoveAll(e => e.TimestampMs < before);
+        _stops.RemoveAll(e => e.TimestampMs < before);
+        _telegraphs.RemoveAll(e => e.TimestampMs < before);
     }
 }

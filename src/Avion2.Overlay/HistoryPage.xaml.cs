@@ -34,6 +34,36 @@ public sealed record FightSummary(HistoryRow Row, MeterRow? Player)
     public string DpsLabel => Player is { IsSelf: false } ? "Top DPS" : "Your DPS";
     public string SkillsLabel => Player is { IsSelf: false } p ? $"TOP SKILLS · {StreamerMode.Name(p.Name).ToUpperInvariant()}" : "TOP SKILLS";
 
+    /// <summary>"Stagger 412 · broke the gauge 2× · 14 dodges (5 sprinting)"; stagger only for fights with a gauge.</summary>
+    public string MechanicsText
+    {
+        get
+        {
+            if (Player is not { } p)
+            {
+                return string.Empty;
+            }
+
+            var parts = new List<string>();
+            if (Row.Entry.Snapshot.Rows.Any(r => r.Stagger > 0) || Row.Entry.Snapshot.Breaks.Count > 0)
+            {
+                parts.Add($"Stagger {p.Stagger.ToString("N0", CultureInfo.InvariantCulture)}");
+                if (p.StaggerBreaks > 0)
+                {
+                    parts.Add($"broke the gauge {p.StaggerBreaks}×");
+                }
+            }
+
+            parts.Add($"{DetailViewModel.Dodges(p.Dodges, p.SprintDodges)} dodges");
+            return string.Join(" · ", parts);
+        }
+    }
+
+    /// <summary>Who broke the stagger gauge in this fight; empty when nobody did.</summary>
+    public string BreaksText => DetailViewModel.Breaks(Row.Entry.Snapshot.Breaks);
+
+    public Visibility BreaksVisibility => BreaksText.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+
     public IReadOnlyList<SkillBar> Skills
     {
         get

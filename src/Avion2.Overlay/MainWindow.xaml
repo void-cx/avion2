@@ -141,6 +141,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="5" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TextBlock Text="{Binding HpText}" FontSize="10.5" Foreground="{DynamicResource SecondaryTextBrush}" />
                 <TextBlock Text="{Binding HpPercent}" FontSize="10.5" Foreground="{DynamicResource TitleBrush}" FontWeight="SemiBold" HorizontalAlignment="Right" />
@@ -150,6 +151,33 @@
                         <ScaleTransform ScaleX="{Binding HpRatio}" />
                     </Border.RenderTransform>
                 </Border>
+
+                <!-- The boss's cast with a cast time (09 38), or that it was interrupted (0C 38) -->
+                <Grid Grid.Row="2" Margin="0,3,0,0" Visibility="{Binding HasCast, Converter={StaticResource BoolToVis}}"
+                      ToolTip="The boss is winding up this skill; it goes off when the bar is full unless it is interrupted">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="3" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{Binding CastText}" FontSize="10.5" Foreground="{DynamicResource TitleBrush}" TextTrimming="CharacterEllipsis" Margin="0,0,40,0" />
+                    <TextBlock Text="{Binding CastLeft}" FontSize="10.5" Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Right" />
+                    <Border Grid.Row="1" Background="{DynamicResource HpTrackBrush}" CornerRadius="1.5" />
+                    <Border Grid.Row="1" CornerRadius="1.5" RenderTransformOrigin="0,0.5">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="#F59E0B" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CastInterrupted}" Value="True">
+                                        <Setter Property="Background" Value="#6B7280" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Border.RenderTransform>
+                            <ScaleTransform ScaleX="{Binding CastRatio}" />
+                        </Border.RenderTransform>
+                    </Border>
+                </Grid>
             </Grid>
 
             <!-- Footer: who we are + our HP, party DPS -->

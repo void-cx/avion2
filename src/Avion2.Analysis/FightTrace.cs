@@ -55,6 +55,16 @@ public sealed record TraceLag(int Start, int Length);
 /// <summary>An entity died (or left the world) at <paramref name="T"/>.</summary>
 public sealed record TraceDeath(int T, uint EntityId);
 
+/// <summary>
+/// An NPC's cast with a cast time from <paramref name="T"/>; it goes off <paramref name="CastMs"/> later unless it
+/// stopped early at <paramref name="StopT"/> (<paramref name="Interrupted"/>: the caster lived on; else it died).
+/// </summary>
+public sealed record TraceWindup(int T, uint ActorId, uint SkillId, int CastMs, int? StopT = null, bool Interrupted = false);
+
+/// <summary>Where an NPC skill's area lands (world units), announced at <paramref name="T"/>, landing <paramref name="DelayMs"/> later.</summary>
+/// <param name="Facing">Direction of the area, degrees (often 0).</param>
+public sealed record TraceTelegraph(int T, uint ActorId, uint SkillId, int X, int Y, float Facing, int DelayMs);
+
 public sealed record BuffUptime(string Name, uint AbnormalId, int Applications, double Uptime, string Caster);
 
 /// <summary>
@@ -87,6 +97,12 @@ public sealed class FightTrace
     public List<TraceBuff> Buffs { get; init; } = new();
 
     public List<TraceHp> Hp { get; init; } = new();
+
+    /// <summary>NPC casts with a cast time and how they ended (empty in older traces).</summary>
+    public List<TraceWindup> Windups { get; init; } = new();
+
+    /// <summary>Where NPC skills were announced to land (empty in older traces).</summary>
+    public List<TraceTelegraph> Telegraphs { get; init; } = new();
 
     /// <summary>Deaths during the fight (monsters disappear from the replay at these).</summary>
     public List<TraceDeath> Deaths { get; init; } = new();
@@ -229,6 +245,16 @@ public sealed class FightTrace
 
             lastSkill[(cast.ActorId, cast.SkillId)] = cast.T;
             moments.Add(new TraceMoment(cast.T, MomentKind.BossSkill, $"{boss.Name}: {skill}"));
+        }
+
+        foreach (var windup in Windups)
+        {
+            if (windup is { StopT: { } stopped, Interrupted: true } && Entity(windup.ActorId) is { Kind: TraceEntityKind.Boss } boss)
+            {
+                string skill = data.SkillName(windup.SkillId);
+                bool named = !skill.StartsWith("Skill ", StringComparison.Ordinal) && skill.Trim('?', ' ').Length > 0;
+                moments.Add(new TraceMoment(stopped, MomentKind.BossSkill, named ? $"{boss.Name}: {skill} interrupted" : $"{boss.Name}: cast interrupted"));
+            }
         }
 
         foreach (var death in Deaths)
