@@ -100,7 +100,7 @@
       </div>
 
       <figure class="shot">
-        <img src="img/overlay.png" width="389" height="263" fetchpriority="high" alt="The live overlay during a boss fight: damage per player with crits, back attacks and the boss's HP">
+        <img src="img/overlay.png" width="389" height="263" fetchpriority="high" alt="The live overlay during a boss fight: damage per player, the boss's HP and the attack it is winding up, and the party's HP with a mark on the member the boss targets">
         <figcaption>The overlay in a raid · player names hidden</figcaption>
       </figure>
     </section>
@@ -131,8 +131,9 @@
       <article class="feature">
         <div>
           <h3>Live meter</h3>
-          <p>An overlay on top of the game with damage per player, crits, back attacks, damage taken and the boss's HP.
-            A low-HP alert with its own sound, and a warning when the game server freezes. Optional HUD effects draw on the
+          <p>An overlay on top of the game with damage per player, crits, back attacks, damage taken and the boss's HP,
+            with the skill the boss is winding up and the time left, and "Interrupted" when your party stops it. While
+            you are in a party, everyone's HP shows too, also when they are out of view. A low-HP alert with its own sound, and a warning when the game server freezes. Optional HUD effects draw on the
             game itself: your HP bar blinks when low, the boss's skills show under its health bar as it casts them, a
             gathering's or craft's outcome shows before the bars finish, the next chain skill shows with the time left
             to use it, a red mark beside the boss bar shows while the boss targets you, and while flying you see how
@@ -144,7 +145,8 @@
         <div>
           <h3>Fight analysis</h3>
           <p>Every fight is saved: damage and healing per skill, crits, back attacks, damage taken by source, a timeline of
-            each player's casts and buff uptime. Lag spikes are marked where they happened.</p>
+            each player's casts and buff uptime. Stagger shows how much each player's hits filled the boss's gauge and
+            whose hit broke it, and dodges are counted per player. Lag spikes are marked where they happened.</p>
         </div>
       </article>
 
@@ -152,17 +154,18 @@
         <img src="img/replay.jpg" width="1148" height="508" alt="The replay of a raid boss fight: every player and monster on a map, with who hit whom" loading="lazy" decoding="async">
         <div>
           <h3>Fight replay</h3>
-          <p>Watch any fight again from above: where everyone stood, who hit whom, and what each player was doing at that
-            moment. Scrub through it, change the speed, click anyone for their HP and last skill.</p>
+          <p>Watch any fight again from above: everyone moving as the game moved them, who hit whom, where the boss's
+            skills were about to land, and what each player was doing at that moment. Scrub through it, change the speed,
+            click anyone for their HP and last skill.</p>
         </div>
       </article>
 
       <article class="feature wide">
-        <img src="img/runs.jpg" width="1264" height="761" alt="The Runs page: sealed dungeons with their times, and a run's boss kills, fight times and loot" loading="lazy" decoding="async">
+        <img src="img/runs.jpg" width="1264" height="761" alt="The Runs page: three expedition runs with their times, and what one run's reward cube gave" loading="lazy" decoding="async">
         <div>
           <h3>Dungeon runs</h3>
           <p>Every sealed dungeon, expedition, stronghold and instance is timed from entering to leaving: boss kills with
-            their fight time, deaths, party, Kinah and loot. Your best time per dungeon, each boss compared with your best
+            their fight time, deaths, party, Kinah, loot and the potions you used, and whether you left through the exit. What an expedition's reward cube gave and how close each guaranteed reward is. Your best time per dungeon, each boss compared with your best
             run, and a live clock while you're inside. Past runs can be read from your recordings.</p>
         </div>
       </article>
@@ -184,7 +187,8 @@
         <div>
           <h3>Map</h3>
           <p>Every zone with teleports, gathering spots, monsters with their drops and NPCs. You and the players around you
-            appear on it, with the way you face.</p>
+            appear on it, with the way you face. Your party shows too, also out of view, with the zone each member is in;
+            a click shows them on their map.</p>
         </div>
       </article>
 
@@ -192,7 +196,7 @@
         <img src="img/timers.jpg" width="1264" height="761" alt="The timers page: next Spacetime Rift and world boss, events, resets and field boss respawns, with a world boss selected" loading="lazy" decoding="async">
         <div>
           <h3>Timers</h3>
-          <p>Spacetime Rifts, Beritra air raids, PvP events, resets, Reshanta world bosses and field boss respawns, in your time
+          <p>Spacetime Rifts, Dimensional Invasions, the Shugo Festival, the Airspace Battle, PvP events, resets, Reshanta world bosses and field boss respawns, in your time
             zone, with notices before they start.</p>
         </div>
       </article>
@@ -216,13 +220,32 @@
         </div>
       </article>
 
+      <article class="feature">
+        <div>
+          <h3>Progress</h3>
+          <p>Home keeps track of what the game counts for each of your characters: your item level (gear plus Daevanion
+            boards), Kinah gained today against the daily limit, Abyss Points this week, tickets and keys, Daeva Pass XP,
+            XP per hour while levelling, and your pet souls, with a notice for each new pet.</p>
+        </div>
+      </article>
+
+      <article class="feature">
+        <div>
+          <h3>Group finder</h3>
+          <p>While you sit in a group finder room, Home shows it: the dungeon, its state and every slot with role, class,
+            item level, combat power and ready check, and the join requests while you lead. Notices tell you when someone
+            asks to join, when the room is full and everyone ready and when the dungeon starts. In the party frames a mark
+            shows who the boss is targeting.</p>
+        </div>
+      </article>
+
       <article class="feature wide">
-        <img src="img/home-void.jpg" width="1264" height="560" alt="AVION2's home page in the VOID theme: last fight, next timers and your character" loading="lazy" decoding="async">
+        <img src="img/home-void.jpg" width="1264" height="600" alt="AVION2's home page in the VOID theme during a dungeon: the group finder room with every member's class, item level and ready check" loading="lazy" decoding="async">
         <div>
           <h3>Two themes</h3>
           <p>An AION2 look and the VOID theme. Skill and monster names in 10 languages. A streamer mode shows every
             player, character and legion name as a stand-in, for streams and screenshots, and an OBS overlay puts the
-            meter and your character card on stream as a Browser Source.</p>
+            meter, the boss's casts and your character card on stream as a Browser Source.</p>
         </div>
       </article>
     </section>

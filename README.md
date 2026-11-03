@@ -12,33 +12,45 @@ Characters page asks the official AION2 site, when you open it).
 
 - **Live overlay** on top of the game: damage per player (DPS, share, crit, back attacks and more), damage taken,
   boss HP, fight timer.
-- **Fight history** with the full breakdown of every fight: skills, hits, crits, damage taken by source, and your
-  best DPS per boss.
+- **Fight history** with the full breakdown of every fight: skills, hits, crits, damage taken by source, stagger
+  (whose hits filled the boss's gauge and who broke it), dodges, and your best DPS per boss.
 - **Dungeon runs**: every sealed dungeon, expedition, stronghold and other instance from entering to leaving, with
-  boss times, deaths, party, Kinah and loot, and your best time per dungeon.
-- **Timeline** of every skill cast per player, **buff uptime**, and a **replay** of the fight: everyone's position,
-  facing, HP, hits, heals and deaths, with the key moments to jump to and a camera that follows you or the boss.
-- **Timers and notices** for Spacetime Rifts, Beritra air raids, PvP events, resets, Reshanta world bosses and
-  field boss respawns.
+  boss times, deaths, party, Kinah, loot and the potions and scrolls you used, whether you left through the exit,
+  what an expedition's reward cube gave, your guaranteed-reward points per expedition and your best time per dungeon.
+- **Timeline** of every skill cast per player with the boss's wind-ups and interrupts, **buff uptime**, and a
+  **replay** of the fight: everyone moving smoothly, their facing, HP, hits, heals and deaths, where boss skills will
+  land with a countdown, the key moments to jump to and a camera that follows you or the boss.
+- **Timers and notices** for Spacetime Rifts, Dimensional Invasions, the Shugo Festival, the Airspace Battle and other
+  PvP events, resets, Reshanta world bosses and field boss respawns; events that are on show the game's own times.
 - **Map** of every zone with teleports, gathering spots, monsters (with drops) and NPCs; you and the players around
   you live on it. Optional, off by default: a compass that finds hidden cubes (it uses
-  cube positions the game sends before you can see them, which may count as an unfair advantage).
+  cube positions the game sends before you can see them, which may count as an unfair advantage). Your party shows on
+  it too, also out of view, and a click on a member shows their map.
 - **Characters**: combat power, item level, gear, skills, Daevanion boards and stats of your characters and of
   anyone you look up (or right-click in the meter); Compare puts one of yours beside them, piece by piece. This is
   the one feature that goes online: it asks the official AION2 site, only when you open a character.
 - **Gear Forge**: average and unlucky cost (materials, Kinah, attempts) to enchant or amplify any item, and the best next upgrades for your gear: the most item level for your Kinah.
+- **Progress** on Home: your item level as the game counts it (gear plus Daevanion boards), Kinah today, Abyss Points
+  this week, tickets and keys, Daeva Pass XP, XP per hour while levelling, and your pet souls with a notice for each
+  new pet.
 - **All your characters**: AVION2 keeps each character's gear, Kinah, legion, fights and runs apart, and follows the
   one you play. The character at the bottom of the left rail shows another one's without changing anything.
+- **Party HP** on the overlay: the other members' HP, also out of view, with a mark when someone is dead and on the
+  member a boss is targeting.
+- **Group finder** on Home: the room you sit in with every slot's role, class, item level, combat power and ready
+  check, and the join requests while you lead; notices when someone asks to join, when the room is full and ready
+  and when the dungeon starts.
+- **Boss casts** under the boss HP bar on the overlay: the skill being wound up with the time left, and "Interrupted".
 - **Low-HP alert** with its own sound.
 - **HUD effects** (beta, off by default): after a one-off calibration picture of the game, AVION2 draws on the
   game's own HUD: your HP bar pulses when low, the screen edges flash on big hits (with what hit you), boss HP and
   time to kill under the boss bar, boss skills under it, a mark while the boss targets you, your DPS above your
   HP bar, the chain skill you can use next with its time left, and the party's DPS under the group list.
 - **Server lag warning** when the game server freezes, also marked in each fight.
-- **Legion** tags on players and a legion card with your members.
+- **Legion** tags on players and a legion card with your members and when your Legion Hall rent ends.
 - Two themes: **AION2** and **VOID**. Skill and NPC names in 10 languages.
 - **Streamer mode**: player, character and legion names show as "You", "Player 2", … everywhere in the app.
-- **OBS overlay**: the meter and your character card as an OBS Browser Source (`http://localhost:47421/overlay`), turned on in Settings. Only your own PC can open it.
+- **OBS overlay**: the meter (with the boss's HP and casts) and your character card as an OBS Browser Source (`http://localhost:47421/overlay`), turned on in Settings. Only your own PC can open it.
 
 ## Install
 
