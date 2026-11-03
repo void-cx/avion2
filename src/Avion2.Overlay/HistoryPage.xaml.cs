@@ -287,7 +287,7 @@ public partial class HistoryPage : UserControl
 
         try
         {
-            Clipboard.SetText(HistoryStore.Summarize(row.Entry.Snapshot));
+            Clipboard.SetText(HistoryStore.Summarize(row.Entry.Snapshot, name: StreamerMode.Name));
         }
         catch (System.Runtime.InteropServices.COMException)
         {

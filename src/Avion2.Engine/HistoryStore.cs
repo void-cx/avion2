@@ -204,20 +204,34 @@ public sealed class HistoryStore
         return entries;
     }
 
-    /// <summary>Plain-text summary, e.g. for pasting into a chat.</summary>
-    public static string Summarize(MeterSnapshot s, int maxRows = 10)
+    /// <summary>
+    /// Plain-text summary, e.g. for pasting into a chat. <paramref name="name"/> turns a player's name (and whether it
+    /// is ours) into the one to show, for streamer mode; without it names stay as they are.
+    /// </summary>
+    public static string Summarize(MeterSnapshot s, int maxRows = 10, Func<string, bool, string>? name = null)
     {
+        name ??= (n, _) => n;
         var sb = new StringBuilder();
         var started = DateTimeOffset.FromUnixTimeMilliseconds(s.StartedAtMs).ToLocalTime();
         sb.Append(CultureInfo.InvariantCulture, $"AVION2 — {s.Title} · {Duration(s.DurationSeconds)} · {Compact(s.TotalDps)}/s");
         sb.AppendLine(CultureInfo.InvariantCulture, $" · {started:yyyy-MM-dd HH:mm}");
+        bool stagger = s.Rows.Any(r => r.Stagger > 0);
         int rank = 0;
         foreach (var row in s.Rows.Take(maxRows))
         {
             rank++;
             string cls = row.Class == Protocol.GameClass.Unknown ? string.Empty : $" ({row.Class})";
+            string staggered = stagger ? string.Create(CultureInfo.InvariantCulture, $"  stagger {row.Stagger:N0}") : string.Empty;
             sb.AppendLine(CultureInfo.InvariantCulture,
-                $"{rank}. {row.Name}{cls}  {Compact(row.Dps)}/s  {Compact(row.Total)}  {row.Share * 100:0.0}%  crit {row.CritRate * 100:0}%");
+                $"{rank}. {name(row.Name, row.IsSelf)}{cls}  {Compact(row.Dps)}/s  {Compact(row.Total)}  {row.Share * 100:0.0}%  crit {row.CritRate * 100:0}%{staggered}");
+        }
+
+        if (s.Breaks.Count > 0)
+        {
+            sb.Append(CultureInfo.InvariantCulture, $"Stagger broken {s.Breaks.Count}×: ");
+            sb.AppendLine(string.Join(", ", s.Breaks.Select(b =>
+                string.Create(CultureInfo.InvariantCulture, $"{name(b.Player, b.IsSelf)} at {Duration(b.AtMs / 1000.0)}") +
+                (b.Skill is { Length: > 0 } skill ? $" ({skill})" : string.Empty))));
         }
 
         return sb.ToString().TrimEnd();

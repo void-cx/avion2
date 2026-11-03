@@ -191,6 +191,42 @@ public class HistoryStoreTests
     }
 
     [Fact]
+    public void SummaryNamesStaggerAndWhoBrokeIt()
+    {
+        var snapshot = new MeterSnapshot(
+            1, "Training Scarecrow", 60, 100_000, 1667, null, null,
+            [
+                new MeterRow(1, "TestDaeva", GameClass.Chanter, true, 60_000, 1000, 0.6, 0, 0.2, 10, 0, 0, 0, 0, []) { Stagger = 340 },
+                new MeterRow(2, "OtherDaeva", GameClass.Gladiator, false, 40_000, 667, 0.4, 0, 0.1, 8, 0, 0, 0, 0, []) { Stagger = 1210 },
+            ],
+            StartedAtMs: 1_791_877_743_597)
+        {
+            Breaks = [new StaggerBreakRow(42_000, "Training Scarecrow", 2, "OtherDaeva", false, "Pummel")],
+        };
+
+        string summary = HistoryStore.Summarize(snapshot, name: (n, self) => self ? "You" : "Player 2");
+
+        Assert.Contains("1. You (Chanter)", summary);
+        Assert.Contains("stagger 1,210", summary);
+        Assert.Contains("Stagger broken 1×: Player 2 at 00:42 (Pummel)", summary);
+        Assert.DoesNotContain("Daeva", summary);
+    }
+
+    [Fact]
+    public void SummaryLeavesStaggerOutWhenTheFightHadNoGauge()
+    {
+        var snapshot = new MeterSnapshot(
+            1, "Training Scarecrow", 30, 1000, 33, null, null,
+            [new MeterRow(1, "TestDaeva", GameClass.Chanter, true, 1000, 33, 1, 0, 0, 1, 0, 0, 0, 0, [])],
+            StartedAtMs: 1_791_877_743_597);
+
+        string summary = HistoryStore.Summarize(snapshot);
+
+        Assert.DoesNotContain("stagger", summary, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("1. TestDaeva (Chanter)", summary);
+    }
+
+    [Fact]
     public void DeletesFightsOlderThanACutoffWithTheirReplays()
     {
         string dir = Directory.CreateTempSubdirectory("avion2-history").FullName;
