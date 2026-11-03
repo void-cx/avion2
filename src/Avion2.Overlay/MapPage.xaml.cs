@@ -184,12 +184,14 @@ public partial class MapPage : UserControl
         if (_state.Engine is not { } engine)
         {
             View.SetLive([]);
+            ShowParty([], null);
             LiveStatus.Text = "Start the meter to see yourself and others on the map.";
             CenterMe.IsEnabled = false;
             return;
         }
 
         var (mapId, live) = engine.LiveMap();
+        var party = engine.Party();
         if (FollowBox.IsChecked == true && mapId is { } id && map.MapId != id &&
             BundledGameData.WorldMapKeys.Select(BundledGameData.WorldMap).FirstOrDefault(m => m?.MapId == id) is { } current)
         {
@@ -199,7 +201,9 @@ public partial class MapPage : UserControl
 
         View.Transform ??= _state.Cubes.TransformFor(map);
         bool here = mapId == map.MapId;
-        View.SetLive(here ? live : []);
+        // On another map than ours: party members there still show, where their last party record put them
+        View.SetLive(here ? live : PartyTracker.Markers(party, map.MapId).ToList());
+        ShowParty(party, mapId);
         CenterMe.IsEnabled = here && View.SelfPoint is not null;
 
         int players = live.Count(e => e.Kind == LiveKind.Player);
@@ -211,6 +215,88 @@ public partial class MapPage : UserControl
                     ? $"{players} players nearby. Your own dot appears after a teleport, buff, skill, stop or fall (the game doesn't send your movement)."
                     : $"{players} players nearby. Your dot updates on teleports, buffs, skills, stops and falls.";
     }
+
+    /// <summary>What <see cref="PartyList"/> shows, to rebuild it only when that changes.</summary>
+    private string _partyShown = string.Empty;
+
+    /// <summary>The other party members with their zone ("Near you", "On your map" or the map's name); hidden when not in a party.</summary>
+    private void ShowParty(IReadOnlyList<PartyMemberView> party, uint? ourMap)
+    {
+        var rows = party.Where(m => !m.IsSelf).Select(m => (Member: m, Zone: Zone(m, ourMap))).ToList();
+        string shown = string.Join("\n", rows.Select(r => $"{r.Member.CharacterId}|{StreamerMode.Name(r.Member.Name)}|{r.Zone}|{r.Member.Alive}"));
+        if (shown == _partyShown)
+        {
+            return;
+        }
+
+        _partyShown = shown;
+        PartySection.Visibility = rows.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        PartyList.Children.Clear();
+        foreach (var (member, zone) in rows)
+        {
+            var name = new TextBlock
+            {
+                Text = StreamerMode.Name(member.Name) + (member.Alive ? string.Empty : " ☠"),
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                Foreground = new System.Windows.Media.SolidColorBrush(OverlayViewModel.ClassColor(member.Class)),
+            };
+            var where = new TextBlock { Text = zone, FontSize = 10.5, TextTrimming = TextTrimming.CharacterEllipsis };
+            where.SetResourceReference(TextBlock.ForegroundProperty, "MutedBrush");
+            var row = new Border
+            {
+                Padding = new Thickness(6, 3, 6, 3),
+                CornerRadius = new CornerRadius(4),
+                Background = System.Windows.Media.Brushes.Transparent,
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Child = new StackPanel { Children = { name, where } },
+                ToolTip = member.Status is { } s
+                    ? string.Join(" · ", new[] { member.Class.ToString(), s.Level > 0 ? $"Lv {s.Level}" : null, s.ItemLevel > 0 ? $"iLv {s.ItemLevel}" : null }.OfType<string>())
+                    : member.Class.ToString(),
+            };
+            row.MouseEnter += (_, _) => row.SetResourceReference(Border.BackgroundProperty, "RowHoverBrush");
+            row.MouseLeave += (_, _) => row.Background = System.Windows.Media.Brushes.Transparent;
+            uint id = member.CharacterId;
+            row.MouseLeftButtonUp += (_, _) => ShowMember(id);
+            PartyList.Children.Add(row);
+        }
+    }
+
+    private string Zone(PartyMemberView member, uint? ourMap) =>
+        !member.Online ? "Offline or changing servers"
+        : member.Status is not { MapId: not 0 } status ? "Location not known yet"
+        : status.MapId == ourMap ? (member.MaxHp > 0 ? "Near you" : "On your map")
+        : _state.Data.MapName(status.MapId);
+
+    /// <summary>Switches to the member's map (if it is one of the zone maps) and centers on them.</summary>
+    private void ShowMember(uint characterId)
+    {
+        if (_state.Engine?.Party().FirstOrDefault(m => m.CharacterId == characterId) is not { Status: { MapId: not 0 } status })
+        {
+            return;
+        }
+
+        if (View.Map?.MapId != status.MapId)
+        {
+            if (((IEnumerable<MapChoice>)MapBox.ItemsSource).FirstOrDefault(c => BundledGameData.WorldMap(c.Key)?.MapId == status.MapId) is not { } choice)
+            {
+                return; // a dungeon or other map without a picture
+            }
+
+            // Following our own map would switch straight back
+            FollowBox.IsChecked = false;
+            _state.Stored.MapFollow = false;
+            MapBox.SelectedItem = choice;
+        }
+
+        if ((View.Transform ?? (View.Map is { } map ? _state.Cubes.TransformFor(map) : null)) is { } t)
+        {
+            var (x, y) = t.ToImage(status.Position);
+            View.CenterOn(x, y, 0.5);
+        }
+
+        Tick();
+    }
+
 
     private readonly Dictionary<string, CheckBox> _groupBoxes = new();
     private readonly HashSet<string> _expanded = new();

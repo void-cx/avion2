@@ -337,7 +337,7 @@ public sealed class MapView : FrameworkElement
             return;
         }
 
-        foreach (var e in Live.OrderBy(e => e.Kind == LiveKind.Self))
+        foreach (var e in Live.OrderBy(e => e.Kind == LiveKind.Self ? 2 : e.Party ? 1 : 0))
         {
             var at = ToScreen(transform.ToImage(e.Position).X, transform.ToImage(e.Position).Y);
             if (at.X < -30 || at.Y < -30 || at.X > ActualWidth + 30 || at.Y > ActualHeight + 30)
@@ -358,6 +358,24 @@ public sealed class MapView : FrameworkElement
                     var you = Text("You", 11.5, SelfFill, FontWeights.SemiBold);
                     DrawOutlined(dc, you, new Point(at.X - you.Width / 2, at.Y - 28), SelfFill);
                     break;
+                case LiveKind.Player when e.Party:
+                {
+                    // Party members: a ring, the name at any zoom, a cross while dead; faded when the fix is old
+                    var fill = Frozen(e.Class == GameClass.Unknown ? Color.FromRgb(0xC9, 0xD7, 0xE4) : OverlayViewModel.ClassColor(e.Class));
+                    dc.PushOpacity(e.AgeMs > 15_000 ? 0.55 : 1);
+                    dc.DrawEllipse(null, PartyRing, at, 8.5, 8.5);
+                    dc.DrawEllipse(fill, OutlinePen, at, 5, 5);
+                    if (e.Dead)
+                    {
+                        dc.DrawLine(DeadPen, new Point(at.X - 4, at.Y - 4), new Point(at.X + 4, at.Y + 4));
+                        dc.DrawLine(DeadPen, new Point(at.X - 4, at.Y + 4), new Point(at.X + 4, at.Y - 4));
+                    }
+
+                    var label = Text(StreamerMode.Name(e), 11, PartyBrush, FontWeights.SemiBold);
+                    DrawOutlined(dc, label, new Point(at.X + 11, at.Y - label.Height / 2), PartyBrush, 2.6);
+                    dc.Pop();
+                    break;
+                }
                 case LiveKind.Player:
                     var brush = Frozen(e.Class == GameClass.Unknown ? Color.FromRgb(0xC9, 0xD7, 0xE4) : OverlayViewModel.ClassColor(e.Class));
                     dc.DrawEllipse(brush, OutlinePen, at, 4.5, 4.5);
@@ -485,7 +503,7 @@ public sealed class MapView : FrameworkElement
                     LiveKind.Self or LiveKind.Player => e.Class == GameClass.Unknown ? "Player" : e.Class.ToString(),
                     LiveKind.Boss => "Boss",
                     _ => "Monster",
-                });
+                } + (e.Party ? " · party" : string.Empty) + (e.Party && e.Dead ? " · dead" : string.Empty));
                 lines.Add(e.AgeMs < 2_000 ? "Position: now" : $"Position: {e.AgeMs / 1000} s ago");
                 if (e.Facing is not null)
                 {
@@ -850,4 +868,7 @@ public sealed class MapView : FrameworkElement
     private static readonly Pen MonsterPen = FrozenPen(Color.FromRgb(0xE0, 0x3A, 0x30), 2);
     private static readonly Pen BossPen = FrozenPen(Color.FromRgb(0xFF, 0x6A, 0x2A), 2.5);
     private static readonly Pen SelectPen = FrozenPen(Colors.White, 2);
+    private static readonly Brush PartyBrush = Frozen(Color.FromRgb(0x7D, 0xE8, 0x9A));
+    private static readonly Pen PartyRing = FrozenPen(Color.FromRgb(0x7D, 0xE8, 0x9A), 2);
+    private static readonly Pen DeadPen = FrozenPen(Color.FromRgb(0xE5, 0x48, 0x4D), 2);
 }

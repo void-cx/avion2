@@ -197,6 +197,80 @@
                 </StackPanel>
             </Grid>
 
+            <!-- Party: the other members' class, name, HP and a dead mark (Settings → Overlay look) -->
+            <ItemsControl DockPanel.Dock="Bottom" Margin="10,2,4,0" ItemsSource="{Binding Party.Members}" Focusable="False"
+                          Visibility="{Binding Party.Visible, Converter={StaticResource BoolToVis}}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="2" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,1,6,2" Background="Transparent" ToolTip="{Binding Detail}">
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Away}" Value="True">
+                                            <Setter Property="Opacity" Value="0.5" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="3" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.RowSpan="2" Width="15" Height="15" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Emblem}" FontSize="7.5" FontWeight="Bold" Foreground="{Binding ClassBrush}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasIcon}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <Image Source="{Binding Icon}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"
+                                       Visibility="{Binding HasIcon, Converter={StaticResource BoolToVis}}" />
+                            </Grid>
+                            <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="10.5" Foreground="{DynamicResource SecondaryTextBrush}"
+                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Bottom" />
+                            <TextBlock Grid.Column="2" Text="&#x2620;" FontFamily="Segoe UI Symbol" FontSize="11" Margin="3,0,0,0"
+                                       Foreground="{DynamicResource AlertBorderBrush}" VerticalAlignment="Bottom"
+                                       Visibility="{Binding Dead, Converter={StaticResource BoolToVis}}" />
+
+                            <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,1,0,0" CornerRadius="1.5" Background="{DynamicResource HpTrackBrush}" />
+                            <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,1,0,0" CornerRadius="1.5" RenderTransformOrigin="0,0.5"
+                                    Visibility="{Binding HasHp, Converter={StaticResource BoolToVis}}">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="{Binding ClassBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Low}" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource AlertBorderBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Border.RenderTransform>
+                                    <ScaleTransform ScaleX="{Binding HpRatio}" />
+                                </Border.RenderTransform>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
             <Grid>
                 <!-- Detailed player cards -->
                 <ScrollViewer VerticalScrollBarVisibility="Hidden" Margin="6,0,6,0"

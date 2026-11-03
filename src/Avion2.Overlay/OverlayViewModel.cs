@@ -322,6 +322,14 @@ public sealed class OverlayViewModel : Bindable
 
     public bool DetailedRows => !_compactRows;
 
+    private bool _partyFrames = true;
+
+    /// <summary>The other party members' HP under the meter rows (when in a party).</summary>
+    public bool PartyFrames { get => _partyFrames; set => Set(ref _partyFrames, value); }
+
+    /// <summary>The party panel's members and whether it shows.</summary>
+    public PartyPanel Party { get; } = new();
+
     public ServerRegion Region { get => _region; set => Set(ref _region, value); }
     public int NotifyLeadMinutes { get => _notifyLeadMinutes; set => Set(ref _notifyLeadMinutes, Math.Clamp(value, 1, 60)); }
     public bool NotifyRift { get => _notifyRift; set => Set(ref _notifyRift, value); }

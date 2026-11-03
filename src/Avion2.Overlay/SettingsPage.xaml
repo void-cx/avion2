@@ -234,6 +234,7 @@
                     <CheckBox Margin="0,8,0,0" Content="Show all targets nearby (not only the ones I hit)" IsChecked="{Binding AllTargets}" />
                     <CheckBox Margin="0,4,0,0" Content="Lock overlay (click-through to the game)" IsChecked="{Binding Locked}" />
                     <CheckBox Margin="0,4,0,0" Content="Compact rows (one line per player instead of player cards)" IsChecked="{Binding CompactRows}" />
+                    <CheckBox Margin="0,4,0,0" Content="Party HP: the other members' HP under the meter while you are in a party" IsChecked="{Binding PartyFrames}" />
                     <TextBlock Style="{StaticResource Hint}" Text="While locked, unlock with Ctrl+Shift+L." />
                 </StackPanel>
             </Border>

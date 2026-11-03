@@ -339,8 +339,8 @@ public static class RecordParsers
     {
         var r = new SpanReader(body);
         var bits = new Bits();
-        if (!r.TryU8(out byte mask) || (mask & ~1) != 0 || !r.TrySkip(8 + 8 + 4 + 4 + ((mask & 1) != 0 ? 9 : 0)) ||
-            !r.TryVarint(out uint count) || count is 0 or > 40)
+        if (!r.TryU8(out byte mask) || (mask & ~1) != 0 || !r.TrySkip(8) || !r.TryI64(out long leader) ||
+            !r.TrySkip(4 + 4 + ((mask & 1) != 0 ? 9 : 0)) || !r.TryVarint(out uint count) || count is 0 or > 40)
         {
             return false;
         }
@@ -356,7 +356,7 @@ public static class RecordParsers
             members.Add(member);
         }
 
-        emit(new PartyRosterEvent(ts, members));
+        emit(new PartyRosterEvent(ts, members, (uint)leader));
         return true;
     }
 
@@ -384,13 +384,17 @@ public static class RecordParsers
     private static bool TryPartyMember(ref SpanReader r, ref Bits bits, out PartyMember member)
     {
         member = null!;
+        string? legion = null;
         if (!r.TryU8(out byte mask) || (mask & ~7) != 0 || !r.TryU8(out byte slot) || !r.TryU32(out uint entity) ||
             !r.TrySkip(4) || !TrySkipString(ref r) || !r.TryI64(out long character) ||
             !r.TryVarint(out uint nameLength) || !r.TryUtf8((int)nameLength, out string name) ||
-            !r.TryU32(out uint classCode) || !r.TryVarint(out _) || !r.TryVarint(out _) ||
-            !r.TrySkip(24 + 8 + 4 + 12) || !bits.TryRead(ref r, out _) ||
-            ((mask & 1) != 0 && !TrySkipString(ref r)) || ((mask & 2) != 0 && !r.TrySkip(4)) ||
-            !r.TrySkip(12) || !bits.TryRead(ref r, out _) || !bits.TryRead(ref r, out bool online))
+            !r.TryU32(out uint classCode) || !r.TryVarint(out uint hp) || !r.TryVarint(out uint maxHp) ||
+            !r.TrySkip(24) || !r.TryU32(out uint map) || !r.TryU32(out uint instance) || !r.TryU32(out uint subzone) ||
+            !r.TryF32(out float x) || !r.TryF32(out float y) || !r.TryF32(out float z) || !bits.TryRead(ref r, out bool alive) ||
+            ((mask & 1) != 0 && (!r.TryVarint(out uint legionLength) || (legionLength > 0 && !r.TryUtf8((int)legionLength, out legion)))) ||
+            ((mask & 2) != 0 && !r.TrySkip(4)) ||
+            !r.TryU32(out uint level) || !r.TrySkip(4) || !r.TryU32(out uint itemLevel) ||
+            !bits.TryRead(ref r, out _) || !bits.TryRead(ref r, out bool online))
         {
             return false;
         }
@@ -411,12 +415,15 @@ public static class RecordParsers
             }
         }
 
-        if (!r.TrySkip(8 + 1))
+        if (!r.TryI64(out long power) || !r.TrySkip(1))
         {
             return false;
         }
 
-        member = new PartyMember(slot, (uint)character, name, GameClasses.FromRosterCode(classCode), online, entity);
+        var status = new PartyMemberStatus(map, instance, subzone, new Vec3(x, y, z), level, itemLevel,
+            (uint)Math.Clamp(power, 0, uint.MaxValue), legion);
+        member = new PartyMember(slot, (uint)character, name, GameClasses.FromRosterCode(classCode), online, entity,
+            hp, maxHp, alive, status);
         return true;
     }
 
@@ -757,7 +764,10 @@ public static class RecordParsers
         return true;
     }
 
-    /// <summary><c>1B 92</c>: actor varint, hp varint, maxHp varint.</summary>
+    /// <summary>
+    /// <c>1B 92</c>, a party member's HP (also out of view; never for us): entity varint, hp varint, max hp varint,
+    /// 6 × u32 (mp, ap, dp and their maxima), alive u8 (0 = dead).
+    /// </summary>
     public static bool ParseHpUpdate(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
         var r = new SpanReader(body);
@@ -767,7 +777,8 @@ public static class RecordParsers
             return false;
         }
 
-        emit(new HpUpdateEvent(ts, id, hp, max));
+        bool? alive = r.TrySkip(24) && r.TryU8(out byte live) ? live != 0 : null;
+        emit(new HpUpdateEvent(ts, id, hp, max, alive));
         return true;
     }
 }

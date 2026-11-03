@@ -1059,6 +1059,7 @@ public sealed class AppState
         Settings.LowHpSound = string.IsNullOrWhiteSpace(s.LowHpSound) ? null : s.LowHpSound;
         Settings.AutoStart = s.AutoStart;
         Settings.CompactRows = s.CompactRows;
+        Settings.PartyFrames = s.PartyFrames;
         Settings.Region = s.Region;
         Settings.NotifyLeadMinutes = s.NotifyLeadMinutes;
         Settings.NotifyRift = s.NotifyRift;
@@ -1101,6 +1102,7 @@ public sealed class AppState
         s.LowHpSound = Settings.LowHpSound;
         s.AutoStart = Settings.AutoStart;
         s.CompactRows = Settings.CompactRows;
+        s.PartyFrames = Settings.PartyFrames;
         s.Region = Settings.Region;
         s.NotifyLeadMinutes = Settings.NotifyLeadMinutes;
         s.NotifyRift = Settings.NotifyRift;

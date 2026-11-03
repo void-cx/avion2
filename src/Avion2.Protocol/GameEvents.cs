@@ -227,13 +227,18 @@ public sealed record TargetOfTargetEvent(long TimestampMs, uint EntityId, uint T
 /// <summary>A member of our party or group-finder room; <paramref name="CharacterId"/> is the character, not the entity id.</summary>
 /// <param name="Online">Logged in (from the party record); null when the record does not say (the finder room).</param>
 /// <param name="EntityId">The member's entity id in our zone, 0 when elsewhere or not known.</param>
-public sealed record PartyMember(byte Slot, uint CharacterId, string Name, GameClass Class, bool? Online = null, uint EntityId = 0);
+/// <param name="Hp">HP and max HP from the party record; 0/0 when the member is not in our zone (and in the finder room).</param>
+/// <param name="Alive">False when the party record says the member is dead.</param>
+/// <param name="Status">Map, position, levels and combat power from the party record; null for the finder room.</param>
+public sealed record PartyMember(byte Slot, uint CharacterId, string Name, GameClass Class, bool? Online = null, uint EntityId = 0,
+    uint Hp = 0, uint MaxHp = 0, bool Alive = true, PartyMemberStatus? Status = null);
 
 /// <summary>
 /// Our party (<c>00 92</c>, after every change) or our group-finder room (<c>02 97</c>, every few seconds while we sit
 /// in one); includes ourselves.
 /// </summary>
-public sealed record PartyRosterEvent(long TimestampMs, IReadOnlyList<PartyMember> Members) : GameEvent(TimestampMs);
+/// <param name="LeaderId">The leader's character id: set for the party (<c>00 92</c>), null for the finder room.</param>
+public sealed record PartyRosterEvent(long TimestampMs, IReadOnlyList<PartyMember> Members, uint? LeaderId = null) : GameEvent(TimestampMs);
 
 /// <summary><c>0D 92</c> / <c>22 92</c>: a member joined the party, or came back with a new entity id.</summary>
 public sealed record PartyMemberJoinedEvent(long TimestampMs, PartyMember Member) : GameEvent(TimestampMs);
@@ -246,7 +251,8 @@ public sealed record MapLoadEvent(long TimestampMs, uint MapId, byte ContentCode
 public sealed record ZoneChangeEvent(long TimestampMs) : GameEvent(TimestampMs);
 
 /// <param name="MaxHp">0 when the record carries only the current HP.</param>
-public sealed record HpUpdateEvent(long TimestampMs, uint EntityId, uint Hp, uint MaxHp) : GameEvent(TimestampMs);
+/// <param name="Alive">From a party member's HP record (<c>1B 92</c>): false while they are dead; null for other records.</param>
+public sealed record HpUpdateEvent(long TimestampMs, uint EntityId, uint Hp, uint MaxHp, bool? Alive = null) : GameEvent(TimestampMs);
 
 /// <summary>
 /// <c>00 8D</c> resource 6: an entity's flight time in 1/10 000 s (570 000 = 57 s when full). Every 100 ms while it

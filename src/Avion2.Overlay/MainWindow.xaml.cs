@@ -122,6 +122,7 @@ public partial class MainWindow : Window
         }
 
         _vm.Update(_engine.Snapshot(_vm.Scope), status);
+        _vm.Party.Update(_vm.PartyFrames ? _engine.Party() : [], _vm.PartyFrames, _state.Data.MapName);
         CheckLowHp(status);
         AutoShow(status);
     }

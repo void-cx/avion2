@@ -446,12 +446,22 @@ public sealed class MeterEngine : IDisposable
         }
     }
 
-    /// <summary>The current map and everyone's latest position on it, for the live map.</summary>
+    /// <summary>The current map and everyone's latest position on it (party members also out of view), for the live map.</summary>
     public (uint? MapId, IReadOnlyList<LiveEntity> Entities) LiveMap()
     {
         lock (_sync)
         {
-            return (_session.Positions.MapId ?? _session.Registry.MapId, _session.Positions.Snapshot(_session.Registry));
+            uint? map = _session.Positions.MapId ?? _session.Registry.MapId;
+            return (map, _session.Party.OnMap(map, _session.Positions.Snapshot(_session.Registry), _session.Registry));
+        }
+    }
+
+    /// <summary>Our party in slot order (us included), with HP and where each member is; empty when not in one.</summary>
+    public IReadOnlyList<PartyMemberView> Party()
+    {
+        lock (_sync)
+        {
+            return _session.Party.Snapshot(_session.Registry);
         }
     }
 

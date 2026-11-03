@@ -40,6 +40,9 @@ public sealed class GameSession
     /// <summary>Our own legion, as far as the game has told us this session.</summary>
     public LegionState Legion { get; } = new();
 
+    /// <summary>Who is in our party, with their HP and where they are.</summary>
+    public PartyTracker Party { get; } = new();
+
     /// <summary>The trace of an encounter (finished or running).</summary>
     public FightTrace Trace(Encounter encounter) =>
         Recorder.Build(encounter, Registry, encounter.Final?.Title ?? MeterView.Build(encounter, Registry).Title);
@@ -105,6 +108,7 @@ public sealed class GameSession
         Loot.Apply(e, Registry.SelfName);
         Recorder.Apply(e);
         Legion.Apply(e);
+        Party.Apply(e, Registry);
         Positions.Apply(e);
         Casts.Apply(e);
         Cubes.Apply(e, Registry.SelfId, Positions.MapId ?? Registry.MapId, Registry.DisplayName);

@@ -180,8 +180,9 @@ public enum LiveKind
 /// <param name="AgeMs">Since the last position fix.</param>
 /// <param name="Facing">Degrees, 0 = +X turning toward +Y (map: right, then down); null when unknown.</param>
 /// <param name="FacingAgeMs">Since the facing was seen.</param>
+/// <param name="Party">A member of our party (also shown when out of view, from the party's position records).</param>
 public sealed record LiveEntity(uint Id, string Name, LiveKind Kind, GameClass Class, Vec3 Position, long AgeMs, bool Dead,
-    float? Facing = null, long FacingAgeMs = 0);
+    float? Facing = null, long FacingAgeMs = 0, bool Party = false);
 
 /// <summary>
 /// Latest position per entity for the live map (moves at up to 10 Hz, spawns, buff positions). The game does not

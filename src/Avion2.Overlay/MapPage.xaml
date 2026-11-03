@@ -45,6 +45,12 @@
                     <TextBlock Text="LAYERS" Style="{StaticResource SectionLabel}" Margin="0,16,0,4" />
                     <StackPanel x:Name="LayerList" />
 
+                    <!-- Party members and where they are (click: show them on the map) -->
+                    <StackPanel x:Name="PartySection" Visibility="Collapsed">
+                        <TextBlock Text="PARTY" Style="{StaticResource SectionLabel}" Margin="0,16,0,4" />
+                        <StackPanel x:Name="PartyList" />
+                    </StackPanel>
+
                     <TextBlock x:Name="LiveStatus" Foreground="{DynamicResource MutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,14,0,0" />
                 </StackPanel>
             </ScrollViewer>

@@ -32,6 +32,9 @@ public sealed class OverlaySettings
     /// <summary>Single-line overlay rows instead of player cards.</summary>
     public bool CompactRows { get; set; }
 
+    /// <summary>The overlay shows the other party members' HP while in a party.</summary>
+    public bool PartyFrames { get; set; } = true;
+
     /// <summary>Map tab: last map shown, whether it follows the map you are on, layers, collectibles found.</summary>
     public string? MapKey { get; set; }
     public bool MapFollow { get; set; } = true;
