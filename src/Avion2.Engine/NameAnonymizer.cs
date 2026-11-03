@@ -22,6 +22,9 @@ public sealed class NameAnonymizer
         PartyRosterEvent roster => roster with { Members = roster.Members.Select(Member).ToList() },
         PartyMemberJoinedEvent joined => joined with { Member = Member(joined.Member) },
         PartyMemberStatusEvent { Status.Legion: not null } status => status with { Status = status.Status with { Legion = "Legion" } },
+        FinderRoomEvent room => room with { Title = "Group finder room", Slots = room.Slots.Select(Slot).ToList() },
+        FinderSlotEvent slot => slot with { Slot = Slot(slot.Slot) },
+        FinderJoinRequestEvent request => request with { Name = Alias(request.Name) },
         _ => e,
     };
 
@@ -30,6 +33,8 @@ public sealed class NameAnonymizer
         Name = Alias(member.Name),
         Status = member.Status is { Legion: not null } status ? status with { Legion = "Legion" } : member.Status,
     };
+
+    private FinderSlot Slot(FinderSlot slot) => slot.IsOpen ? slot : slot with { Name = Alias(slot.Name) };
 
     private string Self(string name)
     {

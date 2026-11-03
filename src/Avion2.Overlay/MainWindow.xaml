@@ -245,9 +245,15 @@
                             </Grid>
                             <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="10.5" Foreground="{DynamicResource SecondaryTextBrush}"
                                        TextTrimming="CharacterEllipsis" VerticalAlignment="Bottom" />
-                            <TextBlock Grid.Column="2" Text="&#x2620;" FontFamily="Segoe UI Symbol" FontSize="11" Margin="3,0,0,0"
-                                       Foreground="{DynamicResource AlertBorderBrush}" VerticalAlignment="Bottom"
-                                       Visibility="{Binding Dead, Converter={StaticResource BoolToVis}}" />
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <!-- A boss targets this member (20 92) -->
+                                <TextBlock Text="&#x25CE;" FontFamily="Segoe UI Symbol" FontSize="10.5" Margin="3,0,0,0"
+                                           Foreground="{DynamicResource WarnBrush}" VerticalAlignment="Bottom" ToolTip="Targeted by the boss"
+                                           Visibility="{Binding BossTarget, Converter={StaticResource BoolToVis}}" />
+                                <TextBlock Text="&#x2620;" FontFamily="Segoe UI Symbol" FontSize="11" Margin="3,0,0,0"
+                                           Foreground="{DynamicResource AlertBorderBrush}" VerticalAlignment="Bottom"
+                                           Visibility="{Binding Dead, Converter={StaticResource BoolToVis}}" />
+                            </StackPanel>
 
                             <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,1,0,0" CornerRadius="1.5" Background="{DynamicResource HpTrackBrush}" />
                             <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,1,0,0" CornerRadius="1.5" RenderTransformOrigin="0,0.5"

@@ -96,7 +96,8 @@ public static class PacketParser
                  ProgressParsers.TryParse(opcode, body, timestampMs, emit) ||
                  WorldEventParsers.TryParse(opcode, body, timestampMs, emit) ||
                  LootParsers.TryParse(opcode, body, timestampMs, emit) ||
-                 RewardsParsers.TryParse(opcode, body, timestampMs, emit),
+                 RewardsParsers.TryParse(opcode, body, timestampMs, emit) ||
+                 FinderParsers.TryParse(opcode, body, timestampMs, emit),
         };
     }
 }

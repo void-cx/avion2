@@ -382,6 +382,7 @@ public sealed class AppState
                 Application.Current.Dispatcher.BeginInvoke(() => OnBossCast(cast, info));
             }
         };
+        engine.FinderAlert += alert => Application.Current.Dispatcher.BeginInvoke(() => OnFinderAlert(alert));
         engine.FieldBossTable += table => Application.Current.Dispatcher.BeginInvoke(() =>
         {
             if (FieldBosses.Apply(table) && KeepsGameState)
@@ -1006,6 +1007,22 @@ public sealed class AppState
         Notices.Notify($"{name}: {skill}", "Boss skill");
     }
 
+    /// <summary>Group finder: a join request, the room full and ready, the dungeon starting (each with its Settings switch).</summary>
+    private void OnFinderAlert(Avion2.Analysis.FinderAlert alert)
+    {
+        if (FinderNotices.Text(alert, Settings) is not { } text)
+        {
+            return;
+        }
+
+        if (Settings.NotifySound)
+        {
+            NoticeSound().Play();
+        }
+
+        Notices.Notify(text, "Group finder");
+    }
+
     /// <summary>A newer release than this build, once found (null: none, not checked, or a dev build).</summary>
     public ReleaseInfo? AvailableUpdate { get; private set; }
 
@@ -1168,6 +1185,9 @@ public sealed class AppState
         Settings.NotifyFieldBoss = s.NotifyFieldBoss;
         Settings.NotifyWorldBoss = s.NotifyWorldBoss;
         Settings.NotifyBossCasts = s.NotifyBossCasts;
+        Settings.NotifyJoinRequests = s.NotifyJoinRequests;
+        Settings.NotifyRoomReady = s.NotifyRoomReady;
+        Settings.NotifyDungeonStart = s.NotifyDungeonStart;
         Settings.NotifySound = s.NotifySound;
         Settings.NoticeSound = string.IsNullOrWhiteSpace(s.NoticeSound) ? null : s.NoticeSound;
         Settings.NoticeVolume = s.NoticeVolume;
@@ -1212,6 +1232,9 @@ public sealed class AppState
         s.NotifyFieldBoss = Settings.NotifyFieldBoss;
         s.NotifyWorldBoss = Settings.NotifyWorldBoss;
         s.NotifyBossCasts = Settings.NotifyBossCasts;
+        s.NotifyJoinRequests = Settings.NotifyJoinRequests;
+        s.NotifyRoomReady = Settings.NotifyRoomReady;
+        s.NotifyDungeonStart = Settings.NotifyDungeonStart;
         s.NotifySound = Settings.NotifySound;
         s.NoticeSound = Settings.NoticeSound;
         s.NoticeVolume = Settings.NoticeVolume;

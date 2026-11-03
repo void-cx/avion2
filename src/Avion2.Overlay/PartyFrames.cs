@@ -18,6 +18,7 @@ public sealed class PartyFrame(uint characterId) : Bindable
     private bool _low;
     private bool _dead;
     private bool _away;
+    private bool _bossTarget;
     private string _detail = string.Empty;
 
     public uint CharacterId { get; } = characterId;
@@ -54,6 +55,9 @@ public sealed class PartyFrame(uint characterId) : Bindable
     public bool Away { get => _away; set => Set(ref _away, value); }
 
     public string Detail { get => _detail; set => Set(ref _detail, value); }
+
+    /// <summary>A boss targets this member (<c>20 92</c>).</summary>
+    public bool BossTarget { get => _bossTarget; set => Set(ref _bossTarget, value); }
 }
 
 /// <summary>
@@ -76,7 +80,8 @@ public sealed class PartyPanel : Bindable
     public bool Visible { get => _visible; private set => Set(ref _visible, value); }
 
     /// <param name="mapName">Names a map, for the tooltip of members in another zone.</param>
-    public void Update(IReadOnlyList<PartyMemberView> party, bool enabled, Func<uint, string> mapName)
+    /// <param name="bossTarget">The entity id a boss targets, if any: that member gets the target mark.</param>
+    public void Update(IReadOnlyList<PartyMemberView> party, bool enabled, Func<uint, string> mapName, uint? bossTarget = null)
     {
         var others = enabled ? party.Where(m => !m.IsSelf).ToList() : [];
         for (int i = Members.Count - 1; i >= 0; i--)
@@ -107,6 +112,11 @@ public sealed class PartyPanel : Bindable
             }
 
             Fill(frame, member, mapName);
+            frame.BossTarget = member.EntityId != 0 && member.EntityId == bossTarget && member.Alive;
+            if (frame.BossTarget)
+            {
+                frame.Detail += "\nTargeted by the boss";
+            }
         }
 
         Visible = Members.Count > 0;

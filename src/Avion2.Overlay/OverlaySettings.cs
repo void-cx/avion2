@@ -143,6 +143,11 @@ public sealed class OverlaySettings
 
     /// <summary>Show the skill a boss starts casting (named skills only).</summary>
     public bool NotifyBossCasts { get; set; } = true;
+
+    /// <summary>Group finder notices: a join request, the room full and ready, the dungeon starting.</summary>
+    public bool NotifyJoinRequests { get; set; } = true;
+    public bool NotifyRoomReady { get; set; } = true;
+    public bool NotifyDungeonStart { get; set; } = true;
     public bool NotifySound { get; set; } = true;
 
     /// <summary>Optional custom .wav/.mp3 for notifications; empty = built-in bell.</summary>

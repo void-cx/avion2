@@ -51,6 +51,12 @@ public sealed class GameSession
     /// <summary>Who is in our party, with their HP and where they are.</summary>
     public PartyTracker Party { get; } = new();
 
+    /// <summary>The group-finder room we sit in, its ready checks and the join requests to it.</summary>
+    public FinderTracker Finder { get; } = new();
+
+    /// <summary>The party member a boss targets.</summary>
+    public BossTargetTracker BossTarget { get; } = new();
+
     /// <summary>Our guaranteed-reward counters of the expedition reward cubes.</summary>
     public RewardTracker Rewards { get; } = new();
 
@@ -100,6 +106,7 @@ public sealed class GameSession
 
     private void ApplyOne(GameEvent e)
     {
+        BossTarget.Apply(e);
         if (e is ZoneChangeEvent)
         {
             // Close (and freeze) the encounter before entity ids are forgotten.
@@ -120,6 +127,7 @@ public sealed class GameSession
         Recorder.Apply(e);
         Legion.Apply(e);
         Party.Apply(e, Registry);
+        Finder.Apply(e, Registry);
         Rewards.Apply(e);
         Positions.Apply(e);
         Casts.Apply(e);

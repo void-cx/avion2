@@ -294,6 +294,19 @@ public static class RecordParsers
     /// </summary>
     public static bool ParsePartyRoster(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
+        // The full room (FinderParsers), and the members as before for the runs and loot owners
+        if (FinderParsers.TryParseRoom(body, ts, out var room))
+        {
+            emit(room);
+            var seated = room.Slots.Where(s => !s.IsOpen).Select(s => new PartyMember(s.Slot, s.CharacterId, s.Name, s.Class)).ToList();
+            if (seated.Count > 0)
+            {
+                emit(new PartyRosterEvent(ts, seated));
+            }
+
+            return true;
+        }
+
         var members = new List<PartyMember>();
         for (int i = 0; i + 14 < body.Length; i++)
         {

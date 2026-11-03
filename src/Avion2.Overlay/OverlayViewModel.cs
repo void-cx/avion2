@@ -351,6 +351,19 @@ public sealed class OverlayViewModel : Bindable
     private bool _notifyBossCasts = true;
 
     public bool NotifyBossCasts { get => _notifyBossCasts; set => Set(ref _notifyBossCasts, value); }
+
+    private bool _notifyJoinRequests = true;
+    private bool _notifyRoomReady = true;
+    private bool _notifyDungeonStart = true;
+
+    /// <summary>Group finder: someone asks to join the room we lead.</summary>
+    public bool NotifyJoinRequests { get => _notifyJoinRequests; set => Set(ref _notifyJoinRequests, value); }
+
+    /// <summary>Group finder: every slot taken and everyone ready.</summary>
+    public bool NotifyRoomReady { get => _notifyRoomReady; set => Set(ref _notifyRoomReady, value); }
+
+    /// <summary>Group finder: the room's dungeon is starting.</summary>
+    public bool NotifyDungeonStart { get => _notifyDungeonStart; set => Set(ref _notifyDungeonStart, value); }
     public bool NotifySound { get => _notifySound; set => Set(ref _notifySound, value); }
 
     /// <summary>Custom .wav/.mp3 for notifications; null = built-in bell.</summary>

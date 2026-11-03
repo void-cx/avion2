@@ -294,6 +294,7 @@ public sealed class MeterEngine : IDisposable
                     hit.Amount, hit.HitType == HitType.Critical));
             }
         });
+        _session.Finder.Alert += alert => FinderAlert?.Invoke(alert);
         _pipeline.StatusChanged += message => _message = message;
     }
 
@@ -480,6 +481,27 @@ public sealed class MeterEngine : IDisposable
             return _session.Party.Snapshot(_session.Registry);
         }
     }
+
+    /// <summary>The group-finder room we sit in, null when none.</summary>
+    public FinderRoomView? FinderRoom()
+    {
+        lock (_sync)
+        {
+            return _session.Finder.Snapshot(_session.Registry);
+        }
+    }
+
+    /// <summary>The entity id of the party member (or us) a boss targets, null when none.</summary>
+    public uint? BossTarget()
+    {
+        lock (_sync)
+        {
+            return _session.BossTarget.EntityId;
+        }
+    }
+
+    /// <summary>A join request to our room, the room full and ready, or its dungeon starting. Raised on the capture thread.</summary>
+    public event Action<FinderAlert>? FinderAlert;
 
     /// <summary>Our legion as seen this session (a copy).</summary>
     public LegionState? Legion()

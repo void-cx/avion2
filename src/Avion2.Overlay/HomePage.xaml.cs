@@ -132,8 +132,11 @@ public partial class HomePage : UserControl
             StatusTitle.Text = "Capture stopped";
             StatusDetail.Text = "Start the capture, then play: AVION2 finds the game connection by itself.";
             LiveLine.Visibility = Visibility.Collapsed;
+            RefreshFinder(null);
             return;
         }
+
+        RefreshFinder(engine.FinderRoom());
 
         var status = engine.Status();
         if (!status.Locked)
@@ -164,6 +167,29 @@ public partial class HomePage : UserControl
         string yours = snapshot.Self is { } me ? $" · you {HistoryStore.Compact(me.Dps)}/s" : string.Empty;
         LiveLine.Text = $"{(status.InCombat ? "Fighting" : "Last fight")}: {snapshot.Title} · {HistoryStore.Duration(snapshot.DurationSeconds)}" +
                         $" · party {HistoryStore.Compact(snapshot.TotalDps)}/s{yours}";
+    }
+
+    private IReadOnlyList<FinderRow> _finderRows = [];
+
+    /// <summary>The group-finder room we sit in: title, dungeon, state and every slot; hidden while not in one.</summary>
+    private void RefreshFinder(Avion2.Analysis.FinderRoomView? room)
+    {
+        if (room is null)
+        {
+            FinderCard.Visibility = Visibility.Collapsed;
+            _finderRows = [];
+            return;
+        }
+
+        FinderCard.Visibility = Visibility.Visible;
+        FinderTitle.Text = FinderCardText.Title(room);
+        FinderDetail.Text = FinderCardText.Detail(room);
+        var rows = FinderCardText.Rows(room);
+        if (!rows.SequenceEqual(_finderRows))
+        {
+            _finderRows = rows;
+            FinderSlots.ItemsSource = rows;
+        }
     }
 
     private void RefreshRecent()
