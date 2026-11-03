@@ -206,6 +206,9 @@ def main() -> int:
     md = markdown.Markdown(extensions=["fenced_code", "sane_lists", "tables", "toc"],
                            extension_configs={"toc": {"toc_depth": "2-3", "slugify": anchor}})
     body = md.convert(text)
+    # Links in the source use GitHub's anchors, which keep a hyphen per separator ("05-e0--stagger-gauge");
+    # the page's anchors never hold two in a row, so runs of hyphens in an in-page link are collapsed
+    body = re.sub(r'href="#([^"]*)"', lambda m: 'href="#' + re.sub(r"-{2,}", "-", m.group(1)) + '"', body)
     body = re.sub(r"<p>Status: (.*?)</p>", status, body)
     body = re.sub(r"<table>(.*?)</table>", r'<div class="table-wrap"><table>\1</table></div>', body, flags=re.S)
     toc = toc_html(md.toc_tokens[0]["children"] if len(md.toc_tokens) == 1 and md.toc_tokens[0]["level"] == 1 else md.toc_tokens)
