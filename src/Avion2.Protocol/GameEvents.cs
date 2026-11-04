@@ -374,6 +374,7 @@ public sealed record KillEvent(long TimestampMs, uint VictimId, uint SkillId, ui
     : GameEvent(TimestampMs);
 
 /// <summary><c>33 8A</c> (and the owner part of <c>04 8D</c>): an entity's legion.</summary>
+/// <remarks>An empty <paramref name="Legion"/> (server 0): the player is in no legion.</remarks>
 public sealed record LegionTagEvent(long TimestampMs, uint EntityId, ushort ServerId, string Legion) : GameEvent(TimestampMs);
 
 /// <summary><c>03 8A</c>: our own legion: name, leader and its texts (introduction, notice, …).</summary>

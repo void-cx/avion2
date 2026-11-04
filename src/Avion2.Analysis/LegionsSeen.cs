@@ -20,6 +20,7 @@ public enum PowerSource
 /// A player AVION2 saw, with what it knew of them at that moment. A sighting without a server or a legion only
 /// updates a member already known by that name (the group finder names players but not their legion).
 /// </summary>
+/// <param name="Legion">The legion; empty when the game said the player is in no legion (a legion tag without one), null when not known.</param>
 /// <param name="AtMs">When (Unix ms).</param>
 /// <param name="Power">Where <paramref name="CombatPower"/> came from.</param>
 public sealed record LegionSighting(
@@ -73,8 +74,39 @@ public sealed class SeenLegion
     [JsonPropertyName("members")]
     public List<SeenMember> Members { get; set; } = new();
 
+    /// <summary>The legion as the game's legion list last showed it (<c>07 8A</c> / <c>09 8A</c>); null when never listed.</summary>
+    [JsonPropertyName("listed")]
+    public ListedLegion? Listed { get; set; }
+
     [JsonIgnore]
-    public long LastSeenMs => Members.Count == 0 ? 0 : Members.Max(m => m.LastSeenMs);
+    public long LastSeenMs => Math.Max(Members.Count == 0 ? 0 : Members.Max(m => m.LastSeenMs), Listed?.AtMs ?? 0);
+
+    /// <summary>Neither members seen nor a listing: nothing left to show.</summary>
+    [JsonIgnore]
+    public bool IsEmpty => Members.Count == 0 && Listed is null;
+}
+
+/// <summary>A legion as the game's legion list showed it: its real member count, leader and level.</summary>
+public sealed class ListedLegion
+{
+    [JsonPropertyName("id")]
+    public uint Id { get; set; }
+
+    [JsonPropertyName("leader")]
+    public string Leader { get; set; } = string.Empty;
+
+    [JsonPropertyName("level")]
+    public int Level { get; set; }
+
+    [JsonPropertyName("members")]
+    public int Members { get; set; }
+
+    [JsonPropertyName("max")]
+    public int MaxMembers { get; set; }
+
+    /// <summary>When the list showed it (Unix ms).</summary>
+    [JsonPropertyName("atMs")]
+    public long AtMs { get; set; }
 }
 
 /// <summary>
@@ -138,7 +170,7 @@ public sealed class LegionsSeenBook
                 _memberOf[at] = keep.Legion;
             }
 
-            foreach (var (key, legion) in _legions.Where(l => l.Value.Members.Count == 0).ToList())
+            foreach (var (key, legion) in _legions.Where(l => l.Value.IsEmpty).ToList())
             {
                 _legions.Remove(key);
             }
@@ -167,6 +199,25 @@ public sealed class LegionsSeenBook
             return false;
         }
 
+        if (seen.ServerId is { } from && seen.Legion is { Length: 0 })
+        {
+            // In no legion now: out of the one they were placed in, unless that was seen later
+            if (!_memberOf.TryGetValue((from, seen.Name), out var was) ||
+                was.Members.FirstOrDefault(m => m.Name == seen.Name) is not { } left || left.LastSeenMs > seen.AtMs)
+            {
+                return false;
+            }
+
+            was.Members.Remove(left);
+            _memberOf.Remove((from, seen.Name));
+            if (was.IsEmpty)
+            {
+                _legions.Remove((was.ServerId, was.Name));
+            }
+
+            return true;
+        }
+
         if (seen.ServerId is { } server && seen.Legion is { Length: > 0 } name)
         {
             var key = (server, name);
@@ -185,7 +236,7 @@ public sealed class LegionsSeenBook
             if (before is not null && before != legion)
             {
                 before.Members.RemoveAll(m => m.Name == seen.Name);
-                if (before.Members.Count == 0)
+                if (before.IsEmpty)
                 {
                     _legions.Remove((before.ServerId, before.Name));
                 }
@@ -241,7 +292,40 @@ public sealed class LegionsSeenBook
         member.LastSeenMs = Math.Max(member.LastSeenMs, seen.AtMs);
     }
 
-    /// <summary>Drops the members not seen within <see cref="StaleAfter"/>, and legions left without members. Returns how many members went.</summary>
+    /// <summary>
+    /// Takes a legion from the game's legion list (its member count, leader and level); the legion shows on the page
+    /// even with no member seen. Returns true when something changed.
+    /// </summary>
+    public bool TakeListing(LegionListing listing, long atMs)
+    {
+        if (listing.Name.Length == 0 || listing.ServerId == 0)
+        {
+            return false;
+        }
+
+        var key = (listing.ServerId, listing.Name);
+        if (!_legions.TryGetValue(key, out var legion))
+        {
+            _legions[key] = legion = new SeenLegion { ServerId = listing.ServerId, Name = listing.Name };
+        }
+
+        if (legion.Listed is { } old && old.AtMs > atMs)
+        {
+            return false;
+        }
+
+        legion.Listed = new ListedLegion
+        {
+            Id = listing.LegionId, Leader = listing.Leader, Level = listing.Level, Members = listing.Members,
+            MaxMembers = listing.MaxMembers, AtMs = atMs,
+        };
+        return true;
+    }
+
+    /// <summary>
+    /// Drops the members not seen and the listings not renewed within <see cref="StaleAfter"/>, and legions left with
+    /// neither. Returns how many members went.
+    /// </summary>
     public int Prune(long nowMs)
     {
         long cutoff = nowMs - (long)StaleAfter.TotalMilliseconds;
@@ -255,7 +339,12 @@ public sealed class LegionsSeenBook
                 dropped++;
             }
 
-            if (legion.Members.Count == 0)
+            if (legion.Listed is { } listed && listed.AtMs < cutoff)
+            {
+                legion.Listed = null;
+            }
+
+            if (legion.IsEmpty)
             {
                 _legions.Remove(key);
             }
@@ -271,7 +360,7 @@ public enum LegionOrder
     /// <summary>The combat power of the members seen, added up.</summary>
     CombatPower,
 
-    /// <summary>The members seen.</summary>
+    /// <summary>The members: the game's legion list's count when it showed the legion, else the members seen.</summary>
     Members,
 }
 
@@ -279,7 +368,10 @@ public enum LegionOrder
 /// <param name="Members">Members seen within <see cref="LegionsSeenBook.StaleAfter"/>.</param>
 /// <param name="MembersWithPower">Of those, the ones whose combat power is known.</param>
 /// <param name="CombatPower">The known combat power of those members, added up.</param>
+/// <param name="Members">The legion's members: <paramref name="Listed"/> when the legion list showed it, else <paramref name="Seen"/>.</param>
 /// <param name="FromSite">Members whose combat power came from the official site.</param>
+/// <param name="Seen">Members seen within <see cref="LegionsSeenBook.StaleAfter"/>.</param>
+/// <param name="Listed">The member count of the game's legion list, when it showed the legion within that time.</param>
 public sealed record LegionStanding(
     int Rank,
     SeenLegion Legion,
@@ -287,7 +379,9 @@ public sealed record LegionStanding(
     int MembersWithPower,
     long CombatPower,
     int FromSite,
-    long LastSeenMs)
+    long LastSeenMs,
+    int Seen = 0,
+    int? Listed = null)
 {
     /// <summary>The members' average combat power, null when none is known.</summary>
     public long? AverageCombatPower => MembersWithPower > 0 ? CombatPower / MembersWithPower : null;
@@ -310,8 +404,10 @@ public static class LegionRanking
             {
                 var members = l.Members.Where(m => m.LastSeenMs >= cutoff).ToList();
                 var powered = members.Where(m => m.CombatPower is > 0).ToList();
-                return new LegionStanding(0, l, members.Count, powered.Count, powered.Sum(m => (long)m.CombatPower!.Value),
-                    powered.Count(m => m.Power == PowerSource.Site), members.Count == 0 ? 0 : members.Max(m => m.LastSeenMs));
+                int? listed = l.Listed is { } list && list.AtMs >= cutoff ? list.Members : null;
+                long last = Math.Max(members.Count == 0 ? 0 : members.Max(m => m.LastSeenMs), listed is null ? 0 : l.Listed!.AtMs);
+                return new LegionStanding(0, l, listed ?? members.Count, powered.Count, powered.Sum(m => (long)m.CombatPower!.Value),
+                    powered.Count(m => m.Power == PowerSource.Site), last, members.Count, listed);
             })
             .Where(s => s.Members > 0);
 
@@ -343,8 +439,8 @@ public sealed class LegionSpotter
     private readonly Dictionary<(ushort?, string), (LegionSighting Seen, long At)> _last = new();
     private readonly List<LegionSighting> _pending = new();
 
-    /// <summary>Sightings not taken yet.</summary>
-    public int Pending => _pending.Count;
+    /// <summary>Sightings and listings not taken yet.</summary>
+    public int Pending => _pending.Count + _listings.Count;
 
     /// <summary>The sightings since the last call.</summary>
     public IReadOnlyList<LegionSighting> Drain()
@@ -354,12 +450,30 @@ public sealed class LegionSpotter
         return taken;
     }
 
+    private readonly List<(LegionListing Listing, long AtMs)> _listings = new();
+
+    /// <summary>The legion lists' legions since the last call, with when they were listed.</summary>
+    public IReadOnlyList<(LegionListing Listing, long AtMs)> DrainListings()
+    {
+        var taken = _listings.ToList();
+        _listings.Clear();
+        return taken;
+    }
+
     public void Apply(GameEvent e, EntityRegistry registry, PartyTracker party, LegionState ownLegion)
     {
         switch (e)
         {
             case LegionTagEvent tag:
-                Entity(registry, tag.EntityId, e.TimestampMs, ownLegion);
+                Entity(registry, tag.EntityId, e.TimestampMs, ownLegion, noLegion: tag.Legion.Length == 0);
+                break;
+            case LegionListEvent list:
+                _listings.AddRange(list.Legions.Select(l => (l, e.TimestampMs)));
+                if (_listings.Count > 5_000)
+                {
+                    _listings.RemoveRange(0, _listings.Count - 5_000);
+                }
+
                 break;
             case PlayerSpawnEvent spawn:
                 Entity(registry, spawn.EntityId, e.TimestampMs, ownLegion);
@@ -404,7 +518,7 @@ public sealed class LegionSpotter
         }
     }
 
-    private void Entity(EntityRegistry registry, uint id, long atMs, LegionState ownLegion)
+    private void Entity(EntityRegistry registry, uint id, long atMs, LegionState ownLegion, bool noLegion = false)
     {
         if (registry.Find(id) is not { Kind: EntityKind.Player, Name: { Length: > 0 } name, ServerId: { } server } info)
         {
@@ -413,6 +527,7 @@ public sealed class LegionSpotter
 
         bool self = id == registry.SelfId;
         string? legion = info.Legion is { Length: > 0 } tagged ? tagged
+            : noLegion ? string.Empty
             : self && ownLegion.Name is { Length: > 0 } own && ownLegion.Character == name ? own
             : null;
         uint? itemLevel = self ? registry.SelfItemLevel ?? info.ItemLevel : info.ItemLevel;

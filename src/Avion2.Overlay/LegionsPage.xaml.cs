@@ -30,11 +30,14 @@ public sealed class LegionRowView(LegionBoardRow row, LegionOrder order, long no
     {
         get
         {
-            string power = Row.MembersWithPower == Row.Members
+            string power = Row.MembersWithPower == Row.Seen
                 ? "combat power of all of them known"
                 : $"combat power known for {Row.MembersWithPower}";
-            string ranked = order == LegionOrder.Members ? "ranked by members seen" : "ranked by their combat power, added up";
-            return $"{Row.Members} members seen in the last 30 days ({power}); {ranked}";
+            string ranked = order == LegionOrder.Members ? "ranked by members" : "ranked by their combat power, added up";
+            string members = Row.Listed is { } listed
+                ? $"{listed} members on the game's legion list, {Row.Seen} of them seen in the last 30 days"
+                : $"{Row.Seen} members seen in the last 30 days";
+            return $"{members} ({power}); {ranked}";
         }
     }
 
@@ -183,8 +186,9 @@ public partial class LegionsPage : UserControl
         var rows = LegionBoard.Rows(book, server, _order, server == ownServer ? ownLegion : null, StreamerMode.Names, now);
         int members = rows.Sum(r => r.Members);
         Hint.Text = $"The legions AVION2 has seen on {ServerName(server)}: the members seen in game (or looked up) in the last 30 days, " +
-                    "and their combat power as the game showed it. Not the official ranking.";
-        Shown.Text = rows.Count == 0 ? string.Empty : $"{rows.Count} legions · {LegionBoard.Number(members)} members seen";
+                    "and their combat power as the game showed it; a legion's size from the game's legion list when you opened it. " +
+                    "Not the official ranking.";
+        Shown.Text = rows.Count == 0 ? string.Empty : $"{rows.Count} legions · {LegionBoard.Number(members)} members";
         if (rows.Count == 0)
         {
             ShowNothing($"No legions seen on {ServerName(server)} yet.");
@@ -206,9 +210,10 @@ public partial class LegionsPage : UserControl
         Ranked.ItemsSource = rest;
         ListHeader.Visibility = rest.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         int fromSite = rows.Sum(r => r.FromSite);
-        Footnote.Text = "Members seen: the players around you whose legion the game showed, your party, and the characters you looked up " +
+        Footnote.Text = "Members: the legion's size on the game's legion list (in game: Legion, then the list or a search), else the " +
+                        "members seen: the players around you whose legion the game showed, your party, and the characters you looked up " +
                         "(the group finder adds combat power and item level to players already known). " +
-                        "Members not seen for 30 days drop out. A legion's combat power adds up the combat power known of its members seen, " +
+                        "Members not seen and listings not renewed for 30 days drop out. A legion's combat power adds up the combat power known of its members seen, " +
                         "so a legion you meet often ranks higher than one you seldom see." +
                         (fromSite > 0 ? $" ◆ marks the combat power of {fromSite} members, taken from the official AION2 site." : string.Empty);
 
@@ -286,13 +291,18 @@ public partial class LegionsPage : UserControl
         PaneRank.Text = $"#{legion.Rank} by {(_order == LegionOrder.Members ? "members" : "combat power")}";
         PaneOwn.Visibility = legion.Own ? Visibility.Visible : Visibility.Collapsed;
         PaneServer.Text = ServerName(server);
-        PaneMembers.Text = LegionBoard.Number(legion.Members);
+        PaneMembers.Text = legion.Listed is { } listed
+            ? $"{LegionBoard.Number(listed)} ({LegionBoard.Number(legion.Seen)} seen)"
+            : LegionBoard.Number(legion.Members);
+        PaneLeader.Text = legion.Leader is { } leader ? $"Leader: {leader}" : string.Empty;
+        PaneLeader.Visibility = legion.Leader is null ? Visibility.Collapsed : Visibility.Visible;
         PanePower.Text = legion.MembersWithPower > 0 ? LegionBoard.Number(legion.CombatPower) : "–";
         PaneAverage.Text = legion.AverageCombatPower is { } average ? LegionBoard.Number(average) : "–";
         PaneSeen.Text = LegionBoard.Ago(legion.LastSeenMs, now);
-        string known = legion.MembersWithPower == legion.Members
+        string known = legion.Seen == 0 ? "No member seen yet: the size is the game's legion list's."
+            : legion.MembersWithPower == legion.Seen
             ? "The combat power of every member seen is known."
-            : $"The combat power of {legion.MembersWithPower} of the {legion.Members} members seen is known.";
+            : $"The combat power of {legion.MembersWithPower} of the {legion.Seen} members seen is known.";
         PaneNote.Text = legion.FromSite > 0 ? $"{known} ◆ {legion.FromSite} from the official AION2 site." : known;
         MemberList.ItemsSource = LegionBoard.Members(book, server, legion.Key, StreamerMode.Names, now)
             .Select(m => new LegionMemberView(m, now)).ToList();

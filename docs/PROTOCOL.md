@@ -530,10 +530,17 @@ Status: Verified
 
 | Opcode | Record | Fields |
 |---|---|---|
-| `33 8A` | legion tag of a player in range | `entity varint`, 5–6 bytes, `server u16`, `legion str8`, … |
+| `33 8A` | legion tag of a player in range (`GuildDescUpdate_NT`) | `entity varint`, legion id `u64`, `legion str8`, … A player in no legion: id 0 and an empty name (9 zero bytes after the entity) |
 | `03 8A` | legion details | `00 00`, `legion str8`, `leader str8`, counters, texts (`u8` or `u16` length: introduction, notice …) |
 | `05 8A` | legion roster | per member: `server u16`, `u32`, `name str8`, `level u8`, …, last login `time` |
-| `45 36` (part) | a player's server and legion, in the player spawn | after the position: `u16`, `00 00 00 00`, `server u16`, `legion str8`, then `01 00` or `02 00` |
+| `45 36` (part) | a player's server and legion, in the player spawn | after the position: legion id `u64`, `legion str8`, then `01 00` or `02 00` |
+| `01 8A` | the answer to creating a legion (`GuildCreate_RS`) | `result u16`, legion id `u64`, `legion str8`, level `u8`, experience `u64`, join rule, password, emblem, introduction, the grades' rights. A refusal (2070 seen) has the rest zeroed |
+| `0B 8A` | the answer to leaving our legion (`GuildLeave_RS`) | `result u16`, reputation penalty `u64`; 10 bytes |
+| `35 8A` | the answer to disbanding our legion (`GuildDisband_RS`) | `result u16`; 2 bytes |
+| `0C 8A` | a member is out of our legion (`GuildLeave_NT`) | `name str8`, reason `u8` (2 when we disbanded it, naming us), reputation penalty `u64` |
+| `39 8A` | a member of our legion came online (`GuildMemberConnected_NT`) | `name str8`; us at login and right after creating a legion |
+| `07 8A` | the legion window's list (`GuildRecommendedList_RS`) | `result u16`, `varint n` × legion (below); 100 legions, most members first |
+| `09 8A` | a legion name search (`GuildSearch_RS`) | as `07 8A` |
 
 The player spawn (`45 36`) carries the server and legion of players in a legion (players without one have no such
 block), 92 to 118 bytes after the name, e.g. `06 01 00 00 00 00 29 05 07 …legion… 01 00 02 00`. AVION2 takes the first
@@ -541,9 +548,28 @@ such block after the name as a legion tag. In 45 captures, 892 of 2,145 spawns h
 had a `33 8A` tag, server and legion agreed in 138 of 138. The spawn covers far more players than `33 8A` alone (145
 against 38 of 373 players in the largest capture).
 
+A legion id is a `u64` with the server in its top 16 bits and the legion's number in the low 32 (`1a 03 00 00 00 00
+29 05`: legion 794 on server 1321); the tag, the spawn block, the lists and the create answer all carry it before the
+legion's name, which is why a server number seemed to stand in front of every legion name. The message names are the
+client's (A2Core's usmap catalogue: message number = 0x3875 + the opcode's first byte, so `45 8A` is 0x38BA).
+
+A legion on a list (`07 8A`, `09 8A`): legion id `u64`, `name str8`, `leader str8`, level `u8`, experience `u64`,
+members `u8`, maximum `varint` (128), emblem `varint`, introduction `str8` (line breaks allowed), join rule `u8` (0, 2
+and 3 seen), then 9 or 10 more bytes, all 0 in our records (join requested, request time and race in the client's
+layout; their width did not settle, so AVION2 finds the next legion by its id and name).
+
+Leaving, creating and disbanding a legion, in one capture: leaving answers `0B 8A` (result 0) and our own tag turns
+empty in the same instant; a refused name answers `01 8A` with result 2070; a created legion answers `01 8A`, then our
+tag carries the new legion and `39 8A` names us; disbanding answers `35 8A`, then `0C 8A` names us with reason 2 and
+our tag turns empty again. `03 8A` and `05 8A` came only at login and when the legion window opened, not after these.
+AVION2 follows our legion through all of them, and through our own tag at map loads, so the Home card and the Legions
+page show the legion we are in now. `1A 8A` (`GuildRecvJoinRequests_RS`, 3 zero bytes after creating) and `AF 8A`
+(`AgitDecoList_NT`, at login) are not read.
+
 The official site has no legion pages, legion API or legion ranking for Global servers (checked November 2026): its
 ranking API answers an empty list there. The Legions page counts the legions AVION2 saw (players around you, your
-party, characters you looked up), not an official ranking.
+party, characters you looked up), and takes a legion's real member count, leader and level from the game's legion
+list whenever you open it; still not an official ranking.
 
 ## Positions
 
@@ -1118,14 +1144,15 @@ Pets and their souls belong to the **account**: two characters received the same
 | `11 90` | soul crystals gained (`RideSoulCrystalIncrease_NT`) | `varint n` × (type `u8`, amount `u32`), reason `u8`; not read |
 
 A soul arrives as a bag item (ids 534660000–534669999) about a second before the `0D 90` that counts it; our pickup
-of it (`21 56`) comes about 50 ms before. The pet id to item id offset is not constant, so AVION2 learns the pairs to
-name the pets: from a gain of one kind with one soul item just before it, or from a gain of several kinds when the
+of it (`21 56`) comes about 50 ms before. The pet id to item id offset is not constant; AVION2 takes the pairs and
+the pets' names from the client's pet table (VehicleList, built into the app). For a kind a newer patch adds, it
+learns the pair: from a gain of one kind with one soul item just before it, or from a gain of several kinds when the
 counts picked up of each item tell them apart. The soul's drop (`1E 56`) names the monster it fell from, so AVION2
 counts which monsters drop each soul.
 
 Souls of a kind keep coming after the pet is owned (71 of one kind at level 2 in our captures); they pay for its
-levels. Level 2 costs 25 souls (5 level-ups, in `14 90` and in roster diffs between logins); what level 3 costs is
-not known yet. The roster's level per owned pet changes accordingly (63 pets at level 1, 5 at level 2, 1 at level 3
+levels. Level 2 costs 25 souls (5 level-ups, in `14 90` and in roster diffs between logins), level 3 costs 75 and
+is the highest (the client's VehicleLevel table). The roster's level per owned pet changes accordingly (63 pets at level 1, 5 at level 2, 1 at level 3
 in one account).
 
 ## Quests

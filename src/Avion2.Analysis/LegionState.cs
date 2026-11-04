@@ -2,7 +2,10 @@ using Avion2.Protocol;
 
 namespace Avion2.Analysis;
 
-/// <summary>Our legion: details from <c>03 8A</c>, members from <c>05 8A</c> pages (merged by name).</summary>
+/// <summary>
+/// Our legion: details from <c>03 8A</c>, members from <c>05 8A</c> pages (merged by name); followed when we create,
+/// leave or disband one (<c>01 8A</c>, <c>0B 8A</c>, <c>35 8A</c>) and by our own legion tag (<c>33 8A</c>).
+/// </summary>
 public sealed class LegionState
 {
     private readonly Dictionary<string, LegionMember> _members = new(StringComparer.Ordinal);
@@ -40,6 +43,13 @@ public sealed class LegionState
 
     public bool IsKnown => Name is not null;
 
+    /// <summary>The character is in no legion (it left, or its legion was disbanded), as of <see cref="UpdatedMs"/>.</summary>
+    public bool NoLegion { get; set; }
+
+    /// <summary>Counts every change, so a caller can tell whether an event changed the legion.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public int Revision { get; private set; }
+
     /// <summary>
     /// "Legion Hall rent ends in N days (date)" for the card, or null when no rent is known. A rent that ran out (as
     /// last seen) says so.
@@ -74,6 +84,14 @@ public sealed class LegionState
         _members.Clear();
         UpdatedMs = 0;
         HallRentEndsMs = null;
+        NoLegion = false;
+        Revision++;
+    }
+
+    private void Touch()
+    {
+        Revision++;
+        Changed?.Invoke();
     }
 
     /// <summary>Raised when something changed (capture thread).</summary>
@@ -84,11 +102,17 @@ public sealed class LegionState
         switch (e)
         {
             case LegionDetailsEvent details:
+                if (Name is { } before && before != details.Name)
+                {
+                    Forget(); // another legion's details: the old members must not mix in
+                }
+
                 Name = details.Name;
                 Leader = details.Leader;
                 Texts = details.Texts.ToList();
+                NoLegion = false;
                 UpdatedMs = details.TimestampMs;
-                Changed?.Invoke();
+                Touch();
                 break;
             case LegionRosterEvent roster:
                 foreach (var member in roster.Members)
@@ -97,9 +121,96 @@ public sealed class LegionState
                 }
 
                 UpdatedMs = roster.TimestampMs;
-                Changed?.Invoke();
+                Touch();
                 break;
         }
+    }
+
+    /// <summary>
+    /// Follows our own legion changing: created (<c>01 8A</c>), left (<c>0B 8A</c>), disbanded (<c>35 8A</c>), us out
+    /// of it (<c>0C 8A</c> naming us), and our own legion tag (<c>33 8A</c>), which the game sends after each of them
+    /// and at map loads. A member out of the legion (<c>0C 8A</c>) leaves the member list; one coming online
+    /// (<c>39 8A</c>) is marked online now.
+    /// </summary>
+    /// <param name="selfId">Our entity, when known.</param>
+    /// <param name="self">Our character's name, when known; without it nothing is taken.</param>
+    public void ApplyOwn(GameEvent e, uint? selfId, string? self)
+    {
+        if (self is null)
+        {
+            return;
+        }
+
+        switch (e)
+        {
+            case LegionTagEvent tag when tag.EntityId == selfId:
+                if (tag.Legion.Length == 0)
+                {
+                    if (!NoLegion || IsKnown)
+                    {
+                        Leave(self, tag.TimestampMs);
+                    }
+                }
+                else if (tag.Legion != Name || NoLegion)
+                {
+                    Join(self, tag.Legion, null, tag.TimestampMs);
+                }
+
+                break;
+            case LegionCreatedEvent { Result: 0, Name.Length: > 0 } created:
+                Join(self, created.Name, self, created.TimestampMs);
+                _members[self] = new LegionMember(self, null, created.TimestampMs);
+                break;
+            case LegionLeftEvent { Result: 0 } or LegionDisbandedEvent { Result: 0 }:
+                Leave(self, e.TimestampMs);
+                break;
+            case LegionMemberLeftEvent left when left.Name == self:
+                Leave(self, e.TimestampMs);
+                break;
+            case LegionMemberLeftEvent left when _members.Remove(left.Name):
+                UpdatedMs = left.TimestampMs;
+                Touch();
+                break;
+            case LegionMemberOnlineEvent online when IsKnown && _members.TryGetValue(online.Name, out var member):
+                _members[online.Name] = member with { LastOnlineMs = online.TimestampMs };
+                Touch();
+                break;
+        }
+    }
+
+    /// <summary>We are in <paramref name="legion"/> now (a new one: what we knew of another goes).</summary>
+    private void Join(string self, string legion, string? leader, long atMs)
+    {
+        if (Name != legion)
+        {
+            Forget();
+        }
+
+        Character = self;
+        Name = legion;
+        Leader = leader ?? Leader;
+        NoLegion = false;
+        UpdatedMs = atMs;
+        Touch();
+    }
+
+    /// <summary>We are in no legion now.</summary>
+    private void Leave(string self, long atMs)
+    {
+        Forget();
+        Character = self;
+        Name = null;
+        NoLegion = true;
+        UpdatedMs = atMs;
+        Touch();
+    }
+
+    private void Forget()
+    {
+        Leader = null;
+        Texts = new();
+        _members.Clear();
+        HallRentEndsMs = null;
     }
 
     /// <summary>
@@ -114,6 +225,6 @@ public sealed class LegionState
         }
 
         HallRentEndsMs = hall.HallId != 0 && hall.RentEndsMs > 0 ? hall.RentEndsMs : 0;
-        Changed?.Invoke();
+        Touch();
     }
 }

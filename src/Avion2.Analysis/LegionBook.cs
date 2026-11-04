@@ -13,7 +13,8 @@ public sealed class LegionBook
 
     /// <summary>
     /// Takes the meter's legion for its character. What the game did not send again this session (details, members
-    /// not on the pages it sent) is kept from before. Returns false when the legion can't be placed (no character).
+    /// not on the pages it sent) is kept from before, unless the character is now in no legion or in another one.
+    /// Returns false when the legion can't be placed (no character).
     /// </summary>
     public bool Take(LegionState legion)
     {
@@ -22,7 +23,7 @@ public sealed class LegionBook
             return false;
         }
 
-        if (For(name) is { } old)
+        if (For(name) is { } old && !legion.NoLegion && (legion.Name is null || old.Name is null || legion.Name == old.Name))
         {
             legion.Name ??= old.Name;
             legion.Leader ??= old.Leader;

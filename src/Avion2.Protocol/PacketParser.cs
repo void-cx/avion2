@@ -98,7 +98,8 @@ public static class PacketParser
                  LootParsers.TryParse(opcode, body, timestampMs, emit) ||
                  RewardsParsers.TryParse(opcode, body, timestampMs, emit) ||
                  FinderParsers.TryParse(opcode, body, timestampMs, emit) ||
-                 PetParsers.TryParse(opcode, body, timestampMs, emit),
+                 PetParsers.TryParse(opcode, body, timestampMs, emit) ||
+                 LegionsParsers.TryParse(opcode, body, timestampMs, emit),
         };
     }
 }

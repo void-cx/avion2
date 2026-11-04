@@ -237,13 +237,23 @@ public static class WorldParsers
         return r.TryU8(out byte length) && length <= 64 && (length == 0 || r.TryUtf8(length, out text));
     }
 
-    /// <summary><c>33 8A</c>: entity varint, a few bytes, server u16, legion (u8 len), …</summary>
+    /// <summary>
+    /// <c>33 8A</c> (GuildDescUpdate_NT): entity varint, legion id <c>u64</c> (server in the top 16 bits), legion (u8
+    /// len), … A player without a legion (who just left one, or whose legion was disbanded) has id 0 and no name: then
+    /// the event carries server 0 and an empty legion.
+    /// </summary>
     public static bool ParseLegionTag(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
         var r = new SpanReader(body);
         if (!r.TryVarint(out uint entity) || entity == 0)
         {
             return false;
+        }
+
+        if (r.Remaining >= 9 && r.Rest[..9].IndexOfAnyExcept((byte)0) < 0)
+        {
+            emit(new LegionTagEvent(ts, entity, 0, string.Empty));
+            return true;
         }
 
         for (int at = r.Position; at < Math.Min(body.Length - 3, r.Position + 12); at++)

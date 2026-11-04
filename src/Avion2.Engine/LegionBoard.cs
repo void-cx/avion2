@@ -19,7 +19,10 @@ public sealed record LegionBoardRow(
     int FromSite,
     double Share,
     bool Own,
-    long LastSeenMs);
+    long LastSeenMs,
+    int Seen = 0,
+    int? Listed = null,
+    string? Leader = null);
 
 /// <summary>A member of a legion on the Legions page, the name as shown.</summary>
 /// <param name="FromSite">The combat power came from the official site (a character lookup).</param>
@@ -50,9 +53,10 @@ public static class LegionBoard
         return standings.Select(s =>
         {
             bool own = ownLegion is not null && s.Legion.Name == ownLegion;
+            string? leader = s.Listed is not null && s.Legion.Listed?.Leader is { Length: > 0 } l ? names.Name(l) : null;
             return new LegionBoardRow(s.Rank, s.Legion.Name, names.LegionInList(s.Legion.Name, own), s.Members, s.MembersWithPower,
                 s.CombatPower, s.AverageCombatPower, s.FromSite, Math.Clamp((double)LegionRanking.Score(s, order) / top, 0, 1), own,
-                s.LastSeenMs);
+                s.LastSeenMs, s.Seen, s.Listed, leader);
         }).ToList();
     }
 

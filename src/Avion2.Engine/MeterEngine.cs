@@ -197,10 +197,16 @@ public sealed class MeterEngine : IDisposable
             }
 
             int sightings = _session.LegionsSeen.Pending;
+            int legion = _session.Legion.Revision;
             _session.Apply(e);
             if (sightings == 0 && _session.LegionsSeen.Pending > 0)
             {
                 LegionsSighted?.Invoke();
+            }
+
+            if (_session.Legion.Revision != legion)
+            {
+                LegionChanged?.Invoke();
             }
 
             if (e is ServerClockEvent)
@@ -219,10 +225,6 @@ public sealed class MeterEngine : IDisposable
             else if (e is AirspaceBattleEvent or FieldEventListEvent or FieldEventChangedEvent)
             {
                 WorldEvent?.Invoke(e);
-            }
-            else if (e is LegionDetailsEvent or LegionRosterEvent or LegionHallInfoEvent)
-            {
-                LegionChanged?.Invoke();
             }
             else if (e is InventoryListEvent or InventoryItemEvent or SelfIdentityEvent)
             {
@@ -524,17 +526,17 @@ public sealed class MeterEngine : IDisposable
         lock (_sync)
         {
             var legion = _session.Legion;
-            return legion.IsKnown || legion.Members.Count > 0 || legion.HallRentEndsMs is not null
+            return legion.IsKnown || legion.NoLegion || legion.Members.Count > 0 || legion.HallRentEndsMs is not null
                 ? new LegionState
                 {
                     Character = legion.Character, Name = legion.Name, Leader = legion.Leader, Texts = legion.Texts.ToList(), Members = legion.Members,
-                    UpdatedMs = legion.UpdatedMs, HallRentEndsMs = legion.HallRentEndsMs,
+                    UpdatedMs = legion.UpdatedMs, HallRentEndsMs = legion.HallRentEndsMs, NoLegion = legion.NoLegion,
                 }
                 : null;
         }
     }
 
-    /// <summary>Raised on the capture thread when legion details or members arrive.</summary>
+    /// <summary>Raised on the capture thread when our legion changed (details, members, the hall; joined, left, created, disbanded).</summary>
     public event Action? LegionChanged;
 
     /// <summary>
@@ -549,6 +551,15 @@ public sealed class MeterEngine : IDisposable
         lock (_sync)
         {
             return _session.LegionsSeen.Drain();
+        }
+    }
+
+    /// <summary>The legions the game's legion lists showed since the last call, with when.</summary>
+    public IReadOnlyList<(LegionListing Listing, long AtMs)> DrainLegionListings()
+    {
+        lock (_sync)
+        {
+            return _session.LegionsSeen.DrainListings();
         }
     }
 

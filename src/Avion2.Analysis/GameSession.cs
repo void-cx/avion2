@@ -146,6 +146,7 @@ public sealed class GameSession
         Loot.Apply(e, Registry.SelfName);
         Recorder.Apply(e);
         Legion.Apply(e);
+        Legion.ApplyOwn(e, Registry.SelfId, _named is { } us && us.Id == Registry.SelfId ? us.Name : Registry.SelfName);
         Party.Apply(e, Registry);
         Finder.Apply(e, Registry);
         LegionsSeen.Apply(e, Registry, Party, Legion);

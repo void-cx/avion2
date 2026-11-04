@@ -249,8 +249,11 @@ public sealed class EntityRegistry
             {
                 // The legion tag also names the player's server (spawn records do not)
                 var info = GetOrAdd(tag.EntityId);
-                info.Legion = tag.Legion;
-                info.ServerId ??= tag.ServerId;
+                info.Legion = tag.Legion.Length > 0 ? tag.Legion : null; // empty: in no legion
+                if (tag.ServerId != 0)
+                {
+                    info.ServerId ??= tag.ServerId;
+                }
                 break;
             }
 
