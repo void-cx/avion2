@@ -24,7 +24,7 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="22,26,22,18">
                     <TextBlock Style="{StaticResource BrandTitle}" />
-                    <TextBlock Text="Passive DPS meter for AION2" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,2,0,0" />
+                    <TextBlock Text="Your AION2 hub" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,2,0,0" />
                 </StackPanel>
                 <TextBox x:Name="Search" DockPanel.Dock="Top" Style="{StaticResource SearchBox}" Margin="16,0,16,14"
                          local:Ui.Placeholder="Search dungeons, bosses" TextChanged="Search_TextChanged" />
@@ -238,8 +238,10 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <DockPanel Margin="0,0,0,6">
-                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Count}" Foreground="{DynamicResource SecondaryTextBrush}" />
-                                                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                                                <Image DockPanel.Dock="Left" Source="{Binding Icon}" Width="22" Height="22" Margin="0,0,8,0" VerticalAlignment="Center"
+                                                       RenderOptions.BitmapScalingMode="HighQuality" />
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Count}" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                             </DockPanel>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
@@ -255,8 +257,10 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <DockPanel Margin="0,0,0,6">
-                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Count}" Foreground="{DynamicResource SecondaryTextBrush}" />
-                                                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                                                <Image DockPanel.Dock="Left" Source="{Binding Icon}" Width="22" Height="22" Margin="0,0,8,0" VerticalAlignment="Center"
+                                                       RenderOptions.BitmapScalingMode="HighQuality" />
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Count}" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                             </DockPanel>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
@@ -269,8 +273,10 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <DockPanel Margin="0,0,0,6">
-                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Count}" Foreground="{DynamicResource SecondaryTextBrush}" />
-                                                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                                                <Image DockPanel.Dock="Left" Source="{Binding Icon}" Width="22" Height="22" Margin="0,0,8,0" VerticalAlignment="Center"
+                                                       RenderOptions.BitmapScalingMode="HighQuality" />
+                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Count}" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                             </DockPanel>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>

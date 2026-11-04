@@ -9,7 +9,7 @@ namespace Avion2.Overlay;
 
 /// <summary>
 /// The fight as lanes: one per player (and the boss), a marker per skill cast, the primary target's HP behind
-/// them. Hover a marker for the skill and time. Drawn directly (thousands of casts stay cheap).
+/// them. Hover a marker for the skill (with its icon) and time. Drawn directly (thousands of casts stay cheap).
 /// </summary>
 public sealed class TimelineView : FrameworkElement
 {
@@ -18,7 +18,7 @@ public sealed class TimelineView : FrameworkElement
     private const double AxisHeight = 22;
 
     private readonly ToolTip _tip = new() { Placement = System.Windows.Controls.Primitives.PlacementMode.Relative };
-    private List<(Rect Box, string Text)> _hitBoxes = new();
+    private List<(Rect Box, string Text, uint Skill)> _hitBoxes = new();
     private List<TraceEntity> _lanes = new();
 
     public TimelineView()
@@ -145,7 +145,7 @@ public sealed class TimelineView : FrameworkElement
             dc.DrawRectangle(lagBrush, null, new Rect(x0, AxisHeight, x1 - x0, plotBottom - AxisHeight));
             dc.DrawText(Text($"server froze {lag.Length / 1000.0:0.0} s", 10, lagText), new Point(x0 + 3, plotBottom - 14));
             _hitBoxes.Add((new Rect(x0, AxisHeight, x1 - x0, plotBottom - AxisHeight),
-                $"Server froze for {lag.Length / 1000.0:0.0} s: no game data, then everything arrived at once"));
+                $"Server froze for {lag.Length / 1000.0:0.0} s: no game data, then everything arrived at once", 0));
         }
 
         for (int lane = 0; lane < _lanes.Count; lane++)
@@ -184,7 +184,8 @@ public sealed class TimelineView : FrameworkElement
                 string skill = Data.SkillName(cast.SkillId);
                 _hitBoxes.Add((new Rect(x - 4, top, 8, LaneHeight),
                     $"{TimeSpan.FromMilliseconds(Math.Max(cast.T, 0)):m\\:ss\\.f} · {skill}" +
-                    (cast.ActorId != entity.Id ? $" ({(trace.Entity(cast.ActorId) is { } actor ? StreamerMode.Name(actor) : null)})" : string.Empty)));
+                    (cast.ActorId != entity.Id ? $" ({(trace.Entity(cast.ActorId) is { } actor ? StreamerMode.Name(actor) : null)})" : string.Empty),
+                    cast.SkillId));
             }
         }
 
@@ -229,7 +230,7 @@ public sealed class TimelineView : FrameworkElement
                 }
             }
 
-            _hitBoxes.Add((new Rect(x0 - 2, top, x1 - x0 + 6, LaneHeight), text));
+            _hitBoxes.Add((new Rect(x0 - 2, top, x1 - x0 + 6, LaneHeight), text, windup.SkillId));
         }
     }
 
@@ -269,7 +270,7 @@ public sealed class TimelineView : FrameworkElement
             return;
         }
 
-        _tip.Content = hit.Text;
+        _tip.Content = Tip(hit.Text, hit.Skill);
         _tip.PlacementTarget = this;
         _tip.HorizontalOffset = at.X + 12;
         _tip.VerticalOffset = at.Y + 12;
@@ -277,4 +278,20 @@ public sealed class TimelineView : FrameworkElement
     }
 
     protected override void OnMouseLeave(MouseEventArgs e) => _tip.IsOpen = false;
+
+    /// <summary>The hover text, with the skill's icon in front when it has one.</summary>
+    private static object Tip(string text, uint skillId)
+    {
+        if (skillId == 0 || SkillIcons.For(skillId) is not { } icon)
+        {
+            return text;
+        }
+
+        var panel = new StackPanel { Orientation = Orientation.Horizontal };
+        var image = new Image { Source = icon, Width = 24, Height = 24, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
+        RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
+        panel.Children.Add(image);
+        panel.Children.Add(new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center });
+        return panel;
+    }
 }

@@ -13,7 +13,7 @@ using Avion2.Engine;
 namespace Avion2.Overlay;
 
 /// <param name="Share">Relative to the biggest skill (bar length).</param>
-public sealed record SkillBar(string Name, string Total, double Share);
+public sealed record SkillBar(string Name, string Total, double Share, System.Windows.Media.ImageSource? Icon = null);
 
 /// <summary>The selected fight in the History detail pane.</summary>
 public sealed record FightSummary(HistoryRow Row, MeterRow? Player)
@@ -70,7 +70,7 @@ public sealed record FightSummary(HistoryRow Row, MeterRow? Player)
         {
             var top = Player?.Skills.OrderByDescending(s => s.Total).Take(6).ToList() ?? [];
             long max = Math.Max(1, top.FirstOrDefault()?.Total ?? 1);
-            return top.Select(s => new SkillBar(s.Name, s.Total.ToString("N0", CultureInfo.InvariantCulture), s.Total / (double)max)).ToList();
+            return top.Select(s => new SkillBar(s.Name, s.Total.ToString("N0", CultureInfo.InvariantCulture), s.Total / (double)max, SkillIcons.For(s.SkillId))).ToList();
         }
     }
 }

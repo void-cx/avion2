@@ -65,6 +65,9 @@ public sealed class SkillLine(uint skillId) : Bindable
 
     public uint SkillId { get; } = skillId;
 
+    /// <summary>The skill's icon (built in), or null.</summary>
+    public System.Windows.Media.ImageSource? Icon { get; } = SkillIcons.For(skillId);
+
     /// <summary>Stagger gauge points the skill took; shown blank when 0.</summary>
     public long Stagger { get => _stagger; set { if (Set(ref _stagger, value)) OnPropertyChanged(nameof(StaggerText)); } }
 

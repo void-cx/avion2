@@ -25,7 +25,7 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="22,26,22,18">
                     <TextBlock Style="{StaticResource BrandTitle}" />
-                    <TextBlock Text="Passive DPS meter for AION2" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,2,0,0" />
+                    <TextBlock Text="Your AION2 hub" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,2,0,0" />
                 </StackPanel>
                 <TextBox x:Name="Search" DockPanel.Dock="Top" Style="{StaticResource SearchBox}" Margin="16,0,16,14"
                          local:Ui.Placeholder="Search fights, bosses" TextChanged="Search_TextChanged" />
@@ -164,13 +164,17 @@
                             <ItemsControl ItemsSource="{Binding Skills}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <StackPanel Margin="0,0,0,9">
-                                            <DockPanel>
-                                                <TextBlock DockPanel.Dock="Right" Text="{Binding Total}" Foreground="{DynamicResource MutedBrush}" FontSize="12" />
-                                                <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                                            </DockPanel>
-                                            <ProgressBar Style="{StaticResource ThinBar}" Value="{Binding Share, Mode=OneWay}" Margin="0,4,0,0" />
-                                        </StackPanel>
+                                        <DockPanel Margin="0,0,0,9">
+                                            <Image DockPanel.Dock="Left" Source="{Binding Icon}" Width="26" Height="26" Margin="0,0,8,0" VerticalAlignment="Center"
+                                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                                            <StackPanel>
+                                                <DockPanel>
+                                                    <TextBlock DockPanel.Dock="Right" Text="{Binding Total}" Foreground="{DynamicResource MutedBrush}" FontSize="12" />
+                                                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                                </DockPanel>
+                                                <ProgressBar Style="{StaticResource ThinBar}" Value="{Binding Share, Mode=OneWay}" Margin="0,4,0,0" />
+                                            </StackPanel>
+                                        </DockPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>

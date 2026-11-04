@@ -86,7 +86,18 @@
 
                     <DataGrid Background="{DynamicResource GridBackgroundBrush}" BorderBrush="{DynamicResource GridBorderBrush}" ItemsSource="{Binding Skills}" Margin="0,4,0,0" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="None" SelectionMode="Single" CanUserResizeRows="False" RowHeight="28" HorizontalScrollBarVisibility="Auto" CanUserResizeColumns="True">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Skill" Binding="{Binding Name}" Width="*" MinWidth="160" />
+                            <DataGridTemplateColumn Header="Skill" Width="*" MinWidth="160" SortMemberPath="Name">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <!-- The icon's slot stays when a skill has none, so names line up -->
+                                        <DockPanel VerticalAlignment="Center">
+                                            <Image DockPanel.Dock="Left" Source="{Binding Icon}" Width="20" Height="20" Margin="0,0,6,0"
+                                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTemplateColumn Header="Spec" Width="70" MinWidth="70" CanUserSort="False">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

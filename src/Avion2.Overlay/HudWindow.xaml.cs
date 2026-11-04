@@ -378,7 +378,7 @@ public partial class HudWindow : Window
     }
 
     /// <summary>
-    /// The chain skills we can use right now, e.g. "Resonance Crush  2.1 s" with a bar running out over the 3 s,
+    /// The chain skills we can use right now, e.g. "Resonance Crush  2.1 s" with its icon and a bar running out over the 3 s,
     /// centred above the buff icons over the skill bar. Several open at once stack, the first to run out on top.
     /// </summary>
     private void UpdateChains(EngineStatus? status)
@@ -425,7 +425,16 @@ public partial class HudWindow : Window
                 Width = width * left,
             });
             row.Children.Add(track);
-            ChainList.Children.Add(row);
+
+            // The skill's icon left of its name and bar (its slot kept when there is none)
+            double size = font * 2.1;
+            var line = new DockPanel();
+            var icon = new Image { Source = SkillIcons.For(step.SkillId), Width = size, Height = size, Margin = new Thickness(0, 0, font * 0.4, font * 0.35), VerticalAlignment = VerticalAlignment.Top };
+            RenderOptions.SetBitmapScalingMode(icon, BitmapScalingMode.HighQuality);
+            DockPanel.SetDock(icon, Dock.Left);
+            line.Children.Add(icon);
+            line.Children.Add(row);
+            ChainList.Children.Add(line);
         }
 
         ChainList.Visibility = Visibility.Visible;

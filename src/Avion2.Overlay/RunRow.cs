@@ -89,7 +89,8 @@ public sealed record RunMoment(string At, string Text, string Detail, Brush Acce
 
 public sealed record RunMemberRow(string Name, string ClassName, ImageSource? Icon);
 
-public sealed record RunLootRow(string Name, string Count);
+/// <param name="Icon">The item's icon (built in), or null.</param>
+public sealed record RunLootRow(string Name, string Count, ImageSource? Icon = null);
 
 /// <summary>The selected run in the detail pane (or the live one).</summary>
 public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live = false, RewardCeilings? ceilings = null)
@@ -263,7 +264,7 @@ public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live 
 
     public IReadOnlyList<RunLootRow> Loot => row.Run.Loot
         .OrderByDescending(i => i.Count)
-        .Select(i => new RunLootRow(ItemName(i.ItemId), $"× {i.Count.ToString("N0", CultureInfo.InvariantCulture)}"))
+        .Select(i => new RunLootRow(ItemName(i.ItemId), $"× {i.Count.ToString("N0", CultureInfo.InvariantCulture)}", ItemIcons.For(i.ItemId)))
         .ToList();
 
     public Visibility LootVisibility => row.Run.Loot.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -271,7 +272,7 @@ public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live 
     /// <summary>Potions and scrolls used inside (also the ones the game used by itself).</summary>
     public IReadOnlyList<RunLootRow> Used => row.Run.Used
         .OrderByDescending(i => i.Count)
-        .Select(i => new RunLootRow(ItemName(i.ItemId), $"× {i.Count.ToString("N0", CultureInfo.InvariantCulture)}"))
+        .Select(i => new RunLootRow(ItemName(i.ItemId), $"× {i.Count.ToString("N0", CultureInfo.InvariantCulture)}", ItemIcons.For(i.ItemId)))
         .ToList();
 
     public Visibility UsedVisibility => row.Run.Used.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -295,7 +296,7 @@ public sealed class RunSummary(RunRow row, IReadOnlyList<RunRow> all, bool live 
 
     /// <summary>What the cube gave, in the game's order (Kinah and Enhance Stones first).</summary>
     public IReadOnlyList<RunLootRow> CubeItems => (row.Run.Cube?.Items ?? [])
-        .Select(i => new RunLootRow(ItemName(i.ItemId), $"× {i.Count.ToString("N0", CultureInfo.InvariantCulture)}"))
+        .Select(i => new RunLootRow(ItemName(i.ItemId), $"× {i.Count.ToString("N0", CultureInfo.InvariantCulture)}", ItemIcons.For(i.ItemId)))
         .ToList();
 
     public Visibility CubeVisibility => row.Run.Cube is not null ? Visibility.Visible : Visibility.Collapsed;
