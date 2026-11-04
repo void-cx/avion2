@@ -33,6 +33,12 @@ public sealed record LegionSighting(
     long AtMs,
     PowerSource Power = PowerSource.Spawn);
 
+/// <summary>
+/// Our legion's whole member list (<c>05 8A</c>), each member with class, item level and combat power as the game
+/// sent them.
+/// </summary>
+public sealed record LegionRosterSighting(ushort ServerId, string Legion, IReadOnlyList<LegionSighting> Members, long AtMs);
+
 /// <summary>A member of a legion as last seen.</summary>
 public sealed class SeenMember
 {
@@ -78,6 +84,13 @@ public sealed class SeenLegion
     [JsonPropertyName("listed")]
     public ListedLegion? Listed { get; set; }
 
+    /// <summary>
+    /// When the game last sent the legion's whole member list (Unix ms; only to its members): the members are then all
+    /// of them, not only those seen. Null when never.
+    /// </summary>
+    [JsonPropertyName("rosterMs")]
+    public long? RosterMs { get; set; }
+
     [JsonIgnore]
     public long LastSeenMs => Math.Max(Members.Count == 0 ? 0 : Members.Max(m => m.LastSeenMs), Listed?.AtMs ?? 0);
 
@@ -112,7 +125,8 @@ public sealed class ListedLegion
 /// <summary>
 /// Every legion AVION2 has seen, per server, with the members seen in it (name, class, last item level and combat
 /// power, last seen). Built from what the game shows of the players around us, our party and group-finder rooms, and
-/// characters looked up on the official site. It counts what was seen, never a legion's real size. Saved between
+/// characters looked up on the official site; for our own legion, the game's whole member list. Other than that it
+/// counts what was seen, never a legion's real size. Saved between
 /// sessions (legions_seen.json). Not thread-safe.
 /// </summary>
 public sealed class LegionsSeenBook
@@ -323,6 +337,39 @@ public sealed class LegionsSeenBook
     }
 
     /// <summary>
+    /// Takes a legion's whole member list: every member is placed in it with what the list says, and those of the
+    /// legion not on the list (and not seen since) leave it. Returns true when something changed.
+    /// </summary>
+    public bool TakeRoster(LegionRosterSighting roster)
+    {
+        if (roster.Legion.Length == 0 || roster.ServerId == 0 || roster.Members.Count == 0 ||
+            Find(roster.ServerId, roster.Legion) is { RosterMs: { } newer } && newer > roster.AtMs)
+        {
+            return false;
+        }
+
+        foreach (var member in roster.Members)
+        {
+            Take(member with { ServerId = roster.ServerId, Legion = roster.Legion, AtMs = roster.AtMs, Power = PowerSource.Game });
+        }
+
+        if (Find(roster.ServerId, roster.Legion) is not { } legion)
+        {
+            return false;
+        }
+
+        var on = roster.Members.Select(m => m.Name).ToHashSet(StringComparer.Ordinal);
+        foreach (var gone in legion.Members.Where(m => !on.Contains(m.Name) && m.LastSeenMs <= roster.AtMs).ToList())
+        {
+            legion.Members.Remove(gone);
+            _memberOf.Remove((legion.ServerId, gone.Name));
+        }
+
+        legion.RosterMs = roster.AtMs;
+        return true;
+    }
+
+    /// <summary>
     /// Drops the members not seen and the listings not renewed within <see cref="StaleAfter"/>, and legions left with
     /// neither. Returns how many members went.
     /// </summary>
@@ -342,6 +389,11 @@ public sealed class LegionsSeenBook
             if (legion.Listed is { } listed && listed.AtMs < cutoff)
             {
                 legion.Listed = null;
+            }
+
+            if (legion.RosterMs < cutoff)
+            {
+                legion.RosterMs = null;
             }
 
             if (legion.IsEmpty)
@@ -404,7 +456,8 @@ public static class LegionRanking
             {
                 var members = l.Members.Where(m => m.LastSeenMs >= cutoff).ToList();
                 var powered = members.Where(m => m.CombatPower is > 0).ToList();
-                int? listed = l.Listed is { } list && list.AtMs >= cutoff ? list.Members : null;
+                // the legion list's count, unless the whole member list came since (then the members are all of them)
+                int? listed = l.Listed is { } list && list.AtMs >= cutoff && list.AtMs > (l.RosterMs ?? 0) ? list.Members : null;
                 long last = Math.Max(members.Count == 0 ? 0 : members.Max(m => m.LastSeenMs), listed is null ? 0 : l.Listed!.AtMs);
                 return new LegionStanding(0, l, listed ?? members.Count, powered.Count, powered.Sum(m => (long)m.CombatPower!.Value),
                     powered.Count(m => m.Power == PowerSource.Site), last, members.Count, listed);
@@ -439,8 +492,21 @@ public sealed class LegionSpotter
     private readonly Dictionary<(ushort?, string), (LegionSighting Seen, long At)> _last = new();
     private readonly List<LegionSighting> _pending = new();
 
-    /// <summary>Sightings and listings not taken yet.</summary>
-    public int Pending => _pending.Count + _listings.Count;
+    /// <summary>Sightings, listings and member lists not taken yet.</summary>
+    public int Pending => _pending.Count + _listings.Count + _rosters.Count;
+
+    private readonly List<LegionRosterSighting> _rosters = new();
+
+    /// <summary>A member list that came before we knew our legion's name (taken when it comes).</summary>
+    private LegionRosterEvent? _roster;
+
+    /// <summary>Our legion's whole member lists since the last call.</summary>
+    public IReadOnlyList<LegionRosterSighting> DrainRosters()
+    {
+        var taken = _rosters.ToList();
+        _rosters.Clear();
+        return taken;
+    }
 
     /// <summary>The sightings since the last call.</summary>
     public IReadOnlyList<LegionSighting> Drain()
@@ -464,6 +530,12 @@ public sealed class LegionSpotter
     {
         switch (e)
         {
+            case LegionRosterEvent { Complete: true } roster:
+                _roster = roster;
+                break;
+            case SelfIdentityEvent:
+                _roster = null; // (another character's legion comes with its own list)
+                break;
             case LegionTagEvent tag:
                 Entity(registry, tag.EntityId, e.TimestampMs, ownLegion, noLegion: tag.Legion.Length == 0);
                 break;
@@ -506,6 +578,38 @@ public sealed class LegionSpotter
                 Note(new LegionSighting(request.Name, null, null, request.Class, Positive(request.ItemLevel), Positive(request.CombatPower),
                     e.TimestampMs, PowerSource.Game));
                 break;
+        }
+
+        TakeRoster(registry, ownLegion);
+    }
+
+    /// <summary>
+    /// The member list waiting, once our legion has its name and still holds that list (another character since would
+    /// have cleared it).
+    /// </summary>
+    private void TakeRoster(EntityRegistry registry, LegionState ownLegion)
+    {
+        if (_roster is not { } list || ownLegion is not { Name: { Length: > 0 } legion, NoLegion: false } ||
+            ownLegion.RosterMs != list.TimestampMs)
+        {
+            return;
+        }
+
+        _roster = null;
+        ushort? server = (registry.SelfId is { } self ? registry.Find(self)?.ServerId : null) ??
+                         list.Members.Where(m => m.ServerId is not null).GroupBy(m => m.ServerId!.Value)
+                             .OrderByDescending(g => g.Count()).Select(g => (ushort?)g.Key).FirstOrDefault();
+        if (server is not { } on)
+        {
+            return;
+        }
+
+        _rosters.Add(new LegionRosterSighting(on, legion, list.Members
+            .Select(m => new LegionSighting(m.Name, on, legion, m.Class, m.ItemLevel, m.CombatPower, list.TimestampMs, PowerSource.Game))
+            .ToList(), list.TimestampMs));
+        if (_rosters.Count > 20)
+        {
+            _rosters.RemoveAt(0); // nobody takes them (no page, no store)
         }
     }
 

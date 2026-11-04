@@ -22,7 +22,8 @@ public sealed record LegionBoardRow(
     long LastSeenMs,
     int Seen = 0,
     int? Listed = null,
-    string? Leader = null);
+    string? Leader = null,
+    long? RosterMs = null);
 
 /// <summary>A member of a legion on the Legions page, the name as shown.</summary>
 /// <param name="FromSite">The combat power came from the official site (a character lookup).</param>
@@ -56,7 +57,7 @@ public static class LegionBoard
             string? leader = s.Listed is not null && s.Legion.Listed?.Leader is { Length: > 0 } l ? names.Name(l) : null;
             return new LegionBoardRow(s.Rank, s.Legion.Name, names.LegionInList(s.Legion.Name, own), s.Members, s.MembersWithPower,
                 s.CombatPower, s.AverageCombatPower, s.FromSite, Math.Clamp((double)LegionRanking.Score(s, order) / top, 0, 1), own,
-                s.LastSeenMs, s.Seen, s.Listed, leader);
+                s.LastSeenMs, s.Seen, s.Listed, leader, s.Legion.RosterMs);
         }).ToList();
     }
 
@@ -78,6 +79,18 @@ public static class LegionBoard
                 names.Self is { } self && m.Name == self, m.LastSeenMs))
             .ToList();
     }
+
+    /// <summary>The members' average item level, of those it is known of; null when none.</summary>
+    public static long? AverageItemLevel(IEnumerable<LegionBoardMember> members)
+    {
+        var known = members.Where(m => m.ItemLevel is > 0).Select(m => (long)m.ItemLevel!.Value).ToList();
+        return known.Count > 0 ? (long)Math.Round(known.Average()) : null;
+    }
+
+    /// <summary>"25 Sorcerer · 18 Gladiator · …", the most first; members of a class not known left out.</summary>
+    public static string ClassMix(IEnumerable<LegionBoardMember> members) =>
+        string.Join(" · ", members.Where(m => m.Class != GameClass.Unknown).GroupBy(m => m.Class)
+            .OrderByDescending(g => g.Count()).ThenBy(g => g.Key).Select(g => $"{g.Count()} {g.Key}"));
 
     /// <summary>A character looked up on the official site, as a sighting (null when the site names no legion).</summary>
     public static LegionSighting? FromProfile(ArmoryProfile profile, GameClass cls) =>

@@ -57,8 +57,8 @@ official AION2 site for the characters you open and for your own characters' por
 - **Server lag warning** when the game server freezes, also marked in each fight.
 - **Legions**: tags on players, a legion card with your members and when your Legion Hall rent ends (it follows you
   when you leave, create or disband a legion), and a Legions page that compares the legions seen on your server by
-  combat power or members, with each legion's real size and leader once you open the game's legion list (what AVION2
-  saw, not an official ranking).
+  combat power or members, with each legion's real size and leader once you open the game's legion list, and every
+  member of your own legion with class, item level and combat power (what AVION2 saw, not an official ranking).
 - **Skill and item icons**, the game's own, built in: in fight details, the History page, the HUD, the Characters
   page, the Gear Forge and a run's loot.
 - Two themes: **AION2** and **VOID**. Skill and NPC names in 8 languages.

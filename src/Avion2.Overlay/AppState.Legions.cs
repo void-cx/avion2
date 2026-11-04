@@ -44,7 +44,7 @@ public sealed partial class AppState
     /// <summary>Takes the meter's sightings (and its next ones).</summary>
     private void AttachLegionsSeen(MeterEngine engine) =>
         engine.LegionsSighted += () => Application.Current.Dispatcher.BeginInvoke(() =>
-            TakeSightings(engine.DrainLegionSightings(), engine.DrainLegionListings()));
+            TakeSightings(engine.DrainLegionSightings(), engine.DrainLegionListings(), engine.DrainLegionRosters()));
 
     /// <summary>A character looked up on the official site: their legion, item level and combat power as the site shows them.</summary>
     private void OnArmoryProfile(ArmoryProfile profile)
@@ -56,9 +56,15 @@ public sealed partial class AppState
     }
 
     private void TakeSightings(IReadOnlyList<LegionSighting> sightings,
-        IReadOnlyList<(Avion2.Protocol.LegionListing Listing, long AtMs)>? listings = null)
+        IReadOnlyList<(Avion2.Protocol.LegionListing Listing, long AtMs)>? listings = null,
+        IReadOnlyList<LegionRosterSighting>? rosters = null)
     {
         bool changed = false;
+        foreach (var roster in rosters ?? [])
+        {
+            changed |= LegionsSeen.TakeRoster(roster);
+        }
+
         foreach (var seen in sightings)
         {
             changed |= LegionsSeen.Take(seen);

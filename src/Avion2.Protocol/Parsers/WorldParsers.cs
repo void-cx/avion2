@@ -270,7 +270,10 @@ public static class WorldParsers
         return false;
     }
 
-    /// <summary><c>03 8A</c>: 00 00, name (u8 len), leader (u8 len), counters, then the legion's texts.</summary>
+    /// <summary>
+    /// <c>03 8A</c>: 00 00, name (u8 len), leader (u8 len), members u8, maximum (varint), more counters, then the
+    /// legion's texts.
+    /// </summary>
     public static bool ParseLegionDetails(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {
         var r = new SpanReader(body);
@@ -280,13 +283,16 @@ public static class WorldParsers
         }
 
         string? leader = r.TryU8(out byte leaderLength) && leaderLength is > 0 and <= 36 && r.TryUtf8(leaderLength, out string l) ? l : null;
-        emit(new LegionDetailsEvent(ts, name, leader, FindTexts(body[r.Position..])));
+        var counts = new SpanReader(body, r.Position);
+        bool counted = counts.TryU8(out byte members) & counts.TryVarint(out uint max);
+        counted &= leader is not null && max is > 0 and <= 1_000 && members <= max;
+        emit(new LegionDetailsEvent(ts, name, leader, FindTexts(body[r.Position..]), counted ? members : null, counted ? (int)max : null));
         return true;
     }
 
     /// <summary>
-    /// <c>05 8A</c>: member entries, each with server u16, u32, name (u8 len), level u8, …, last login u64 ms.
-    /// Entries are found by that pattern rather than walked, as their tails vary.
+    /// <c>05 8A</c> searched for members, the fallback when <see cref="LegionsParsers.ParseRoster"/> can't walk it: the
+    /// character id's server u16, the class code u32, name (u8 len), level, then the last logout u64 ms nearby.
     /// </summary>
     public static bool ParseLegionRoster(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
     {

@@ -531,6 +531,7 @@ public sealed class MeterEngine : IDisposable
                 {
                     Character = legion.Character, Name = legion.Name, Leader = legion.Leader, Texts = legion.Texts.ToList(), Members = legion.Members,
                     UpdatedMs = legion.UpdatedMs, HallRentEndsMs = legion.HallRentEndsMs, NoLegion = legion.NoLegion,
+                    RosterMs = legion.RosterMs, MaxMembers = legion.MaxMembers,
                 }
                 : null;
         }
@@ -560,6 +561,15 @@ public sealed class MeterEngine : IDisposable
         lock (_sync)
         {
             return _session.LegionsSeen.DrainListings();
+        }
+    }
+
+    /// <summary>Our legion's whole member lists since the last call.</summary>
+    public IReadOnlyList<LegionRosterSighting> DrainLegionRosters()
+    {
+        lock (_sync)
+        {
+            return _session.LegionsSeen.DrainRosters();
         }
     }
 

@@ -11,9 +11,14 @@ public sealed class LegionBook
 
     public LegionState? For(string? name) => name is not null && _byName.TryGetValue(name, out var legion) ? legion : null;
 
+    /// <summary>Every character's legion.</summary>
+    [JsonIgnore]
+    public IReadOnlyList<LegionState> All => _byName.Values.ToList();
+
     /// <summary>
     /// Takes the meter's legion for its character. What the game did not send again this session (details, members
-    /// not on the pages it sent) is kept from before, unless the character is now in no legion or in another one.
+    /// not on the pages it sent) is kept from before, unless the character is now in no legion or in another one. A
+    /// whole member list sent this session replaces the members kept.
     /// Returns false when the legion can't be placed (no character).
     /// </summary>
     public bool Take(LegionState legion)
@@ -28,18 +33,23 @@ public sealed class LegionBook
             legion.Name ??= old.Name;
             legion.Leader ??= old.Leader;
             legion.HallRentEndsMs ??= old.HallRentEndsMs;
+            legion.MaxMembers ??= old.MaxMembers;
             if (legion.Texts.Count == 0)
             {
                 legion.Texts = old.Texts;
             }
 
-            var members = old.Members.ToDictionary(m => m.Name);
-            foreach (var member in legion.Members)
+            if (legion.RosterMs is null)
             {
-                members[member.Name] = member;
-            }
+                var members = old.Members.ToDictionary(m => m.Name);
+                foreach (var member in legion.Members)
+                {
+                    members[member.Name] = member;
+                }
 
-            legion.Members = members.Values.ToList();
+                legion.Members = members.Values.ToList();
+                legion.RosterMs = old.RosterMs;
+            }
         }
 
         _byName[name] = legion;

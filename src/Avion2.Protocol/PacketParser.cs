@@ -39,7 +39,7 @@ public static class PacketParser
             case Opcodes.LegionDetails:
                 return WorldParsers.ParseLegionDetails(body, timestampMs, emit);
             case Opcodes.LegionRoster:
-                return WorldParsers.ParseLegionRoster(body, timestampMs, emit);
+                return LegionsParsers.ParseRoster(body, timestampMs, emit);
         }
 
         if (scope == ParseScope.IdentityOnly)

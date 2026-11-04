@@ -3,7 +3,8 @@ using Avion2.Protocol;
 namespace Avion2.Analysis;
 
 /// <summary>
-/// Our legion: details from <c>03 8A</c>, members from <c>05 8A</c> pages (merged by name); followed when we create,
+/// Our legion: details from <c>03 8A</c>, members from <c>05 8A</c> (the whole list, each member with class, item level
+/// and combat power; merged by name when it could only be searched for names); followed when we create,
 /// leave or disband one (<c>01 8A</c>, <c>0B 8A</c>, <c>35 8A</c>) and by our own legion tag (<c>33 8A</c>).
 /// </summary>
 public sealed class LegionState
@@ -34,6 +35,12 @@ public sealed class LegionState
     }
 
     public long UpdatedMs { get; set; }
+
+    /// <summary>The most members the legion can have (from <c>03 8A</c>), when known.</summary>
+    public int? MaxMembers { get; set; }
+
+    /// <summary>When the game last sent the whole member list (Unix ms); null when it did not since the legion was known.</summary>
+    public long? RosterMs { get; set; }
 
     /// <summary>
     /// When the rent of the legion's Legion Hall ends (Unix ms, from <c>45 8A</c>); 0 when the game said there is no hall;
@@ -83,6 +90,8 @@ public sealed class LegionState
         Texts = new();
         _members.Clear();
         UpdatedMs = 0;
+        RosterMs = null;
+        MaxMembers = null;
         HallRentEndsMs = null;
         NoLegion = false;
         Revision++;
@@ -110,11 +119,18 @@ public sealed class LegionState
                 Name = details.Name;
                 Leader = details.Leader;
                 Texts = details.Texts.ToList();
+                MaxMembers = details.MaxMembers ?? MaxMembers;
                 NoLegion = false;
                 UpdatedMs = details.TimestampMs;
                 Touch();
                 break;
             case LegionRosterEvent roster:
+                if (roster.Complete)
+                {
+                    _members.Clear(); // the whole list: who is not on it left
+                    RosterMs = roster.TimestampMs;
+                }
+
                 foreach (var member in roster.Members)
                 {
                     _members[member.Name] = member;
@@ -210,6 +226,8 @@ public sealed class LegionState
         Leader = null;
         Texts = new();
         _members.Clear();
+        RosterMs = null;
+        MaxMembers = null;
         HallRentEndsMs = null;
     }
 

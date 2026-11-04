@@ -29,6 +29,110 @@ public static class LegionsParsers
     private const int MaxName = 36;
 
     /// <summary>
+    /// <c>05 8A</c> (GuildMemberInfo_RS), our whole legion in one record: result u16, member count (varint), then per
+    /// member flags u8 (bit 1: a shared message follows the grade), account u64, character u64 (server in the top 16
+    /// bits), class code u32, name (u8 len), level u32, grade u8 (0 leader, 1 officer, 2 member), the message (u8 len)
+    /// when flagged, a byte the game does not always send, last logout u64 ms, zone u32, item level u32 and combat
+    /// power u64. The byte sent or not is told by where the next member starts (or the record ends). A record that does
+    /// not walk that way is searched for names instead.
+    /// </summary>
+    public static bool ParseRoster(ReadOnlySpan<byte> body, long ts, Action<GameEvent> emit)
+    {
+        if (WalkRoster(body) is { } members)
+        {
+            emit(new LegionRosterEvent(ts, members, Complete: true));
+            return true;
+        }
+
+        return WorldParsers.ParseLegionRoster(body, ts, emit);
+    }
+
+    private const int MemberTail = 24; // logout, zone, item level, combat power
+
+    private static List<LegionMember>? WalkRoster(ReadOnlySpan<byte> body)
+    {
+        var r = new SpanReader(body);
+        if (!r.TryU16(out ushort result) || result != 0 || !r.TryVarint(out uint count) || count is 0 or > 1_000)
+        {
+            return null;
+        }
+
+        var members = new List<LegionMember>((int)count);
+        int at = r.Position;
+        for (uint k = 0; k < count; k++)
+        {
+            if (!TryMemberHead(body, at, out byte flags, out ushort server, out uint code, out string name, out at))
+            {
+                return null;
+            }
+
+            r = new SpanReader(body, at);
+            if (!r.TryU32(out uint level) || !r.TryU8(out byte grade) ||
+                ((flags & 2) != 0 && (!r.TryU8(out byte message) || !r.TrySkip(message))))
+            {
+                return null;
+            }
+
+            int tail = -1;
+            for (int extra = 0; extra <= 1 && tail < 0; extra++)
+            {
+                int t = r.Position + extra, end = t + MemberTail;
+                if (end > body.Length)
+                {
+                    break;
+                }
+
+                long logout = BitConverter.ToInt64(body.Slice(t, 8));
+                bool fits = k == count - 1 ? end == body.Length : TryMemberHead(body, end, out _, out _, out _, out _, out _);
+                if (fits && logout is 0 or (> 1_600_000_000_000 and < 2_200_000_000_000))
+                {
+                    tail = t;
+                }
+            }
+
+            if (tail < 0)
+            {
+                return null;
+            }
+
+            long lastLogout = BitConverter.ToInt64(body.Slice(tail, 8));
+            uint itemLevel = BitConverter.ToUInt32(body.Slice(tail + 12, 4));
+            long power = BitConverter.ToInt64(body.Slice(tail + 16, 8));
+            members.Add(new LegionMember(name, level is >= 1 and <= 99 ? (int)level : null, lastLogout > 0 ? lastLogout : null,
+                GameClasses.FromRosterCode(code), itemLevel is > 0 and < 100_000 ? itemLevel : null,
+                power is > 0 and <= uint.MaxValue ? (uint)power : null, grade, server));
+            at = tail + MemberTail;
+        }
+
+        return at == body.Length ? members : null;
+    }
+
+    /// <summary>A member's start: flags, account, character (its server 1000–2999), class code 1–48 and a name.</summary>
+    private static bool TryMemberHead(ReadOnlySpan<byte> body, int at, out byte flags, out ushort server, out uint code, out string name,
+        out int next)
+    {
+        server = 0;
+        code = 0;
+        name = string.Empty;
+        next = at;
+        var r = new SpanReader(body, at);
+        if (!r.TryU8(out flags) || flags > 0x0F || !r.TrySkip(8) || !r.TryI64(out long character) || !r.TryU32(out code) ||
+            code is 0 or > 48 || !r.TryU8(out byte length) || length is 0 or > MaxName || !r.TryUtf8(length, out name))
+        {
+            return false;
+        }
+
+        server = (ushort)((ulong)character >> 48);
+        if (server is < 1000 or > 2999)
+        {
+            return false;
+        }
+
+        next = r.Position;
+        return true;
+    }
+
+    /// <summary>
     /// A legion id: the server (top 16 bits, 1000–2999) and the number (low 32, the 16 between them 0). False for
     /// anything else.
     /// </summary>

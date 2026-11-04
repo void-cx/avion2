@@ -377,14 +377,33 @@ public sealed record KillEvent(long TimestampMs, uint VictimId, uint SkillId, ui
 /// <remarks>An empty <paramref name="Legion"/> (server 0): the player is in no legion.</remarks>
 public sealed record LegionTagEvent(long TimestampMs, uint EntityId, ushort ServerId, string Legion) : GameEvent(TimestampMs);
 
-/// <summary><c>03 8A</c>: our own legion: name, leader and its texts (introduction, notice, …).</summary>
-public sealed record LegionDetailsEvent(long TimestampMs, string Name, string? Leader, IReadOnlyList<string> Texts) : GameEvent(TimestampMs);
+/// <summary><c>03 8A</c>: our own legion: name, leader, member count and maximum, and its texts (introduction, notice, …).</summary>
+public sealed record LegionDetailsEvent(
+    long TimestampMs,
+    string Name,
+    string? Leader,
+    IReadOnlyList<string> Texts,
+    int? Members = null,
+    int? MaxMembers = null) : GameEvent(TimestampMs);
 
-/// <param name="LastOnlineMs">Unix ms of the member's last login, if present.</param>
-public sealed record LegionMember(string Name, int? Level, long? LastOnlineMs);
+/// <summary>A member of our legion.</summary>
+/// <param name="LastOnlineMs">Unix ms the member last logged out (or, from <c>39 8A</c>, came online), if known.</param>
+/// <param name="Grade">0 the leader, 1 an officer, 2 a member.</param>
+/// <param name="ServerId">The member's server (from the character id).</param>
+public sealed record LegionMember(
+    string Name,
+    int? Level,
+    long? LastOnlineMs,
+    GameClass Class = GameClass.Unknown,
+    uint? ItemLevel = null,
+    uint? CombatPower = null,
+    byte? Grade = null,
+    ushort? ServerId = null);
 
-/// <summary><c>05 8A</c>: a page of our legion's member list.</summary>
-public sealed record LegionRosterEvent(long TimestampMs, IReadOnlyList<LegionMember> Members) : GameEvent(TimestampMs);
+/// <summary><c>05 8A</c>: our legion's member list.</summary>
+/// <param name="Complete">The whole list, each member with class, item level and combat power; false when the record
+/// could only be searched for names (a layout not known).</param>
+public sealed record LegionRosterEvent(long TimestampMs, IReadOnlyList<LegionMember> Members, bool Complete = false) : GameEvent(TimestampMs);
 
 /// <summary>One inventory slot of our character.</summary>
 /// <param name="Container">01 cube (bag), 0B equipped, 0F warehouse; 04 seen for quest items.</param>

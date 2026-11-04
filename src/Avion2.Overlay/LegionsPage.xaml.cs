@@ -299,13 +299,18 @@ public partial class LegionsPage : UserControl
         PanePower.Text = legion.MembersWithPower > 0 ? LegionBoard.Number(legion.CombatPower) : "–";
         PaneAverage.Text = legion.AverageCombatPower is { } average ? LegionBoard.Number(average) : "–";
         PaneSeen.Text = LegionBoard.Ago(legion.LastSeenMs, now);
-        string known = legion.Seen == 0 ? "No member seen yet: the size is the game's legion list's."
+        var members = LegionBoard.Members(book, server, legion.Key, StreamerMode.Names, now);
+        PaneItemLevel.Text = LegionBoard.AverageItemLevel(members) is { } itemLevel ? LegionBoard.Number(itemLevel) : "–";
+        PaneClasses.Text = LegionBoard.ClassMix(members);
+        PaneClasses.Visibility = PaneClasses.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        string known = legion.RosterMs is { } roster && legion.Listed is null
+            ? $"Every member, from the game's member list ({LegionBoard.Ago(roster, now)}): the game sends it to the legion's members at login and when the legion window opens."
+            : legion.Seen == 0 ? "No member seen yet: the size is the game's legion list's."
             : legion.MembersWithPower == legion.Seen
             ? "The combat power of every member seen is known."
             : $"The combat power of {legion.MembersWithPower} of the {legion.Seen} members seen is known.";
         PaneNote.Text = legion.FromSite > 0 ? $"{known} ◆ {legion.FromSite} from the official AION2 site." : known;
-        MemberList.ItemsSource = LegionBoard.Members(book, server, legion.Key, StreamerMode.Names, now)
-            .Select(m => new LegionMemberView(m, now)).ToList();
+        MemberList.ItemsSource = members.Select(m => new LegionMemberView(m, now)).ToList();
     }
 
     private void Server_Checked(object sender, RoutedEventArgs e)

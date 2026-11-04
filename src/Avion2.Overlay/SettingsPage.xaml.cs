@@ -463,6 +463,38 @@ public partial class SettingsPage : UserControl
         }
     }
 
+    private void ExportLegions_Click(object sender, RoutedEventArgs e)
+    {
+        var (json, count) = LegionExport.Build(_state.Legions.All, DateTimeOffset.Now, id => Avion2.Engine.BundledGameData.Server(id)?.Name);
+        if (count == 0)
+        {
+            LegionExportText.Text = "No legion member list yet: log in, or open the legion window, while AVION2 runs.";
+            return;
+        }
+
+        var dialog = new SaveFileDialog
+        {
+            Title = "Export legions",
+            FileName = $"avion2-legions-{DateTime.Now:yyyy-MM-dd}.json",
+            DefaultExt = ".json",
+            Filter = "JSON (*.json)|*.json",
+        };
+        if (dialog.ShowDialog(Window.GetWindow(this)) != true)
+        {
+            return;
+        }
+
+        try
+        {
+            File.WriteAllText(dialog.FileName, json);
+            LegionExportText.Text = count == 1 ? "1 legion exported." : $"{count} legions exported.";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            LegionExportText.Text = $"Could not save: {ex.Message}";
+        }
+    }
+
     private void RecordingsFolder_Click(object sender, RoutedEventArgs e)
     {
         System.IO.Directory.CreateDirectory(Recordings.Directory);

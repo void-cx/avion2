@@ -347,6 +347,19 @@
                 </StackPanel>
             </Border>
 
+            <!-- Developer: legion export -->
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="developer">
+                <StackPanel>
+                    <TextBlock Text="Legion export" Style="{StaticResource Heading}" />
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Export legions…" Click="ExportLegions_Click" />
+                        <TextBlock x:Name="LegionExportText" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,12,0" />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="Saves your characters' legions as JSON: every member with name, class, role, level, grade, item level, combat power and last logout, and per legion its size, roles, classes and item level spread. A legion is in it once AVION2 got its member list: the game sends it at login and when you open the legion window. It holds other players' names: share it with care." />
+                </StackPanel>
+            </Border>
+
             <!-- Past dungeon runs from recordings -->
             <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="data">
                 <StackPanel>

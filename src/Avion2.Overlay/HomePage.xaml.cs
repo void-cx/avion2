@@ -355,10 +355,14 @@ public partial class HomePage : UserControl
         LegionCard.Visibility = Visibility.Visible;
         LegionName.Text = legion.Name;
         var members = legion.Members;
+        var itemLevels = members.Where(m => m.ItemLevel is > 0).Select(m => (double)m.ItemLevel!.Value).ToList();
+        var powers = members.Where(m => m.CombatPower is > 0).Select(m => (long)m.CombatPower!.Value).ToList();
         LegionMeta.Text = string.Join(" · ", new[]
         {
             legion.Leader is { } leader ? $"Leader {leader}" : null,
-            members.Count > 0 ? $"{members.Count} members seen" : null,
+            members.Count == 0 ? null : legion.RosterMs is not null ? $"{members.Count} members" : $"{members.Count} members seen",
+            itemLevels.Count > 0 ? $"item level {Avion2.Engine.LegionBoard.Number((long)Math.Round(itemLevels.Average()))} on average" : null,
+            powers.Count > 0 ? $"combat power {Avion2.Engine.LegionBoard.Number(powers.Sum())}" : null,
         }.OfType<string>());
         LegionIntro.Text = legion.Texts.FirstOrDefault() ?? string.Empty;
         LegionIntro.Visibility = LegionIntro.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;

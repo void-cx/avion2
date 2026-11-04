@@ -531,8 +531,8 @@ Status: Verified
 | Opcode | Record | Fields |
 |---|---|---|
 | `33 8A` | legion tag of a player in range (`GuildDescUpdate_NT`) | `entity varint`, legion id `u64`, `legion str8`, … A player in no legion: id 0 and an empty name (9 zero bytes after the entity) |
-| `03 8A` | legion details | `00 00`, `legion str8`, `leader str8`, counters, texts (`u8` or `u16` length: introduction, notice …) |
-| `05 8A` | legion roster | per member: `server u16`, `u32`, `name str8`, `level u8`, …, last login `time` |
+| `03 8A` | legion details | `00 00`, `legion str8`, `leader str8`, members `u8`, maximum `varint`, more counters, texts (`u8` or `u16` length: introduction, notice …) |
+| `05 8A` | legion member list (GuildMemberInfo_RS) | `result u16`, count `varint`; per member: flags `u8` (bit 1: a message follows the grade), account `u64`, character `u64` (server in the top 16 bits), class code `u32` (as in the party roster), `name str8`, level `u32`, grade `u8` (0 leader, 1 officer, 2 member), message `str8` when flagged, one byte the game does not always send, last logout `time`, zone `u32`, item level `u32`, combat power `u64` |
 | `45 36` (part) | a player's server and legion, in the player spawn | after the position: legion id `u64`, `legion str8`, then `01 00` or `02 00` |
 | `01 8A` | the answer to creating a legion (`GuildCreate_RS`) | `result u16`, legion id `u64`, `legion str8`, level `u8`, experience `u64`, join rule, password, emblem, introduction, the grades' rights. A refusal (2070 seen) has the rest zeroed |
 | `0B 8A` | the answer to leaving our legion (`GuildLeave_RS`) | `result u16`, reputation penalty `u64`; 10 bytes |
@@ -566,10 +566,16 @@ AVION2 follows our legion through all of them, and through our own tag at map lo
 page show the legion we are in now. `1A 8A` (`GuildRecvJoinRequests_RS`, 3 zero bytes after creating) and `AF 8A`
 (`AgitDecoList_NT`, at login) are not read.
 
+The member list `05 8A` is the whole legion in one record (128 members in 7.6 KB), sent only to the legion's members,
+at login and when the legion window opens. The byte after the grade (or the message) comes and goes for the same member
+between records with no flag we found, so AVION2 places it by where the next member starts or the record ends; all
+185 lists in our captures read that way to the last byte. The Legions page takes the list as every member of our
+legion, with their class, item level and combat power; members not on it leave the legion there.
+
 The official site has no legion pages, legion API or legion ranking for Global servers (checked November 2026): its
 ranking API answers an empty list there. The Legions page counts the legions AVION2 saw (players around you, your
 party, characters you looked up), and takes a legion's real member count, leader and level from the game's legion
-list whenever you open it; still not an official ranking.
+list whenever you open it, and your own legion's every member from its member list; still not an official ranking.
 
 ## Positions
 
