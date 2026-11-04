@@ -1,7 +1,7 @@
 {
   "name": "AVION2",
   "short_name": "AVION2",
-  "description": "Free damage meter and fight analyzer for AION2",
+  "description": "Free AION2 hub: DPS meter, fight analyzer, runs, timers and map",
   "start_url": "/",
   "display": "browser",
   "background_color": "#070b14",

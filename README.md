@@ -1,10 +1,10 @@
 # AVION2
 
-A damage meter and fight analyzer for **AION2**. AVION2 reads the game's network traffic on your PC and shows who
-did how much damage, live and after every fight.
+An all-in-one hub for **AION2** on your PC: damage meter and fight analyzer, dungeon runs, timers, a zone map,
+characters, gear and progress. AVION2 reads the game's network traffic, so it can also run on another PC than the game.
 
-It is passive: it never touches the game, its files or its memory, and sends nothing anywhere (only the
-Characters page asks the official AION2 site, when you open it).
+It is passive: it never touches the game, its files or its memory. Your data stays on your PC; AVION2 only asks the
+official AION2 site for the characters you open and for your own characters' portraits (saved, renewed weekly).
 
 **Website and download:** https://avion2.app
 
@@ -22,19 +22,27 @@ Characters page asks the official AION2 site, when you open it).
   land with a countdown, the key moments to jump to and a camera that follows you or the boss.
 - **Timers and notices** for Spacetime Rifts, Dimensional Invasions, the Shugo Festival, the Airspace Battle and other
   PvP events, resets, Reshanta world bosses and field boss respawns; events that are on show the game's own times.
+  Bosses show the game's own pictures on the Timers page, in notices and on the map.
 - **Map** of every zone with teleports, gathering spots, monsters (with drops) and NPCs; you and the players around
   you live on it. Optional, off by default: a compass that finds hidden cubes (it uses
   cube positions the game sends before you can see them, which may count as an unfair advantage). Your party shows on
   it too, also out of view, and a click on a member shows their map.
 - **Characters**: combat power, item level, gear, skills, Daevanion boards and stats of your characters and of
-  anyone you look up (or right-click in the meter); Compare puts one of yours beside them, piece by piece. This is
-  the one feature that goes online: it asks the official AION2 site, only when you open a character.
-- **Gear Forge**: average and unlucky cost (materials, Kinah, attempts) to enchant or amplify any item, and the best next upgrades for your gear: the most item level for your Kinah.
+  anyone you look up (or right-click in the meter); Compare puts one of yours beside them, piece by piece. It asks
+  the official AION2 site, only when you open a character (or fill the stat calculator in from one).
+- **Gear Forge**, the calculators:
+  - **Enchant and amplify:** average and unlucky cost (materials, Kinah, attempts) for any item, and the best next
+    upgrades for your gear: the most item level for your Kinah.
+  - **Crafting:** every material an item takes down to the gathered ones, what your bag already holds and what is
+    missing, combo chances, and materials you'd rather buy or gather; below it, a log of your crafts.
+  - **Stats:** what your attributes and deity stats convert into (Attack, Double Chance, MP Cost, …), filled in from
+    your character if you like, and what a change would give.
 - **Progress** on Home: your item level as the game counts it (gear plus Daevanion boards), Kinah today, Abyss Points
-  this week, tickets and keys, Daeva Pass XP, XP per hour while levelling, and your pet souls with a notice for each
-  new pet.
+  this week, tickets and keys, Daeva Pass XP, XP per hour while levelling, and your pet souls: per pet kind the souls
+  toward the next pet or level and which monsters dropped them, with a short notice for each soul and each new pet.
 - **All your characters**: AVION2 keeps each character's gear, Kinah, legion, fights and runs apart, and follows the
-  one you play. The character at the bottom of the left rail shows another one's without changing anything.
+  one you play, with its portrait from the official site. The character at the bottom of the left rail shows another
+  one's without changing anything.
 - **Party HP** on the overlay: the other members' HP, also out of view, with a mark when someone is dead and on the
   member a boss is targeting.
 - **Group finder** on Home: the room you sit in with every slot's role, class, item level, combat power and ready
@@ -47,10 +55,18 @@ Characters page asks the official AION2 site, when you open it).
   time to kill under the boss bar, boss skills under it, a mark while the boss targets you, your DPS above your
   HP bar, the chain skill you can use next with its time left, and the party's DPS under the group list.
 - **Server lag warning** when the game server freezes, also marked in each fight.
-- **Legion** tags on players and a legion card with your members and when your Legion Hall rent ends.
-- Two themes: **AION2** and **VOID**. Skill and NPC names in 10 languages.
+- **Legions**: tags on players, a legion card with your members and when your Legion Hall rent ends, and a Legions
+  page that compares the legions seen on your server by combat power or members (what AVION2 saw, not an official
+  ranking).
+- **Skill and item icons**, the game's own, built in: in fight details, the History page, the HUD, the Characters
+  page, the Gear Forge and a run's loot.
+- Two themes: **AION2** and **VOID**. Skill and NPC names in 8 languages.
 - **Streamer mode**: player, character and legion names show as "You", "Player 2", … everywhere in the app.
 - **OBS overlay**: the meter (with the boss's HP and casts) and your character card as an OBS Browser Source (`http://localhost:47421/overlay`), turned on in Settings. Only your own PC can open it.
+- **Discord status** (off by default): your map, a dungeon run with its time and bosses, the boss you fight with its
+  HP, or gathering, in your Discord profile, with your character's portrait if you like. Other players' names never
+  show; your own only if you allow it (never in streamer mode). AVION2 only talks to the Discord app on the PC where
+  AVION2 runs.
 
 ## Install
 
@@ -95,9 +111,8 @@ other players' names, so ask before sharing them.
 AVION2 is free software under the [GNU General Public License v3.0](LICENSE). Copyright © 2026 Maurice Schmitz and
 the Enter The Void community.
 
-AVION2 is a fan-made tool and is not affiliated with or endorsed by NCSoft. AION2 and its names and class emblems
-belong to NCSoft. The VOID mark belongs to Enter The Void. Skill and NPC names come from
-[A2Tools](https://github.com/taengu/A2Tools-DPS-Meter) and [NOIA2](https://github.com/ZDYoung0519/NOIA2) (GPL-3.0);
-fonts are under the SIL Open Font License. Details: [PROVENANCE.md](assets/gamedata/PROVENANCE.md).
+AVION2 is a fan-made tool and is not affiliated with or endorsed by NCSoft. AION2 and its names, class emblems and skill
+and item icons belong to NCSoft. The VOID mark belongs to Enter The Void. Skill, NPC, item and map names come from the game
+client's own tables; fonts are under the SIL Open Font License. Details: [PROVENANCE.md](assets/gamedata/PROVENANCE.md).
 
 Building from source, the command-line tool and how it works: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).

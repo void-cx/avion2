@@ -47,7 +47,6 @@ dotnet run --project src/Avion2.Cli -- live
 | `avion2 live [--device 7,9] [--record run.pcap] [--log run.jsonl]` | Console meter. Keys: `R` reset, `Q` quit |
 | `avion2 replay <file.pcap> [--trace] [--log events.jsonl]` | Decode a recording, print every fight (`--trace`: timeline/buff/position/connection summary) |
 | `avion2 dump <file.pcap> [--opcode 0438] [--events] [--unparsed] [--summary]` | Hex-dump decoded packets, opcode histogram |
-| `avion2 import-data [--lang de]` | Refresh name tables from A2Tools into an override folder |
 
 Common options: `--data <dir>` (override tables), `--lang <code>`, `--idle <seconds>` (gap that ends a fight, default 15).
 
@@ -88,11 +87,31 @@ On a boss kill, total party damage should be roughly 97–107% of the boss's max
 
 ## Game data
 
-Skill/NPC names (10 languages), field bosses, zone names, enchant ladders, zone maps and class emblems are compiled in from
-[assets/gamedata](../assets/gamedata) (sources in its PROVENANCE.md). `skills.json`, `npcs.json`, `field_bosses.json`
-or `maps.json` in `%AppData%\AVION2\data` replace single tables ([format](../data/README.md)).
-Enchant ladders and zone maps are rebuilt from aion2hub's pages with `tools/build_forge.py` and `tools/build_maps.py`
-(the latter needs Pillow; usage in each script's header).
+Skill/NPC/item/zone/dungeon names (en, de, fr, es, pt, ru, ja, ko), field bosses, crafting recipes, stat rates, enchant
+ladders, zone maps and class emblems are compiled in from [assets/gamedata](../assets/gamedata) (sources in its
+PROVENANCE.md). `skills.json`, `npcs.json`, `field_bosses.json` or `maps.json` in `%AppData%\AVION2\data` replace
+single tables ([format](../data/README.md)).
+
+### Refreshing game data after a patch
+
+The name tables, `recipes.json`, `stat_rates.json`, `gear_forge.json`, `items.json`, `field_bosses.json` and
+`dungeon_names.json` are built from the installed client's own tables by
+[tools/extract_gamedata](../tools/extract_gamedata/README.md) (a dev-only tool, not part of the app):
+
+1. Update the game, then run `dotnet run --project tools/extract_gamedata -- build`. It decodes the tables, prints
+   per file what changed (counts, ids added and removed, examples) and stages the files in its work folder.
+2. If a table's header no longer matches `schema.json`, the build stops and writes nothing. Refresh the layouts from
+   a current `.usmap` with `dotnet run --project tools/extract_gamedata -- usmap <file>` and build again.
+3. When the changes look right, `build --write` copies the files into `assets/gamedata`. Run the tests and update the
+   client date in PROVENANCE.md.
+
+It also checks `cube_rewards.json` against the client's RewardOdEnergyCube table without rewriting it. Zone maps come
+from aion2hub's pages through `tools/build_maps.py` (Pillow; usage in the script's header); boss portraits from the
+same site through `tools/build_boss_images.py` (Pillow), which matches bosses by English name and prints which ones
+got no picture; gear stats through `tools/build_gear_stats.py`; the expedition reward cubes from SkeeveAN's tables
+through `tools/build_cube_rewards.py`.
+Skill and item icons (`assets/gamedata/skillicons`, `itemicons`) come from `tools/build_icons.py` (also Pillow); PNGs
+in `%AppData%\AVION2\skillicons` or `itemicons`, named after the id or the icon, replace single ones.
 
 ## Prior art
 

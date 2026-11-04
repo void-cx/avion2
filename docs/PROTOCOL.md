@@ -457,6 +457,7 @@ Status: Verified (class) · Partly verified (combat power) · `44 36` before Jun
 | name | `str8` | `mask2 & 1` | |
 | class | `u32` | | [roster class code](#roster-class-codes) |
 | position | `pos` | | after the class code |
+| legion block | | players in a legion | `u16`, `00 00 00 00`, server `u16`, legion `str8`, `01 00`/`02 00` ([Legions](#legions)) |
 
 The combat power sits after the last `F4 CB 1F` marker: from 11 bytes on, the first `u32` in 1…10,000,000 that is
 followed by a zero `u32`. It equals the finder room's CP for the same player in 105 of 115 spawns. A faction byte
@@ -532,6 +533,17 @@ Status: Verified
 | `33 8A` | legion tag of a player in range | `entity varint`, 5–6 bytes, `server u16`, `legion str8`, … |
 | `03 8A` | legion details | `00 00`, `legion str8`, `leader str8`, counters, texts (`u8` or `u16` length: introduction, notice …) |
 | `05 8A` | legion roster | per member: `server u16`, `u32`, `name str8`, `level u8`, …, last login `time` |
+| `45 36` (part) | a player's server and legion, in the player spawn | after the position: `u16`, `00 00 00 00`, `server u16`, `legion str8`, then `01 00` or `02 00` |
+
+The player spawn (`45 36`) carries the server and legion of players in a legion (players without one have no such
+block), 92 to 118 bytes after the name, e.g. `06 01 00 00 00 00 29 05 07 …legion… 01 00 02 00`. AVION2 takes the first
+such block after the name as a legion tag. In 45 captures, 892 of 2,145 spawns had it; for the 138 players that also
+had a `33 8A` tag, server and legion agreed in 138 of 138. The spawn covers far more players than `33 8A` alone (145
+against 38 of 373 players in the largest capture).
+
+The official site has no legion pages, legion API or legion ranking for Global servers (checked November 2026): its
+ranking API answers an empty list there. The Legions page counts the legions AVION2 saw (players around you, your
+party, characters you looked up), not an official ranking.
 
 ## Positions
 
@@ -731,7 +743,7 @@ of `00 00`, then the node and zeros, and no bar race. `2C 38` removes the abnorm
 out.
 
 ### Crafting
-Status: Verified · 27 crafts at cooking and alchemy stations, 4 of them combos
+Status: Verified · 46 crafts at cooking, alchemy and handicraft (jewelcrafting) stations, 4 of them combos
 
 Like gathering, the server decides a craft's **outcome when it starts**, including whether a **combo** follows: after the
 first race succeeds, a second race for the better recipe (two items) runs. A failed combo yields nothing.
@@ -758,6 +770,11 @@ first race succeeds, a second race for the better recipe (two items) runs. A fai
 
 The materials leave the bag (`1B 56`) when the craft starts, the crafted item arrives with the end record. `7C 8D` and
 `7D 8D` follow with the craft's proficiency (craft type `u8`: 3 handicraft, 4 alchemy, 5 cooking, then points).
+
+The materials taken match the recipe in the game data (43 of 46 crafts; the other 3 could not be compared, as the
+bag was not known yet when they started). A **bound** material ("Refining Stone (Bound)", item 630530001 or 66xxxxxxx)
+is taken in place of the tradable one the recipe names, and the game picks either. No Kinah leaves the bag for a
+craft, and no recipe in the game data has a fee.
 
 **Everyone's crafts** at the stations around are broadcast, ours included (without the outcome in advance):
 
@@ -1095,12 +1112,21 @@ Pets and their souls belong to the **account**: two characters received the same
 | Opcode | Record | Fields |
 |---|---|---|
 | `00 90` | the pet roster at login (`RideInitData_NT`) | default mount `u32`, `varint n` × (pet `u32`, pet `u32`, level `u32`) owned, `varint n` × (pet `u32`, souls `u32`), `varint n` × (crystal type `u8`, amount `u32`), … |
-| `0D 90`, `0E 90` | souls gained / spent (`RideSoulPointIncrease` / `Decrease`) | `varint n` × (pet `u32`, souls `u32`); 1–3 per kill, 5 spent per new pet |
+| `0D 90`, `0E 90` | souls gained / spent (`RideSoulPointIncrease` / `Decrease`) | `varint n` × (pet `u32`, souls `u32`); 1–3 per kill, 5 spent per new pet, 25 for level 2 |
 | `09 90` | a new pet (`CharRideAcquire_NT`) | `entity varint`, pet `u32`, level `u32`, creature type `u8`, board level `u32`, board XP `u64` (+500 per pet of a type); with the `0E 90` spending 5 souls, and `08 90` (`_RS`, `entity varint`, result `u16`) in the same ms |
+| `14 90` | a pet levelled up | result `u16` (0), pet `u32`, level `u32`, creature type `u8`, board level `u32`, board XP `u64`; 23 bytes. Seen 3 times, each to level 2, with an `0E 90` spending 25 souls of that kind |
 | `11 90` | soul crystals gained (`RideSoulCrystalIncrease_NT`) | `varint n` × (type `u8`, amount `u32`), reason `u8`; not read |
 
-A soul arrives as a bag item (ids 534660000–534669999) about a second before the `0D 90` that counts it; the pet id to
-item id offset is not constant, so AVION2 learns the pairs to name the pets.
+A soul arrives as a bag item (ids 534660000–534669999) about a second before the `0D 90` that counts it; our pickup
+of it (`21 56`) comes about 50 ms before. The pet id to item id offset is not constant, so AVION2 learns the pairs to
+name the pets: from a gain of one kind with one soul item just before it, or from a gain of several kinds when the
+counts picked up of each item tell them apart. The soul's drop (`1E 56`) names the monster it fell from, so AVION2
+counts which monsters drop each soul.
+
+Souls of a kind keep coming after the pet is owned (71 of one kind at level 2 in our captures); they pay for its
+levels. Level 2 costs 25 souls (5 level-ups, in `14 90` and in roster diffs between logins); what level 3 costs is
+not known yet. The roster's level per owned pet changes accordingly (63 pets at level 1, 5 at level 2, 1 at level 3
+in one account).
 
 ## Quests
 Status: Seen once · two kill-ten quests done and turned in
@@ -1211,7 +1237,7 @@ Status: Verified (348 of 348 read exactly; layout as Daevalog's) · sent every ~
 | room | `u32` | the room number; a room re-listed after a clear gets a new one |
 | title | string | the recruiting text (free text; may hold control characters) |
 | size | `u8` | 5 |
-| dungeon | `u32` | 600001, 600002, 600072 …: the `dungeonId` of that dungeon's bosses in the NPC table (600002 Krao Cave, Exploration; 600072 Vakron Sky Island, Conquest [Normal]) |
+| dungeon | `u32` | 600001, 600002, 600072 …: the id of the client's Dungeon table (600002 Krao Cave, Exploration; 600072 Vakron Sky Island, Conquest) |
 | stage | `u8` | |
 | faction | `u8` | |
 | leader | `i64` | character |
