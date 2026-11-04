@@ -46,7 +46,9 @@ public sealed record Occurrence(ScheduledEvent Event, DateTimeOffset StartsAt, s
 /// Spacetime Rifts are a timetable, not packets: Global servers open them every 3 hours from 00:00
 /// server time, Korea/Taiwan from 02:00. Server time is GMT+9, Taiwan GMT+8; Europe follows Central European
 /// time with daylight saving, 7 hours behind its server time (GMT+9 in summer, GMT+8 in winter): after the
-/// 2026-10-25 clock change the rift opened at 14:00 CET, as it had at 14:00 CEST.
+/// 2026-10-25 clock change the rift opened at 14:00 CET, as it had at 14:00 CEST. Global changes from the patch notes
+/// of 2026-11-04 (Nov 3 PST): the Artifact Siege and the Artifact Bosses on Thursday and Saturday only, and Argo,
+/// the Spirit King twice a day; the notes give their times without a zone, as the server times AVION2 already had.
 /// </summary>
 public static class GameSchedule
 {
@@ -57,6 +59,7 @@ public static class GameSchedule
     public const string AirspaceKey = "airspace";
     public const string InvasionKey = "invasion";
     public const string ShugoKey = "shugo";
+    public const string ArtifactSiegeKey = "abyss";
     public const string AirspaceBattle = "Airspace Battle";
 
     /// <summary>The :30 field event (ids 1201xx–1203xx): one of three variants each hour, Beritra Air Raid among them.</summary>
@@ -110,7 +113,8 @@ public static class GameSchedule
 
         if (global)
         {
-            events.Add(new("abyss", "Abyss Event", ScheduleCategory.Pvp, [21], 0, [DayOfWeek.Monday, DayOfWeek.Thursday, DayOfWeek.Saturday]));
+            // The Abyss event of the timetable; since the 2026-11-04 patch on Thursday and Saturday only (was also Monday)
+            events.Add(new(ArtifactSiegeKey, "Artifact Siege", ScheduleCategory.Pvp, [21], 0, [DayOfWeek.Thursday, DayOfWeek.Saturday]));
         }
         else
         {
@@ -135,12 +139,13 @@ public static class GameSchedule
 
     /// <summary>
     /// Reshanta world bosses. Watcher Kaira respawns on an interval (every 3 h from 01:00 server time on Global,
-    /// every 4 h on Korea/Taiwan); the others spawn on fixed weekdays. Middle Reshanta is Korea/Taiwan only.
+    /// every 4 h on Korea/Taiwan); the others spawn on fixed weekdays. Middle Reshanta is Korea/Taiwan only. On Global,
+    /// the Abyss field boss Argo, the Spirit King spawns daily at 10:30 and 22:30 (the notes do not say where).
     /// </summary>
     private static IEnumerable<ScheduledEvent> WorldBosses(bool global)
     {
         static int[] Every(int hours) => Enumerable.Range(0, 24 / hours).Select(i => 1 + i * hours).ToArray();
-        DayOfWeek[] executorDays = global ? [DayOfWeek.Monday, DayOfWeek.Thursday, DayOfWeek.Saturday] : [DayOfWeek.Wednesday, DayOfWeek.Saturday];
+        DayOfWeek[] executorDays = global ? [DayOfWeek.Thursday, DayOfWeek.Saturday] : [DayOfWeek.Wednesday, DayOfWeek.Saturday];
         DayOfWeek[] siegeDays = [DayOfWeek.Sunday, DayOfWeek.Friday];
         int executorHour = global ? 21 : 22;
         int siegeHour = global ? 21 : 22;
@@ -148,7 +153,11 @@ public static class GameSchedule
         yield return new("wb-watcher-kaira", "Watcher Kaira", ScheduleCategory.WorldBoss, Every(global ? 3 : 4), 0, Daily, LowerReshanta);
         yield return new("wb-executors", "Executors Argo, Kaira & Tamasa", ScheduleCategory.WorldBoss, [executorHour], 30, executorDays, LowerReshanta);
         yield return new("wb-siege", "Abyss Siege Boss", ScheduleCategory.WorldBoss, [siegeHour], 0, siegeDays, LowerReshanta);
-        if (!global)
+        if (global)
+        {
+            yield return new("wb-spirit-king", "Argo, the Spirit King", ScheduleCategory.WorldBoss, [10, 22], 30, Daily, "Abyss");
+        }
+        else
         {
             yield return new("wb-nahma", "Enraged Guardian Lord Nahma", ScheduleCategory.WorldBoss, [22], 0, siegeDays, MiddleReshanta);
             yield return new("wb-middle", "Dramos, Marakha & Ducal", ScheduleCategory.WorldBoss, [22], 30, executorDays, MiddleReshanta);

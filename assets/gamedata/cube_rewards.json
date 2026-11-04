@@ -1,6 +1,6 @@
 {
  "source": "https://github.com/SkeeveAN/Aion-DPS-Meter (Backend/src/data/aion2/boss_loot.json, bosses.json)",
- "table": "client tables (RewardOdEnergyCube, RewardPackage, RewardPackageItem, NpcData.Portrait), EU client 2.0.7",
+ "table": "client tables (RewardOdEnergyCube, RewardPackage, RewardPackageItem, NpcData.Portrait), EU client, patch of 2026-11-04",
  "cubes": [
   {
    "dungeon": "Arkanis",
@@ -115,7 +115,8 @@
      210530052,
      210630052,
      210730052,
-     536630001
+     632510016,
+     536900001
     ]
    }
   },
@@ -133,9 +134,10 @@
     2310812
    ],
    "ceiling": {
-    "after": 3,
-    "claims": 1,
+    "after": 21,
+    "claims": 0,
     "items": [
+     632510016,
      210130052,
      210230052,
      210330052,
@@ -259,7 +261,8 @@
      210530038,
      210630038,
      210730038,
-     536630001
+     632510015,
+     536900001
     ]
    }
   },
@@ -277,9 +280,10 @@
     2310471
    ],
    "ceiling": {
-    "after": 3,
-    "claims": 1,
+    "after": 14,
+    "claims": 0,
     "items": [
+     632510015,
      210130038,
      210230038,
      210330038,
@@ -342,7 +346,8 @@
      310130051,
      310230053,
      310330053,
-     536630001
+     632510014,
+     536900001
     ]
    }
   },
@@ -426,7 +431,8 @@
      210530053,
      210630053,
      210730053,
-     536630001
+     632510017,
+     536900001
     ]
    }
   },
@@ -444,9 +450,10 @@
     2310910
    ],
    "ceiling": {
-    "after": 3,
-    "claims": 1,
+    "after": 28,
+    "claims": 0,
     "items": [
+     632510017,
      210130053,
      210230053,
      210330053,
@@ -509,7 +516,8 @@
      310130049,
      310230051,
      310330051,
-     536630001
+     632510012,
+     536900001
     ]
    }
   },
@@ -544,19 +552,56 @@
    "dungeon": "ReforgedAbyss",
    "slug": "abyssal-forge-ludra",
    "name": "Abyssal Forge: Ludra",
-   "mode": "conquest",
-   "modeName": "Conquest",
+   "mode": "hard",
+   "modeName": "Hard",
+   "odyle": 40,
+   "final": 2300290,
+   "npcs": [
+    2300290
+   ],
+   "ceiling": {
+    "after": 2,
+    "claims": 0,
+    "items": [
+     602500002,
+     110130060,
+     110230060,
+     110330060,
+     110430060,
+     110530060,
+     110630060,
+     110730060,
+     110830060,
+     115030058,
+     210130058,
+     210230058,
+     210330058,
+     210430058,
+     210530058,
+     210630058,
+     210730058,
+     310130060,
+     310230062,
+     310330062
+    ]
+   }
+  },
+  {
+   "dungeon": "ReforgedAbyss",
+   "slug": "abyssal-forge-ludra",
+   "name": "Abyssal Forge: Ludra",
+   "mode": "normal",
+   "modeName": "Normal",
    "odyle": 40,
    "final": 2301014,
    "npcs": [
     2301014
    ],
    "ceiling": {
-    "after": 4,
+    "after": 2,
     "claims": 0,
     "items": [
      602500001,
-     536900001,
      110130060,
      110230060,
      110330060,
@@ -631,7 +676,8 @@
      310130050,
      310230052,
      310330052,
-     536630001
+     632510013,
+     536900001
     ]
    }
   },
