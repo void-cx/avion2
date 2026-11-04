@@ -968,10 +968,18 @@ public sealed partial class AppState
     /// <summary>Raised on the UI thread when a character's progress changed.</summary>
     public event Action? ProgressUpdated;
 
-    /// <summary>A pet's name, from the soul item it drops ("Soul: Zelophi (Bound)"), once AVION2 has seen one land in the bag.</summary>
+    /// <summary>
+    /// A pet's name in the data language, from the client's pet table; for a kind the table lacks (a newer patch), from
+    /// the soul item seen landing in the bag ("Soul: Zelophi (Bound)"), else "Pet 1234".
+    /// </summary>
     public string PetName(uint pet)
     {
-        string? item = Progresses.SoulItem(pet) is { } soul ? BundledGameData.ItemName(soul) : null;
+        if (BundledGameData.PetName(pet, Stored.DataLanguage) is { } known)
+        {
+            return known;
+        }
+
+        string? item = SoulItem(pet) is { } soul ? BundledGameData.ItemName(soul) : null;
         if (item is null)
         {
             return $"Pet {pet}";
@@ -981,6 +989,9 @@ public sealed partial class AppState
         string name = colon >= 0 ? item[(colon + 1)..].Trim() : item;
         return name.EndsWith(" (Bound)", StringComparison.Ordinal) ? name[..^" (Bound)".Length] : name;
     }
+
+    /// <summary>A pet kind's soul item: the client's pet table first, else the one learned from the bag.</summary>
+    public uint? SoulItem(uint pet) => BundledGameData.PetSoulItem(pet) ?? Progresses.SoulItem(pet);
 
     /// <summary>An NPC's name in the app's language (English when that table lacks it), or null.</summary>
     public string? NpcName(uint code) =>

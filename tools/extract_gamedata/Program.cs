@@ -75,6 +75,7 @@ static int Build(ToolConfig config, bool write)
     output.AddRange(MapsBuilder.Build(tables, config, report));
     output.AddRange(DungeonNamesBuilder.Build(tables, config, report));
     output.AddRange(FieldBossesBuilder.Build(tables, config, report));
+    output.AddRange(PetsBuilder.Build(tables, items, config, report));
 
     Console.WriteLine();
     Console.WriteLine("tables (every byte consumed, header columns = schema):");

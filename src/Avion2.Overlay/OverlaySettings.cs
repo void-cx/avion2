@@ -153,7 +153,7 @@ public sealed class OverlaySettings
     /// <summary>Show the skill a boss starts casting (named skills only).</summary>
     public bool NotifyBossCasts { get; set; } = true;
 
-    /// <summary>A line when pet souls come in ("Soul of Zelophi: 3/5").</summary>
+    /// <summary>A line when pet souls come in ("Zelophi: 3/5 souls to the pet").</summary>
     public bool NotifyPetSouls { get; set; } = true;
 
     /// <summary>Group finder notices: a join request, the room full and ready, the dungeon starting.</summary>

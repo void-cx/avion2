@@ -75,8 +75,10 @@ public sealed record PetSoulRow(uint PetId, string Name, uint Souls, uint? Neede
         ? $"{Math.Min(Souls, needed)} / {needed} {(Owned ? $"to level {Level + 1}" : "to the pet")}"
         : Souls == 1 ? "1 soul" : $"{Souls} souls";
 
-    /// <summary>"Level 2", "Owned" (level not known), or "Not owned".</summary>
-    public string State => !Owned ? "Not owned" : Level is { } level ? $"Level {level}" : "Owned";
+    /// <summary>"Level 2", "Level 3 (max)", "Owned" (level not known), or "Not owned".</summary>
+    public string State => !Owned ? "Not owned"
+        : Level is { } level ? (level >= PetSoulTable.MaxLevel ? $"Level {level} (max)" : $"Level {level}")
+        : "Owned";
 
     /// <summary>How far to the next step, 0 to 1 (0 without one).</summary>
     public double Fraction => Needed is { } needed and > 0 ? Math.Min(1.0, (double)Souls / needed) : 0;
@@ -88,12 +90,16 @@ public sealed record PetSoulRow(uint PetId, string Name, uint Souls, uint? Neede
 public static class PetSoulTable
 {
     /// <summary>
-    /// Souls of a kind that bring its pet level 2: the souls go on counting once the pet is owned, and 25 of them were
-    /// spent at each of the five level 2s in our captures (<c>14 90</c> with <c>0E 90</c>). What level 3 takes is not known.
+    /// Souls an owned pet takes from level n to n + 1 (index n - 1), as the client's VehicleLevel table says (bundled
+    /// pets.json): the souls go on counting once the pet is owned, 25 bring level 2 (seen in <c>14 90</c> with
+    /// <c>0E 90</c>), 75 level 3, the highest.
     /// </summary>
-    public const uint SoulsForLevel2 = 25;
+    public static readonly IReadOnlyList<uint> SoulsPerLevel = [25, 75];
 
-    /// <summary>Souls the next step of a pet kind takes: the pet itself, or level 2; null when not known.</summary>
+    /// <summary>The highest pet level.</summary>
+    public static int MaxLevel => SoulsPerLevel.Count + 1;
+
+    /// <summary>Souls the next step of a pet kind takes: the pet itself or its next level; null when not known or at the highest level.</summary>
     public static uint? Needed(CharacterProgress progress, uint pet)
     {
         if (progress.Pets is not { } owned)
@@ -106,7 +112,7 @@ public static class PetSoulTable
             return CharacterProgress.SoulsPerPet;
         }
 
-        return progress.PetLevels.TryGetValue(pet, out uint level) && level == 1 ? SoulsForLevel2 : null;
+        return progress.PetLevels.TryGetValue(pet, out uint level) && level >= 1 && level <= SoulsPerLevel.Count ? SoulsPerLevel[(int)level - 1] : null;
     }
 
     /// <summary>
@@ -147,7 +153,10 @@ public static class PetSoulTable
             .ThenBy(r => r.PetId).ToList();
     }
 
-    /// <summary>"Soul of Zelophi: 3/5", "Soul of Klaw: 23/25 to level 2" or "Soul of Klaw: 71", after a gain; null before the roster.</summary>
+    /// <summary>
+    /// "Zelophi: 3/5 souls to the pet", "Klaw: 23/25 souls to level 2", "Klaw: 71 souls (max level)" or "Klaw: 71 souls",
+    /// after a gain; null before the roster.
+    /// </summary>
     public static string? Notice(CharacterProgress progress, uint pet, Func<uint, string> petName)
     {
         if (progress.Pets is not { } owned)
@@ -156,9 +165,11 @@ public static class PetSoulTable
         }
 
         uint souls = progress.Souls.GetValueOrDefault(pet);
+        bool has = owned.Contains(pet);
+        uint? level = has && progress.PetLevels.TryGetValue(pet, out uint l) ? l : null;
         string count = Needed(progress, pet) is { } needed
-            ? $"{Math.Min(souls, needed)}/{needed}{(owned.Contains(pet) ? " to level 2" : string.Empty)}"
-            : $"{souls}";
-        return $"Soul of {petName(pet)}: {count}";
+            ? $"{Math.Min(souls, needed)}/{needed} souls {(has ? $"to level {level + 1}" : "to the pet")}"
+            : $"{souls} {(souls == 1 ? "soul" : "souls")}{(level >= MaxLevel ? " (max level)" : string.Empty)}";
+        return $"{petName(pet)}: {count}";
     }
 }

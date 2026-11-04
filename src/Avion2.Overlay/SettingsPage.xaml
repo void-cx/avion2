@@ -184,7 +184,7 @@
                         <CheckBox Content="Boss skill casts" IsChecked="{Binding NotifyBossCasts}" Margin="0,0,16,4"
                                   ToolTip="While the meter runs: a notice when a boss starts a named skill (no sound)." />
                         <CheckBox Content="Pet souls" IsChecked="{Binding NotifyPetSouls}" Margin="0,0,16,4"
-                                  ToolTip="While the meter runs: a line when a pet soul comes in, e.g. 'Soul of Zelophi: 3/5' (no sound)." />
+                                  ToolTip="While the meter runs: a line when a pet soul comes in, e.g. 'Zelophi: 3/5 souls to the pet' (no sound)." />
                         <CheckBox Content="Shugo Festival" IsChecked="{Binding NotifyFieldEvents}" Margin="0,0,16,4" />
                         <CheckBox Content="Join requests" IsChecked="{Binding NotifyJoinRequests}" Margin="0,0,16,4"
                                   ToolTip="While the meter runs: a notice when someone asks to join the group finder room you lead." />

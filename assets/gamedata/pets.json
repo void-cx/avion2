@@ -1,0 +1,2953 @@
+{
+  "source": "AION2 client tables VehicleList, VehicleLevel, Item and the texts (tools/extract_gamedata)",
+  "built": "2026-11-04",
+  "levels": [
+    25,
+    75
+  ],
+  "pets": {
+    "1001": {
+      "name": {
+        "en": "Black Dragon",
+        "de": "Schwarzer Drache",
+        "fr": "Dragon noir",
+        "es": "Dragón negro",
+        "pt": "Dragão Negro",
+        "ru": "Черный дракон",
+        "ja": "ブラック ドラゴン",
+        "ko": "블랙 드래곤"
+      },
+      "souls": 5
+    },
+    "1002": {
+      "name": {
+        "en": "Krall Laborer",
+        "de": "Fronarbeiter (Krall)",
+        "fr": "Ouvrier Krall",
+        "es": "Krall obrero",
+        "pt": "Trabalhador Escravo Krall",
+        "ru": "Каторжник краллов",
+        "ja": "クラル労働者",
+        "ko": "크랄 노역꾼"
+      },
+      "souls": 5,
+      "soul": 534660001
+    },
+    "1003": {
+      "name": {
+        "en": "Forest Specter",
+        "de": "Waldgeistwesen",
+        "fr": "Spectre de la forêt",
+        "es": "Ánima del bosque",
+        "pt": "Ânima da Floresta",
+        "ru": "Спектр леса",
+        "ja": "森の霊魂",
+        "ko": "숲의 혼령"
+      },
+      "souls": 5,
+      "soul": 534660002
+    },
+    "1004": {
+      "name": {
+        "en": "Fossa",
+        "de": "Fossa",
+        "fr": "Fossa",
+        "es": "Fossa",
+        "pt": "Fuça",
+        "ru": "Фосса",
+        "ja": "ポサ",
+        "ko": "포사"
+      },
+      "souls": 5,
+      "soul": 534660003
+    },
+    "1005": {
+      "name": {
+        "en": "Klaw",
+        "de": "Klaw",
+        "fr": "Klaw",
+        "es": "Klaw",
+        "pt": "Klaw",
+        "ru": "Ньют",
+        "ja": "ニュート",
+        "ko": "뉴트"
+      },
+      "souls": 5,
+      "soul": 534660004
+    },
+    "1006": {
+      "name": {
+        "en": "Sparkie",
+        "de": "Sparkie",
+        "fr": "Sparkie",
+        "es": "Sparkie",
+        "pt": "Sparkie",
+        "ru": "Спарки",
+        "ja": "スパーキー",
+        "ko": "스파키"
+      },
+      "souls": 5,
+      "soul": 534660005
+    },
+    "1007": {
+      "name": {
+        "en": "Potcrab",
+        "de": "Topfkrabbe",
+        "fr": "Cancérid",
+        "es": "Cantiesto",
+        "pt": "Kensirid",
+        "ru": "Крабрид",
+        "ja": "キャンサリード",
+        "ko": "캔서리드"
+      },
+      "souls": 5,
+      "soul": 534660006
+    },
+    "1008": {
+      "name": {
+        "en": "Baby Odyle Spider",
+        "de": "Odspinnling",
+        "fr": "Jeune araignée à Od",
+        "es": "Cría de araña de Od",
+        "pt": "Filhote de Aranha de Od",
+        "ru": "Детеныш эфирного паука",
+        "ja": "ベビー オード蜘蛛",
+        "ko": "새끼 오드 거미"
+      },
+      "souls": 5,
+      "soul": 534660007
+    },
+    "1009": {
+      "name": {
+        "en": "Kernon",
+        "de": "Kernon",
+        "fr": "Kernon",
+        "es": "Kernon",
+        "pt": "Kernon",
+        "ru": "Кернон",
+        "ja": "ケルノン",
+        "ko": "케르논"
+      },
+      "souls": 5,
+      "soul": 534660008
+    },
+    "1010": {
+      "name": {
+        "en": "Manduri Fighter",
+        "de": "Kämpfer (Manduri)",
+        "fr": "Assaillant Manduri",
+        "es": "Manduri luchador",
+        "pt": "Briguento Manduri",
+        "ru": "Задира мандури",
+        "ja": "マンドリー喧嘩屋",
+        "ko": "만두리 싸움꾼"
+      },
+      "souls": 5,
+      "soul": 534660009
+    },
+    "1011": {
+      "name": {
+        "en": "Skyray",
+        "de": "Mantaris",
+        "fr": "Driton",
+        "es": "Skyray",
+        "pt": "Skyray",
+        "ru": "Тритон",
+        "ja": "ドリトン",
+        "ko": "드리톤"
+      },
+      "souls": 5,
+      "soul": 534660010
+    },
+    "1012": {
+      "name": {
+        "en": "Fungie",
+        "de": "Fungie",
+        "fr": "Fungie",
+        "es": "Fungie",
+        "pt": "Fungie",
+        "ru": "Фунги",
+        "ja": "ファンギ",
+        "ko": "펑기"
+      },
+      "souls": 5,
+      "soul": 534660011
+    },
+    "1013": {
+      "name": {
+        "en": "Swarm",
+        "de": "Schwarm",
+        "fr": "Essaim",
+        "es": "Swarm",
+        "pt": "Enxame",
+        "ru": "Сворм",
+        "ja": "スウォーム",
+        "ko": "스웜"
+      },
+      "souls": 5,
+      "soul": 534660012
+    },
+    "1014": {
+      "name": {
+        "en": "Drakan Guard Dog",
+        "de": "Wachhund (Drakan)",
+        "fr": "Chien de garde Drakan",
+        "es": "Perro guardián Drakan",
+        "pt": "Cão de Guarda Drakan",
+        "ru": "Сторожевой пес драканов",
+        "ja": "ドラカン警備犬",
+        "ko": "드라칸 경비견"
+      },
+      "souls": 5,
+      "soul": 534660013
+    },
+    "1015": {
+      "name": {
+        "en": "Kailin",
+        "de": "Kailin",
+        "fr": "Kailin",
+        "es": "Kailin",
+        "pt": "Kailin",
+        "ru": "Каилин",
+        "ja": "カイリン",
+        "ko": "카이린"
+      },
+      "souls": 5,
+      "soul": 534660014
+    },
+    "1016": {
+      "name": {
+        "en": "Slink",
+        "de": "Slink",
+        "fr": "Slink",
+        "es": "Slink",
+        "pt": "Slink",
+        "ru": "Чешуйница",
+        "ja": "レピスマ",
+        "ko": "레피스마"
+      },
+      "souls": 5,
+      "soul": 534660015
+    },
+    "1017": {
+      "name": {
+        "en": "Krall Warshaman",
+        "de": "Schamane (Krall)",
+        "fr": "Chaman Krall",
+        "es": "Krall chamán",
+        "pt": "Soldado Xamã Krall",
+        "ru": "Боевой шаман краллов",
+        "ja": "クラル呪術兵",
+        "ko": "크랄 주술병"
+      },
+      "souls": 5,
+      "soul": 534660016
+    },
+    "1018": {
+      "name": {
+        "en": "Varg Berserker",
+        "de": "Berserker (Varg)",
+        "fr": "Berserker Varg",
+        "es": "Varg berserker",
+        "pt": "Berserker Varg",
+        "ru": "Берсерк варгов",
+        "ja": "バーグ狂戦士",
+        "ko": "바르그 광전사"
+      },
+      "souls": 5,
+      "soul": 534660017
+    },
+    "1021": {
+      "name": {
+        "en": "Aberrant Odyle Spider",
+        "de": "Odspinnen-Abart",
+        "fr": "Araignée à Od variante",
+        "es": "Araña de Od variante",
+        "pt": "Aranha de Od Mutante",
+        "ru": "Подвид эфирного паука",
+        "ja": "変種オード蜘蛛",
+        "ko": "변종 오드 거미"
+      },
+      "souls": 5,
+      "soul": 534660024
+    },
+    "1022": {
+      "name": {
+        "en": "Crasaur",
+        "de": "Crasaur",
+        "fr": "Crasaur",
+        "es": "Crasaur",
+        "pt": "Crasaur",
+        "ru": "Файни",
+        "ja": "ファイニー",
+        "ko": "파이니"
+      },
+      "souls": 5,
+      "soul": 534660021
+    },
+    "1025": {
+      "name": {
+        "en": "Mutated Aberrant Odyle Spider",
+        "de": "Mutierte Odspinnen-Abart",
+        "fr": "Araignée à Od variante mutée",
+        "es": "Araña de Od variante mutada",
+        "pt": "Aranha de Od Mutante Aberrante",
+        "ru": "Мутировавший подвид эфирного паука",
+        "ja": "変異した変種オード蜘蛛",
+        "ko": "변이된 변종 오드 거미"
+      },
+      "souls": 5,
+      "soul": 534660020
+    },
+    "1026": {
+      "name": {
+        "en": "Krall Warrior",
+        "de": "Krieger (Krall)",
+        "fr": "Guerrier Krall",
+        "es": "Krall guerrero",
+        "pt": "Guerreiro Krall",
+        "ru": "Воин краллов",
+        "ja": "クラル戦士",
+        "ko": "크랄 전사"
+      },
+      "souls": 5,
+      "soul": 534660025
+    },
+    "1027": {
+      "name": {
+        "en": "Withered Agrint",
+        "de": "Dürrer Agrint",
+        "fr": "Agrint desséché",
+        "es": "Agrint marchito",
+        "pt": "Agrint Seco",
+        "ru": "Иссохший агринт",
+        "ja": "乾いたアグリント",
+        "ko": "메마른 어그린트"
+      },
+      "souls": 5,
+      "soul": 534660026
+    },
+    "1028": {
+      "name": {
+        "en": "Krao Mutant",
+        "de": "Kraomutant",
+        "fr": "Mutant Krao",
+        "es": "Mutación de Krao",
+        "pt": "Aberração de Krao",
+        "ru": "Мутант крао",
+        "ja": "クラオ変異体",
+        "ko": "크라오 변이체"
+      },
+      "souls": 5,
+      "soul": 534660027
+    },
+    "1029": {
+      "name": {
+        "en": "Klaw Scout",
+        "de": "Aufklärer (Klaw)",
+        "fr": "Éclaireur Klaw",
+        "es": "Klaw explorador",
+        "pt": "Batedor Klaw",
+        "ru": "Солдат-разведчик ньютов",
+        "ja": "ニュート偵察兵",
+        "ko": "뉴트 정찰병"
+      },
+      "souls": 5,
+      "soul": 534660029
+    },
+    "1030": {
+      "name": {
+        "en": "Nagarant Guardian Warrior",
+        "de": "Hüterkrieger (Nagarant)",
+        "fr": "Guerrier gardien Nagarant",
+        "es": "Guardián guerrero Nagarant",
+        "pt": "Guerreiro Guardião Nagarante",
+        "ru": "Охраняющий воин нагарратов",
+        "ja": "ナーガラント守護戦士",
+        "ko": "나가란트 수호전사"
+      },
+      "souls": 5,
+      "soul": 534660030
+    },
+    "1031": {
+      "name": {
+        "en": "Konutin Worker",
+        "de": "Arbeiter (Konutin)",
+        "fr": "Travailleur Konutin",
+        "es": "Konutin trabajador",
+        "pt": "Trabalhador Konutin",
+        "ru": "Рабочий конути",
+        "ja": "コヌティ作業員",
+        "ko": "코누티 일꾼"
+      },
+      "souls": 5,
+      "soul": 534660031
+    },
+    "1032": {
+      "name": {
+        "en": "Elite Keneire",
+        "de": "Keneire (Elite)",
+        "fr": "Keneire d'élite",
+        "es": "Keneire élite",
+        "pt": "Keneire de Elite",
+        "ru": "Элитный кенейр",
+        "ja": "精鋭ケネイル",
+        "ko": "정예 케네이르"
+      },
+      "souls": 5,
+      "soul": 534660032
+    },
+    "1033": {
+      "name": {
+        "en": "Elite Manduri Fighter",
+        "de": "Mandurikämpfer (Elite)",
+        "fr": "Assaillant Manduri d'élite",
+        "es": "Manduri luchador élite",
+        "pt": "Briguento Manduri de Elite",
+        "ru": "Элитный задира мандури",
+        "ja": "精鋭マンドリー喧嘩屋",
+        "ko": "정예 만두리 싸움꾼"
+      },
+      "souls": 5,
+      "soul": 534660033
+    },
+    "1034": {
+      "name": {
+        "en": "Giant Sparkie",
+        "de": "Riesensparkie",
+        "fr": "Sparkie géant",
+        "es": "Sparkie gigante",
+        "pt": "Sparkie Gigante",
+        "ru": "Гигантский спарки",
+        "ja": "巨大スパーキー",
+        "ko": "거대 스파키"
+      },
+      "souls": 5,
+      "soul": 534660034
+    },
+    "1035": {
+      "name": {
+        "en": "Skama",
+        "de": "Skama",
+        "fr": "Skama",
+        "es": "Skama",
+        "pt": "Skama",
+        "ru": "Скама",
+        "ja": "スカマ",
+        "ko": "스카마"
+      },
+      "souls": 5,
+      "soul": 534660035
+    },
+    "1036": {
+      "name": {
+        "en": "Lupyllini",
+        "de": "Lupyllini",
+        "fr": "Lupyllini",
+        "es": "Lupyllini",
+        "pt": "Lupyllini",
+        "ru": "Руфиллин",
+        "ja": "ルフィーリニ",
+        "ko": "루필리니"
+      },
+      "souls": 5,
+      "soul": 534660037
+    },
+    "1037": {
+      "name": {
+        "en": "Male Crestlich",
+        "de": "Crestlichhahn",
+        "fr": "Crestlich mâle",
+        "es": "Crestlich macho",
+        "pt": "Crestlich Macho",
+        "ru": "Крестлич (самец)",
+        "ja": "オスのクレストリッチ",
+        "ko": "수컷 크레스틀리치"
+      },
+      "souls": 5,
+      "soul": 534660038
+    },
+    "1038": {
+      "name": {
+        "en": "Airon",
+        "de": "Airon",
+        "fr": "Airon",
+        "es": "Airon",
+        "pt": "Airon",
+        "ru": "Хайк",
+        "ja": "ハイヴ",
+        "ko": "하이브"
+      },
+      "souls": 5,
+      "soul": 534660039
+    },
+    "1039": {
+      "name": {
+        "en": "Crestlich",
+        "de": "Crestlich",
+        "fr": "Crestlich",
+        "es": "Crestlich",
+        "pt": "Crestlich",
+        "ru": "Крестлич",
+        "ja": "クレストリッチ",
+        "ko": "크레스틀리치"
+      },
+      "souls": 5,
+      "soul": 534660040
+    },
+    "1040": {
+      "name": {
+        "en": "Aullaeu Shaman",
+        "de": "Schamane (Aulau)",
+        "fr": "Chaman Aullaeu",
+        "es": "Aullaeu brujo",
+        "pt": "Xamã Aullaeu",
+        "ru": "Колдун ауллау",
+        "ja": "アウルラウ呪術士",
+        "ko": "아울라우 주술사"
+      },
+      "souls": 5,
+      "soul": 534660041
+    },
+    "1041": {
+      "name": {
+        "en": "Cave Bat",
+        "de": "Fledermaus (Höhle)",
+        "fr": "Chauve-souris de grotte",
+        "es": "Murciélago de cueva",
+        "pt": "Morcego da Caverna",
+        "ru": "Пещерная летучая мышь",
+        "ja": "洞窟のコウモリ",
+        "ko": "동굴 박쥐"
+      },
+      "souls": 5,
+      "soul": 534660042
+    },
+    "1042": {
+      "name": {
+        "en": "Ursus",
+        "de": "Ursus",
+        "fr": "Ursus",
+        "es": "Ursus",
+        "pt": "Ursus",
+        "ru": "Урсус",
+        "ja": "ウルサス",
+        "ko": "우르서스"
+      },
+      "souls": 5,
+      "soul": 534660043
+    },
+    "1043": {
+      "name": {
+        "en": "Elite Ursus",
+        "de": "Ursus (Elite)",
+        "fr": "Ursus d'élite",
+        "es": "Ursus élite",
+        "pt": "Ursus de Elite",
+        "ru": "Элитный урсус",
+        "ja": "精鋭ウルサス",
+        "ko": "정예 우르서스"
+      },
+      "souls": 5,
+      "soul": 534660044
+    },
+    "1044": {
+      "name": {
+        "en": "Aultross's Doppelganger",
+        "de": "Aultross' Trugbild",
+        "fr": "Clone d'Aultross",
+        "es": "Clon de Aultross",
+        "pt": "Clone de Aultross",
+        "ru": "Двойник Аултроса",
+        "ja": "アウルトロスの分身",
+        "ko": "아울트로스의 분신"
+      },
+      "souls": 5,
+      "soul": 534660045
+    },
+    "1045": {
+      "name": {
+        "en": "Sylphen",
+        "de": "Sylphen",
+        "fr": "Sylphène",
+        "es": "Sylphen",
+        "pt": "Sylphen",
+        "ru": "Мюта",
+        "ja": "ミューター",
+        "ko": "뮤타"
+      },
+      "souls": 5,
+      "soul": 534660046
+    },
+    "1046": {
+      "name": {
+        "en": "Armadon",
+        "de": "Armadon",
+        "fr": "Armadon",
+        "es": "Armadon",
+        "pt": "Armadon",
+        "ru": "Армадон",
+        "ja": "アルマドン",
+        "ko": "아르마돈"
+      },
+      "souls": 5,
+      "soul": 534660047
+    },
+    "1047": {
+      "name": {
+        "en": "Aberrant Armadon",
+        "de": "Armadon-Abart",
+        "fr": "Armadon variant",
+        "es": "Armadon mutante",
+        "pt": "Armadon Mutante",
+        "ru": "Подвид армадона",
+        "ja": "変種アルマドン",
+        "ko": "변종 아르마돈"
+      },
+      "souls": 5,
+      "soul": 534660048
+    },
+    "1048": {
+      "name": {
+        "en": "Forest Spirit",
+        "de": "Waldgeist",
+        "fr": "Esprit de la forêt",
+        "es": "Espíritu del bosque",
+        "pt": "Espírito da Floresta",
+        "ru": "Дух леса",
+        "ja": "森の精霊",
+        "ko": "숲 정령"
+      },
+      "souls": 5,
+      "soul": 534660049
+    },
+    "1049": {
+      "name": {
+        "en": "Mutated Forest Spirit",
+        "de": "Mutierter Waldgeist",
+        "fr": "Esprit de la forêt muté",
+        "es": "Espíritu del bosque mutado",
+        "pt": "Espírito da Floresta Aberrante",
+        "ru": "Мутировавший дух леса",
+        "ja": "変異した森の精霊",
+        "ko": "변이된 숲 정령"
+      },
+      "souls": 5,
+      "soul": 534660050
+    },
+    "1050": {
+      "name": {
+        "en": "Gravi",
+        "de": "Gravi",
+        "fr": "Gravi",
+        "es": "Gravi",
+        "pt": "Gravi",
+        "ru": "Грави",
+        "ja": "クラビ",
+        "ko": "그라비"
+      },
+      "souls": 5,
+      "soul": 534660051
+    },
+    "1051": {
+      "name": {
+        "en": "Magic Gravi",
+        "de": "Magiegravi",
+        "fr": "Gravi magique",
+        "es": "Gravi mágico",
+        "pt": "Gravi Mágico",
+        "ru": "Магический грави",
+        "ja": "魔法クラビ",
+        "ko": "마법 그라비"
+      },
+      "souls": 5,
+      "soul": 534660052
+    },
+    "1052": {
+      "name": {
+        "en": "Large Leaf Gravi",
+        "de": "Großblattgravi",
+        "fr": "Gravi à grandes feuilles",
+        "es": "Gravi de grandes hojas",
+        "pt": "Gravi de Folha Grande",
+        "ru": "Крупнолистный грави",
+        "ja": "大葉クラビ",
+        "ko": "큰 잎사귀 그라비"
+      },
+      "souls": 5,
+      "soul": 534660053
+    },
+    "1053": {
+      "name": {
+        "en": "Aberrant Potcrab",
+        "de": "Topfkrabben-Abart",
+        "fr": "Cancérid variant",
+        "es": "Cantiesto mutante",
+        "pt": "Kensirid Mutante",
+        "ru": "Подвид крабрида",
+        "ja": "変種キャンサリード",
+        "ko": "변종 캔서리드"
+      },
+      "souls": 5,
+      "soul": 534660054
+    },
+    "1054": {
+      "name": {
+        "en": "Mumu Warrior",
+        "de": "Krieger (Momo)",
+        "fr": "Guerrier Mumu",
+        "es": "Mumu guerrero",
+        "pt": "Guerreiro Mumu",
+        "ru": "Воин му-му",
+        "ja": "ムームー族戦士",
+        "ko": "무무 전사"
+      },
+      "souls": 5,
+      "soul": 534660055
+    },
+    "1055": {
+      "name": {
+        "en": "Grave Rat",
+        "de": "Ratte (Grab)",
+        "fr": "Rat de tombe",
+        "es": "Rata de tumba",
+        "pt": "Rato de Túmulo",
+        "ru": "Крыса гробницы",
+        "ja": "墓ネズミ",
+        "ko": "무덤 쥐"
+      },
+      "souls": 5,
+      "soul": 534660056
+    },
+    "1056": {
+      "name": {
+        "en": "Drakan Probe",
+        "de": "Sonde (Drakan)",
+        "fr": "Sondeur Drakan",
+        "es": "Drakan detector",
+        "pt": "Dispositivo Explorador dos Drakan",
+        "ru": "Детектор драканов",
+        "ja": "ドラカン探査機",
+        "ko": "드라칸 탐사기"
+      },
+      "souls": 5,
+      "soul": 534660057
+    },
+    "1057": {
+      "name": {
+        "en": "Coradon",
+        "de": "Coradon",
+        "fr": "Coradon",
+        "es": "Coradon",
+        "pt": "Coradon",
+        "ru": "Корадон",
+        "ja": "コラドン",
+        "ko": "코라돈"
+      },
+      "souls": 5,
+      "soul": 534660058
+    },
+    "1058": {
+      "name": {
+        "en": "Black Smoke Murute",
+        "de": "Schwarzrauch Murute",
+        "fr": "Murute de fumée noire",
+        "es": "Humo negro Murute",
+        "pt": "Murute da Fumaça Negra",
+        "ru": "Мурт черного дыма",
+        "ja": "黒煙モルト",
+        "ko": "검은연기 무르트"
+      },
+      "souls": 5,
+      "soul": 534660059
+    },
+    "1059": {
+      "name": {
+        "en": "Giant Bee",
+        "de": "Königsbiene",
+        "fr": "Abeille géante",
+        "es": "Rey abeja",
+        "pt": "Abelha-rei",
+        "ru": "Шершень",
+        "ja": "大きなハチ",
+        "ko": "왕벌"
+      },
+      "souls": 5,
+      "soul": 534660060
+    },
+    "1060": {
+      "name": {
+        "en": "Starturtle",
+        "de": "Sternenschildkröte",
+        "fr": "Tortue étoilée",
+        "es": "Starturtle",
+        "pt": "Tartarustrela",
+        "ru": "Панцирник",
+        "ja": "スター タートル",
+        "ko": "스타터틀"
+      },
+      "souls": 5,
+      "soul": 534660061
+    },
+    "1061": {
+      "name": {
+        "en": "Slime",
+        "de": "Schleim",
+        "fr": "Slime",
+        "es": "Slime",
+        "pt": "Slime",
+        "ru": "Слизень",
+        "ja": "スライム",
+        "ko": "슬라임"
+      },
+      "souls": 5,
+      "soul": 534660062
+    },
+    "1062": {
+      "name": {
+        "en": "Contaminated Slime",
+        "de": "Verseuchter Schleim",
+        "fr": "Slime contaminé",
+        "es": "Slime contaminado",
+        "pt": "Slime Contaminado",
+        "ru": "Зараженный слизень",
+        "ja": "汚染されたスライム",
+        "ko": "오염된 슬라임"
+      },
+      "souls": 5,
+      "soul": 534660063
+    },
+    "1063": {
+      "name": {
+        "en": "Vigilant Oculazen",
+        "de": "Wachsamer Oculazen",
+        "fr": "Oculazen observateur",
+        "es": "Oculazen de vigía",
+        "pt": "Oculazen da Vigilância",
+        "ru": "Наблюдающий окулюс",
+        "ja": "監視のオキュラゼン",
+        "ko": "감시의 오큘라젠"
+      },
+      "souls": 5,
+      "soul": 534660064
+    },
+    "1064": {
+      "name": {
+        "en": "Oculazen",
+        "de": "Oculazen",
+        "fr": "Oculazen",
+        "es": "Oculazen",
+        "pt": "Oculazen",
+        "ru": "Окулюс",
+        "ja": "オキュラゼン",
+        "ko": "오큘라젠"
+      },
+      "souls": 5,
+      "soul": 534660065
+    },
+    "1065": {
+      "name": {
+        "en": "Biruta",
+        "de": "Biruta",
+        "fr": "Biruta",
+        "es": "Biruta",
+        "pt": "Birota",
+        "ru": "Бирут",
+        "ja": "ビロータ",
+        "ko": "비로타"
+      },
+      "souls": 5,
+      "soul": 534660066
+    },
+    "1066": {
+      "name": {
+        "en": "Papis",
+        "de": "Papis",
+        "fr": "Papis",
+        "es": "Paphis",
+        "pt": "Papis",
+        "ru": "Папис",
+        "ja": "パピス",
+        "ko": "파피스"
+      },
+      "souls": 5,
+      "soul": 534660067
+    },
+    "1067": {
+      "name": {
+        "en": "Scorpion",
+        "de": "Skorpion",
+        "fr": "Scorpion",
+        "es": "Escorpión",
+        "pt": "Escorpião",
+        "ru": "Скорпион",
+        "ja": "スコーピオン",
+        "ko": "스콜피온"
+      },
+      "souls": 5,
+      "soul": 534660068
+    },
+    "1068": {
+      "name": {
+        "en": "Krao Test Subject",
+        "de": "Kraoversuchsobjekt",
+        "fr": "Cobaye Krao",
+        "es": "Sujeto de prueba de Krao",
+        "pt": "Cobaia de Krao",
+        "ru": "Подопытный крао",
+        "ja": "クラオ実験体",
+        "ko": "크라오 실험체"
+      },
+      "souls": 5,
+      "soul": 534660069
+    },
+    "1069": {
+      "name": {
+        "en": "Stone Spirit",
+        "de": "Steingeist",
+        "fr": "Esprit de la pierre",
+        "es": "Espíritu de piedra",
+        "pt": "Espírito da Pedra",
+        "ru": "Дух камня",
+        "ja": "石の精霊",
+        "ko": "돌 정령"
+      },
+      "souls": 5,
+      "soul": 534660070
+    },
+    "1071": {
+      "name": {
+        "en": "Cadaver Insectoid",
+        "de": "Leicheninsektoid",
+        "fr": "Insecte de cadavre",
+        "es": "Insectoide cadáver",
+        "pt": "Insetoide Cadavérico",
+        "ru": "Трупный инсектоид",
+        "ja": "死肉虫",
+        "ko": "시체 벌레"
+      },
+      "souls": 5,
+      "soul": 534660072
+    },
+    "1072": {
+      "name": {
+        "en": "Tog",
+        "de": "Tog",
+        "fr": "Tog",
+        "es": "Tog",
+        "pt": "Tog",
+        "ru": "Тог",
+        "ja": "トーグ",
+        "ko": "토그"
+      },
+      "souls": 5,
+      "soul": 534660073
+    },
+    "1073": {
+      "name": {
+        "en": "Nepenthes",
+        "de": "Nepenthes",
+        "fr": "Nepenthes",
+        "es": "Nepenthes",
+        "pt": "Nepenthes",
+        "ru": "Нефендес",
+        "ja": "ネペンデス",
+        "ko": "네펜데스"
+      },
+      "souls": 5,
+      "soul": 534660074
+    },
+    "1074": {
+      "name": {
+        "en": "Kuru Worker",
+        "de": "Arbeiter (Kuru)",
+        "fr": "Travailleur Kuru",
+        "es": "Kuru trabajador",
+        "pt": "Trabalhador Kuru",
+        "ru": "Рабочий куру",
+        "ja": "クル作業員",
+        "ko": "쿠루 일꾼"
+      },
+      "souls": 5,
+      "soul": 534660075
+    },
+    "1075": {
+      "name": {
+        "en": "Kuru Tinkerer",
+        "de": "Knecht (Kuru)",
+        "fr": "Tâcheron Kuru",
+        "es": "Kuru peón",
+        "pt": "Peão Kuru",
+        "ru": "Подсобный рабочий куру",
+        "ja": "クル雑用係",
+        "ko": "쿠루 잡역꾼"
+      },
+      "souls": 5,
+      "soul": 534660076
+    },
+    "1077": {
+      "name": {
+        "en": "Harcon",
+        "de": "Harcon",
+        "fr": "Harcon",
+        "es": "Harcon",
+        "pt": "Harcon",
+        "ru": "Харкон",
+        "ja": "ハルコン",
+        "ko": "하르콘"
+      },
+      "souls": 5,
+      "soul": 534660078
+    },
+    "1078": {
+      "name": {
+        "en": "Urugugu Brawler",
+        "de": "Streiter (Urugugu)",
+        "fr": "Lutteur Urugugu",
+        "es": "Urugugu contendiente",
+        "pt": "Combatente Urugugu",
+        "ru": "Храбрец ауругу",
+        "ja": "ウルググ闘士",
+        "ko": "우루구구 투사"
+      },
+      "souls": 5,
+      "soul": 534660079
+    },
+    "1079": {
+      "name": {
+        "en": "Ultimate Wind Spirit",
+        "de": "Ultimativer Windgeist",
+        "fr": "Esprit du vent exceptionnel",
+        "es": "Espíritu de viento supremo",
+        "pt": "Espírito do Vento Supremo",
+        "ru": "Превосходный дух воздуха",
+        "ja": "最上級風の精霊",
+        "ko": "최상급 바람의 정령"
+      },
+      "souls": 5,
+      "soul": 534660080
+    },
+    "1080": {
+      "name": {
+        "en": "Sentinel K'nash",
+        "de": "Überwachungswaffe K'nash",
+        "fr": "K'nash la sentinelle",
+        "es": "Celador K'nash",
+        "pt": "K’nash, Arma de Vigilância",
+        "ru": "Страж Кнаш",
+        "ja": "監視兵器クナッシュ",
+        "ko": "감시병기 크나쉬"
+      },
+      "souls": 5,
+      "soul": 534660081
+    },
+    "1081": {
+      "name": {
+        "en": "Dionae",
+        "de": "Dionae",
+        "fr": "Dionae",
+        "es": "Dionae",
+        "pt": "Dionae",
+        "ru": "Дионея",
+        "ja": "ディオナエ",
+        "ko": "디오나에"
+      },
+      "souls": 5,
+      "soul": 534660082
+    },
+    "1082": {
+      "name": {
+        "en": "Ultimate Fire Spirit",
+        "de": "Ultimativer Feuergeist",
+        "fr": "Esprit du feu exceptionnel",
+        "es": "Espíritu de fuego supremo",
+        "pt": "Espírito do Fogo Supremo",
+        "ru": "Превосходный дух огня",
+        "ja": "最上級火の精霊",
+        "ko": "최상급 불의 정령"
+      },
+      "souls": 5,
+      "soul": 534660083
+    },
+    "1083": {
+      "name": {
+        "en": "Spider",
+        "de": "Spinne",
+        "fr": "Araignée",
+        "es": "Araña",
+        "pt": "Aranha",
+        "ru": "Паук",
+        "ja": "蜘蛛",
+        "ko": "거미"
+      },
+      "souls": 5,
+      "soul": 534660084
+    },
+    "1084": {
+      "name": {
+        "en": "Kalgolem",
+        "de": "Kalgolem",
+        "fr": "Kalgolem",
+        "es": "Kalgolem",
+        "pt": "Kalgolem",
+        "ru": "Калькельм",
+        "ja": "カルクゲルム",
+        "ko": "칼크겔름"
+      },
+      "souls": 5,
+      "soul": 534660085
+    },
+    "1086": {
+      "name": {
+        "en": "Fungen",
+        "de": "Fungen",
+        "fr": "Fungen",
+        "es": "Fungen",
+        "pt": "Fungen",
+        "ru": "Фунгус",
+        "ja": "ファンガス",
+        "ko": "펑거스"
+      },
+      "souls": 5,
+      "soul": 534660087
+    },
+    "1087": {
+      "name": {
+        "en": "Pino",
+        "de": "Pino",
+        "fr": "Pino",
+        "es": "Pinno",
+        "pt": "Pino",
+        "ru": "Пино",
+        "ja": "ピノ",
+        "ko": "피노"
+      },
+      "souls": 5,
+      "soul": 534660088
+    },
+    "1088": {
+      "name": {
+        "en": "Pino Worker",
+        "de": "Arbeiter (Pino)",
+        "fr": "Travailleur Pino",
+        "es": "Pinno trabajador",
+        "pt": "Trabalhador Pino",
+        "ru": "Рабочий пино",
+        "ja": "ピノ作業員",
+        "ko": "피노 일꾼"
+      },
+      "souls": 5,
+      "soul": 534660089
+    },
+    "1089": {
+      "name": {
+        "en": "Aberrant Skama",
+        "de": "Skama-Abart",
+        "fr": "Skama variant",
+        "es": "Skama mutante",
+        "pt": "Skama Mutante",
+        "ru": "Подвид скамы",
+        "ja": "変種スカマ",
+        "ko": "변종 스카마"
+      },
+      "souls": 5,
+      "soul": 534660090
+    },
+    "1090": {
+      "name": {
+        "en": "Ultimate Water Spirit",
+        "de": "Ultimativer Wassergeist",
+        "fr": "Esprit de l'eau exceptionnel",
+        "es": "Espíritu de agua supremo",
+        "pt": "Espírito da Água Supremo",
+        "ru": "Превосходный дух воды",
+        "ja": "最上級水の精霊",
+        "ko": "최상급 물의 정령"
+      },
+      "souls": 5,
+      "soul": 534660091
+    },
+    "1091": {
+      "name": {
+        "en": "Red Spark Ignus",
+        "de": "Rotflamme Ignus",
+        "fr": "Ignus de flamme rouge",
+        "es": "Fulgor rojo Ignus",
+        "pt": "Ignus da Chama Vermelha",
+        "ru": "Игнус красного языка пламени",
+        "ja": "赤い炎イグヌス",
+        "ko": "붉은불꽃 이그누스"
+      },
+      "souls": 5,
+      "soul": 534660092
+    },
+    "1092": {
+      "name": {
+        "en": "Lesser Wind Spirit",
+        "de": "Geringer Windgeist",
+        "fr": "Esprit du vent inférieur",
+        "es": "Espíritu de viento inferior",
+        "pt": "Espírito do Vento Inferior",
+        "ru": "Младший дух воздуха",
+        "ja": "下級風の精霊",
+        "ko": "하급 바람의 정령"
+      },
+      "souls": 5,
+      "soul": 534660093
+    },
+    "1093": {
+      "name": {
+        "en": "Phantasmal Lakshmi",
+        "de": "Phantom-Lakshmi",
+        "fr": "Lakshmi onirique",
+        "es": "Lakshmi de ensueño",
+        "pt": "Lakshmi Onírica",
+        "ru": "Лакшми видения",
+        "ja": "夢幻のラクシュミ",
+        "ko": "몽환의 라크슈미"
+      },
+      "souls": 5,
+      "soul": 534660094
+    },
+    "1094": {
+      "name": {
+        "en": "Intermediate Wind Spirit",
+        "de": "Mittlerer Windgeist",
+        "fr": "Esprit du vent intermédiaire",
+        "es": "Espíritu de viento intermedio",
+        "pt": "Espírito do Vento Intermediário",
+        "ru": "Опытный дух воздуха",
+        "ja": "中級風の精霊",
+        "ko": "중급 바람의 정령"
+      },
+      "souls": 5,
+      "soul": 534660095
+    },
+    "1095": {
+      "name": {
+        "en": "Superior Wind Spirit",
+        "de": "Großer Windgeist",
+        "fr": "Esprit du vent supérieur",
+        "es": "Espíritu de viento superior",
+        "pt": "Espírito do Vento Superior",
+        "ru": "Старший дух воздуха",
+        "ja": "上級風の精霊",
+        "ko": "상급 바람의 정령"
+      },
+      "souls": 5,
+      "soul": 534660096
+    },
+    "1096": {
+      "name": {
+        "en": "Superior Fire Spirit",
+        "de": "Großer Feuergeist",
+        "fr": "Esprit du feu supérieur",
+        "es": "Espíritu de fuego superior",
+        "pt": "Espírito do Fogo Superior",
+        "ru": "Старший дух огня",
+        "ja": "上級火の精霊",
+        "ko": "상급 불의 정령"
+      },
+      "souls": 5,
+      "soul": 534660097
+    },
+    "1097": {
+      "name": {
+        "en": "Karnif",
+        "de": "Karnif",
+        "fr": "Karnif",
+        "es": "Karnif",
+        "pt": "Karnif",
+        "ru": "Каллиф",
+        "ja": "カルニフ",
+        "ko": "칼니프"
+      },
+      "souls": 5,
+      "soul": 534660098
+    },
+    "1098": {
+      "name": {
+        "en": "Modified Karnif",
+        "de": "Modifizierter Karnif",
+        "fr": "Karnif modifié",
+        "es": "Karnif modificado",
+        "pt": "Karnif Modificado",
+        "ru": "Модифицированный каллиф",
+        "ja": "改造されたカルニフ",
+        "ko": "개조된 칼니프"
+      },
+      "souls": 5,
+      "soul": 534660099
+    },
+    "1099": {
+      "name": {
+        "en": "Elite Karnif",
+        "de": "Karnif (Elite)",
+        "fr": "Karnif d'élite",
+        "es": "Karnif élite",
+        "pt": "Karnif de Elite",
+        "ru": "Элитный каллиф",
+        "ja": "精鋭カルニフ",
+        "ko": "정예 칼니프"
+      },
+      "souls": 5,
+      "soul": 534660100
+    },
+    "1100": {
+      "name": {
+        "en": "Ultimate Earth Spirit",
+        "de": "Ultimativer Erdgeist",
+        "fr": "Esprit de la terre exceptionnel",
+        "es": "Espíritu de tierra supremo",
+        "pt": "Espírito da Terra Supremo",
+        "ru": "Превосходный дух земли",
+        "ja": "最上級地の精霊",
+        "ko": "최상급 땅의 정령"
+      },
+      "souls": 5,
+      "soul": 534660101
+    },
+    "1101": {
+      "name": {
+        "en": "Forest Guardian",
+        "de": "Waldhüter",
+        "fr": "Gardien de la forêt",
+        "es": "Protección del bosque",
+        "pt": "Guardião da Floresta",
+        "ru": "Хранитель леса",
+        "ja": "森の守護者",
+        "ko": "숲의 수호자"
+      },
+      "souls": 5,
+      "soul": 534660102
+    },
+    "1102": {
+      "name": {
+        "en": "Dried Up Forest Guardian",
+        "de": "Waldhüter (Verdorrter Wald)",
+        "fr": "Gardien de la forêt desséchée",
+        "es": "Protector del bosque seco",
+        "pt": "Guardião da Floresta Ressecada",
+        "ru": "Иссушенный хранитель леса",
+        "ja": "干からびた森の守護者",
+        "ko": "말라붙은 숲의 수호자"
+      },
+      "souls": 5,
+      "soul": 534660103
+    },
+    "1103": {
+      "name": {
+        "en": "Pretor Veil Administrator",
+        "de": "Pretor-Schleierverwalter",
+        "fr": "Intendant du voile de Pretor",
+        "es": "Administrador del velo de Pretor",
+        "pt": "Gestor do Véu Pretor",
+        "ru": "Управляющий покрова фрэлов",
+        "ja": "プレル帳管理者",
+        "ko": "프렐 장막 관리자"
+      },
+      "souls": 5,
+      "soul": 534660104
+    },
+    "1104": {
+      "name": {
+        "en": "Manduri Trebuchet Worker",
+        "de": "Schleuderer (Manduri)",
+        "fr": "Frondeur Manduri",
+        "es": "Lanzapiedras Manduri",
+        "pt": "Fundeiro Manduri",
+        "ru": "Метатель мандури",
+        "ja": "マンドリー投石屋",
+        "ko": "만두리 투석꾼"
+      },
+      "souls": 5,
+      "soul": 534660105
+    },
+    "1105": {
+      "name": {
+        "en": "Biruta Herbalist",
+        "de": "Kräutersammler (Biruta)",
+        "fr": "Herboriste Biruta",
+        "es": "Biruta herbolario",
+        "pt": "Herbalista Birota",
+        "ru": "Травник бирутов",
+        "ja": "ビロータ薬草採り",
+        "ko": "비로타 약초꾼"
+      },
+      "souls": 5,
+      "soul": 534660106
+    },
+    "1106": {
+      "name": {
+        "en": "Tayga",
+        "de": "Tayga",
+        "fr": "Tayga",
+        "es": "Tayga",
+        "pt": "Tayga",
+        "ru": "Рюкрог",
+        "ja": "リュクロック",
+        "ko": "류크록"
+      },
+      "souls": 5,
+      "soul": 534660107
+    },
+    "1107": {
+      "name": {
+        "en": "Krao Seal Guardian",
+        "de": "Krao-Siegelhüter",
+        "fr": "Gardien du sceau Krao",
+        "es": "Protector del sello Krao",
+        "pt": "Guardião do Selo Krao",
+        "ru": "Хранитель печати крао",
+        "ja": "クラオ封印の守護者",
+        "ko": "크라오 봉인 수호자"
+      },
+      "souls": 5,
+      "soul": 534660108
+    },
+    "1108": {
+      "name": {
+        "en": "Enhanced Krall Combatant",
+        "de": "Verstärkter Kampfsoldat (Krall)",
+        "fr": "Combattant d'amélioration Krall",
+        "es": "Krall combatiente mejorado",
+        "pt": "Combatente Krall Aprimorado",
+        "ru": "Усиленный борец краллов",
+        "ja": "クラル強化戦闘兵",
+        "ko": "크랄 강화 전투병"
+      },
+      "souls": 5,
+      "soul": 534660109
+    },
+    "1109": {
+      "name": {
+        "en": "Enhanced Krall Sentry",
+        "de": "Verstärkter Wachsoldat (Krall)",
+        "fr": "Guet d'amélioration Krall",
+        "es": "Krall vigilante mejorado",
+        "pt": "Sentinela Krall Aprimorado",
+        "ru": "Усиленный пограничник краллов",
+        "ja": "クラル強化警戒兵",
+        "ko": "크랄 강화 경계병"
+      },
+      "souls": 5,
+      "soul": 534660110
+    },
+    "1110": {
+      "name": {
+        "en": "Blue Kalgolem",
+        "de": "Blauer Kalgolem",
+        "fr": "Kalgolem bleu",
+        "es": "Kalgolem azul",
+        "pt": "Kalgolem Azul",
+        "ru": "Лазурный калькельм",
+        "ja": "青いカルクゲルム",
+        "ko": "푸른 칼크겔름"
+      },
+      "souls": 5,
+      "soul": 534660111
+    },
+    "1111": {
+      "name": {
+        "en": "Swift Lugi",
+        "de": "Flinker Lugi",
+        "fr": "Lugi vif",
+        "es": "Lugi veloz",
+        "pt": "Lugi Ligeiro",
+        "ru": "Проворный руги",
+        "ja": "俊敏なルギ",
+        "ko": "날쌘 루기"
+      },
+      "souls": 5
+    },
+    "1112": {
+      "name": {
+        "en": "Wandering Merchant Lugi",
+        "de": "Wanderhändler-Lugi",
+        "fr": "Lugi du marchand itinérant",
+        "es": "Lugi del Comerciante ambulante",
+        "pt": "Lugi do Comerciante Itinerante",
+        "ru": "Бродячий торговец руги",
+        "ja": "放浪商人のルギ",
+        "ko": "떠돌이 상인 루기"
+      },
+      "souls": 5
+    },
+    "1114": {
+      "name": {
+        "en": "Ashen Spider",
+        "de": "Aschgraue Spinne",
+        "fr": "Araignée cendrée",
+        "es": "Araña ceniza",
+        "pt": "Aranha Cinzenta",
+        "ru": "Пепельный паук",
+        "ja": "灰色の蜘蛛",
+        "ko": "잿빛 거미"
+      },
+      "souls": 5,
+      "soul": 534660019
+    },
+    "1115": {
+      "name": {
+        "en": "Kuru Overseer",
+        "de": "Aufseher (Kuru)",
+        "fr": "Superviseur Kuru",
+        "es": "Kuru supervisor",
+        "pt": "Supervisor Kuru",
+        "ru": "Надзиратель куру",
+        "ja": "クル監督官",
+        "ko": "쿠루 감독관"
+      },
+      "souls": 5,
+      "soul": 534660077
+    },
+    "1116": {
+      "name": {
+        "en": "Withered Branch Spider",
+        "de": "Dürrastspinne",
+        "fr": "Araignée des branches sèches",
+        "es": "Araña de rama seca",
+        "pt": "Aranha do Galho Seco",
+        "ru": "Паук сухой ветви",
+        "ja": "枯れ枝蜘蛛",
+        "ko": "마른 가지 거미"
+      },
+      "souls": 5,
+      "soul": 534660023
+    },
+    "1117": {
+      "name": {
+        "en": "Unstable Spider",
+        "de": "Instabile Spinne",
+        "fr": "Araignée instable",
+        "es": "Araña inestable",
+        "pt": "Aranha Instável",
+        "ru": "Взбалмошный паук",
+        "ja": "不安定な蜘蛛",
+        "ko": "불안정한 거미"
+      },
+      "souls": 5,
+      "soul": 534660086
+    },
+    "1118": {
+      "name": {
+        "en": "Aberrant Bee",
+        "de": "Bienen-Abart",
+        "fr": "Abeille variante",
+        "es": "Abeja mutante",
+        "pt": "Abelha Mutante",
+        "ru": "Подвид осы",
+        "ja": "変種バチ",
+        "ko": "변종 벌"
+      },
+      "souls": 5,
+      "soul": 534660152
+    },
+    "1119": {
+      "name": {
+        "en": "Aberrant Coradon",
+        "de": "Coradon-Abart",
+        "fr": "Coradon variant",
+        "es": "Coradon mutante",
+        "pt": "Coradon Mutante",
+        "ru": "Подвид корадона",
+        "ja": "変種コラドン",
+        "ko": "변종 코라돈"
+      },
+      "souls": 5,
+      "soul": 534660153
+    },
+    "1120": {
+      "name": {
+        "en": "Young Kailin",
+        "de": "Kailinjunges",
+        "fr": "Jeune Kailin",
+        "es": "Kailin joven",
+        "pt": "Kailin Jovem",
+        "ru": "Малый каилин",
+        "ja": "幼いカイリン",
+        "ko": "어린 카이린"
+      },
+      "souls": 5,
+      "soul": 534660154
+    },
+    "1121": {
+      "name": {
+        "en": "Young Slink",
+        "de": "Slinkjunges",
+        "fr": "Jeune Slink",
+        "es": "Slink joven",
+        "pt": "Slink Jovem",
+        "ru": "Малая чешуйница",
+        "ja": "幼いレピスマ",
+        "ko": "어린 레피스마"
+      },
+      "souls": 5,
+      "soul": 534660155
+    },
+    "1122": {
+      "name": {
+        "en": "Young Tog",
+        "de": "Togjunges",
+        "fr": "Jeune Tog",
+        "es": "Tog joven",
+        "pt": "Tog Jovem",
+        "ru": "Малый тог",
+        "ja": "幼いトーグ",
+        "ko": "어린 토그"
+      },
+      "souls": 5,
+      "soul": 534660156
+    },
+    "1123": {
+      "name": {
+        "en": "Young Ursus",
+        "de": "Ursusjunges",
+        "fr": "Jeune Ursus",
+        "es": "Ursus joven",
+        "pt": "Ursus Jovem",
+        "ru": "Малый урсус",
+        "ja": "幼いウルサス",
+        "ko": "어린 우르서스"
+      },
+      "souls": 5,
+      "soul": 534660157
+    },
+    "1124": {
+      "name": {
+        "en": "Zaif",
+        "de": "Zaif",
+        "fr": "Zaif",
+        "es": "Zaif",
+        "pt": "Zaif",
+        "ru": "Волк",
+        "ja": "ザイフ",
+        "ko": "자이프"
+      },
+      "souls": 5,
+      "soul": 534660121
+    },
+    "1125": {
+      "name": {
+        "en": "Aberrant Zaif",
+        "de": "Zaif-Abart",
+        "fr": "Zaif variant",
+        "es": "Zaif mutante",
+        "pt": "Zaif Mutante",
+        "ru": "Подвид волка",
+        "ja": "変種ザイフ",
+        "ko": "변종 자이프"
+      },
+      "souls": 5,
+      "soul": 534660159
+    },
+    "1126": {
+      "name": {
+        "en": "Aberrant Tog",
+        "de": "Tog-Abart",
+        "fr": "Tog variant",
+        "es": "Tog mutante",
+        "pt": "Tog Mutante",
+        "ru": "Подвид тога",
+        "ja": "変種トーグ",
+        "ko": "변종 토그"
+      },
+      "souls": 5,
+      "soul": 534660160
+    },
+    "1127": {
+      "name": {
+        "en": "Odyle Stone Spirit",
+        "de": "Odsteingeist",
+        "fr": "Esprit de la pierre Od",
+        "es": "Espíritu de piedra de Od",
+        "pt": "Espírito da Pedra de Od",
+        "ru": "Дух эфирного камня",
+        "ja": "オードの石の精霊",
+        "ko": "오드 돌 정령"
+      },
+      "souls": 5,
+      "soul": 534660161
+    },
+    "1128": {
+      "name": {
+        "en": "Drana Slime",
+        "de": "Dranaschleim",
+        "fr": "Slime de Drana",
+        "es": "Slime de Drana",
+        "pt": "Slime de Drana",
+        "ru": "Слизень драны",
+        "ja": "ドラナ スライム",
+        "ko": "드라나 슬라임"
+      },
+      "souls": 5,
+      "soul": 534660162
+    },
+    "1129": {
+      "name": {
+        "en": "Drana Swarm",
+        "de": "Dranaschwarm",
+        "fr": "Essaim de Drana",
+        "es": "Swarm de Drana",
+        "pt": "Enxame de Drana",
+        "ru": "Сворм драны",
+        "ja": "ドラナ スウォーム",
+        "ko": "드라나 스웜"
+      },
+      "souls": 5,
+      "soul": 534660163
+    },
+    "1130": {
+      "name": {
+        "en": "Mutated Cadaver Insectoid",
+        "de": "Mutiertes Leicheninsektoid",
+        "fr": "Insecte de cadavre muté",
+        "es": "Insectoide cadáver mutado",
+        "pt": "Insetoide Cadavérico Aberrante",
+        "ru": "Мутировавший трупный инсектоид",
+        "ja": "変異した死肉虫",
+        "ko": "변이된 시체 벌레"
+      },
+      "souls": 5,
+      "soul": 534660164
+    },
+    "1131": {
+      "name": {
+        "en": "Drana Spore",
+        "de": "Dranaspore",
+        "fr": "Spore de Drana",
+        "es": "Espora Drana",
+        "pt": "Espora de Drana",
+        "ru": "Спора драны",
+        "ja": "ドラナ胞子",
+        "ko": "드라나 포자"
+      },
+      "souls": 5,
+      "soul": 534660165
+    },
+    "1132": {
+      "name": {
+        "en": "Ashen Lupyllini",
+        "de": "Aschgraue Lupyllini",
+        "fr": "Lupyllini cendré",
+        "es": "Lupyllini cenizo",
+        "pt": "Lupyllini Cinzento",
+        "ru": "Пепельный руфиллин",
+        "ja": "灰色のルフィーリニ",
+        "ko": "잿빛 루필리니"
+      },
+      "souls": 5,
+      "soul": 534660166
+    },
+    "1133": {
+      "name": {
+        "en": "Forest Dionae",
+        "de": "Dionae (Wald)",
+        "fr": "Dionae de la forêt",
+        "es": "Dionae del bosque",
+        "pt": "Dionae da Floresta",
+        "ru": "Дионея леса",
+        "ja": "森のディオナエ",
+        "ko": "숲 디오나에"
+      },
+      "souls": 5,
+      "soul": 534660167
+    },
+    "1134": {
+      "name": {
+        "en": "Eternal Coradon",
+        "de": "Ewiger Coradon",
+        "fr": "Coradon de l'éternité",
+        "es": "Coradon de eternidad",
+        "pt": "Coradon da Eternidade",
+        "ru": "Корадон вечности",
+        "ja": "永遠のコラドン",
+        "ko": "영원의 코라돈"
+      },
+      "souls": 5,
+      "soul": 534660168
+    },
+    "1135": {
+      "name": {
+        "en": "Ashen Dionae",
+        "de": "Aschgrauer Dionae",
+        "fr": "Dionae cendré",
+        "es": "Dionae ceniza",
+        "pt": "Dionae Cinzento",
+        "ru": "Пепельная дионея",
+        "ja": "灰色のディオナエ",
+        "ko": "잿빛 디오나에"
+      },
+      "souls": 5,
+      "soul": 534660169
+    },
+    "1136": {
+      "name": {
+        "en": "Rafflesia",
+        "de": "Rafflesia",
+        "fr": "Rafflesia",
+        "es": "Rafflesia",
+        "pt": "Raflésia",
+        "ru": "Рафлессия",
+        "ja": "ラフレシア",
+        "ko": "라플레시아"
+      },
+      "souls": 5,
+      "soul": 534660170
+    },
+    "1137": {
+      "name": {
+        "en": "Mumu Worker",
+        "de": "Arbeiter (Momo)",
+        "fr": "Travailleur Mumu",
+        "es": "Mumu trabajador",
+        "pt": "Trabalhador Mumu",
+        "ru": "Рабочий му-му",
+        "ja": "ムームー族作業員",
+        "ko": "무무 일꾼"
+      },
+      "souls": 5,
+      "soul": 534660171
+    },
+    "1138": {
+      "name": {
+        "en": "Mumu Overseer",
+        "de": "Aufseher (Momo)",
+        "fr": "Superviseur Mumu",
+        "es": "Mumu supervisor",
+        "pt": "Supervisor Mumu",
+        "ru": "Надзиратель му-му",
+        "ja": "ムームー族監督官",
+        "ko": "무무 감독관"
+      },
+      "souls": 5,
+      "soul": 534660172
+    },
+    "1139": {
+      "name": {
+        "en": "Swamp Monster",
+        "de": "Sumpfmonster",
+        "fr": "Monstre du marais",
+        "es": "Monstruo de la ciénega",
+        "pt": "Monstro do Pântano",
+        "ru": "Болотное чудовище",
+        "ja": "沼の怪物",
+        "ko": "늪 괴물"
+      },
+      "souls": 5,
+      "soul": 534660173
+    },
+    "1140": {
+      "name": {
+        "en": "Forest Monster",
+        "de": "Waldmonster",
+        "fr": "Monstre de la forêt",
+        "es": "Monstruo del bosque",
+        "pt": "Monstro da Floresta",
+        "ru": "Чудовище леса",
+        "ja": "森の怪物",
+        "ko": "숲 괴물"
+      },
+      "souls": 5,
+      "soul": 534660114
+    },
+    "1141": {
+      "name": {
+        "en": "Marsh Targon",
+        "de": "Targon (Sümpfe)",
+        "fr": "Targon du marais",
+        "es": "Targon de la ciénaga",
+        "pt": "Targon do Pântano",
+        "ru": "Болотный таргон",
+        "ja": "沼地のタルゴン",
+        "ko": "늪지 타르곤"
+      },
+      "souls": 5,
+      "soul": 534660175
+    },
+    "1142": {
+      "name": {
+        "en": "Distorted Mutant",
+        "de": "Deformierter Mutant",
+        "fr": "Mutant déformé",
+        "es": "Mutación distorsionada",
+        "pt": "Aberração Deformada",
+        "ru": "Искаженный мутант",
+        "ja": "歪んだ変異体",
+        "ko": "일그러진 변이체"
+      },
+      "souls": 5,
+      "soul": 534660176
+    },
+    "1143": {
+      "name": {
+        "en": "Mutated Ursus",
+        "de": "Mutierter Ursus",
+        "fr": "Ursus muté",
+        "es": "Ursus mutado",
+        "pt": "Ursus Aberrante",
+        "ru": "Мутировавший урсус",
+        "ja": "変異したウルサス",
+        "ko": "변이된 우르서스"
+      },
+      "souls": 5,
+      "soul": 534660177
+    },
+    "1144": {
+      "name": {
+        "en": "Mutated Forest Guardian",
+        "de": "Waldhüter (Mutierter Wald)",
+        "fr": "Gardien de la forêt muté",
+        "es": "Protector del bosque mutado",
+        "pt": "Guardião da Floresta Aberrante",
+        "ru": "Мутировавший хранитель леса",
+        "ja": "変異した森の守護者",
+        "ko": "변이된 숲의 수호자"
+      },
+      "souls": 5,
+      "soul": 534660178
+    },
+    "1145": {
+      "name": {
+        "en": "Mutated Insectoid Valka",
+        "de": "Valka-Insektoidmutant",
+        "fr": "Valka mutant",
+        "es": "Valka mutante",
+        "pt": "Mutação de Valka",
+        "ru": "Мутировавший жук Валка",
+        "ja": "変異虫バルカ",
+        "ko": "변이충 발카"
+      },
+      "souls": 5,
+      "soul": 534660179
+    },
+    "1146": {
+      "name": {
+        "en": "Gatekeeper Pinopi",
+        "de": "Torwächter Pinopi",
+        "fr": "Pinopi le gardien des portes",
+        "es": "Portero Pinopi",
+        "pt": "Porteiro Pinopi",
+        "ru": "Привратник пинопи",
+        "ja": "門番ピノピ",
+        "ko": "문지기 피노피"
+      },
+      "souls": 5,
+      "soul": 534660120
+    },
+    "1147": {
+      "name": {
+        "en": "Dratona",
+        "de": "Dratona",
+        "fr": "Dratona",
+        "es": "Dratona",
+        "pt": "Dratona",
+        "ru": "Дратон",
+        "ja": "ドゥラトナ",
+        "ko": "드라토나"
+      },
+      "souls": 5,
+      "soul": 534660135
+    },
+    "1148": {
+      "name": {
+        "en": "Drakana Kalgolem",
+        "de": "Drakana-Kalgolem",
+        "fr": "Kalgolem Drakana",
+        "es": "Kalgolem Drakana",
+        "pt": "Kalgolem de Drakana",
+        "ru": "Калькельм драканы",
+        "ja": "ドラカナ カルクゲルム",
+        "ko": "드라카나 칼크겔름"
+      },
+      "souls": 5,
+      "soul": 534660182
+    },
+    "1153": {
+      "name": {
+        "en": "Drana Mutant Brute",
+        "de": "Drana-Mutantenbrecher",
+        "fr": "Brute mutante de Drana",
+        "es": "Mutación de Drana brutal",
+        "pt": "Aberração Brutamonte de Drana",
+        "ru": "Мутировавший громила драны",
+        "ja": "ドラナ変異体の巨漢",
+        "ko": "드라나 변이체 덩치"
+      },
+      "souls": 5,
+      "soul": 534660116
+    },
+    "1154": {
+      "name": {
+        "en": "Faded Mutant Brute",
+        "de": "Verblasster Mutantenbrecher",
+        "fr": "Brute mutante terne",
+        "es": "Mutación desgastada brutal",
+        "pt": "Aberração Desbotada de Brutamonte",
+        "ru": "Поблекший мутировавший громила",
+        "ja": "色あせた変異体の巨漢",
+        "ko": "빛바랜 변이체 덩치"
+      },
+      "souls": 5,
+      "soul": 534660205
+    },
+    "1155": {
+      "name": {
+        "en": "Superior Water Spirit",
+        "de": "Großer Wassergeist",
+        "fr": "Esprit de l'eau supérieur",
+        "es": "Espíritu de agua superior",
+        "pt": "Espírito da Água Superior",
+        "ru": "Старший дух воды",
+        "ja": "上級水の精霊",
+        "ko": "상급 물의 정령"
+      },
+      "souls": 5,
+      "soul": 534660124
+    },
+    "1156": {
+      "name": {
+        "en": "Elite Klaw",
+        "de": "Klaw (Elite)",
+        "fr": "Klaw d'élite",
+        "es": "Klaw élite",
+        "pt": "Klaw de Elite",
+        "ru": "Элитный ньют",
+        "ja": "精鋭ニュート",
+        "ko": "정예 뉴트"
+      },
+      "souls": 5,
+      "soul": 534660194
+    },
+    "1157": {
+      "name": {
+        "en": "Cadaver Cleaner",
+        "de": "Leichenfresser",
+        "fr": "Nettoyeur de cadavre",
+        "es": "Limpiador de cadáveres",
+        "pt": "Limpador de Cadáver",
+        "ru": "Падальщик",
+        "ja": "死体掃除屋",
+        "ko": "시체 청소부"
+      },
+      "souls": 5,
+      "soul": 534660191
+    },
+    "1158": {
+      "name": {
+        "en": "Venomous Insect Sram",
+        "de": "Todesgiftinsektoid Sram",
+        "fr": "Sram insecte venimeux",
+        "es": "Insectoide de veneno mortal Sram",
+        "pt": "Inseto Peçonhento Sram",
+        "ru": "Смертельно ядовитый жук Трам",
+        "ja": "猛毒虫スラム",
+        "ko": "맹독충 스람"
+      },
+      "souls": 5,
+      "soul": 534660195
+    },
+    "1159": {
+      "name": {
+        "en": "Parasite Swarm",
+        "de": "Parasitenschwarm",
+        "fr": "Essaim parasitaire",
+        "es": "Swarm parásito",
+        "pt": "Enxame Parasita",
+        "ru": "Паразитический сворм",
+        "ja": "寄生スウォーム",
+        "ko": "기생 스웜"
+      },
+      "souls": 5,
+      "soul": 534660112
+    },
+    "1160": {
+      "name": {
+        "en": "Drana Contaminant",
+        "de": "Dranakontaminant",
+        "fr": "Contaminé au Drana",
+        "es": "Contaminante de Drana",
+        "pt": "Criatura Contaminada de Drana",
+        "ru": "Зараженная сущность драны",
+        "ja": "ドラナ汚染体",
+        "ko": "드라나 오염체"
+      },
+      "souls": 5,
+      "soul": 534660189
+    },
+    "1161": {
+      "name": {
+        "en": "Faded Floater",
+        "de": "Verblasster Schweber",
+        "fr": "Flotteur terne",
+        "es": "Flotante desgastado",
+        "pt": "Corpo Flutuante Desbotado",
+        "ru": "Поблекшая парящая сущность",
+        "ja": "色あせた浮遊体",
+        "ko": "빛바랜 부유체"
+      },
+      "souls": 5,
+      "soul": 534660206
+    },
+    "1162": {
+      "name": {
+        "en": "Kerubar",
+        "de": "Kerubar",
+        "fr": "Kérubar",
+        "es": "Kerubar",
+        "pt": "Kerubar",
+        "ru": "Керубим",
+        "ja": "ケルビム",
+        "ko": "케루빔"
+      },
+      "souls": 5,
+      "soul": 534660144
+    },
+    "1163": {
+      "name": {
+        "en": "Basilisk",
+        "de": "Basilisk",
+        "fr": "Basilic",
+        "es": "Basilisk",
+        "pt": "Basilisco",
+        "ru": "Василиск",
+        "ja": "バジリスク",
+        "ko": "바실리스크"
+      },
+      "souls": 5,
+      "soul": 534660136
+    },
+    "1164": {
+      "name": {
+        "en": "Lesser Earth Spirit",
+        "de": "Geringer Erdgeist",
+        "fr": "Esprit de la terre inférieur",
+        "es": "Espíritu de tierra inferior",
+        "pt": "Espírito da Terra Inferior",
+        "ru": "Младший дух земли",
+        "ja": "下級地の精霊",
+        "ko": "하급 땅의 정령"
+      },
+      "souls": 5,
+      "soul": 534660125
+    },
+    "1165": {
+      "name": {
+        "en": "Intermediate Earth Spirit",
+        "de": "Mittlerer Erdgeist",
+        "fr": "Esprit de la terre intermédiaire",
+        "es": "Espíritu de tierra intermedio",
+        "pt": "Espírito da Terra Intermediário",
+        "ru": "Опытный дух земли",
+        "ja": "中級地の精霊",
+        "ko": "중급 땅의 정령"
+      },
+      "souls": 5,
+      "soul": 534660126
+    },
+    "1166": {
+      "name": {
+        "en": "Superior Earth Spirit",
+        "de": "Großer Erdgeist",
+        "fr": "Esprit de la terre supérieur",
+        "es": "Espíritu de tierra superior",
+        "pt": "Espírito da Terra Superior",
+        "ru": "Старший дух земли",
+        "ja": "上級地の精霊",
+        "ko": "상급 땅의 정령"
+      },
+      "souls": 5,
+      "soul": 534660127
+    },
+    "1167": {
+      "name": {
+        "en": "Flame Stone Guardian Statue",
+        "de": "Wächterstatue (Flammenstein)",
+        "fr": "Statue gardienne de Pierre de flamme",
+        "es": "Estatua guardiana de piedra de llamas",
+        "pt": "Estátua Guardiã da Pedra das Chamas",
+        "ru": "Охранная статуя пламенного камня",
+        "ja": "火炎石の守護像",
+        "ko": "화염석 수호상"
+      },
+      "souls": 5,
+      "soul": 534660132
+    },
+    "1168": {
+      "name": {
+        "en": "Lesser Water Spirit",
+        "de": "Geringer Wassergeist",
+        "fr": "Esprit de l'eau inférieur",
+        "es": "Espíritu de agua inferior",
+        "pt": "Espírito da Água Inferior",
+        "ru": "Младший дух воды",
+        "ja": "下級水の精霊",
+        "ko": "하급 물의 정령"
+      },
+      "souls": 5,
+      "soul": 534660122
+    },
+    "1169": {
+      "name": {
+        "en": "Intermediate Water Spirit",
+        "de": "Mittlerer Wassergeist",
+        "fr": "Esprit de l'eau intermédiaire",
+        "es": "Espíritu de agua intermedio",
+        "pt": "Espírito da Água Intermediário",
+        "ru": "Опытный дух воды",
+        "ja": "中級水の精霊",
+        "ko": "중급 물의 정령"
+      },
+      "souls": 5,
+      "soul": 534660123
+    },
+    "1170": {
+      "name": {
+        "en": "Kerubian",
+        "de": "Kerubian",
+        "fr": "Kérubian",
+        "es": "Kerubian",
+        "pt": "Kerubian",
+        "ru": "Керуб",
+        "ja": "ケルビオン",
+        "ko": "케루비언"
+      },
+      "souls": 5,
+      "soul": 534660145
+    },
+    "1171": {
+      "name": {
+        "en": "Kerubiel",
+        "de": "Kerubiel",
+        "fr": "Kérubiel",
+        "es": "Kerubiel",
+        "pt": "Kerubiel",
+        "ru": "Керубиэль",
+        "ja": "ケルビエル",
+        "ko": "케루비엘"
+      },
+      "souls": 5,
+      "soul": 534660212
+    },
+    "1172": {
+      "name": {
+        "en": "Duduka Worker",
+        "de": "Arbeiter (Duduka)",
+        "fr": "Travailleur Duduka",
+        "es": "Duduka trabajador",
+        "pt": "Trabalhador Duduka",
+        "ru": "Рабочий дудуков",
+        "ja": "ドゥドゥカ作業員",
+        "ko": "두두카 일꾼"
+      },
+      "souls": 5,
+      "soul": 534660139
+    },
+    "1173": {
+      "name": {
+        "en": "Duduka Trebuchet Worker",
+        "de": "Schleuderer (Duduka)",
+        "fr": "Catapulteur Duduka",
+        "es": "Duduka lanzapiedras",
+        "pt": "Soldado Fundeiro Duduka",
+        "ru": "Пращник дудуков",
+        "ja": "ドゥドゥカ投石兵",
+        "ko": "두두카 투석병"
+      },
+      "souls": 5,
+      "soul": 534660140
+    },
+    "1174": {
+      "name": {
+        "en": "Drana Predator",
+        "de": "Dranaverschlinger",
+        "fr": "Prédateur de Drana",
+        "es": "Depredador de Drana",
+        "pt": "Predador de Drana",
+        "ru": "Хищник драны",
+        "ja": "ドラナ捕食者",
+        "ko": "드라나 포식자"
+      },
+      "souls": 5,
+      "soul": 534660202
+    },
+    "1175": {
+      "name": {
+        "en": "Faded Predator",
+        "de": "Verblasster Verschlinger",
+        "fr": "Prédateur terne",
+        "es": "Depredador desgastado",
+        "pt": "Predador Desbotado",
+        "ru": "Поблекший хищник",
+        "ja": "色あせた捕食者",
+        "ko": "빛바랜 포식자"
+      },
+      "souls": 5,
+      "soul": 534660203
+    },
+    "1176": {
+      "name": {
+        "en": "Mudthorn",
+        "de": "Mudthorn",
+        "fr": "Mudthorn",
+        "es": "Mudthorn",
+        "pt": "Mudthorn",
+        "ru": "Вайолант",
+        "ja": "バイオラント",
+        "ko": "바이올란트"
+      },
+      "souls": 5,
+      "soul": 534660216
+    },
+    "1177": {
+      "name": {
+        "en": "Ancient Spirit",
+        "de": "Uralter Naturgeist",
+        "fr": "Esprit ancien",
+        "es": "Espíritu ancestral",
+        "pt": "Espírito Ancestral",
+        "ru": "Древний дух",
+        "ja": "古代の精霊",
+        "ko": "고대의 정령"
+      },
+      "souls": 5,
+      "soul": 534660187
+    },
+    "1178": {
+      "name": {
+        "en": "Spirit King's Bodyguard Warrior",
+        "de": "Wachkrieger des Geisterfürsten",
+        "fr": "Guerrier de garde du Roi des esprits",
+        "es": "Guerrero escolta del Rey Espíritu",
+        "pt": "Guerreiro de Escolta do Rei dos Espíritos",
+        "ru": "Воин стражников короля духов",
+        "ja": "精霊王の護衛戦士",
+        "ko": "정령왕의 호위 전사"
+      },
+      "souls": 5,
+      "soul": 534660146
+    },
+    "1179": {
+      "name": {
+        "en": "Drana Mutant",
+        "de": "Dranamutant",
+        "fr": "Mutant de Drana",
+        "es": "Mutación de Drana",
+        "pt": "Aberração de Drana",
+        "ru": "Мутант драны",
+        "ja": "ドラナ変異体",
+        "ko": "드라나 변이체"
+      },
+      "souls": 5,
+      "soul": 534660207
+    },
+    "1180": {
+      "name": {
+        "en": "Faded Mutant",
+        "de": "Verblasster Mutant",
+        "fr": "Mutant terne",
+        "es": "Mutación desgastada",
+        "pt": "Aberração Desbotada",
+        "ru": "Поблекший мутант",
+        "ja": "色あせた変異体",
+        "ko": "빛바랜 변이체"
+      },
+      "souls": 5,
+      "soul": 534660204
+    },
+    "1181": {
+      "name": {
+        "en": "Brax",
+        "de": "Brax",
+        "fr": "Brax",
+        "es": "Brax",
+        "pt": "Brax",
+        "ru": "Бракс",
+        "ja": "ブラックス",
+        "ko": "브락스"
+      },
+      "souls": 5,
+      "soul": 534660200
+    },
+    "1182": {
+      "name": {
+        "en": "Elite Soulless Corpse Gnat",
+        "de": "Seelenlose Leichenschnake (Elite)",
+        "fr": "Tipule cadavérique sans âme d'élite",
+        "es": "Mosquito de cadáver sin alma élite",
+        "pt": "Tipulídeo Moribundo Desalmado de Elite",
+        "ru": "Элитный бездушный трупный кровосос",
+        "ja": "精鋭魂のない棺蜘蛛",
+        "ko": "정예 영혼 없는 송장 각다귀"
+      },
+      "souls": 5,
+      "soul": 534660138
+    },
+    "1183": {
+      "name": {
+        "en": "Soulless Corpse Gnat",
+        "de": "Seelenlose Leichenschnake",
+        "fr": "Tipule cadavérique sans âme",
+        "es": "Mosquito de cadáver sin alma",
+        "pt": "Tipulídeo Moribundo Desalmado",
+        "ru": "Бездушный трупный кровосос",
+        "ja": "魂のない棺蜘蛛",
+        "ko": "영혼 없는 송장 각다귀"
+      },
+      "souls": 5,
+      "soul": 534660224
+    },
+    "1184": {
+      "name": {
+        "en": "Drakan Watcher",
+        "de": "Wächter (Drakan)",
+        "fr": "Veilleur Drakan",
+        "es": "Drakan vigilante",
+        "pt": "Vigilante Drakan",
+        "ru": "Дозорщик драканов",
+        "ja": "ドラカン監視者",
+        "ko": "드라칸 감시자"
+      },
+      "souls": 5,
+      "soul": 534660142
+    },
+    "1185": {
+      "name": {
+        "en": "Dratona Tinkerer",
+        "de": "Knecht (Dratona)",
+        "fr": "Tâcheron Dratona",
+        "es": "Dratona peón",
+        "pt": "Peão Dratona",
+        "ru": "Подсобный рабочий дратонов",
+        "ja": "ドゥラトナ雑用係",
+        "ko": "드라토나 잡역꾼"
+      },
+      "souls": 5,
+      "soul": 534660220
+    },
+    "1186": {
+      "name": {
+        "en": "Poison Blood",
+        "de": "Giftblut",
+        "fr": "Sang toxique",
+        "es": "Sangre venenosa",
+        "pt": "Sangue Venenoso",
+        "ru": "Ядокров",
+        "ja": "毒血",
+        "ko": "독혈"
+      },
+      "souls": 5,
+      "soul": 534660188
+    },
+    "1187": {
+      "name": {
+        "en": "Intermediate Fire Spirit",
+        "de": "Mittlerer Feuergeist",
+        "fr": "Esprit du feu intermédiaire",
+        "es": "Espíritu de fuego intermedio",
+        "pt": "Espírito do Fogo Intermediário",
+        "ru": "Опытный дух огня",
+        "ja": "中級火の精霊",
+        "ko": "중급 불의 정령"
+      },
+      "souls": 5,
+      "soul": 534660129
+    },
+    "1188": {
+      "name": {
+        "en": "Vivel",
+        "de": "Vivel",
+        "fr": "Vivel",
+        "es": "Vivel",
+        "pt": "Vivele",
+        "ru": "Вивэль",
+        "ja": "ビベル",
+        "ko": "비벨"
+      },
+      "souls": 5,
+      "soul": 534660134
+    },
+    "1189": {
+      "name": {
+        "en": "Tamed Zaif",
+        "de": "Gezähmter Zaif",
+        "fr": "Zaif apprivoisé",
+        "es": "Zaif domesticado",
+        "pt": "Zaif Domesticado",
+        "ru": "Прирученный волк",
+        "ja": "手懐けたザイフ",
+        "ko": "길들인 자이프"
+      },
+      "souls": 5,
+      "soul": 534660226
+    },
+    "1190": {
+      "name": {
+        "en": "Elite Poisonous Spore Fungen",
+        "de": "Giftsporenfungen (Elite)",
+        "fr": "Fungen à spores toxiques d'élite",
+        "es": "Fungen de esporas venenosas élite",
+        "pt": "Fungen de Esporos Venenosos de Elite",
+        "ru": "Элитный ядовитый споровый фунгус",
+        "ja": "精鋭毒胞子ファンガス",
+        "ko": "정예 독 포자 펑거스"
+      },
+      "souls": 5,
+      "soul": 534660192
+    },
+    "1191": {
+      "name": {
+        "en": "Furious Feruk",
+        "de": "Rasender Feruk",
+        "fr": "Feruk furieux",
+        "es": "Feruk frenético",
+        "pt": "Feruk em Frenesi",
+        "ru": "Бешеный Ферк",
+        "ja": "狂暴なフェルク",
+        "ko": "광폭한 페르크"
+      },
+      "souls": 5,
+      "soul": 534660133
+    },
+    "1192": {
+      "name": {
+        "en": "Silver Blade Rotan",
+        "de": "Silberklinge Rotan",
+        "fr": "Rotan à la lame d'argent",
+        "es": "Rotan de la cuchilla de plata",
+        "pt": "Rotan da Lâmina Prateada",
+        "ru": "Серебряный рокан",
+        "ja": "銀色の刃ロータン",
+        "ko": "은빛칼날 로탄"
+      },
+      "souls": 5,
+      "soul": 534660130
+    },
+    "1193": {
+      "name": {
+        "en": "Addicted Shulak Cart Worker",
+        "de": "Vergifteter Kärrner (Shulak)",
+        "fr": "Charretier Shulack intoxiqué",
+        "es": "Shulak carretero envenenado",
+        "pt": "Shulack Carroceiro Envenenado",
+        "ru": "Одурманенный возчик шураков",
+        "ja": "中毒になったシュラク担夫",
+        "ko": "중독된 슈라크 수레꾼"
+      },
+      "souls": 5,
+      "soul": 534660209
+    },
+    "1194": {
+      "name": {
+        "en": "Guardite",
+        "de": "Gardith",
+        "fr": "Guardite",
+        "es": "Guardite",
+        "pt": "Guardite",
+        "ru": "Гардит",
+        "ja": "ガーディット",
+        "ko": "가디트"
+      },
+      "souls": 5,
+      "soul": 534660141
+    },
+    "1195": {
+      "name": {
+        "en": "Dracuni Herbalist",
+        "de": "Kräutersammler (Dracuni)",
+        "fr": "Herboriste Dracuni",
+        "es": "Dracuni herbolario",
+        "pt": "Herbalista Dracuni",
+        "ru": "Травник дракуни",
+        "ja": "ドラクニ薬草採り",
+        "ko": "드라쿠니 약초꾼"
+      },
+      "souls": 5,
+      "soul": 534660143
+    },
+    "1196": {
+      "name": {
+        "en": "Elite Dratona",
+        "de": "Dratona (Elite)",
+        "fr": "Dratona d'élite",
+        "es": "Dratona de élite",
+        "pt": "Dratona de Elite",
+        "ru": "Элитный дратон",
+        "ja": "精鋭ドゥラトナ",
+        "ko": "정예 드라토나"
+      },
+      "souls": 5,
+      "soul": 534660193
+    },
+    "1197": {
+      "name": {
+        "en": "Watcher Guardite",
+        "de": "Wächter-Gardith",
+        "fr": "Guardite de surveillance",
+        "es": "Guardite de vigilancia",
+        "pt": "Guardite de Vigilância",
+        "ru": "Наблюдающий гардит",
+        "ja": "監視ガーディット",
+        "ko": "감시 가디트"
+      },
+      "souls": 5,
+      "soul": 534660211
+    },
+    "1198": {
+      "name": {
+        "en": "Ashen Basilisk",
+        "de": "Aschgrauer Basilisk",
+        "fr": "Basilic cendré",
+        "es": "Basilisk cenizo",
+        "pt": "Basilisco Cinzento",
+        "ru": "Пепельный василиск",
+        "ja": "灰色のバジリスク",
+        "ko": "잿빛 바실리스크"
+      },
+      "souls": 5,
+      "soul": 534660218
+    },
+    "1199": {
+      "name": {
+        "en": "Flame Barghest",
+        "de": "Flammenbalgest",
+        "fr": "Balgest de flamme",
+        "es": "Balgest de llamas",
+        "pt": "Balgest da Flama",
+        "ru": "Пламенный балгест",
+        "ja": "火炎バルゲスト",
+        "ko": "화염 발게스트"
+      },
+      "souls": 5,
+      "soul": 534660131
+    },
+    "1200": {
+      "name": {
+        "en": "Naga Elite Priest",
+        "de": "Elitepriester (Naga)",
+        "fr": "Prêtre d'élite Naga",
+        "es": "Naga sacerdotisa élite",
+        "pt": "Sacerdote de Elite Naga",
+        "ru": "Элитный жрец нагов",
+        "ja": "ナーガ精鋭司祭",
+        "ko": "나가 정예 사제"
+      },
+      "souls": 5,
+      "soul": 534660119
+    },
+    "1201": {
+      "name": {
+        "en": "Modified Lupyllini",
+        "de": "Modifizierte Lupyllini",
+        "fr": "Lupyllini modifié",
+        "es": "Lupyllini modificado",
+        "pt": "Lupyllini Modificado",
+        "ru": "Модифицированный руфиллин",
+        "ja": "改造されたルフィーリニ",
+        "ko": "개조된 루필리니"
+      },
+      "souls": 5,
+      "soul": 534660201
+    },
+    "1202": {
+      "name": {
+        "en": "Decomposed Lupyllini",
+        "de": "Korrumpierte Lupyllini",
+        "fr": "Lupyllini décomposé",
+        "es": "Lupyllini podrido",
+        "pt": "Lupyllini Putrefato",
+        "ru": "Гнилостный руфиллин",
+        "ja": "腐敗したルフィーリニ",
+        "ko": "부패된 루필리니"
+      },
+      "souls": 5,
+      "soul": 534660214
+    },
+    "1203": {
+      "name": {
+        "en": "Tamed Karnif",
+        "de": "Gezähmter Karnif",
+        "fr": "Karnif apprivoisé",
+        "es": "Karnif domesticado",
+        "pt": "Karnif Domesticado",
+        "ru": "Прирученный каллиф",
+        "ja": "手懐けたカルニフ",
+        "ko": "길들인 칼니프"
+      },
+      "souls": 5,
+      "soul": 534660219
+    },
+    "1204": {
+      "name": {
+        "en": "Pagati",
+        "de": "Pagati",
+        "fr": "Pagati",
+        "es": "Pagati",
+        "pt": "Pagati",
+        "ru": "Пагатти",
+        "ja": "パガティ",
+        "ko": "파가티"
+      },
+      "souls": 5
+    },
+    "1206": {
+      "name": {
+        "en": "Elite Guardite",
+        "de": "Gardith (Elite)",
+        "fr": "Guardite d'élite",
+        "es": "Guardite élite",
+        "pt": "Guardite de Elite",
+        "ru": "Элитный гардит",
+        "ja": "精鋭ガーディット",
+        "ko": "정예 가디트"
+      },
+      "souls": 5,
+      "soul": 534660210
+    },
+    "1207": {
+      "name": {
+        "en": "Agrint",
+        "de": "Agrint",
+        "fr": "Agrint",
+        "es": "Agrint",
+        "pt": "Agrint",
+        "ru": "Агринт",
+        "ja": "アグリント",
+        "ko": "어그린트"
+      },
+      "souls": 5,
+      "soul": 534660199
+    },
+    "1208": {
+      "name": {
+        "en": "Ashen Agrint",
+        "de": "Aschgrauer Agrint",
+        "fr": "Agrint cendré",
+        "es": "Agrint cenizo",
+        "pt": "Agrint Cinzento",
+        "ru": "Пепельный агринт",
+        "ja": "灰色のアグリント",
+        "ko": "잿빛 어그린트"
+      },
+      "souls": 5,
+      "soul": 534660217
+    },
+    "1209": {
+      "name": {
+        "en": "Thin Agrint",
+        "de": "Kahler Agrint",
+        "fr": "Agrint squelettique",
+        "es": "Agrint famélico",
+        "pt": "Agrint Descarnado",
+        "ru": "Истощенный агринт",
+        "ja": "やせ細ったアグリント",
+        "ko": "앙상한 어그린트"
+      },
+      "souls": 5,
+      "soul": 534660113
+    },
+    "1210": {
+      "name": {
+        "en": "Dry Leaf Agrint",
+        "de": "Trockenblattagrint",
+        "fr": "Agrint à feuilles sèches",
+        "es": "Agrint de hojas secas",
+        "pt": "Agrint Folha Seca",
+        "ru": "Сухолистный агринт",
+        "ja": "枯れ葉アグリント",
+        "ko": "마른 잎사귀 어그린트"
+      },
+      "souls": 5,
+      "soul": 534660225
+    },
+    "1213": {
+      "name": {
+        "en": "Lesser Fire Spirit",
+        "de": "Geringer Feuergeist",
+        "fr": "Esprit du feu inférieur",
+        "es": "Espíritu de fuego inferior",
+        "pt": "Espírito do Fogo Inferior",
+        "ru": "Младший дух огня",
+        "ja": "下級火の精霊",
+        "ko": "하급 불의 정령"
+      },
+      "souls": 5,
+      "soul": 534660128
+    },
+    "1214": {
+      "name": {
+        "en": "Black Spirit",
+        "de": "Dunkler Naturgeist",
+        "fr": "Esprit des ténèbres",
+        "es": "Espíritu de tinieblas",
+        "pt": "Espírito das Trevas",
+        "ru": "Темный дух",
+        "ja": "暗黒の精霊",
+        "ko": "암흑 정령"
+      },
+      "souls": 5,
+      "soul": 534660115
+    },
+    "1215": {
+      "name": {
+        "en": "Predator Saraswati",
+        "de": "Verschlinger Saraswati",
+        "fr": "Saraswati le Prédateur",
+        "es": "Saraswati depredador",
+        "pt": "Predador Saraswati",
+        "ru": "Хищница Сарасвати",
+        "ja": "捕食者サラスワティ",
+        "ko": "포식자 사라스와티"
+      },
+      "souls": 5,
+      "soul": 534660118
+    },
+    "1216": {
+      "name": {
+        "en": "Dark Spirit",
+        "de": "Schattengeist",
+        "fr": "Esprit obscur",
+        "es": "Espíritu de oscuridad",
+        "pt": "Espírito da Escuridão",
+        "ru": "Дух мрака",
+        "ja": "闇の精霊",
+        "ko": "어둠의 정령"
+      },
+      "souls": 5,
+      "soul": 534660149
+    },
+    "1217": {
+      "name": {
+        "en": "Congealed Drana",
+        "de": "Geronnenes Drana",
+        "fr": "Drana solidifié",
+        "es": "Drana coagulado",
+        "pt": "Drana Coagulado",
+        "ru": "Свернувшаяся драна",
+        "ja": "凝固されたドラナ",
+        "ko": "응고된 드라나"
+      },
+      "souls": 5,
+      "soul": 534660190
+    },
+    "1218": {
+      "name": {
+        "en": "Faded Drana",
+        "de": "Verblasstes Drana",
+        "fr": "Drana terne",
+        "es": "Drana desgastado",
+        "pt": "Drana Desbotado",
+        "ru": "Поблекший драна",
+        "ja": "色あせたドラナ",
+        "ko": "빛바랜 드라나"
+      },
+      "souls": 5,
+      "soul": 534660215
+    },
+    "1219": {
+      "name": {
+        "en": "Zelophi",
+        "de": "Zelophi",
+        "fr": "Zelophi",
+        "es": "Zelophi",
+        "pt": "Zelophi",
+        "ru": "Зелофи",
+        "ja": "ゼルピ",
+        "ko": "제르피"
+      },
+      "souls": 5,
+      "soul": 534660117
+    },
+    "1240": {
+      "name": {
+        "en": "White Bunny",
+        "de": "Weißes Häschen",
+        "fr": "Lapin blanc",
+        "es": "Conejo blanco",
+        "pt": "Coelho Branco",
+        "ru": "Белый кролик",
+        "ja": "白ウサギ",
+        "ko": "하얀 토끼"
+      },
+      "souls": 5
+    },
+    "1245": {
+      "name": {
+        "en": "Azure Flame Kumiho",
+        "de": "Azurflammen-Kumiho",
+        "fr": "Kumiho aux flammes azur",
+        "es": "Nueve colas de fuego azul",
+        "pt": "Raposa de Nove Caudas da Chama Azul",
+        "ru": "Девятихвостая лисица",
+        "ja": "青い炎の九尾狐",
+        "ko": "푸른 불꽃 구미호"
+      },
+      "souls": 5
+    },
+    "1250": {
+      "name": {
+        "en": "Glossy Pink Puppy",
+        "de": "Rosaglanz-Welpe",
+        "fr": "Chiot rose brillant",
+        "es": "Cachorrito rosa brillante",
+        "pt": "Cachorrinho Rosa Brilhante",
+        "ru": "Глянцевый щенок",
+        "ja": "ピンク グロッシー パピー",
+        "ko": "핑크 글로시 퍼피"
+      },
+      "souls": 5
+    },
+    "1278": {
+      "name": {
+        "en": "Chonky Hamster",
+        "de": "Stämmiger Hamster",
+        "fr": "Hamster grassouillet",
+        "es": "Hámster rechoncho",
+        "pt": "Hamster Fofucho",
+        "ru": "Хомячок",
+        "ja": "ほっぺパンパンハムスター",
+        "ko": "볼빵빵 햄스터"
+      },
+      "souls": 5
+    },
+    "1299": {
+      "name": {
+        "en": "Two",
+        "de": "Two",
+        "fr": "Deux",
+        "es": "2",
+        "pt": "2",
+        "ru": "Ту",
+        "ja": "2",
+        "ko": "2"
+      },
+      "souls": 5
+    },
+    "1343": {
+      "name": {
+        "en": "Little Ghost",
+        "de": "Kleiner Geist",
+        "fr": "Petit fantôme",
+        "es": "Fantasmita",
+        "pt": "Fantasminha",
+        "ru": "Малыш-призрак",
+        "ja": "ちび幽霊",
+        "ko": "꼬마 유령"
+      },
+      "souls": 5
+    },
+    "1363": {
+      "name": {
+        "en": "Pumpkin Carriage",
+        "de": "Kürbiskutsche",
+        "fr": "Carrosse-citrouille",
+        "es": "Carroza de la Calabaza Maldita",
+        "pt": "Carruagem de Abóbora",
+        "ru": "Тыквенная карета",
+        "ja": "カボチャの馬車",
+        "ko": "호박마차"
+      },
+      "souls": 5
+    }
+  }
+}

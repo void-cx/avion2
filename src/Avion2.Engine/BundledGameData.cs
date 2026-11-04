@@ -119,6 +119,56 @@ public static class BundledGameData
     /// <summary>Every known server by id.</summary>
     public static IReadOnlyDictionary<ushort, ServerInfo> Servers => ServerTable.Value;
 
+    /// <summary>A pet kind: its name per language code, the souls the pet takes and its soul item (none for shop pets).</summary>
+    public sealed record PetInfo(IReadOnlyDictionary<string, string> Names, uint Souls, uint? SoulItem);
+
+    /// <summary>The pets file: every pet kind by id, and the souls each pet level takes to the next.</summary>
+    public sealed record PetTable(IReadOnlyDictionary<uint, PetInfo> Pets, IReadOnlyList<uint> SoulsPerLevel);
+
+    private static readonly Lazy<PetTable> PetData = new(() => ParsePets(Read("pets.json")));
+
+    public static PetTable ParsePets(string? json)
+    {
+        var pets = new Dictionary<uint, PetInfo>();
+        var levels = new List<uint>();
+        if (json is null)
+        {
+            return new PetTable(pets, levels);
+        }
+
+        using var doc = System.Text.Json.JsonDocument.Parse(json);
+        foreach (var level in doc.RootElement.GetProperty("levels").EnumerateArray())
+        {
+            levels.Add(level.GetUInt32());
+        }
+
+        foreach (var pet in doc.RootElement.GetProperty("pets").EnumerateObject())
+        {
+            if (!uint.TryParse(pet.Name, out uint id))
+            {
+                continue;
+            }
+
+            var names = pet.Value.GetProperty("name").EnumerateObject()
+                .Where(n => n.Value.GetString() is { Length: > 0 })
+                .ToDictionary(n => n.Name, n => n.Value.GetString()!, StringComparer.Ordinal);
+            pets[id] = new PetInfo(names, pet.Value.GetProperty("souls").GetUInt32(),
+                pet.Value.TryGetProperty("soul", out var soul) ? soul.GetUInt32() : null);
+        }
+
+        return new PetTable(pets, levels);
+    }
+
+    /// <summary>Every pet kind from the client's tables, with the souls per level.</summary>
+    public static PetTable Pets => PetData.Value;
+
+    /// <summary>A pet kind's name in a language ("de"), English when that language lacks it; null for an unknown kind.</summary>
+    public static string? PetName(uint pet, string language) =>
+        Pets.Pets.TryGetValue(pet, out var info) ? info.Names.GetValueOrDefault(language) ?? info.Names.GetValueOrDefault("en") : null;
+
+    /// <summary>The soul item of a pet kind ("Soul: Sparkie"), or null.</summary>
+    public static uint? PetSoulItem(uint pet) => Pets.Pets.GetValueOrDefault(pet)?.SoulItem;
+
     /// <summary>An item's English name ("Enhance Stone"), or null when the table does not know it.</summary>
     public static string? ItemName(uint itemId) => ItemTable.Value.GetValueOrDefault(itemId);
 

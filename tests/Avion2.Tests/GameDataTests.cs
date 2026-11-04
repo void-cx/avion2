@@ -13,6 +13,23 @@ namespace Avion2.Tests;
 public class ClientGameDataTests
 {
     [Fact]
+    public void PetsHaveNamesSoulItemsAndLevelCosts()
+    {
+        var pets = BundledGameData.Pets;
+        Assert.True(pets.Pets.Count >= 200);
+        Assert.Equal(PetSoulTable.SoulsPerLevel, pets.SoulsPerLevel); // the app's ladder is the client's VehicleLevel
+        Assert.Equal("Sparkie", BundledGameData.PetName(1006, "en"));
+        Assert.Equal("Riesensparkie", BundledGameData.PetName(1034, "de"));
+        Assert.Equal("Giant Sparkie", BundledGameData.PetName(1034, "xx")); // English when the language lacks it
+        Assert.Null(BundledGameData.PetName(9999, "en"));
+        // The soul items the learner took from real captures
+        Assert.Equal(534_660_034u, BundledGameData.PetSoulItem(1034));
+        Assert.Equal(534_660_149u, BundledGameData.PetSoulItem(1216));
+        Assert.Null(BundledGameData.PetSoulItem(1001)); // the Black Dragon comes from the shop, without souls
+        Assert.All(pets.Pets.Values, p => Assert.Equal((uint)CharacterProgress.SoulsPerPet, p.Souls));
+    }
+
+    [Fact]
     public void RecipesHaveTheDragonGearWithItsCombo()
     {
         var book = BundledGameData.Recipes;

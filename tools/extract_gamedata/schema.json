@@ -47,6 +47,12 @@
     "SkillString": {
       "row": "SkillStringTableItem"
     },
+    "VehicleLevel": {
+      "row": "VehicleLevelTableItem"
+    },
+    "VehicleList": {
+      "row": "VehicleDataTableItem"
+    },
     "WorldMapFieldNamed": {
       "row": "WorldMapFieldNamedTableItem"
     }
@@ -609,6 +615,57 @@
     ],
     "TableString": [
       "Key: Name"
+    ],
+    "VehicleDataTableItem": [
+      "ID: Struct<TableItemId>",
+      "Desc: Struct<TableString>",
+      "Name: Name",
+      "Order: Int",
+      "CreatureType: Enum<ECreatureType>",
+      "NeedSoul: Int",
+      "SoulCrystalType: Enum<ESoulCrystalType>",
+      "SoulItemName: Name",
+      "VehicleItemName: Name",
+      "bIsOpen: Bool",
+      "StatGroupName: Name",
+      "ResourceKey: Name",
+      "PolymorphId: Struct<TableItemId>",
+      "ArtRunSpeed: Float",
+      "ArtSprintSpeed: Float",
+      "CollisionRadius: Float",
+      "CollisionHeight: Float",
+      "Glide_NormalFPCost: Int",
+      "Glide_BoostFPCost: Int",
+      "Glide_DashUpFPCost: Int",
+      "Glide_NormalDashFPCost: Int",
+      "Glide_BoostDashFPCost: Int",
+      "Glide_NormalSpeedH: Float",
+      "Glide_NormalSpeedV: Float",
+      "Glide_BoostSpeedH: Float",
+      "Glide_BoostSpeedV: Float",
+      "Glide_BoostDashSpeedH: Float",
+      "Glide_BoostDashSpeedV: Float",
+      "Glide_BoostDashPitchAngle: Float",
+      "Glide_NormalDashSpeedH: Float",
+      "Glide_NormalDashSpeedV: Float",
+      "Glide_NormalDashPitchAngle: Float",
+      "Glide_DashUpSpeedH: Float",
+      "Glide_DashUpSpeedV: Float",
+      "Glide_DashUpPitchAngle: Float",
+      "ActSpawnRun: Name",
+      "ActSpawnGlide: Name",
+      "EquipStatList: Array<Struct<VehicleEquipStatListItem>>",
+      "ShowDate: Struct<DateTimeServerLocalNeedOffset>",
+      "bPolymorphPlan: Bool"
+    ],
+    "VehicleEquipStatListItem": [
+      "StatType: Enum<EStat>",
+      "StatValue: Int"
+    ],
+    "VehicleLevelTableItem": [
+      "Level: UInt32",
+      "NeedSoulCount: Int",
+      "GetCreatureExp: Int64"
     ],
     "WorldMapFieldNamedTableItem": [
       "ID: Struct<TableItemId>",

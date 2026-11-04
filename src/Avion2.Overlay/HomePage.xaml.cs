@@ -249,7 +249,7 @@ public partial class HomePage : UserControl
         var roster = _state.Progresses.LatestPets();
         string? pets = roster is not null ? Avion2.Analysis.ProgressSummary.Pets(roster, _state.PetName) : null;
         PetDetails.Show(roster is null ? [] : Avion2.Analysis.PetSoulTable.Rows(roster, _state.Progresses.SoulSources,
-            _state.Progresses.SoulItem, _state.PetName, _state.NpcName));
+            _state.SoulItem, _state.PetName, _state.NpcName));
         ProgressStats.ItemsSource = stats;
         PetLine.Text = pets ?? string.Empty;
         PetLine.Visibility = pets is null ? Visibility.Collapsed : Visibility.Visible;

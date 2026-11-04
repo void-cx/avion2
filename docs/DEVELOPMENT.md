@@ -94,8 +94,8 @@ single tables ([format](../data/README.md)).
 
 ### Refreshing game data after a patch
 
-The name tables, `recipes.json`, `stat_rates.json`, `gear_forge.json`, `items.json`, `field_bosses.json` and
-`dungeon_names.json` are built from the installed client's own tables by
+The name tables, `recipes.json`, `stat_rates.json`, `gear_forge.json`, `items.json`, `field_bosses.json`,
+`dungeon_names.json` and `pets.json` are built from the installed client's own tables by
 [tools/extract_gamedata](../tools/extract_gamedata/README.md) (a dev-only tool, not part of the app):
 
 1. Update the game, then run `dotnet run --project tools/extract_gamedata -- build`. It decodes the tables, prints

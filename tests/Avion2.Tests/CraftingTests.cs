@@ -43,7 +43,7 @@ public class CraftingTests
         progress.Apply(roster);
         Assert.Equal(2u, progress.PetLevels[1216]);
         Assert.Equal(25u, PetSoulTable.Needed(progress, 1003)); // owned at level 1: 25 to level 2
-        Assert.Null(PetSoulTable.Needed(progress, 1216)); // level 3's cost is not known
+        Assert.Equal(75u, PetSoulTable.Needed(progress, 1216)); // level 2: 75 to level 3 (the client's VehicleLevel)
         Assert.Equal(5u, PetSoulTable.Needed(progress, 1099)); // not owned: 5 to the pet
 
         progress.Apply(new PetLevelUpEvent(5_000, 1003, 2, 4));
@@ -63,9 +63,9 @@ public class CraftingTests
         var progress = new CharacterProgress
         {
             Character = "TestDaeva",
-            Pets = [1003, 1216],
-            Souls = { [1003] = 23, [1216] = 71, [1099] = 4, [1100] = 0 },
-            PetLevels = { [1003] = 1, [1216] = 2 },
+            Pets = [1003, 1216, 1006],
+            Souls = { [1003] = 23, [1216] = 71, [1099] = 4, [1100] = 0, [1006] = 9 },
+            PetLevels = { [1003] = 1, [1216] = 2, [1006] = 3 },
         };
         var sources = new SoulSourceBook();
         sources.Add(new SoulDrop(1, 534_660_002, 1, 2100601));
@@ -76,16 +76,18 @@ public class CraftingTests
         string? Npc(uint code) => code switch { 2100601 => "Canyon Vine Spirit", 2100613 => "Canyon Lake Skyray", _ => null };
 
         var rows = PetSoulTable.Rows(progress, sources, Item, pet => $"Pet {pet}", Npc);
-        Assert.Equal([1003u, 1099u, 1216u], rows.Select(r => r.PetId)); // closest to its next step first; none without souls
-        Assert.Equal("23 / 25 to level 2", rows[0].Progress);
-        Assert.Equal("Level 1", rows[0].State);
-        Assert.Equal("Canyon Vine Spirit ×3 · Canyon Lake Skyray ×1", rows[0].Sources);
-        Assert.Equal(("4 / 5 to the pet", "Not owned"), (rows[1].Progress, rows[1].State));
-        Assert.Equal(("71 souls", "Level 2"), (rows[2].Progress, rows[2].State));
+        Assert.Equal([1216u, 1003u, 1099u, 1006u], rows.Select(r => r.PetId)); // closest to its next step first; none without souls
+        Assert.Equal(("71 / 75 to level 3", "Level 2"), (rows[0].Progress, rows[0].State));
+        Assert.Equal("23 / 25 to level 2", rows[1].Progress);
+        Assert.Equal("Level 1", rows[1].State);
+        Assert.Equal("Canyon Vine Spirit ×3 · Canyon Lake Skyray ×1", rows[1].Sources);
+        Assert.Equal(("4 / 5 to the pet", "Not owned"), (rows[2].Progress, rows[2].State));
+        Assert.Equal(("9 souls", "Level 3 (max)"), (rows[3].Progress, rows[3].State));
 
-        Assert.Equal("Soul of Pet 1099: 4/5", PetSoulTable.Notice(progress, 1099, pet => $"Pet {pet}"));
-        Assert.Equal("Soul of Pet 1003: 23/25 to level 2", PetSoulTable.Notice(progress, 1003, pet => $"Pet {pet}"));
-        Assert.Equal("Soul of Pet 1216: 71", PetSoulTable.Notice(progress, 1216, pet => $"Pet {pet}"));
+        Assert.Equal("Pet 1099: 4/5 souls to the pet", PetSoulTable.Notice(progress, 1099, pet => $"Pet {pet}"));
+        Assert.Equal("Pet 1003: 23/25 souls to level 2", PetSoulTable.Notice(progress, 1003, pet => $"Pet {pet}"));
+        Assert.Equal("Pet 1216: 71/75 souls to level 3", PetSoulTable.Notice(progress, 1216, pet => $"Pet {pet}"));
+        Assert.Equal("Pet 1006: 9 souls (max level)", PetSoulTable.Notice(progress, 1006, pet => $"Pet {pet}"));
         Assert.Null(PetSoulTable.Notice(new CharacterProgress(), 1003, pet => $"Pet {pet}")); // before the roster
     }
 

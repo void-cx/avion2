@@ -47,7 +47,7 @@ public sealed class CraftJournal
         engine.SoulsGained += souls => Application.Current.Dispatcher.BeginInvoke(() => NotifySouls(souls));
     }
 
-    /// <summary>"Soul of Zelophi: 3/5", one line per kind.</summary>
+    /// <summary>"Zelophi: 3/5 souls to the pet", one notice per kind.</summary>
     private void NotifySouls(Avion2.Protocol.PetSoulsEvent souls)
     {
         // Only once the gain is counted (not while the game has yet to name us)
