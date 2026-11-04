@@ -1,0 +1,18 @@
+{"built":"2026-11-04","unit":"percent per point","inputs":[
+{"key":"STR","name":"Might","group":"primary","gives":[{"stat":"DamageRatio","name":"Attack increase","per":0.1}]},
+{"key":"DEX","name":"Dexterity","group":"primary","gives":[{"stat":"EvasionRatio","name":"Evasion increase","per":0.1},{"stat":"BlockRatio","name":"Block increase","per":0.1},{"stat":"CriticalResistRatio","name":"Critical Hit Resist increase","per":0.1}]},
+{"key":"INT","name":"Intelligence","group":"primary","gives":[{"stat":"AbnormalAccuracy","name":"Status Effect Chance","per":0.1}]},
+{"key":"CON","name":"Constitution","group":"primary","gives":[{"stat":"MaxHPRatio","name":"HP increase","per":0.1}]},
+{"key":"AGI","name":"Precision","group":"primary","gives":[{"stat":"AccuracyRatio","name":"Accuracy increase","per":0.1},{"stat":"CriticalRatio","name":"Critical Hit increase","per":0.1}]},
+{"key":"WIS","name":"Willpower","group":"primary","gives":[{"stat":"AbnormalResistance","name":"Status Effect Resist","per":0.1}]},
+{"key":"Justice","name":"Justice [Nezekan]","group":"deity","gives":[{"stat":"DefenseRatio","name":"Defense increase","per":0.1},{"stat":"Perfect","name":"Perfect Chance","per":0.1}]},
+{"key":"Destruction","name":"Destruction [Zikel]","group":"deity","gives":[{"stat":"DamageRatio","name":"Attack increase","per":0.1},{"stat":"PerfectResist","name":"Perfect Resist","per":0.1}]},
+{"key":"Freedom","name":"Freedom [Vaizel]","group":"deity","gives":[{"stat":"AccuracyRatio","name":"Accuracy increase","per":0.1},{"stat":"EvasionRatio","name":"Evasion increase","per":0.1}]},
+{"key":"Death","name":"Death [Triniel]","group":"deity","gives":[{"stat":"CriticalRatio","name":"Critical Hit increase","per":0.1},{"stat":"IgnoreRestoration","name":"Regeneration Penetration","per":0.1}]},
+{"key":"Illusion","name":"Illusion [Kaisinel]","group":"deity","gives":[{"stat":"CoolTimeIncrease","name":"Cooldown","per":-0.1},{"stat":"IgnoreIronWall","name":"Endurance Penetration","per":0.1}]},
+{"key":"Wisdom","name":"Wisdom [Lumiel]","group":"deity","gives":[{"stat":"MPUseIncrease","name":"MP Cost","per":-0.1},{"stat":"HardHit","name":"Double Chance","per":0.1}]},
+{"key":"Life","name":"Life [Yustiel]","group":"deity","gives":[{"stat":"MaxHPRatio","name":"HP increase","per":0.1},{"stat":"Restoration","name":"Regeneration","per":0.1}]},
+{"key":"Destiny","name":"Destiny [Marchutan]","group":"deity","gives":[{"stat":"MaxMPRatio","name":"MP increase","per":0.1},{"stat":"IronWall","name":"Endurance","per":0.1}]},
+{"key":"Time","name":"Time [Siel]","group":"deity","gives":[{"stat":"CombatSpeed","name":"Combat Speed","per":0.1},{"stat":"HardHitResist","name":"Double Resist","per":0.1}]},
+{"key":"Space","name":"Space [Israphel]","group":"deity","gives":[{"stat":"MoveSpeed","name":"Move Speed","per":0.1},{"stat":"BlockRatio","name":"Block increase","per":0.1}]}
+]}

@@ -67,6 +67,13 @@ public sealed class InventoryState
     private ulong Count(uint itemId, byte container) =>
         (ulong)_slots.Values.Where(i => i.ItemId == itemId && i.Container == container).Sum(i => (decimal)i.Count);
 
+    /// <summary>
+    /// How many of the item a slot update names were in its slot before it (0 when the slot held something else or
+    /// nothing); null while the inventory is not known.
+    /// </summary>
+    public ulong? SlotCount(InventoryItem item) =>
+        _slots.TryGetValue(Key(item), out var old) ? old.ItemId == item.ItemId ? old.Count : 0 : IsKnown ? 0 : null;
+
     /// <summary>Applies inventory events; returns true when something changed.</summary>
     public bool Apply(GameEvent e)
     {

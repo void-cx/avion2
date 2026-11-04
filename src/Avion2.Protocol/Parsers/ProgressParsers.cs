@@ -251,14 +251,16 @@ public static class ProgressParsers
         }
 
         var pets = new List<uint>((int)owned);
+        var levels = new List<uint>((int)owned);
         for (int i = 0; i < owned; i++)
         {
-            if (!r.TryU32(out uint pet) || !r.TryU32(out uint again) || again != pet || !r.TryU32(out _))
+            if (!r.TryU32(out uint pet) || !r.TryU32(out uint again) || again != pet || !r.TryU32(out uint level))
             {
                 return false;
             }
 
             pets.Add(pet);
+            levels.Add(level);
         }
 
         if (!TrySouls(ref r, out var souls))
@@ -266,7 +268,7 @@ public static class ProgressParsers
             return false;
         }
 
-        emit(new PetRosterEvent(ts, pets, souls));
+        emit(new PetRosterEvent(ts, pets, souls, levels));
         return true;
     }
 

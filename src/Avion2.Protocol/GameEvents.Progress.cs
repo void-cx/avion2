@@ -67,7 +67,9 @@ public sealed record ExperienceEvent(long TimestampMs, long Total, long Gained, 
 public sealed record PetSouls(uint PetId, uint Souls);
 
 /// <summary><c>00 90</c>: the pets we own and the souls collected per kind (at login).</summary>
-public sealed record PetRosterEvent(long TimestampMs, IReadOnlyList<uint> Owned, IReadOnlyList<PetSouls> Souls) : GameEvent(TimestampMs);
+/// <param name="Levels">Each owned pet's level, in the order of <paramref name="Owned"/> (null when not read).</param>
+public sealed record PetRosterEvent(long TimestampMs, IReadOnlyList<uint> Owned, IReadOnlyList<PetSouls> Souls, IReadOnlyList<uint>? Levels = null)
+    : GameEvent(TimestampMs);
 
 /// <summary><c>0D 90</c> (<paramref name="Gained"/>) / <c>0E 90</c>: souls gained from kills, or spent on a pet.</summary>
 public sealed record PetSoulsEvent(long TimestampMs, IReadOnlyList<PetSouls> Changes, bool Gained) : GameEvent(TimestampMs);

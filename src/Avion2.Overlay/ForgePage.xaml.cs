@@ -6,14 +6,24 @@ using Avion2.Engine;
 
 namespace Avion2.Overlay;
 
-public sealed record ForgeItemLine(ForgeItem Item, string Name, string Detail, Brush Brush);
+public sealed record ForgeItemLine(ForgeItem Item, string Name, string Detail, Brush Brush)
+{
+    public ImageSource? Icon => ItemIcons.For((uint)Item.Id);
+}
 
-public sealed record ForgeTile(string Label, string Average, string Note);
+/// <param name="Icon">The material's icon (Kinah's for Kinah), or null.</param>
+public sealed record ForgeTile(string Label, string Average, string Note, ImageSource? Icon = null);
 
 /// <param name="ItemLevel">The piece's item level as the game counts it (from the inventory); null when not sent.</param>
-public sealed record MyGearLine(ForgeItem Item, string Name, string Level, Brush Brush, int Enchant, byte Slot = 0, uint? ItemLevel = null);
+public sealed record MyGearLine(ForgeItem Item, string Name, string Level, Brush Brush, int Enchant, byte Slot = 0, uint? ItemLevel = null)
+{
+    public ImageSource? Icon => ItemIcons.For((uint)Item.Id);
+}
 
-public sealed record UpgradeLine(GearUpgrade Upgrade, string Name, Brush Brush, string Gain, string Step, string Kinah, string Chance, string Materials, string Afford, string Detail);
+public sealed record UpgradeLine(GearUpgrade Upgrade, string Name, Brush Brush, string Gain, string Step, string Kinah, string Chance, string Materials, string Afford, string Detail)
+{
+    public ImageSource? Icon => ItemIcons.For((uint)Upgrade.Item.Id);
+}
 
 public sealed record ForgeStepLine(string Step, string Chance, string Pity, string Attempts, string Materials, string Gold, string Detail);
 
@@ -33,6 +43,9 @@ public partial class ForgePage : UserControl
     {
         _state = state;
         InitializeComponent();
+        Crafting.Attach(state);
+        Stats.Attach(state);
+        ShowTool(state.Stored.ForgeTool);
         state.ViewedCharacterChanged += Refresh;
         state.InventoryUpdated += Refresh;
         state.ProgressUpdated += RefreshMyGear;
@@ -56,6 +69,47 @@ public partial class ForgePage : UserControl
             RefreshMyGear();
             RefreshHave();
         };
+    }
+
+    /// <summary>The Forge's tools: the tab, the panel it shows and the line under the page title.</summary>
+    private IEnumerable<(RadioButton Tab, FrameworkElement Panel, string Subtitle)> Tools =>
+    [
+        (ForgeTabLink, ForgeGrid, "Expected attempts, materials and Kinah to enchant or amplify an item, from the game's own tables."),
+        (CraftingTabLink, Crafting, "Every material a craft takes, down to the gathered ones, what your bag holds and what is missing; and your crafts."),
+        (StatsTabLink, Stats, "What the six attributes and the ten deity stats convert into, and what a few more points would give."),
+    ];
+
+    /// <summary>Opens a tool by its tag ("enchant", "crafting", "stats"); unknown or null opens the first.</summary>
+    internal void ShowTool(string? tool)
+    {
+        var tab = Tools.Select(t => t.Tab).FirstOrDefault(t => (string)t.Tag == tool) ?? ForgeTabLink;
+        tab.IsChecked = true;
+        ForgeTab_Checked(tab, new RoutedEventArgs());
+    }
+
+    /// <summary>Shows the tool whose tab was picked, and remembers it.</summary>
+    private void ForgeTab_Checked(object sender, RoutedEventArgs e)
+    {
+        if (Crafting is null || Stats is null || ForgeGrid is null)
+        {
+            return; // while the page is built
+        }
+
+        foreach (var (tab, panel, subtitle) in Tools)
+        {
+            bool shown = tab.IsChecked == true;
+            panel.Visibility = shown ? Visibility.Visible : Visibility.Collapsed;
+            if (shown)
+            {
+                Subtitle.Text = subtitle;
+            }
+        }
+
+        if (sender is RadioButton { Tag: string tool } && tool != _state.Stored.ForgeTool && IsLoaded)
+        {
+            _state.Stored.ForgeTool = tool;
+            _state.SaveSettings();
+        }
     }
 
     /// <summary>Equipped gear the Forge knows, at its current levels (from the inventory the game sent).</summary>
@@ -246,6 +300,8 @@ public partial class ForgePage : UserControl
     {
         _item = item;
         ItemName.Text = _item.Name;
+        ItemIcon.Source = ItemIcons.For((uint)item.Id);
+        ItemIcon.Visibility = ItemIcon.Source is null ? Visibility.Collapsed : Visibility.Visible;
         ItemName.Foreground = brush;
         ItemMeta.Text = Detail(item) + (_mine is { } mine ? $" · yours is +{mine.Enchant}" : string.Empty);
         Controls.IsEnabled = true;
@@ -336,9 +392,12 @@ public partial class ForgePage : UserControl
                            string.Concat(gains.Select(g => $", {g}")) + ". On average it takes:";
         }
 
+        var materialIds = ladder.Steps.SelectMany(s => s.Materials).Where(m => m.Id is not null)
+            .GroupBy(m => m.Name).ToDictionary(g => g.Key, g => g.First().Id!.Value);
         var tiles = plan.Materials
-            .Select(m => new ForgeTile(m.Name, Number(m.Average), $"unlucky: {Number(m.P90)}"))
-            .Append(new ForgeTile("Kinah", Number(plan.Gold.Average), $"unlucky: {Number(plan.Gold.P90)}"))
+            .Select(m => new ForgeTile(m.Name, Number(m.Average), $"unlucky: {Number(m.P90)}",
+                materialIds.TryGetValue(m.Name, out uint id) ? ItemIcons.For(id) : null))
+            .Append(new ForgeTile("Kinah", Number(plan.Gold.Average), $"unlucky: {Number(plan.Gold.P90)}", ItemIcons.For(ItemIds.Kinah)))
             .Append(new ForgeTile("Attempts", plan.Attempts.Average.ToString("0.0"), $"unlucky: {plan.Attempts.P90:0}"))
             .ToList();
         Tiles.ItemsSource = tiles;

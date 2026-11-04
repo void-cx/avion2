@@ -1,0 +1,52 @@
+<UserControl x:Class="Avion2.Overlay.PetSoulsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <!-- Opens the per-kind list under the progress card's pet line -->
+        <ToggleButton x:Name="Toggle" HorizontalAlignment="Left" Margin="0,6,0,0" Cursor="Hand" FocusVisualStyle="{x:Null}"
+                      Checked="Toggle_Changed" Unchecked="Toggle_Changed">
+            <ToggleButton.Template>
+                <ControlTemplate TargetType="ToggleButton">
+                    <TextBlock x:Name="Label" Text="{TemplateBinding Content}" Foreground="{DynamicResource AccentTextBrush}" FontSize="12" Background="Transparent" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Label" Property="TextDecorations" Value="Underline" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </ToggleButton.Template>
+        </ToggleButton>
+
+        <StackPanel x:Name="Details" Visibility="Collapsed" Margin="0,8,0,0">
+            <ScrollViewer MaxHeight="340" VerticalScrollBarVisibility="Auto">
+                <ItemsControl x:Name="Rows">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="{DynamicResource HairlineBrush}" BorderThickness="0,1,0,0" Padding="0,6">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="170" />
+                                        <ColumnDefinition Width="170" />
+                                        <ColumnDefinition Width="80" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TitleBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="1" Margin="0,0,16,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Progress}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" />
+                                        <ProgressBar Style="{StaticResource ThinBar}" Value="{Binding Fraction, Mode=OneWay}" Margin="0,3,0,0" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="2" Text="{Binding State}" Foreground="{DynamicResource MutedBrush}" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="3" Text="{Binding Sources}" Foreground="{DynamicResource MutedBrush}" FontSize="12"
+                                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip="{Binding Sources}"
+                                               ToolTipService.IsEnabled="{Binding HasSources}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            <TextBlock Foreground="{DynamicResource MutedBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"
+                       Text="Pets belong to the account. 5 souls of a kind bring its pet and 25 more its level 2 (what level 3 takes isn't known). Where souls dropped is learned from your own pickups: the monster each soul dropped from." />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

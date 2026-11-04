@@ -352,6 +352,11 @@ public sealed class OverlayViewModel : Bindable
 
     public bool NotifyBossCasts { get => _notifyBossCasts; set => Set(ref _notifyBossCasts, value); }
 
+    private bool _notifyPetSouls = true;
+
+    /// <summary>A line when pet souls come in.</summary>
+    public bool NotifyPetSouls { get => _notifyPetSouls; set => Set(ref _notifyPetSouls, value); }
+
     private bool _notifyJoinRequests = true;
     private bool _notifyRoomReady = true;
     private bool _notifyDungeonStart = true;

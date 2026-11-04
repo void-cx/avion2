@@ -91,6 +91,10 @@ public sealed class CharacterProgress
     [JsonPropertyName("petsMs")]
     public long PetsMs { get; set; }
 
+    /// <summary>The level of each pet owned, when known (from the roster, new pets and level ups).</summary>
+    [JsonPropertyName("petLevels")]
+    public Dictionary<uint, uint> PetLevels { get; set; } = new();
+
     /// <summary>Pet kind → the soul item it drops (learned from the bag: names the pet).</summary>
     [JsonPropertyName("soulItems")]
     public Dictionary<uint, uint> SoulItems { get; set; } = new();
@@ -115,6 +119,14 @@ public sealed class CharacterProgress
 
     [JsonIgnore]
     private long? _expTotal;
+
+    /// <summary>The souls we picked up this session and where they dropped (counted once into the saved <see cref="SoulSourceBook"/>).</summary>
+    [JsonIgnore]
+    public List<SoulDrop> SoulDrops { get; private set; } = [];
+
+    /// <summary>This session, to tell its soul drops from another's.</summary>
+    [JsonIgnore]
+    public Guid SoulSession { get; private set; } = Guid.NewGuid();
 
     /// <summary>Pets not owned yet, most souls first (only kinds with souls).</summary>
     [JsonIgnore]
@@ -190,12 +202,16 @@ public sealed class CharacterProgress
             case PetRosterEvent roster:
                 Pets = roster.Owned.ToHashSet();
                 Souls = roster.Souls.GroupBy(s => s.PetId).ToDictionary(g => g.Key, g => g.Last().Souls);
+                PetLevels = roster.Levels is { } levels && levels.Count == roster.Owned.Count
+                    ? roster.Owned.Zip(levels).GroupBy(p => p.First).ToDictionary(g => g.Key, g => g.Last().Second)
+                    : new Dictionary<uint, uint>();
                 PetsMs = roster.TimestampMs;
                 break;
             // Souls and new pets only count on top of the roster: without it (the capture began after the login) the
             // counts would leave out what the account already had.
             case PetSoulsEvent when Pets is null:
             case PetAcquiredEvent when Pets is null:
+            case PetLevelUpEvent when Pets is null:
                 return false;
             case PetSoulsEvent souls:
                 foreach (var change in souls.Changes)
@@ -208,7 +224,13 @@ public sealed class CharacterProgress
                 break;
             case PetAcquiredEvent acquired:
                 Pets.Add(acquired.PetId);
+                PetLevels[acquired.PetId] = acquired.Level;
                 PetsMs = acquired.TimestampMs;
+                break;
+            case PetLevelUpEvent up:
+                Pets.Add(up.PetId);
+                PetLevels[up.PetId] = up.Level;
+                PetsMs = up.TimestampMs;
                 break;
             default:
                 return false;
@@ -251,7 +273,7 @@ public sealed class CharacterProgress
 
         if (old.PetsMs > PetsMs)
         {
-            (Pets, Souls, PetsMs) = (old.Pets?.ToHashSet(), new Dictionary<uint, uint>(old.Souls), old.PetsMs);
+            (Pets, Souls, PetLevels, PetsMs) = (old.Pets?.ToHashSet(), new Dictionary<uint, uint>(old.Souls), new Dictionary<uint, uint>(old.PetLevels), old.PetsMs);
         }
 
         foreach (var (pet, item) in old.SoulItems)
@@ -289,6 +311,8 @@ public sealed class CharacterProgress
         copy.SessionExpLastMs = SessionExpLastMs;
         copy.SessionLevelUps = SessionLevelUps;
         copy._expTotal = _expTotal;
+        copy.SoulDrops = SoulDrops.ToList();
+        copy.SoulSession = SoulSession;
         return copy;
     }
 }
@@ -319,6 +343,10 @@ public sealed class ProgressBook
     [JsonPropertyName("characters")]
     private Dictionary<string, CharacterProgress> _byName = new();
 
+    /// <summary>The monsters that dropped souls for any of our characters.</summary>
+    [JsonPropertyName("soulSources")]
+    public SoulSourceBook SoulSources { get; set; } = new();
+
     public CharacterProgress? For(string? name) => name is not null && _byName.TryGetValue(name, out var progress) ? progress : null;
 
     /// <summary>
@@ -339,6 +367,7 @@ public sealed class ProgressBook
         }
 
         _byName[name] = merged;
+        SoulSources.Take(live.SoulSession, live.SoulDrops);
         return merged;
     }
 
@@ -363,8 +392,9 @@ public sealed class ProgressBook
 
 /// <summary>
 /// Learns which soul item belongs to a pet kind: the soul lands in the bag (<c>1B 56</c>) about a second before the
-/// game counts it for the pet (<c>0D 90</c>). Only a soul gain of a single kind with a single soul item in the bag
-/// shortly before is taken.
+/// game counts it for the pet (<c>0D 90</c>), and our pickup of it (<c>21 56</c>) about 50 ms before. A soul gain of a
+/// single kind with a single soul item shortly before is taken; a gain of several kinds when the souls picked up of
+/// each item add up to counts that tell the kinds apart (2 of one, 4 of the other).
 /// </summary>
 public sealed class SoulItemLearner
 {
@@ -375,25 +405,72 @@ public sealed class SoulItemLearner
 
     private readonly Queue<(long At, uint Item)> _recent = new();
 
-    /// <summary>Returns a learned (pet, soul item) pair, if this event settles one.</summary>
-    public (uint Pet, uint Item)? Apply(GameEvent e)
+    /// <summary>Souls we picked up, with their counts.</summary>
+    private readonly Queue<(long At, uint Item, uint Count)> _picked = new();
+
+    /// <summary>A soul we picked up (from <see cref="LootTracker.PickedUp"/>).</summary>
+    public void Picked(LootPickup pickup)
+    {
+        if (IsSoulItem(pickup.ItemId) && pickup.Count > 0)
+        {
+            _picked.Enqueue((pickup.TimestampMs, pickup.ItemId, pickup.Count));
+        }
+    }
+
+    /// <summary>Returns a learned (pet, soul item) pair, if this event settles one for a gain of a single kind.</summary>
+    public (uint Pet, uint Item)? Apply(GameEvent e) =>
+        ApplyAll(e) is [var one] && e is PetSoulsEvent { Changes.Count: 1 } ? one : null;
+
+    /// <summary>Returns the (pet, soul item) pairs this event settles (none for most events).</summary>
+    public IReadOnlyList<(uint Pet, uint Item)> ApplyAll(GameEvent e)
     {
         switch (e)
         {
             case InventoryItemEvent { Item: { Count: > 0 } item } added when IsSoulItem(item.ItemId):
                 _recent.Enqueue((added.TimestampMs, item.ItemId));
-                return null;
-            case PetSoulsEvent { Gained: true, Changes.Count: 1 } souls:
+                return [];
+            case PetSoulsEvent { Gained: true } souls:
                 while (_recent.Count > 0 && souls.TimestampMs - _recent.Peek().At > WindowMs)
                 {
                     _recent.Dequeue();
                 }
 
-                var items = _recent.Select(r => r.Item).Distinct().ToList();
+                while (_picked.Count > 0 && souls.TimestampMs - _picked.Peek().At > WindowMs)
+                {
+                    _picked.Dequeue();
+                }
+
+                var items = _recent.Select(r => r.Item).Concat(_picked.Select(p => p.Item)).Distinct().ToList();
+                var counts = _picked.GroupBy(p => p.Item).ToDictionary(g => g.Key, g => (uint)g.Sum(p => (long)p.Count));
                 _recent.Clear();
-                return items.Count == 1 ? (souls.Changes[0].PetId, items[0]) : null;
+                _picked.Clear();
+                if (souls.Changes.Count == 1)
+                {
+                    return items.Count == 1 ? [(souls.Changes[0].PetId, items[0])] : [];
+                }
+
+                // Several kinds: each kind's gain must match the pickups of exactly one item, and no two kinds the same count
+                var kinds = souls.Changes.GroupBy(c => c.PetId).Select(g => (Pet: g.Key, Souls: (uint)g.Sum(c => (long)c.Souls))).ToList();
+                if (items.Count != kinds.Count || counts.Count != kinds.Count || kinds.Select(k => k.Souls).Distinct().Count() != kinds.Count)
+                {
+                    return [];
+                }
+
+                var pairs = new List<(uint Pet, uint Item)>();
+                foreach (var (pet, gained) in kinds)
+                {
+                    var match = counts.Where(c => c.Value == gained).Select(c => c.Key).ToList();
+                    if (match.Count != 1)
+                    {
+                        return [];
+                    }
+
+                    pairs.Add((pet, match[0]));
+                }
+
+                return pairs;
             default:
-                return null;
+                return [];
         }
     }
 }
