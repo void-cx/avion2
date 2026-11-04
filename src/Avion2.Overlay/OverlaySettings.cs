@@ -124,6 +124,15 @@ public sealed class OverlaySettings
     /// <summary>OBS overlay: what the page shows (the address Settings builds).</summary>
     public Avion2.Engine.ObsPage ObsPage { get; set; } = new();
 
+    /// <summary>Discord Rich Presence: what we do in game shows in our Discord profile (off until switched on).</summary>
+    public bool DiscordPresence { get; set; }
+
+    /// <summary>Discord: our character's name shows too (never in streamer mode).</summary>
+    public bool DiscordShowName { get; set; }
+
+    /// <summary>Discord: our character's portrait from the official site is the large picture (never in streamer mode).</summary>
+    public bool DiscordShowPicture { get; set; }
+
     /// <summary>App theme id (<see cref="ThemeManager.Themes"/>): "aion2" or "void".</summary>
     public string Theme { get; set; } = "aion2";
 
@@ -144,6 +153,9 @@ public sealed class OverlaySettings
     /// <summary>Show the skill a boss starts casting (named skills only).</summary>
     public bool NotifyBossCasts { get; set; } = true;
 
+    /// <summary>A line when pet souls come in ("Soul of Zelophi: 3/5").</summary>
+    public bool NotifyPetSouls { get; set; } = true;
+
     /// <summary>Group finder notices: a join request, the room full and ready, the dungeon starting.</summary>
     public bool NotifyJoinRequests { get; set; } = true;
     public bool NotifyRoomReady { get; set; } = true;
@@ -163,6 +175,12 @@ public sealed class OverlaySettings
 
     /// <summary>Capture device index; null = automatic (all adapters, the game connection is detected).</summary>
     public int? Device { get; set; }
+
+    /// <summary>Gear Forge: the tool opened last ("enchant", "crafting" or "stats").</summary>
+    public string? ForgeTool { get; set; }
+
+    /// <summary>Gear Forge crafting: materials bought or gathered instead of crafted (item ids).</summary>
+    public List<uint> CraftBuyInstead { get; set; } = [];
 
     /// <summary>Home-screen background video: null = %AppData%\AVION2\background.mp4 if present, "" = none.</summary>
     public string? BackgroundVideo { get; set; }

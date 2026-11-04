@@ -46,6 +46,7 @@ public partial class SettingsPage : UserControl
             StreamerMode.Set(_state.Stored.HideNames);
         };
         SetUpObs();
+        SetUpDiscord();
         RecordAllBox.IsChecked = state.Stored.RecordAllGameConnections;
         RecordAllBox.Click += (_, _) =>
         {
@@ -120,6 +121,7 @@ public partial class SettingsPage : UserControl
         HistoryStatus.Text = $"{_state.Fights.Count} fights saved in {_state.History.Directory}";
         int icons = Enum.GetValues<Avion2.Protocol.GameClass>().Count(c => ClassIcons.For(c) is not null);
         IconStatus.Text = $"{icons} official class icons (built in; PNGs in the folder override them)";
+        BossImageStatus.Text = $"{Avion2.Engine.BossPortraits.Bundled.NpcCount} bosses with a built-in portrait; <NPC code>.png in the folder replaces or adds one";
         VideoName.Text = _state.BackgroundVideo is { } video ? Path.GetFileName(video) : "None (drawn backdrop)";
         ThemeHint.Text = ThemeManager.Current.VideoBackdrop
             ? "Key-art backdrop, serif display type"
@@ -346,6 +348,12 @@ public partial class SettingsPage : UserControl
     {
         Directory.CreateDirectory(ClassIcons.Directory);
         Process.Start(new ProcessStartInfo("explorer.exe", ClassIcons.Directory) { UseShellExecute = true });
+    }
+
+    private void BossImages_Click(object sender, RoutedEventArgs e)
+    {
+        Directory.CreateDirectory(BossImages.Directory);
+        Process.Start(new ProcessStartInfo("explorer.exe", BossImages.Directory) { UseShellExecute = true });
     }
 
     private void HistoryFolder_Click(object sender, RoutedEventArgs e)

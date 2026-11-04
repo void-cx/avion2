@@ -35,7 +35,11 @@
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <Border x:Name="Ring" Width="34" Height="34" CornerRadius="17" BorderThickness="1.5" HorizontalAlignment="Center"
                                             BorderBrush="{DynamicResource LineBrush}" Background="{DynamicResource PaneBrush}">
-                                        <Image x:Name="PickIcon" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality" />
+                                        <Grid>
+                                            <Image x:Name="PickIcon" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality" />
+                                            <!-- the character's portrait from the official site, when there is one (not in streamer mode) -->
+                                            <Ellipse x:Name="PickPortrait" Width="31" Height="31" Visibility="Collapsed" />
+                                        </Grid>
                                     </Border>
                                     <TextBlock x:Name="PickName" FontSize="10" Margin="0,5,0,0" MaxWidth="68" TextTrimming="CharacterEllipsis"
                                                HorizontalAlignment="Center" Foreground="{TemplateBinding Foreground}" />
@@ -54,7 +58,10 @@
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
-                <StackPanel>
+                <!-- the pages: the buttons get lower when the window is, and scroll (mouse wheel) below that -->
+                <ScrollViewer x:Name="NavScroll" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled"
+                              PanningMode="VerticalOnly" Focusable="False" SizeChanged="NavScroll_SizeChanged">
+                <StackPanel x:Name="NavStack">
                     <RadioButton Style="{StaticResource RailButton}" Content="Home" Tag="home" GroupName="Nav"
                                  local:Ui.Icon="{StaticResource IconHome}" Checked="Nav_Checked" />
                     <RadioButton Style="{StaticResource RailButton}" Content="Timers" Tag="timers" GroupName="Nav"
@@ -64,6 +71,9 @@
                     <RadioButton Style="{StaticResource RailButton}" Content="Characters" Tag="characters" GroupName="Nav"
                                  local:Ui.Icon="{StaticResource IconCharacter}" Checked="Nav_Checked"
                                  ToolTip="Your characters and anyone else's: combat power, item level, gear" />
+                    <RadioButton Style="{StaticResource RailButton}" Content="Legions" Tag="legions" GroupName="Nav"
+                                 local:Ui.Icon="{StaticResource IconLegion}" Checked="Nav_Checked"
+                                 ToolTip="Legions compared: the legions seen around you, by combat power or members" />
                     <RadioButton Style="{StaticResource RailButton}" Content="Forge" Tag="forge" GroupName="Nav"
                                  local:Ui.Icon="{StaticResource IconForge}" Checked="Nav_Checked" ToolTip="Gear Forge" />
                     <RadioButton Style="{StaticResource RailButton}" Content="Runs" Tag="runs" GroupName="Nav"
@@ -71,6 +81,7 @@
                     <RadioButton Style="{StaticResource RailButton}" Content="History" Tag="history" GroupName="Nav"
                                  local:Ui.Icon="{StaticResource IconHistory}" Checked="Nav_Checked" />
                 </StackPanel>
+                </ScrollViewer>
             </DockPanel>
         </Border>
 

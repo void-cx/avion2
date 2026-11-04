@@ -427,11 +427,13 @@ public sealed class MapView : FrameworkElement
         string title;
         var lines = new List<string>();
         Point at;
+        ImageSource? portrait = null;
         switch (_selected)
         {
             case MapMarker m:
                 at = ToScreen(m.X, m.Y);
                 title = m.Name;
+                portrait = BossImages.ForMarker(m.Name);
                 lines.Add(string.Join(" · ", new[]
                 {
                     _map!.LabelOf(m.Subtype),
@@ -522,21 +524,32 @@ public sealed class MapView : FrameworkElement
         dc.DrawEllipse(null, SelectPen, at, 10, 10);
         var heading = Text(title, 13, TitleBrush, FontWeights.SemiBold);
         var body = lines.Select(l => Text(l, 11, BodyBrush)).ToList();
-        double width = Math.Min(340, Math.Max(heading.Width, body.Select(b => b.Width).DefaultIfEmpty(0).Max()) + 20);
+        const double portraitSize = 52;
+        double indent = portrait is null ? 0 : portraitSize + 10; // the boss portrait sits left of the text
+        double width = Math.Min(340 + indent, Math.Max(heading.Width, body.Select(b => b.Width).DefaultIfEmpty(0).Max()) + 20 + indent);
         foreach (var text in body)
         {
-            text.MaxTextWidth = width - 20;
+            text.MaxTextWidth = width - 20 - indent;
         }
 
-        double height = 14 + heading.Height + body.Sum(b => b.Height + 2);
+        double height = Math.Max(14 + heading.Height + body.Sum(b => b.Height + 2), portrait is null ? 0 : portraitSize + 16);
         var card = new Rect(Math.Min(at.X + 16, ActualWidth - width - 8), Math.Max(8, at.Y - height / 2), width, height);
         dc.DrawRoundedRectangle(CardBrush, CardPen, card, 6, 6);
+        if (portrait is not null)
+        {
+            var frame = new Rect(card.Left + 8, card.Top + 8, portraitSize, portraitSize);
+            dc.PushClip(new RectangleGeometry(frame, 5, 5));
+            dc.DrawImage(portrait, frame);
+            dc.Pop();
+            dc.DrawRoundedRectangle(null, CardPen, frame, 5, 5);
+        }
+
         double y = card.Top + 7;
-        dc.DrawText(heading, new Point(card.Left + 10, y));
+        dc.DrawText(heading, new Point(card.Left + 10 + indent, y));
         y += heading.Height + 2;
         foreach (var text in body)
         {
-            dc.DrawText(text, new Point(card.Left + 10, y));
+            dc.DrawText(text, new Point(card.Left + 10 + indent, y));
             y += text.Height + 2;
         }
     }

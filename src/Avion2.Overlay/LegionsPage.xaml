@@ -1,0 +1,314 @@
+<UserControl x:Class="Avion2.Overlay.LegionsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Avion2.Overlay">
+    <UserControl.Resources>
+        <!-- The rank in a round badge: the top three in the theme's accent tones -->
+        <Style x:Key="RankBadge" TargetType="Border">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="CornerRadius" Value="15" />
+            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
+            <Setter Property="Background" Value="{DynamicResource PillBrush}" />
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+            <Setter Property="TextElement.FontWeight" Value="SemiBold" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Rank}" Value="1">
+                    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource AccentHoverBrush}" />
+                    <Setter Property="TextElement.Foreground" Value="{DynamicResource OnAccentBrush}" />
+                </DataTrigger>
+                <!-- (dark text on the light tones: the themes' "on accent" color is light in VOID) -->
+                <DataTrigger Binding="{Binding Rank}" Value="2">
+                    <Setter Property="Background" Value="{DynamicResource SecondaryTextBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource TextBrush}" />
+                    <Setter Property="TextElement.Foreground" Value="{DynamicResource ContentBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Rank}" Value="3">
+                    <Setter Property="Background" Value="{DynamicResource HighlightBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource AccentPillBrush}" />
+                    <Setter Property="TextElement.Foreground" Value="{DynamicResource ContentBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- A legion's name; ours in the "you" color -->
+        <Style x:Key="LegionName" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Own}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource SelfBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- "Yours" next to our legion -->
+        <Style x:Key="OwnTag" TargetType="Border" BasedOn="{StaticResource AccentPill}">
+            <Setter Property="Margin" Value="8,0,0,0" />
+            <Setter Property="Padding" Value="7,1" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Own}" Value="True">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- A clickable card or row: hover and selection tint, our legion with an edge in the "you" color -->
+        <Style x:Key="Pick" TargetType="Border">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource RowHoverBrush}" />
+                </Trigger>
+                <DataTrigger Binding="{Binding Selected}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SelectedRowBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="PodiumCard" TargetType="Border" BasedOn="{StaticResource SurfaceCard}">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="16,14,16,16" />
+            <Setter Property="Margin" Value="6,0" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource FieldBorderBrush}" />
+                </Trigger>
+                <DataTrigger Binding="{Binding Own}" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource SelfBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Selected}" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <DataTemplate x:Key="PodiumTemplate">
+            <Border Style="{StaticResource PodiumCard}" Margin="{Binding PodiumMargin}" MouseLeftButtonUp="Legion_Click" ToolTip="{Binding Tip}">
+                <StackPanel>
+                    <DockPanel>
+                        <Border DockPanel.Dock="Left" Style="{StaticResource RankBadge}" Width="38" Height="38" CornerRadius="19">
+                            <TextBlock Text="{Binding Rank}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                            <DockPanel>
+                                <Border DockPanel.Dock="Right" Style="{StaticResource OwnTag}"><TextBlock Text="Yours" /></Border>
+                                <TextBlock Text="{Binding Name}" Style="{StaticResource LegionName}" FontSize="16" />
+                            </DockPanel>
+                            <TextBlock Text="{Binding LastSeen}" Foreground="{DynamicResource MutedBrush}" FontSize="11" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                    <!-- the combat power gets the room it needs; the members sit at the right -->
+                    <Grid Margin="0,14,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,0,12,0">
+                            <TextBlock Text="Combat power" Style="{StaticResource StatLabel}" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding Power}" Style="{StaticResource StatValue}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Members" Style="{StaticResource StatLabel}" HorizontalAlignment="Right" />
+                            <TextBlock Text="{Binding MembersText}" Style="{StaticResource StatValue}" HorizontalAlignment="Right" />
+                        </StackPanel>
+                    </Grid>
+                    <ProgressBar Style="{StaticResource ThinBar}" Value="{Binding Share, Mode=OneWay}" Margin="0,12,0,0" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="236" />
+            <ColumnDefinition Width="*" MinWidth="420" />
+            <ColumnDefinition Width="360" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar: the servers legions were seen on -->
+        <Border Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="22,26,22,18">
+                    <TextBlock Style="{StaticResource BrandTitle}" />
+                    <TextBlock Text="Your AION2 hub" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,2,0,0" />
+                </StackPanel>
+                <local:SidebarFooter DockPanel.Dock="Bottom" />
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="8,0">
+                        <TextBlock Text="SERVERS" Style="{StaticResource SectionLabel}" Margin="14,4,0,8" />
+                        <StackPanel x:Name="ServerList" />
+                        <TextBlock x:Name="NoServers" Text="None yet" Foreground="{DynamicResource MutedBrush}" Margin="14,0,0,0" />
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <!-- Ranking -->
+        <DockPanel Grid.Column="1">
+            <StackPanel DockPanel.Dock="Top" Margin="28,26,28,0">
+                <TextBlock Text="Legions" Style="{StaticResource PageTitle}" />
+                <TextBlock x:Name="Hint" Style="{StaticResource PageSubtitle}" />
+            </StackPanel>
+
+            <Border DockPanel.Dock="Top" Margin="28,16,28,0" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1">
+                <DockPanel Margin="0,0,0,8">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <RadioButton x:Name="ByPower" Style="{StaticResource Segment}" Content="Most combat power" GroupName="LegionOrder" IsChecked="True"
+                                     Checked="Order_Checked" ToolTip="The combat power of the members seen, added up" />
+                        <RadioButton x:Name="ByMembers" Style="{StaticResource Segment}" Content="Most members" GroupName="LegionOrder"
+                                     Checked="Order_Checked" ToolTip="The members seen in the last 30 days" />
+                    </StackPanel>
+                    <TextBlock x:Name="Shown" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                </DockPanel>
+            </Border>
+
+            <Grid>
+                <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="22,16,22,20">
+                        <!-- The top three: second, first (raised), third -->
+                        <ItemsControl x:Name="Podium" ItemTemplate="{StaticResource PodiumTemplate}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><UniformGrid Rows="1" VerticalAlignment="Bottom" /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+
+                        <Grid x:Name="ListHeader" Margin="16,20,16,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="46" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="72" />
+                                <ColumnDefinition Width="104" />
+                                <ColumnDefinition Width="150" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="RANK" Style="{StaticResource SectionLabel}" />
+                            <TextBlock Grid.Column="1" Text="LEGION" Style="{StaticResource SectionLabel}" />
+                            <TextBlock Grid.Column="2" Text="MEMBERS" Style="{StaticResource SectionLabel}" TextAlignment="Right" />
+                            <TextBlock Grid.Column="3" Text="COMBAT POWER" Style="{StaticResource SectionLabel}" TextAlignment="Right" />
+                        </Grid>
+                        <ItemsControl x:Name="Ranked">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource Pick}" Padding="6,0" MinHeight="40" MouseLeftButtonUp="Legion_Click" ToolTip="{Binding Tip}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="46" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="72" />
+                                                <ColumnDefinition Width="104" />
+                                                <ColumnDefinition Width="150" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Style="{StaticResource RankBadge}" HorizontalAlignment="Left" Margin="4,0,0,0">
+                                                <TextBlock Text="{Binding Rank}" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <DockPanel Grid.Column="1" Margin="0,0,8,0">
+                                                <Border DockPanel.Dock="Right" Style="{StaticResource OwnTag}"><TextBlock Text="Yours" /></Border>
+                                                <TextBlock Text="{Binding Name}" Style="{StaticResource LegionName}" />
+                                            </DockPanel>
+                                            <TextBlock Grid.Column="2" Text="{Binding MembersText}" Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       TextAlignment="Right" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="3" Text="{Binding Power}" Foreground="{DynamicResource TitleBrush}" FontWeight="SemiBold"
+                                                       TextAlignment="Right" VerticalAlignment="Center" />
+                                            <ProgressBar Grid.Column="4" Style="{StaticResource ThinBar}" Value="{Binding Share, Mode=OneWay}" Margin="18,0,8,0"
+                                                         VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock x:Name="Footnote" Foreground="{DynamicResource MutedBrush}" FontSize="12" TextWrapping="Wrap" Margin="16,18,16,0" />
+                    </StackPanel>
+                </ScrollViewer>
+                <TextBlock x:Name="Nothing" Foreground="{DynamicResource MutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,48,0,0"
+                           TextWrapping="Wrap" TextAlignment="Center" MaxWidth="400" Visibility="Collapsed" />
+            </Grid>
+        </DockPanel>
+
+        <!-- The selected legion's members -->
+        <Border Grid.Column="2" Background="{DynamicResource PaneBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1,0,0,0">
+            <Grid>
+                <TextBlock x:Name="Empty" Text="Select a legion to see its members." Foreground="{DynamicResource MutedBrush}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <ScrollViewer x:Name="Pane" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel Margin="22,24,22,22">
+                        <TextBlock x:Name="PaneName" Style="{StaticResource PaneTitle}" />
+                        <WrapPanel Margin="0,10,0,4">
+                            <Border Style="{StaticResource AccentPill}"><TextBlock x:Name="PaneRank" /></Border>
+                            <Border x:Name="PaneOwn" Style="{StaticResource Pill}"><TextBlock Text="Your legion" Foreground="{DynamicResource SelfBrush}" /></Border>
+                            <Border Style="{StaticResource Pill}"><TextBlock x:Name="PaneServer" /></Border>
+                        </WrapPanel>
+
+                        <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Margin="0,12,0,0" Padding="0,14,0,0">
+                            <UniformGrid Columns="2">
+                                <StackPanel Margin="0,0,0,12"><TextBlock Text="Members seen" Style="{StaticResource StatLabel}" /><TextBlock x:Name="PaneMembers" Style="{StaticResource StatValue}" /></StackPanel>
+                                <StackPanel Margin="0,0,0,12"><TextBlock Text="Combat power" Style="{StaticResource StatLabel}" /><TextBlock x:Name="PanePower" Style="{StaticResource StatValue}" /></StackPanel>
+                                <StackPanel><TextBlock Text="Average combat power" Style="{StaticResource StatLabel}" /><TextBlock x:Name="PaneAverage" Style="{StaticResource StatValue}" /></StackPanel>
+                                <StackPanel><TextBlock Text="Last seen" Style="{StaticResource StatLabel}" /><TextBlock x:Name="PaneSeen" Style="{StaticResource StatValue}" /></StackPanel>
+                            </UniformGrid>
+                        </Border>
+                        <TextBlock x:Name="PaneNote" Foreground="{DynamicResource MutedBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,10,0,0" />
+
+                        <Grid Margin="0,22,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="46" />
+                                <ColumnDefinition Width="78" />
+                                <ColumnDefinition Width="64" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="MEMBERS" Style="{StaticResource SectionLabel}" />
+                            <TextBlock Grid.Column="1" Text="ILVL" Style="{StaticResource SectionLabel}" TextAlignment="Right" />
+                            <TextBlock Grid.Column="2" Text="CP" Style="{StaticResource SectionLabel}" TextAlignment="Right" />
+                            <TextBlock Grid.Column="3" Text="SEEN" Style="{StaticResource SectionLabel}" TextAlignment="Right" />
+                        </Grid>
+                        <ItemsControl x:Name="MemberList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,8" ToolTip="{Binding Tip}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="46" />
+                                            <ColumnDefinition Width="78" />
+                                            <ColumnDefinition Width="64" />
+                                        </Grid.ColumnDefinitions>
+                                        <DockPanel>
+                                            <Image DockPanel.Dock="Left" Source="{Binding Icon}" Width="20" Height="20" Margin="0,0,10,0"
+                                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Self}" Value="True">
+                                                                <Setter Property="Foreground" Value="{DynamicResource SelfBrush}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </DockPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding ItemLevel}" Foreground="{DynamicResource SecondaryTextBrush}"
+                                                   TextAlignment="Right" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="2" TextAlignment="Right" VerticalAlignment="Center">
+                                            <Run Text="{Binding SiteMark, Mode=OneWay}" Foreground="{DynamicResource AccentTextBrush}" FontSize="10" /><Run
+                                                 Text="{Binding Power, Mode=OneWay}" Foreground="{DynamicResource TitleBrush}" FontWeight="SemiBold" />
+                                        </TextBlock>
+                                        <TextBlock Grid.Column="3" Text="{Binding Seen}" Foreground="{DynamicResource MutedBrush}" FontSize="12"
+                                                   TextAlignment="Right" VerticalAlignment="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

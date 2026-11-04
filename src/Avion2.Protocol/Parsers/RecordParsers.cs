@@ -165,6 +165,11 @@ public static class RecordParsers
         var cls = r.TryU32(out uint classCode) ? GameClasses.FromRosterCode(classCode) : GameClass.Unknown;
         var position = WorldParsers.FindPosition(body, r.Position, 32);
         emit(new PlayerSpawnEvent(ts, id, name, null, cls, FindPlayerCombatPower(body), position));
+        if (LegionsParsers.FindSpawnLegion(body, r.Position) is { } legion)
+        {
+            emit(new LegionTagEvent(ts, id, legion.Server, legion.Legion)); // the player's server and legion
+        }
+
         if (position is { } p)
         {
             emit(new PositionEvent(ts, id, p, null, PositionSource.Spawn));

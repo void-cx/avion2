@@ -5,8 +5,8 @@
     <UserControl.Resources>
         <DataTemplate x:Key="CharacterRowTemplate">
             <DockPanel Margin="0,3">
-                <Image DockPanel.Dock="Left" Source="{Binding Icon}" Width="22" Height="22" Margin="0,0,10,0" VerticalAlignment="Center"
-                       RenderOptions.BitmapScalingMode="HighQuality" />
+                <local:CharacterAvatar DockPanel.Dock="Left" Icon="{Binding Icon}" Portrait="{Binding Portrait}" Width="28" Height="28"
+                                       Margin="0,0,10,0" VerticalAlignment="Center" />
                 <StackPanel>
                     <TextBlock Text="{Binding Shown}" Foreground="{DynamicResource TextBrush}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                     <TextBlock Text="{Binding Detail}" Foreground="{DynamicResource MutedBrush}" FontSize="11" TextTrimming="CharacterEllipsis" />
@@ -120,7 +120,7 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="22,26,22,18">
                     <TextBlock Style="{StaticResource BrandTitle}" />
-                    <TextBlock Text="Passive DPS meter for AION2" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,2,0,0" />
+                    <TextBlock Text="Your AION2 hub" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,2,0,0" />
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="16,0,16,0">
                     <TextBox x:Name="NameBox" Style="{StaticResource SearchBox}" local:Ui.Placeholder="Look up a player" KeyDown="NameBox_KeyDown" />
@@ -176,7 +176,8 @@
                         </Grid>
 
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal">
+                            <!-- wraps: the buttons go below the name when the titles leave too little room -->
+                            <WrapPanel>
                                 <TextBlock Text="{Binding Shown}" Style="{StaticResource PageTitle}" VerticalAlignment="Center" />
                                 <Border Style="{StaticResource Pill}" Margin="12,0,0,0" VerticalAlignment="Center"><TextBlock Text="{Binding ServerName}" /></Border>
                                 <Button Style="{StaticResource QuietButton}" Content="Refresh" Margin="8,0,0,0" Padding="12,3" VerticalAlignment="Center"
@@ -184,7 +185,7 @@
                                 <Button x:Name="CompareButton" Style="{StaticResource QuietButton}" Content="Compare" Margin="8,0,0,0" Padding="12,3"
                                         VerticalAlignment="Center" Click="Compare_Click" Visibility="Collapsed"
                                         ToolTip="This character beside one of yours: gear, stats, Daevanion and skills" />
-                            </StackPanel>
+                            </WrapPanel>
                             <TextBlock x:Name="Updated" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,4,0,0" />
                             <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                                 <Image Source="{Binding ClassIcon}" Width="20" Height="20" Margin="0,0,8,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" />
@@ -198,7 +199,7 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" MaxWidth="420">
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" MaxWidth="320" Margin="12,0,0,0">
                             <TextBlock Text="{Binding Legion}" Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Right" Margin="0,0,0,10" />
                             <ItemsControl ItemsSource="{Binding Titles}" HorizontalAlignment="Right">
                                 <ItemsControl.ItemsPanel>

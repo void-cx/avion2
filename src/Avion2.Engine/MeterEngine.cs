@@ -158,6 +158,7 @@ public sealed class MeterEngine : IDisposable
         {
             _session.Registry.SetKnownCharacters(characters.Characters);
             _session.Rewards.Changed += () => RewardsChanged?.Invoke(); // never keep counters under "You"
+            _session.Crafts.Crafted += (craft, character) => Crafted?.Invoke(craft, character);
         }
 
         _session.Registry.CharacterIdentified += character =>
@@ -195,7 +196,13 @@ public sealed class MeterEngine : IDisposable
                 return;
             }
 
+            int sightings = _session.LegionsSeen.Pending;
             _session.Apply(e);
+            if (sightings == 0 && _session.LegionsSeen.Pending > 0)
+            {
+                LegionsSighted?.Invoke();
+            }
+
             if (e is ServerClockEvent)
             {
                 _lastServerTick = System.Diagnostics.Stopwatch.GetTimestamp();
@@ -228,12 +235,16 @@ public sealed class MeterEngine : IDisposable
             }
             else if (e is SelfItemLevelEvent or KinahLimitEvent or AbyssPointLimitEvent or ContentTicketsEvent
                      or ContentTicketChangedEvent or DaevaPassEvent or ExperienceEvent or PetRosterEvent or PetSoulsEvent
-                     or PetAcquiredEvent)
+                     or PetAcquiredEvent or PetLevelUpEvent)
             {
                 ProgressChanged?.Invoke();
                 if (e is PetAcquiredEvent pet)
                 {
                     PetAcquired?.Invoke(pet);
+                }
+                else if (e is PetSoulsEvent { Gained: true } souls)
+                {
+                    SoulsGained?.Invoke(souls);
                 }
             }
             else if (e is GatherStartEvent or GatherEndEvent or CraftStartEvent or CraftEndEvent)
@@ -526,6 +537,21 @@ public sealed class MeterEngine : IDisposable
     /// <summary>Raised on the capture thread when legion details or members arrive.</summary>
     public event Action? LegionChanged;
 
+    /// <summary>
+    /// Raised on the capture thread when players were seen with their legion and none were waiting:
+    /// <see cref="DrainLegionSightings"/> takes them (and the next sighting raises it again).
+    /// </summary>
+    public event Action? LegionsSighted;
+
+    /// <summary>The players seen with their legion since the last call.</summary>
+    public IReadOnlyList<LegionSighting> DrainLegionSightings()
+    {
+        lock (_sync)
+        {
+            return _session.LegionsSeen.Drain();
+        }
+    }
+
     /// <summary>Raised on the capture thread when a hidden cube came into range or was opened.</summary>
     public event Action<CubeSighting>? CubeSeen;
 
@@ -567,6 +593,12 @@ public sealed class MeterEngine : IDisposable
 
     /// <summary>Raised on the capture thread when our character's progress changed (<see cref="Progress"/> has it).</summary>
     public event Action? ProgressChanged;
+
+    /// <summary>Raised on the capture thread when pet souls came in (after <see cref="ProgressChanged"/>).</summary>
+    public event Action<PetSoulsEvent>? SoulsGained;
+
+    /// <summary>Raised on the capture thread when one of our crafts finished, with the character it belongs to.</summary>
+    public event Action<CraftEntry, string>? Crafted;
 
     /// <summary>Raised on the capture thread when we acquired a pet.</summary>
     public event Action<PetAcquiredEvent>? PetAcquired;

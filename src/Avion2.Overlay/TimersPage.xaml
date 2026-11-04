@@ -14,7 +14,7 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="22,26,22,18">
                     <TextBlock Style="{StaticResource BrandTitle}" />
-                    <TextBlock Text="Passive DPS meter for AION2" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,2,0,0" />
+                    <TextBlock Text="Your AION2 hub" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,2,0,0" />
                 </StackPanel>
                 <TextBox x:Name="Search" DockPanel.Dock="Top" Style="{StaticResource SearchBox}" Margin="16,0,16,14"
                          local:Ui.Placeholder="Search bosses, events" TextChanged="Search_TextChanged" />
@@ -82,18 +82,32 @@
                         <DataTemplate DataType="local:TimerItem">
                             <Grid>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="44" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="128" />
                                     <ColumnDefinition Width="112" />
                                 </Grid.ColumnDefinitions>
-                                <StackPanel VerticalAlignment="Center" Margin="0,0,8,0">
+                                <!-- The boss's portrait, or the kind's glyph in the same rounded square (no shift between rows) -->
+                                <Grid Width="34" Height="34" Margin="0,3" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <Border CornerRadius="6" Background="{DynamicResource PillBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1">
+                                        <Viewbox Width="16" Height="16">
+                                            <Path Style="{StaticResource IconPath}" Data="{Binding Glyph}" Stroke="{DynamicResource SectionLabelBrush}" />
+                                        </Viewbox>
+                                    </Border>
+                                    <Border CornerRadius="6">
+                                        <Border.Background>
+                                            <ImageBrush ImageSource="{Binding Picture}" Stretch="UniformToFill" AlignmentY="Top" />
+                                        </Border.Background>
+                                    </Border>
+                                </Grid>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
                                     <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" />
                                     <TextBlock Text="{Binding Where}" Foreground="{DynamicResource SectionLabelBrush}" FontSize="11" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
-                                <Border Grid.Column="1" Style="{StaticResource Pill}" Background="{Binding StatusBack}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0">
+                                <Border Grid.Column="2" Style="{StaticResource Pill}" Background="{Binding StatusBack}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0">
                                     <TextBlock Text="{Binding Status}" Foreground="{Binding StatusBrush}" />
                                 </Border>
-                                <TextBlock Grid.Column="2" Text="{Binding In}" Foreground="{DynamicResource SecondaryTextBrush}" TextAlignment="Right" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="3" Text="{Binding In}" Foreground="{DynamicResource SecondaryTextBrush}" TextAlignment="Right" VerticalAlignment="Center" />
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -124,6 +138,26 @@
                                 </Viewbox>
                                 <TextBlock x:Name="NoMapText" Foreground="{DynamicResource SectionLabelBrush}" FontSize="12" Margin="0,8,0,0" HorizontalAlignment="Center" />
                             </StackPanel>
+                            <!-- The boss portraits: in the corner over the map, or in the middle when there is no map -->
+                            <ItemsControl x:Name="Portraits" Margin="16,14" HorizontalAlignment="Left" VerticalAlignment="Bottom" IsHitTestVisible="False">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Width="60" Height="60" Margin="4,0" CornerRadius="9" Padding="1.5"
+                                                Background="{DynamicResource PaneBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1.5">
+                                            <Border CornerRadius="7">
+                                                <Border.Background>
+                                                    <ImageBrush ImageSource="{Binding}" Stretch="UniformToFill" AlignmentY="Top" />
+                                                </Border.Background>
+                                            </Border>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </Grid>
                     </Border>
                     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="22,14,22,22">

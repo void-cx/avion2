@@ -170,7 +170,7 @@
 
     <!-- Hero: mono eyebrow with the // motif, sentence-case headline -->
     <Style x:Key="HeroEyebrow" TargetType="TextBlock">
-        <Setter Property="Text" Value="// Enter The Void · damage meter for AION2" />
+        <Setter Property="Text" Value="// Enter The Void · your AION2 hub" />
         <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
         <Setter Property="FontWeight" Value="Medium" />
         <Setter Property="Foreground" Value="#D27BFF" />

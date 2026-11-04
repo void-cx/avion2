@@ -12,6 +12,9 @@ public sealed record DeviceOption(int? Index, string Label);
 
 public sealed record LegionLine(string Name, string Seen);
 
+/// <summary>One of our characters on the Character card: name, class, emblem and saved portrait.</summary>
+public sealed record HomeCharacter(string Name, string Line, ImageSource? Icon, ImageSource? Portrait);
+
 public sealed record OverlayModeOption(string Id, string Label);
 
 /// <summary>Start/stop the meter, see what's going on, jump to recent fights.</summary>
@@ -54,6 +57,7 @@ public partial class HomePage : UserControl
         state.UpdateAvailableChanged += RefreshUpdate;
         state.Fights.CollectionChanged += (_, _) => RefreshRecent();
         state.InventoryUpdated += RefreshCharacter;
+        state.PortraitsChanged += RefreshCharacter;
         state.ProgressUpdated += RefreshProgress;
         state.ViewedCharacterChanged += () =>
         {
@@ -209,9 +213,13 @@ public partial class HomePage : UserControl
     private void RefreshCharacter()
     {
         var characters = new CharacterStore().Characters;
-        CharactersValue.Text = characters.Count == 0
-            ? "None yet: teleport once in game"
-            : string.Join("\n", characters.Take(3).Select(c => $"{StreamerMode.Name(c.Name)} · {c.Class}"));
+        CharactersValue.Text = characters.Count == 0 ? "None yet: teleport once in game" : string.Empty;
+        CharactersValue.Visibility = characters.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        CharacterList.ItemsSource = characters.Take(3)
+            .Select(c => new HomeCharacter(StreamerMode.Name(c.Name, self: c.Name == _state.PlayingCharacter),
+                c.Class == GameClass.Unknown ? "?" : c.Class.ToString(),
+                ClassIcons.For(c.Class), _state.PortraitOf(c.Name, c.ServerId)))
+            .ToList();
         if (_state.ViewedInventory is { IsKnown: true } inventory)
         {
             Wallet.Visibility = Visibility.Visible;
@@ -238,7 +246,10 @@ public partial class HomePage : UserControl
             : null;
         var stats = progress is null ? [] : Avion2.Analysis.ProgressSummary.Stats(progress, DateTimeOffset.Now, _state.Settings.Region, gear);
         // Pets belong to the account: the newest roster of any character
-        string? pets = _state.Progresses.LatestPets() is { } roster ? Avion2.Analysis.ProgressSummary.Pets(roster, _state.PetName) : null;
+        var roster = _state.Progresses.LatestPets();
+        string? pets = roster is not null ? Avion2.Analysis.ProgressSummary.Pets(roster, _state.PetName) : null;
+        PetDetails.Show(roster is null ? [] : Avion2.Analysis.PetSoulTable.Rows(roster, _state.Progresses.SoulSources,
+            _state.Progresses.SoulItem, _state.PetName, _state.NpcName));
         ProgressStats.ItemsSource = stats;
         PetLine.Text = pets ?? string.Empty;
         PetLine.Visibility = pets is null ? Visibility.Collapsed : Visibility.Visible;

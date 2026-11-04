@@ -11,7 +11,7 @@ namespace Avion2.Overlay;
 /// Everything that outlives a meter session: user settings, saved fights, name tables, and the running
 /// meter (engine + overlay) if any. Lives on the UI thread.
 /// </summary>
-public sealed class AppState
+public sealed partial class AppState
 {
     private readonly EngineOptions _baseOptions;
 
@@ -29,6 +29,7 @@ public sealed class AppState
         // the last character we played is "You" until the meter sees which one it is today
         StreamerMode.Names.Self = new CharacterStore().Characters.FirstOrDefault()?.Name;
         StreamerMode.Set(Stored.HideNames);
+        Portraits.Changed += (_, _) => Application.Current?.Dispatcher.BeginInvoke(() => PortraitsChanged?.Invoke());
         Settings = new OverlayViewModel();
         LoadSettings();
         History = new HistoryStore(baseOptions.HistoryDirectory);
@@ -58,9 +59,20 @@ public sealed class AppState
         Timers.Due += OnEventDue;
         Cubes = new CubeFinder(this);
         Ceilings = new RewardCeilings(this, () => KeepsGameState);
+        Crafts = new CraftJournal(this, () => KeepsGameState);
         Obs = new ObsOverlay(this);
         Obs.Apply();
+        Discord = new DiscordFeed(this);
+        Discord.Apply();
+        Armory.Loaded += OnArmoryProfile;
+        foreach (var known in OurCharacters)
+        {
+            RefreshPortrait(known);
+        }
     }
+
+    /// <summary>Discord Rich Presence (Settings, General): our status in the Discord app on this PC.</summary>
+    public DiscordFeed Discord { get; }
 
     /// <summary>The OBS overlay (Settings, General): a page on localhost for an OBS Browser Source.</summary>
     public ObsOverlay Obs { get; }
@@ -107,7 +119,7 @@ public sealed class AppState
             NoticeSound().Play();
         }
 
-        Notices.Notify(text, CategoryLabel(occurrence.Event.Category));
+        Notices.Notify(text, CategoryLabel(occurrence.Event.Category), BossImages.ForTimer(occurrence.Event.Key, Data));
     }
 
     private NotificationWindow? _notices;
@@ -165,6 +177,9 @@ public sealed class AppState
 
     /// <summary>The guaranteed rewards of the expedition reward cubes, per character.</summary>
     public RewardCeilings Ceilings { get; }
+
+    /// <summary>Our crafts per character, and the pet-soul notices.</summary>
+    public CraftJournal Crafts { get; }
 
     /// <summary>The run in progress (inside a dungeon, expedition or other instance), or null.</summary>
     public Avion2.Analysis.DungeonRun? LiveRun { get; private set; }
@@ -276,6 +291,43 @@ public sealed class AppState
     /// <summary>Characters from the official AION2 site, looked up on demand.</summary>
     public ArmoryClient Armory { get; } = new();
 
+    /// <summary>Our characters' portraits from the official AION2 site, kept on this PC.</summary>
+    public PortraitStore Portraits { get; } = new();
+
+    /// <summary>Raised on the UI thread when one of our characters' portraits was saved or changed.</summary>
+    public event Action? PortraitsChanged;
+
+    /// <summary>One of our characters' saved portrait as an image; null when there is none, and in streamer mode.</summary>
+    public System.Windows.Media.ImageSource? PortraitOf(string name, ushort serverId) =>
+        StreamerMode.On ? null : PortraitImages.Load(Portraits.PicturePath(name, serverId));
+
+    private static readonly Lazy<System.Net.Http.HttpClient> PortraitHttp = new(() =>
+    {
+        var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+        http.DefaultRequestHeaders.UserAgent.ParseAdd("AVION2");
+        return http;
+    });
+
+    /// <summary>
+    /// Fetches the portrait of a character we play from the official site, in the background, when there is none on
+    /// this PC or it is a week old. Not for replays or anonymized runs.
+    /// </summary>
+    private void RefreshPortrait(Avion2.Analysis.KnownCharacter character)
+    {
+        if (IsReplay || _baseOptions.AnonymizeNames || character.ServerId == 0 || !Portraits.NeedsRefresh(character.Name, character.ServerId))
+        {
+            return;
+        }
+
+        _ = Portraits.RefreshAsync(character.Name, character.ServerId,
+            async (name, server) =>
+            {
+                var lookup = await Armory.LoadAsync(name, server).ConfigureAwait(false);
+                return (lookup.Profile is not null, lookup.Profile?.ImageUrl);
+            },
+            url => PortraitHttp.Value.GetByteArrayAsync(url));
+    }
+
     /// <summary>Raised to open a character on the Characters page (name, server id).</summary>
     public event Action<string, ushort>? ShowCharacterRequested;
 
@@ -340,6 +392,8 @@ public sealed class AppState
             Application.Current.Dispatcher.BeginInvoke(() => UpdateLegion(legion));
         };
         Ceilings.Attach(engine);
+        Crafts.Attach(engine);
+        AttachLegionsSeen(engine);
         engine.TeachCubeCodes(CubeLog.Codes);
         engine.CubeSeen += cube => Application.Current.Dispatcher.BeginInvoke(() => OnCube(cube, engine));
         engine.InventoryChanged += () =>
@@ -613,6 +667,7 @@ public sealed class AppState
     private void Identified(Avion2.Analysis.KnownCharacter character)
     {
         _ourNames.Add(character.Name);
+        RefreshPortrait(character);
         if (character.Name == _playing)
         {
             return;
@@ -927,6 +982,10 @@ public sealed class AppState
         return name.EndsWith(" (Bound)", StringComparison.Ordinal) ? name[..^" (Bound)".Length] : name;
     }
 
+    /// <summary>An NPC's name in the app's language (English when that table lacks it), or null.</summary>
+    public string? NpcName(uint code) =>
+        Data.Npcs.TryGetValue(code, out var npc) && !string.IsNullOrWhiteSpace(npc.Name) ? npc.Name : BundledGameData.EnglishNpcName(code);
+
     private static Avion2.Analysis.ProgressBook LoadProgress()
     {
         try
@@ -1005,7 +1064,7 @@ public sealed class AppState
             return; // shown under the game's target frame
         }
 
-        Notices.Notify($"{name}: {skill}", "Boss skill");
+        Notices.Notify($"{name}: {skill}", "Boss skill", boss.NpcCode is { } npcCode ? BossImages.ForNpc(npcCode) : null);
     }
 
     /// <summary>Group finder: a join request, the room full and ready, the dungeon starting (each with its Settings switch).</summary>
@@ -1186,6 +1245,7 @@ public sealed class AppState
         Settings.NotifyFieldBoss = s.NotifyFieldBoss;
         Settings.NotifyWorldBoss = s.NotifyWorldBoss;
         Settings.NotifyBossCasts = s.NotifyBossCasts;
+        Settings.NotifyPetSouls = s.NotifyPetSouls;
         Settings.NotifyJoinRequests = s.NotifyJoinRequests;
         Settings.NotifyRoomReady = s.NotifyRoomReady;
         Settings.NotifyDungeonStart = s.NotifyDungeonStart;
@@ -1212,6 +1272,7 @@ public sealed class AppState
 
         SaveInventory();
         SaveProgress();
+        SaveLegionsSeen();
         var s = Stored;
         s.BackgroundOpacity = Settings.BackgroundOpacity;
         s.AllTargets = Settings.AllTargets;
@@ -1233,6 +1294,7 @@ public sealed class AppState
         s.NotifyFieldBoss = Settings.NotifyFieldBoss;
         s.NotifyWorldBoss = Settings.NotifyWorldBoss;
         s.NotifyBossCasts = Settings.NotifyBossCasts;
+        s.NotifyPetSouls = Settings.NotifyPetSouls;
         s.NotifyJoinRequests = Settings.NotifyJoinRequests;
         s.NotifyRoomReady = Settings.NotifyRoomReady;
         s.NotifyDungeonStart = Settings.NotifyDungeonStart;

@@ -35,4 +35,33 @@ public sealed class NameMask
     }
 
     public string? Legion(string? legion) => On && !string.IsNullOrEmpty(legion) ? "Legion" : legion;
+
+    private readonly Dictionary<string, string> _legions = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// For lists of many legions (the Legions page): our legion is "Your legion", every other one "Legion A", "Legion B",
+    /// … (the same legion always gets the same letter).
+    /// </summary>
+    public string LegionInList(string legion, bool own = false)
+    {
+        if (!On || legion.Length == 0)
+        {
+            return legion;
+        }
+
+        if (own)
+        {
+            return "Your legion";
+        }
+
+        if (!_legions.TryGetValue(legion, out var alias))
+        {
+            _legions[legion] = alias = $"Legion {Letters(_legions.Count)}";
+        }
+
+        return alias;
+    }
+
+    /// <summary>A, B, … Z, AA, AB, …</summary>
+    private static string Letters(int index) => index < 26 ? ((char)('A' + index)).ToString() : Letters(index / 26 - 1) + (char)('A' + index % 26);
 }

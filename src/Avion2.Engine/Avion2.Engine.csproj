@@ -14,11 +14,17 @@
     <EmbeddedResource Include="..\..\assets\gamedata\gear_forge.json" LogicalName="gamedata/gear_forge.json" />
     <EmbeddedResource Include="..\..\assets\gamedata\gear_stats.json" LogicalName="gamedata/gear_stats.json" />
     <EmbeddedResource Include="..\..\assets\gamedata\dungeons.json" LogicalName="gamedata/dungeons.json" />
+    <EmbeddedResource Include="..\..\assets\gamedata\dungeon_names.json" LogicalName="gamedata/dungeon_names.json" />
     <EmbeddedResource Include="..\..\assets\gamedata\items.json" LogicalName="gamedata/items.json" />
     <EmbeddedResource Include="..\..\assets\gamedata\cube_rewards.json" LogicalName="gamedata/cube_rewards.json" />
     <EmbeddedResource Include="..\..\assets\gamedata\servers.json" LogicalName="gamedata/servers.json" />
+    <EmbeddedResource Include="..\..\assets\gamedata\recipes.json" LogicalName="gamedata/recipes.json" />
+    <EmbeddedResource Include="..\..\assets\gamedata\stat_rates.json" LogicalName="gamedata/stat_rates.json" />
     <EmbeddedResource Include="..\..\assets\gamedata\world\*.*" LogicalName="gamedata/world/%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\assets\gamedata\world\icons\*.png" LogicalName="gamedata/world/icons/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\assets\gamedata\bosses\*.*" LogicalName="gamedata/bosses/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\assets\gamedata\skillicons\*.*" LogicalName="gamedata/skillicons/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\assets\gamedata\itemicons\*.*" LogicalName="gamedata/itemicons/%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

@@ -19,6 +19,8 @@ public sealed class TimerItem(string key, string kind) : Bindable
     private Brush _statusBrush = Brushes.White;
     private Brush _statusBack = Brushes.Transparent;
     private string _in = string.Empty;
+    private ImageSource? _picture;
+    private Geometry? _glyph;
 
     public string Key { get; } = key;
 
@@ -31,6 +33,15 @@ public sealed class TimerItem(string key, string kind) : Bindable
     public Brush StatusBrush { get => _statusBrush; set => Set(ref _statusBrush, value); }
     public Brush StatusBack { get => _statusBack; set => Set(ref _statusBack, value); }
     public string In { get => _in; set => Set(ref _in, value); }
+
+    /// <summary>The boss's portrait, or null (the row then shows <see cref="Glyph"/>).</summary>
+    public ImageSource? Picture { get => _picture; set => Set(ref _picture, value); }
+
+    /// <summary>The kind's icon, shown in the picture's place when there is no portrait.</summary>
+    public Geometry? Glyph { get => _glyph; set => Set(ref _glyph, value); }
+
+    /// <summary>Every portrait for the detail pane (a world boss row has one per boss).</summary>
+    public IReadOnlyList<ImageSource> Pictures { get; set; } = [];
 
     public string Category { get; set; } = string.Empty;
     public DateTimeOffset At { get; set; }
@@ -172,6 +183,7 @@ public partial class TimersPage : UserControl
             item.At = r.At;
             item.Rule = string.Empty;
             item.Source = "Respawn table sent by the game";
+            Picture(item, BossImages.ForSpawn(r.SpawnCode, _state.Data), "IconShield");
             switch (r.Status)
             {
                 case FieldBossStatus.Respawning:
@@ -201,6 +213,8 @@ public partial class TimersPage : UserControl
             item.At = o.StartsAt;
             item.Rule = GameSchedule.Describe(o.Event) + " server time";
             item.Source = o.Source ?? "Fixed server schedule";
+            Picture(item, worldBoss ? BossImages.ForTimer(o.Event.Key, _state.Data) : null, worldBoss ? "IconCrown" : "IconCalendar");
+            item.Pictures = worldBoss ? BossImages.ForWorldBoss(o.Event.Key) : [];
             Tone(item, o.StartsAt - now < TimeSpan.FromMinutes(15) ? "soon" : "later", worldBoss ? "Scheduled" : item.Category);
             item.In = "in " + Countdown(o.StartsAt - now);
             lines.Add(item);
@@ -222,6 +236,7 @@ public partial class TimersPage : UserControl
                 1 => $"Sent by the game (event {live.Ids[0]})",
                 _ => $"Sent by the game ({live.Ids.Count} events open)",
             };
+            Picture(item, null, "IconCalendar");
             Tone(item, "up", "On now");
             item.In = live.EndsAt is { } end
                 ? $"until {end.ToLocalTime():HH:mm}"
@@ -237,10 +252,22 @@ public partial class TimersPage : UserControl
         next.At = rift;
         next.Rule = "Every few hours, server time";
         next.Source = "Fixed server schedule";
+        Picture(next, null, "IconRift");
         Tone(next, rift - now < TimeSpan.FromMinutes(15) ? "soon" : "later", "Spacetime Rift");
         next.In = "in " + Countdown(rift - now);
         lines.Add(next);
         return lines;
+    }
+
+    /// <summary>The row's portrait, or the glyph <paramref name="icon"/> in its place.</summary>
+    private void Picture(TimerItem item, ImageSource? picture, string icon)
+    {
+        item.Picture = picture;
+        item.Glyph = picture is null ? (Geometry)FindResource(icon) : null;
+        if (item.Kind == "field")
+        {
+            item.Pictures = picture is null ? [] : [picture];
+        }
     }
 
     private void Tone(TimerItem item, string tone, string status)
@@ -295,9 +322,10 @@ public partial class TimersPage : UserControl
         DetailWhereBox.Visibility = item.Where.Length > 0 && item.Where != item.Category ? Visibility.Visible : Visibility.Collapsed;
         DetailCountdown.Text = item.In;
 
-        // The spawn area on the map, when the boss is a map marker
+        // The spawn area on the map, when the boss is a map marker; the boss portraits over it (or in its place)
         var located = BossLocator.Find(item.Name);
         ShowOnMap.IsEnabled = located is not null;
+        Portraits.ItemsSource = item.Pictures;
         if (BossLocator.Crop(item.Name, 384, 170) is { } crop)
         {
             MapCrop.Source = crop.Image;
@@ -305,13 +333,17 @@ public partial class TimersPage : UserControl
             Canvas.SetTop(Pin, crop.At.Y - 13);
             PinLayer.Visibility = Visibility.Visible;
             NoMap.Visibility = Visibility.Collapsed;
+            Portraits.HorizontalAlignment = HorizontalAlignment.Left;
+            Portraits.VerticalAlignment = VerticalAlignment.Bottom;
         }
         else
         {
             MapCrop.Source = null;
             PinLayer.Visibility = Visibility.Collapsed;
-            NoMap.Visibility = Visibility.Visible;
+            NoMap.Visibility = item.Pictures.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
             NoMapText.Text = item.Kind == "field" ? "Not on the bundled maps" : item.Category;
+            Portraits.HorizontalAlignment = HorizontalAlignment.Center;
+            Portraits.VerticalAlignment = VerticalAlignment.Center;
         }
 
         _best = HistoryRow.BestPerBoss(_state.Fights).FirstOrDefault(r => string.Equals(r.Boss, item.Name, StringComparison.OrdinalIgnoreCase));

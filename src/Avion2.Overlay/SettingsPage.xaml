@@ -28,7 +28,7 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="22,26,22,18">
                     <TextBlock Style="{StaticResource BrandTitle}" />
-                    <TextBlock Text="Passive DPS meter for AION2" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,2,0,0" />
+                    <TextBlock Text="Your AION2 hub" Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="0,2,0,0" />
                 </StackPanel>
                 <local:SidebarFooter DockPanel.Dock="Bottom" />
                 <StackPanel x:Name="Sections" Margin="8,0">
@@ -146,6 +146,22 @@
                 </StackPanel>
             </Border>
 
+            <!-- Discord -->
+            <Border x:Name="DiscordCard" Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="general">
+                <StackPanel>
+                    <TextBlock Text="Discord" Style="{StaticResource Heading}" />
+                    <CheckBox x:Name="DiscordBox" Content="Show what I am doing in my Discord status" />
+                    <StackPanel x:Name="DiscordOptions" Margin="0,8,0,0">
+                        <CheckBox x:Name="DiscordNameBox" Content="Include my character name (never in streamer mode)" />
+                        <CheckBox x:Name="DiscordPictureBox" Margin="0,6,0,0"
+                                  Content="Show my character's picture from the official AION2 site (never in streamer mode)" />
+                        <TextBlock x:Name="DiscordStatus" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="Your map, a dungeon run with its time and bosses, the boss you fight with its HP, or gathering, while the meter runs. Other players' names never show (a party shows as &quot;Party of 5&quot;). AVION2 only talks to the Discord app on this PC, the one AVION2 runs on, even when you play on another PC: keep Discord open here." />
+                </StackPanel>
+            </Border>
+
             <!-- Timers -->
             <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="alerts">
                 <StackPanel>
@@ -167,6 +183,8 @@
                         <CheckBox Content="World bosses (Reshanta)" IsChecked="{Binding NotifyWorldBoss}" Margin="0,0,16,4" />
                         <CheckBox Content="Boss skill casts" IsChecked="{Binding NotifyBossCasts}" Margin="0,0,16,4"
                                   ToolTip="While the meter runs: a notice when a boss starts a named skill (no sound)." />
+                        <CheckBox Content="Pet souls" IsChecked="{Binding NotifyPetSouls}" Margin="0,0,16,4"
+                                  ToolTip="While the meter runs: a line when a pet soul comes in, e.g. 'Soul of Zelophi: 3/5' (no sound)." />
                         <CheckBox Content="Shugo Festival" IsChecked="{Binding NotifyFieldEvents}" Margin="0,0,16,4" />
                         <CheckBox Content="Join requests" IsChecked="{Binding NotifyJoinRequests}" Margin="0,0,16,4"
                                   ToolTip="While the meter runs: a notice when someone asks to join the group finder room you lead." />
@@ -221,6 +239,11 @@
                         <Button DockPanel.Dock="Right" Content="Open folder" Margin="6,0,0,0" Click="ClassIcons_Click" />
                         <TextBlock Text="Class icons" Width="150" VerticalAlignment="Center" />
                         <TextBlock x:Name="IconStatus" TextWrapping="Wrap" Opacity="0.85" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <DockPanel Margin="0,8,0,0">
+                        <Button DockPanel.Dock="Right" Content="Open folder" Margin="6,0,0,0" Click="BossImages_Click" />
+                        <TextBlock Text="Boss pictures" Width="150" VerticalAlignment="Center" />
+                        <TextBlock x:Name="BossImageStatus" TextWrapping="Wrap" Opacity="0.85" VerticalAlignment="Center" />
                     </DockPanel>
                     <TextBlock Style="{StaticResource Hint}"
                                Text="A looping video behind the home page (e.g. the official key-art loop). Default: %AppData%\AVION2\background.mp4. Stays on your PC." />
@@ -378,7 +401,7 @@
                         <ComboBox x:Name="LanguageBox" Width="120" HorizontalAlignment="Left" />
                     </DockPanel>
                     <TextBlock Style="{StaticResource Hint}"
-                               Text="Built into the app: names from the A2Tools project (GPL-3.0), field bosses from NOIA2 (GPL-3.0); see licenses\ next to the exe. Advanced: skills.json / npcs.json / field_bosses.json / maps.json in %AppData%\AVION2\data override single tables." />
+                               Text="Built into the app: names, field bosses, recipes and stats from the game client's own tables; sources in licenses\ next to the exe. Advanced: skills.json / npcs.json / field_bosses.json / maps.json in %AppData%\AVION2\data override single tables." />
                 </StackPanel>
             </Border>
 

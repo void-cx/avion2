@@ -95,6 +95,9 @@ public sealed partial class ArmoryClient
         _ => null,
     };
 
+    /// <summary>Raised when a character was loaded from the site (not from the cache).</summary>
+    public event Action<ArmoryProfile>? Loaded;
+
     /// <summary>The cached profile, if it was loaded in the last 10 minutes.</summary>
     public ArmoryProfile? Cached(string name, ushort serverId) =>
         _cache.TryGetValue(Key(name, serverId), out var profile) && _now() - profile.FetchedAt < CacheFor ? profile : null;
@@ -139,6 +142,7 @@ public sealed partial class ArmoryClient
             var equipment = GetAsync($"{ApiUrl}/equipment{query}", cancellationToken);
             var profile = ParseProfile(hit.CharacterId, await info, await equipment, _now());
             _cache[Key(profile.Name, serverId)] = profile;
+            Loaded?.Invoke(profile);
             return new(profile, null);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or InvalidOperationException or KeyNotFoundException)

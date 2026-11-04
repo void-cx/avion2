@@ -71,6 +71,7 @@ internal static class DevShots
             Shoot(home, "home", directory, "home.png");
             if (home.CurrentPage is HomePage homePage)
             {
+                homePage.PetDetails.Toggle.IsChecked = true; // the pet souls, one row per kind
                 homePage.Scroller.ScrollToVerticalOffset(560);
                 Pump(TimeSpan.FromMilliseconds(500));
                 Save(home, Path.Combine(directory, "home-lower.png"));
@@ -140,6 +141,15 @@ internal static class DevShots
                 Shoot(home, "forge", directory, "forge-plan.png");
                 forge.PickMine("Spiritforged Staff");
                 Shoot(home, "forge", directory, "forge-mine.png");
+                forge.CraftingTabLink.IsChecked = true;
+                forge.Crafting.Browse("Blacksmithing", "Weapons");
+                forge.Crafting.SearchBox.Text = "true dragon lord greatsword"; // 25 % combo: Splendent True Dragon Lord Greatsword
+                state.Stored.CraftBuyInstead.Add(610710006); // Fine Thick Balaur Horn bought instead: shows the toggle on
+                Pump(TimeSpan.FromMilliseconds(300));
+                forge.Crafting.ProductList.SelectedItem = (forge.Crafting.ProductList.ItemsSource as IEnumerable<CraftProductLine>)?
+                    .FirstOrDefault(l => l.Name == "True Dragon Lord Greatsword"); // not the Splendent one, listed first
+                Shoot(home, "forge", directory, "forge-crafting.png");
+                forge.ForgeTabLink.IsChecked = true;
             }
 
             home.ShowPage("characters");
@@ -154,6 +164,26 @@ internal static class DevShots
                 }
 
                 characters.SelectTab("equipment");
+            }
+
+            // The stat calculator after the Characters page: the character's values are loaded by now
+            home.ShowPage("forge");
+            if (home.CurrentPage is ForgePage tools)
+            {
+                tools.StatsTabLink.IsChecked = true;
+                tools.Stats.Demo();
+                Shoot(home, "forge", directory, "forge-stats.png");
+                tools.ForgeTabLink.IsChecked = true;
+            }
+
+            Shoot(home, "legions", directory, "legions.png");
+            if (home.CurrentPage is LegionsPage legions)
+            {
+                legions.SelectFirst();
+                Shoot(home, "legions", directory, "legions-selected.png");
+                legions.ShowOrder(Avion2.Analysis.LegionOrder.Members);
+                Shoot(home, "legions", directory, "legions-members.png");
+                legions.ShowOrder(Avion2.Analysis.LegionOrder.CombatPower);
             }
 
             var traced = state.Fights.FirstOrDefault(f => f.Players > 1 && state.LoadTrace(f.Entry) is not null)

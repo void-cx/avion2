@@ -2,17 +2,21 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace Avion2.Overlay;
 
 /// <summary>One notice card; fades in, stays a while, fades out.</summary>
-public sealed class Notice(string text, string chip) : Bindable
+/// <param name="picture">The boss's portrait, or null.</param>
+public sealed class Notice(string text, string chip, ImageSource? picture = null) : Bindable
 {
     private double _opacity;
 
     public string Text { get; } = text;
     public string Chip { get; } = chip;
+    public ImageSource? Picture { get; } = picture;
+    public bool HasPicture => Picture is not null;
     public double Opacity { get => _opacity; set => Set(ref _opacity, value); }
     public DateTime ShownAt { get; } = DateTime.UtcNow;
 }
@@ -53,10 +57,10 @@ public partial class NotificationWindow : Window
         ApplyClickThrough();
     }
 
-    /// <summary>Shows a notice card (newest on top).</summary>
-    public void Notify(string text, string chip)
+    /// <summary>Shows a notice card (newest on top), with the boss's <paramref name="picture"/> when there is one.</summary>
+    public void Notify(string text, string chip, ImageSource? picture = null)
     {
-        _notices.Insert(0, new Notice(text, chip));
+        _notices.Insert(0, new Notice(text, chip, picture));
         while (_notices.Count > MaxNotices)
         {
             _notices.RemoveAt(_notices.Count - 1);

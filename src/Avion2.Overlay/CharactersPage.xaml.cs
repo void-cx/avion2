@@ -49,8 +49,10 @@ public partial class CharactersPage : UserControl
                 Mine.SelectedItem = row;
             }
         };
+        state.PortraitsChanged += ShowPortraits;
         StreamerMode.Changed += () =>
         {
+            ShowPortraits();
             foreach (var list in new[] { Mine, Results })
             {
                 foreach (var row in list.ItemsSource as IEnumerable<CharacterRow> ?? [])
@@ -73,11 +75,23 @@ public partial class CharactersPage : UserControl
     /// <summary>Shows a character (from the meter's right-click, or the lists).</summary>
     public void Show(string name, ushort serverId) => _ = LoadAsync(name, serverId, refresh: false);
 
+    /// <summary>Our characters' portraits in the list (saved, renewed, or hidden by streamer mode).</summary>
+    private void ShowPortraits()
+    {
+        foreach (var row in Mine.ItemsSource as IEnumerable<CharacterRow> ?? [])
+        {
+            row.Portrait = _state.PortraitOf(row.Name, row.ServerId);
+        }
+    }
+
     private void LoadMine()
     {
         var characters = new CharacterStore().Characters;
         var selected = (Mine.SelectedItem as CharacterRow)?.Name;
-        var rows = characters.Select(c => new CharacterRow(c.Name, c.ServerId, c.Class, Detail(c.Class.ToString(), c.ServerId, c.Name))).ToList();
+        var rows = characters.Select(c => new CharacterRow(c.Name, c.ServerId, c.Class, Detail(c.Class.ToString(), c.ServerId, c.Name))
+        {
+            Portrait = _state.PortraitOf(c.Name, c.ServerId),
+        }).ToList();
         Mine.SelectionChanged -= List_SelectionChanged;
         Mine.ItemsSource = rows;
         Mine.SelectedItem = rows.FirstOrDefault(r => r.Name == selected);
@@ -401,9 +415,8 @@ public partial class CharactersPage : UserControl
     {
         var color = node.Type == "Start" ? (Brush)Application.Current.FindResource("AccentBrush") : ItemGrades.Brush(node.Grade);
         string skillName = node.Name.Split(" - ", 2) is [_, var name] ? name : node.Name;
-        var icon = node.Type == "SkillLevel"
-            ? CharacterSheet.WebImage(sheet.Profile.Skills.FirstOrDefault(s => s.Name == skillName)?.Icon, 60)
-            : null;
+        var skill = node.Type == "SkillLevel" ? sheet.Profile.Skills.FirstOrDefault(s => s.Name == skillName) : null;
+        var icon = skill is null ? null : SkillIcons.For(skill.Id) ?? CharacterSheet.WebImage(skill.Icon, 60);
         return new Border
         {
             Margin = new Thickness(3),

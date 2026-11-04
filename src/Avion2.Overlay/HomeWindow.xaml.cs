@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Avion2.Protocol;
@@ -15,6 +16,7 @@ public partial class HomeWindow : Window
     private readonly TimersPage _timers;
     private readonly ForgePage _forge;
     private readonly CharactersPage _characters;
+    private readonly LegionsPage _legions;
     private MapPage? _map;
     private readonly HistoryPage _history;
     private readonly RunsPage _runs;
@@ -34,6 +36,7 @@ public partial class HomeWindow : Window
         _timers = new TimersPage(state, ShowOnMap, row => ShowPage("history", row));
         _forge = new ForgePage(state);
         _characters = new CharactersPage(state);
+        _legions = new LegionsPage(state);
         _history = new HistoryPage(state);
         _runs = new RunsPage(state, run =>
         {
@@ -62,6 +65,7 @@ public partial class HomeWindow : Window
         _timer.Tick += (_, _) => UpdateNavStatus();
         state.ViewedCharacterChanged += UpdateCharacterPick;
         StreamerMode.Changed += UpdateCharacterPick;
+        state.PortraitsChanged += UpdateCharacterPick;
         Loaded += (_, _) =>
         {
             UpdateCharacterPick();
@@ -86,9 +90,17 @@ public partial class HomeWindow : Window
         CharacterPick.ApplyTemplate();
 
         var known = characters.FirstOrDefault(c => c.Name == name);
+        var portrait = known is null ? null : Portrait(known);
         if (CharacterPick.Template.FindName("PickIcon", CharacterPick) is Image icon)
         {
             icon.Source = ClassIcons.For(known?.Class ?? GameClass.Unknown);
+            icon.Visibility = portrait is null ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        if (CharacterPick.Template.FindName("PickPortrait", CharacterPick) is Ellipse round)
+        {
+            round.Fill = portrait is null ? null : new ImageBrush(portrait) { Stretch = Stretch.UniformToFill };
+            round.Visibility = portrait is null ? Visibility.Collapsed : Visibility.Visible;
         }
 
         if (CharacterPick.Template.FindName("PickName", CharacterPick) is TextBlock label)
@@ -114,7 +126,9 @@ public partial class HomeWindow : Window
                 Header = StreamerMode.Name(character.Name, self: playing) + (playing ? "  ·  in game" : string.Empty),
                 IsCheckable = true,
                 IsChecked = character.Name == _state.ViewedCharacter,
-                Icon = new Image { Source = ClassIcons.For(character.Class), Width = 18, Height = 18 },
+                Icon = Portrait(character) is { } face
+                    ? new Ellipse { Width = 20, Height = 20, Fill = new ImageBrush(face) { Stretch = Stretch.UniformToFill } }
+                    : new Image { Source = ClassIcons.For(character.Class), Width = 18, Height = 18 },
             };
             string name = character.Name;
             item.Click += (_, _) => _state.View(name);
@@ -124,10 +138,32 @@ public partial class HomeWindow : Window
         menu.IsOpen = true;
     }
 
+    /// <summary>A character's portrait from the official site as saved on this PC; null in streamer mode.</summary>
+    private ImageSource? Portrait(Avion2.Analysis.KnownCharacter character) => _state.PortraitOf(character.Name, character.ServerId);
+
     /// <summary>The rail's page buttons (Settings sits at the bottom of the rail).</summary>
     private IEnumerable<RadioButton> NavLinks => Rail.Children.OfType<RadioButton>()
-        .Concat(Rail.Children.OfType<StackPanel>().SelectMany(p => p.Children.OfType<RadioButton>()))
+        .Concat(NavStack.Children.OfType<RadioButton>())
         .OrderBy(b => (string)b.Tag == "settings" ? 1 : 0);
+
+    /// <summary>
+    /// Fits the page buttons into the rail: full height (64) when there is room, lower (down to 48, which still shows
+    /// the icon and the label) in a small window; below that the buttons scroll.
+    /// </summary>
+    private void NavScroll_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        var buttons = NavStack.Children.OfType<RadioButton>().ToList();
+        if (buttons.Count == 0 || !e.HeightChanged)
+        {
+            return;
+        }
+
+        double height = Math.Clamp(Math.Floor(NavScroll.ActualHeight / buttons.Count), 48, 64);
+        foreach (var button in buttons)
+        {
+            button.Height = height;
+        }
+    }
 
     /// <summary>Shows a page and brings the window to the front (used by the overlay's buttons).</summary>
     public void ShowPage(string page, HistoryRow? select = null)
@@ -167,16 +203,18 @@ public partial class HomeWindow : Window
 
     private void Nav_Checked(object sender, RoutedEventArgs e)
     {
-        if (sender is not RadioButton { Tag: string tag })
+        if (sender is not RadioButton { Tag: string tag } button)
         {
             return;
         }
 
+        button.BringIntoView(); // in a small window the page's button may be scrolled away
         Page.Content = tag switch
         {
             "timers" => _timers,
             "forge" => _forge,
             "characters" => _characters,
+            "legions" => _legions,
             "map" => _map ??= new MapPage(_state), // created on first visit: it loads the map pictures
             "history" => _history,
             "runs" => _runs,

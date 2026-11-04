@@ -11,6 +11,23 @@ public sealed class GameSession
         Tracker = new CombatTracker(Registry, options);
         Runs = new RunTracker(Registry, Tracker, Inventory);
         Loot.PickedUp += Runs.OnPickup;
+        Loot.PickedUp += OnSoulPickup;
+    }
+
+    /// <summary>Our crafts: what each used and made.</summary>
+    public CraftLog Crafts { get; } = new();
+
+    /// <summary>A soul we picked up: the monster it dropped from (still known by its entity), and its pet kind to learn.</summary>
+    private void OnSoulPickup(LootPickup pickup)
+    {
+        if (!SoulItemLearner.IsSoulItem(pickup.ItemId))
+        {
+            return;
+        }
+
+        _soulItems.Picked(pickup);
+        var source = Registry.Find(pickup.SourceId);
+        Progress.SoulDrops.Add(new SoulDrop(pickup.TimestampMs, pickup.ItemId, pickup.Count, source?.NpcCode));
     }
 
     /// <summary>Items on the ground and the ones we pick up.</summary>
@@ -53,6 +70,9 @@ public sealed class GameSession
 
     /// <summary>The group-finder room we sit in, its ready checks and the join requests to it.</summary>
     public FinderTracker Finder { get; } = new();
+
+    /// <summary>The players the game shows us with their legion, for the Legions page.</summary>
+    public LegionSpotter LegionsSeen { get; } = new();
 
     /// <summary>The party member a boss targets.</summary>
     public BossTargetTracker BossTarget { get; } = new();
@@ -128,6 +148,7 @@ public sealed class GameSession
         Legion.Apply(e);
         Party.Apply(e, Registry);
         Finder.Apply(e, Registry);
+        LegionsSeen.Apply(e, Registry, Party, Legion);
         Rewards.Apply(e);
         Positions.Apply(e);
         Casts.Apply(e);
@@ -163,6 +184,8 @@ public sealed class GameSession
             Legion.ApplyHall(hall);
         }
 
+        // Before the bag takes the change: a craft's materials are told by the counts before
+        Crafts.Apply(e, Inventory, _named is { } me && me.Id == Registry.SelfId ? me.Name : null);
         if (Inventory.Apply(e) && e is InventoryListEvent)
         {
             Inventory.Character = _named is { } n && n.Id == Registry.SelfId ? n.Name : null;
@@ -200,9 +223,9 @@ public sealed class GameSession
             StartProgress();
         }
 
-        if (_soulItems.Apply(e) is { } learned)
+        foreach (var (pet, item) in _soulItems.ApplyAll(e))
         {
-            Progress.SoulItems[learned.Pet] = learned.Item;
+            Progress.SoulItems[pet] = item;
         }
 
         Progress.Apply(e);

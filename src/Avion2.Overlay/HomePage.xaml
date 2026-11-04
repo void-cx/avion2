@@ -52,7 +52,7 @@
 
             <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Left">
                 <TextBlock Style="{StaticResource BrandTitle}" FontSize="54" />
-                <TextBlock Text="Passive DPS meter for AION2. Reads network traffic, never touches the game." Foreground="{DynamicResource SecondaryTextBrush}"
+                <TextBlock Text="Your AION2 hub: meter, runs, timers, map and more. Reads network traffic, never touches the game." Foreground="{DynamicResource SecondaryTextBrush}"
                            FontSize="15" Margin="0,6,0,0" />
                 <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
                     <Button x:Name="StartStop" Style="{StaticResource AccentButton}" Content="Start capture" MinWidth="170" MinHeight="42" Click="StartStop_Click" />
@@ -191,6 +191,21 @@
                             <Button DockPanel.Dock="Bottom" Style="{StaticResource QuietButton}" Content="Open Gear Forge" MinHeight="36" Margin="0,12,0,0" Click="Forge_Click" />
                             <StackPanel>
                                 <TextBlock x:Name="CharactersValue" Foreground="{DynamicResource TitleBrush}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                <!-- our characters: portrait (else class emblem), name and class -->
+                                <ItemsControl x:Name="CharacterList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel Margin="0,0,0,6">
+                                                <local:CharacterAvatar DockPanel.Dock="Left" Icon="{Binding Icon}" Portrait="{Binding Portrait}" Width="34" Height="34"
+                                                                       Margin="0,0,10,0" VerticalAlignment="Center" />
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TitleBrush}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding Line}" Foreground="{DynamicResource MutedBrush}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                                 <StackPanel x:Name="Wallet" Orientation="Horizontal" Margin="0,10,0,0">
                                     <StackPanel Margin="0,0,24,0"><TextBlock Text="Kinah" Style="{StaticResource StatLabel}" />
                                         <TextBlock x:Name="KinahValue" Style="{StaticResource StatValue}" /></StackPanel>
@@ -225,6 +240,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <TextBlock x:Name="PetLine" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0" Visibility="Collapsed" />
+                        <local:PetSoulsView x:Name="PetDetails" Visibility="Collapsed" />
                     </StackPanel>
                 </Border>
 

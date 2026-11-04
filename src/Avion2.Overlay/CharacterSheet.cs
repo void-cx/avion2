@@ -11,6 +11,7 @@ namespace Avion2.Overlay;
 public sealed class CharacterRow(string name, ushort serverId, GameClass cls, string detail) : Bindable
 {
     private string _detail = detail;
+    private ImageSource? _portrait;
 
     public string Name { get; } = name;
 
@@ -20,6 +21,9 @@ public sealed class CharacterRow(string name, ushort serverId, GameClass cls, st
     public ushort ServerId { get; } = serverId;
     public ImageSource? Icon { get; } = ClassIcons.For(cls);
     public string Detail { get => _detail; set => Set(ref _detail, value); }
+
+    /// <summary>One of our characters' saved portrait (shown instead of the class emblem); null for the others.</summary>
+    public ImageSource? Portrait { get => _portrait; set => Set(ref _portrait, value); }
 
     /// <summary>Streamer mode was switched: show the name again.</summary>
     public void Restate() => OnPropertyChanged(nameof(Shown));
@@ -102,7 +106,7 @@ public sealed class CharacterSheet(ArmoryProfile profile)
         .Select(g => new SheetGroup(g.Key switch { "Active" => "Active skills", "Passive" => "Passive skills", "Dp" => "DP skills", _ => g.Key },
             g.OrderByDescending(Slotted).ThenByDescending(s => s.Level)
              .Select(s => new SheetCard(s.Name, $"Level {s.Level}{(Slotted(s) ? string.Empty : " · not on the skill bar")}", Resource("TextBrush"),
-                 Resource("LineBrush"), WebImage(s.Icon, 76), s.Name, Slotted(s) ? 1 : 0.55))
+                 Resource("LineBrush"), SkillIcons.For(s.Id) ?? WebImage(s.Icon, 76), s.Name, Slotted(s) ? 1 : 0.55))
              .ToList()))
         .ToList();
 
@@ -224,7 +228,7 @@ public sealed class CharacterSheet(ArmoryProfile profile)
         string level = item.Enchant > 0 ? $"+{item.Enchant} " : string.Empty;
         string tip = $"{item.Name}\n{item.Grade}{(item.Enchant > 0 ? $" · +{item.Enchant}" : string.Empty)}" +
                      (item.Exceed > 0 ? $" · breakthrough {item.Exceed}" : string.Empty);
-        return new SheetCard(level + item.Name, line, ItemGrades.Brush(item.Grade), Outline(item.Grade), WebImage(item.Icon, 76), tip);
+        return new SheetCard(level + item.Name, line, ItemGrades.Brush(item.Grade), Outline(item.Grade), ItemIcons.For(item.Id) ?? WebImage(item.Icon, 76), tip);
     }
 
     /// <summary>"Earring1" → "Earring", "SubHand" → "Off-hand", as the game labels its slots.</summary>
