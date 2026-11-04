@@ -18,7 +18,6 @@ try
         "replay" when cli.Positional.Count > 0 => Commands.Replay(cli),
         "dump" when cli.Positional.Count > 0 => Commands.Dump(cli),
         "runs" when cli.Positional.Count > 0 => Commands.Runs(cli),
-        "import-data" => await Commands.ImportData(cli),
         _ => Commands.Usage(),
     };
 }
@@ -41,15 +40,12 @@ internal static class Commands
               avion2 replay <file.pcap> [options]    Decode a recorded capture and print encounters
               avion2 dump   <file.pcap> [options]    Hex-dump decoded packets (reverse engineering)
               avion2 runs   <file.pcap> [...]        List the dungeon / expedition runs in recorded captures
-              avion2 import-data [--lang de] [--source <dir>] [--data <dir>]
-                                                     Optional: refresh the names from A2Tools into an
-                                                     override folder (default %AppData%\AVION2\data)
 
             Options:
               --device 3,5        Only capture on these devices (default: all with an address + loopback)
               --record <file>     live: also record the game device to a .pcap
               --log <file>        Write decoded events as JSON lines
-              --lang <code>       Language of the built-in names: en, de, fr, es, pt, ru, ja, ko, zh-Hans, zh-Hant
+              --lang <code>       Language of the built-in names: en, de, fr, es, pt, ru, ja, ko
               --data <dir>        Override folder with skills.json / npcs.json / field_bosses.json / maps.json
               --idle <seconds>    Idle gap that ends an encounter (default 15)
               --duration <sec>    live: stop automatically after this many seconds
@@ -63,28 +59,6 @@ internal static class Commands
               --save              runs: add the runs to AVION2's saved runs (or --store <file>)
             """);
         return 1;
-    }
-
-    public static async Task<int> ImportData(CliArgs cli)
-    {
-        string lang = cli.Get("lang") ?? "en";
-        string target = cli.Get("data") ?? BundledGameData.UserDataDirectory;
-        if (cli.Get("source") is null)
-        {
-            Console.WriteLine($"Downloading {lang} tables from {GameDataImporter.Repository} …");
-        }
-
-        try
-        {
-            var result = await GameDataImporter.ImportAsync(lang, target, cli.Get("source"));
-            Console.WriteLine($"Imported {result.Skills:N0} skills and {result.Npcs:N0} NPCs ({result.Bosses:N0} bosses, {result.Dummies:N0} dummies) into {result.Directory}");
-            return 0;
-        }
-        catch (Exception ex) when (ex is ArgumentException or IOException or HttpRequestException or InvalidDataException)
-        {
-            Console.Error.WriteLine(ex.Message);
-            return 1;
-        }
     }
 
     public static int Devices()

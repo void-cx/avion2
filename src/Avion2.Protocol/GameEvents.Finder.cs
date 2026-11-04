@@ -39,7 +39,7 @@ public sealed record FinderSlot(byte Slot, uint CharacterId, string Name, GameCl
 /// <param name="RoomNumber">The room's number (a re-listed room gets a new one).</param>
 /// <param name="Title">The recruiting text the leader wrote.</param>
 /// <param name="Size">Slots in the room (5).</param>
-/// <param name="DungeonId">The dungeon (600001, 600002, 600072 …; the <c>dungeonId</c> of its bosses in the NPC table).</param>
+/// <param name="DungeonId">The dungeon (600001, 600002, 600072 …; the id of the client's Dungeon table).</param>
 /// <param name="LeaderId">The leader's character.</param>
 /// <param name="Reason">Why it was sent: 1 we created it, 2 we joined, 4 a member left, 5 a member was removed,
 /// 7 a member's slot changed, 9 refresh, 10 the state changed.</param>

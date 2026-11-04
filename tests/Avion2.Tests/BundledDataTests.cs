@@ -29,7 +29,7 @@ public class BundledDataTests
         Assert.True(data.Skills.Count > 1000);
         Assert.True(data.Npcs.Count > 1000);
         Assert.Equal("Basic Attack", data.SkillName(10000));
-        Assert.Equal(86, data.FieldBosses.Count);
+        Assert.Equal(85, data.FieldBosses.Count); // the client's WorldMapFieldNamed rows
         Assert.DoesNotContain("Field boss", data.FieldBossName(101005));
         Assert.Equal("Verteron", data.MapName(1010));
         Assert.Equal("Altgard", data.MapName(1110));

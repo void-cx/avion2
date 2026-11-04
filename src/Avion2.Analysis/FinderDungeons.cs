@@ -3,55 +3,33 @@ using System.Text.Json;
 namespace Avion2.Analysis;
 
 /// <summary>
-/// Names the dungeon of a group-finder room (<c>02 97</c> carries only its id, 600001 …): the NPC table gives the bosses
-/// with that <c>dungeonId</c> and their tier ("Conquest [Normal]", "Exploration" …), and the dungeon table names the
-/// dungeon those bosses belong to ("Krao Cave (Conquest [Normal])").
+/// Names the dungeon of a group-finder room (<c>02 97</c> carries only its id, 600001 …) from the dungeon name table
+/// (<c>dungeon_names.json</c>, the game's own names with the difficulty or stage: "Krao Cave (Exploration)").
 /// </summary>
 public static class FinderDungeons
 {
-    /// <summary>Dungeon id → name with tier, for every id whose bosses the dungeon table knows.</summary>
-    /// <param name="npcsJson">An NPC table (<c>{"2300104": {"name": …, "tier": …, "dungeonId": 600001}}</c>), English
-    /// like the dungeon table.</param>
-    public static IReadOnlyDictionary<uint, string> Build(string? npcsJson, DungeonCatalog catalog)
+    /// <summary>Dungeon id → name, from <c>{"dungeons": {"600002": "Krao Cave (Exploration)"}}</c>.</summary>
+    public static IReadOnlyDictionary<uint, string> Parse(string? json)
     {
         var names = new Dictionary<uint, string>();
-        if (string.IsNullOrWhiteSpace(npcsJson))
+        if (string.IsNullOrWhiteSpace(json))
         {
             return names;
         }
 
-        var bosses = new Dictionary<uint, (List<(uint? Npc, string Name)> Bosses, string? Tier)>();
-        using (var doc = JsonDocument.Parse(npcsJson))
+        using var doc = JsonDocument.Parse(json);
+        if (doc.RootElement.ValueKind != JsonValueKind.Object || !doc.RootElement.TryGetProperty("dungeons", out var dungeons) ||
+            dungeons.ValueKind != JsonValueKind.Object)
         {
-            foreach (var npc in doc.RootElement.EnumerateObject())
-            {
-                if (!uint.TryParse(npc.Name, out uint code) || npc.Value.ValueKind != JsonValueKind.Object ||
-                    !npc.Value.TryGetProperty("dungeonId", out var id) || !id.TryGetUInt32(out uint dungeon) ||
-                    !npc.Value.TryGetProperty("name", out var name) || name.GetString() is not { Length: > 0 } text)
-                {
-                    continue;
-                }
-
-                if (!bosses.TryGetValue(dungeon, out var entry))
-                {
-                    entry = ([], null);
-                }
-
-                entry.Bosses.Add((code, text));
-                if (entry.Tier is null && npc.Value.TryGetProperty("tier", out var tier) && tier.ValueKind == JsonValueKind.String)
-                {
-                    entry.Tier = tier.GetString();
-                }
-
-                bosses[dungeon] = entry;
-            }
+            return names;
         }
 
-        foreach (var (dungeon, (list, tier)) in bosses)
+        foreach (var dungeon in dungeons.EnumerateObject())
         {
-            if (catalog.Match(list) is { } match)
+            if (uint.TryParse(dungeon.Name, out uint id) && dungeon.Value.ValueKind == JsonValueKind.String &&
+                dungeon.Value.GetString() is { Length: > 0 } name)
             {
-                names[dungeon] = string.IsNullOrWhiteSpace(tier) ? match.Name : $"{match.Name} ({tier})";
+                names[id] = name;
             }
         }
 

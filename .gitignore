@@ -19,3 +19,7 @@ site/changelog/
 # written by the Pages workflow (tools/build_seo.py)
 site/sitemap.xml
 site/robots.txt
+__pycache__/
+
+# extract_gamedata: local paths and key files (never commit keys)
+tools/extract_gamedata/local.json

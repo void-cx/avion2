@@ -23,4 +23,9 @@
     <ProjectReference Include="..\..\src\Avion2.Updater\Avion2.Updater.csproj" />
   </ItemGroup>
 
+  <!-- The game data extractor's decoder (no game files, no CUE4Parse): linked in, not referenced -->
+  <ItemGroup>
+    <Compile Include="..\..\tools\extract_gamedata\Core\*.cs" Link="ExtractGameData\%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

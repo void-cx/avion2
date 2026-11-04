@@ -6,7 +6,7 @@ namespace Avion2.Tests;
 public class GameDataTests
 {
     [Fact]
-    public void LoadsA2ToolsTableFormat()
+    public void LoadsOverrideTableFormat()
     {
         string dir = Directory.CreateTempSubdirectory("avion2-data").FullName;
         try

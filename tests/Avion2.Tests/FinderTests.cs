@@ -236,27 +236,30 @@ public class FinderTests
     }
 
     [Fact]
-    public void DungeonNamesComeFromTheBossesOfThatId()
+    public void DungeonNamesComeFromTheDungeonNameTable()
     {
-        const string npcs = """
+        const string table = """
             {
-              "2300104": { "name": "Enhanced Harcon", "isBoss": true, "tier": "Conquest [Normal]", "dungeonId": 600001 },
-              "2300108": { "name": "Neglected Gadioton", "isBoss": true, "tier": "Conquest [Normal]", "dungeonId": 600001 },
-              "2300999": { "name": "Nobody Knows", "isBoss": true, "dungeonId": 600021 },
-              "2300105": { "name": "Sunken Jailor", "isBoss": false }
+              "source": "test",
+              "dungeons": { "600001": "Krao Cave (Conquest)", "600002": "", "x": "Not an id", "600003": 7 }
             }
             """;
-        var catalog = new DungeonCatalog([
-            new DungeonInfo("krao-cave", "Krao Cave", "Party Dungeon", null, null, 5, null,
-                [new DungeonBoss("Enhanced Harcon", null), new DungeonBoss("Neglected Gadioton", null)]),
-        ]);
-        var names = FinderDungeons.Build(npcs, catalog);
-        Assert.Equal("Krao Cave (Conquest [Normal])", FinderDungeons.Name(names, 600001));
-        Assert.Equal("Dungeon 600021", FinderDungeons.Name(names, 600021)); // its bosses are in no dungeon of the table
+        var names = FinderDungeons.Parse(table);
+        Assert.Equal("Krao Cave (Conquest)", FinderDungeons.Name(names, 600001));
+        Assert.Equal("Dungeon 600002", FinderDungeons.Name(names, 600002)); // empty names show the id
+        Assert.Equal("Dungeon 600003", FinderDungeons.Name(names, 600003));
+        Assert.Single(names);
+        Assert.Empty(FinderDungeons.Parse(null));
+        Assert.Empty(FinderDungeons.Parse("[]"));
 
-        // The built-in tables
+        // The built-in table: the game's names with its difficulty and stage labels
         Assert.Equal("Krao Cave (Exploration)", FinderData.DungeonName(600002));
-        Assert.Equal("Vakron Sky Island (Conquest [Normal])", FinderData.DungeonName(600072));
+        Assert.Equal("Krao Cave (Conquest)", FinderData.DungeonName(600001));
+        Assert.Equal("Krao Cave (Conquest [Hard])", FinderData.DungeonName(600004));
+        Assert.Equal("Vakron Sky Island (Conquest)", FinderData.DungeonName(600072));
+        Assert.Equal("Submerged Life Temple (Stage 2)", FinderData.DungeonName(610011));
+        Assert.Equal("Chalice of Muspel (Hard)", FinderData.DungeonName(620021));
+        Assert.Equal("Dungeon 600021000", FinderData.DungeonName(600021000));
     }
 
     [Fact]

@@ -35,8 +35,7 @@ Field boss spawn code (map x 100 + n, from `01 91`) mapped to the NPC code.
 { "1010": "Verteron" }
 ```
 
-## Refreshing from A2Tools
+## Refreshing the built-in tables
 
-`avion2 import-data [--lang de] [--source <local A2Tools clone>] [--data <dir>]` writes the A2Tools tables into an
-override folder (default `%AppData%\AVION2\data`). This is manual and optional. To update what ships, replace the
-files under `assets/gamedata` instead and rebuild.
+The built-in tables are extracted from the game client by the developers (`tools/extract_gamedata`, see
+[docs/DEVELOPMENT.md](../docs/DEVELOPMENT.md)). Files in the override folder are for your own corrections.

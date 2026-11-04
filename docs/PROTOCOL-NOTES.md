@@ -140,7 +140,7 @@ Kinds seen live: 4, 5 (mobs), 0x0C (NPC). Prior art says the u32 after the id is
   [state 1: x f32, y f32, z f32], [0–1 extra byte], timestamp u64 ms`.
   State 1 = alive (the timestamp is when it spawned); state 0 = dead (the timestamp is the announced respawn).
   Verified: map 1010 had 24 entries (20 up, 4 dead with respawns 2–6 h ahead). Spawn code → NPC code comes from
-  NOIA2's published table (86 bosses on maps 1010/1110/1011/1111/20/22), built in as assets/gamedata/field_bosses.json.
+  the client's WorldMapFieldNamed table (85 bosses on maps 1010/1110/1011/1111/20/22), built in as assets/gamedata/field_bosses.json.
   Maps: 1010 Verteron, 1110 Altgard, 1011 Eltnen, 1111 Morheim, 20/22 Chaotic Lower/Middle Reshanta (assets/gamedata/maps).
 - `1B 92`: `actor varint, hp varint, hpMax varint`.
 - Scan: `8D <id varint> 02 01 00 <u32 LE curHP> 00 00 00 00` (NPC; `01 01 01` for local player).

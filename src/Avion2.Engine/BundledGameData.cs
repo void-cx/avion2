@@ -15,7 +15,7 @@ public sealed record GameDataSource(string Language, string? Directory)
 /// </summary>
 public static class BundledGameData
 {
-    public static readonly string[] Languages = ["en", "de", "fr", "es", "pt", "ru", "ja", "ko", "zh-Hans", "zh-Hant"];
+    public static readonly string[] Languages = ["en", "de", "fr", "es", "pt", "ru", "ja", "ko"];
 
     /// <summary>Per-user override directory (%AppData%\AVION2\data), used only when it has tables in it.</summary>
     public static string UserDataDirectory =>
@@ -57,6 +57,10 @@ public static class BundledGameData
     /// <summary>A map marker icon (PNG) by file name, or null.</summary>
     public static Stream? MapIcon(string name) =>
         typeof(BundledGameData).Assembly.GetManifestResourceStream($"gamedata/world/icons/{name}");
+
+    /// <summary>A boss portrait (PNG) by its path, "bosses/&lt;name&gt;.png" (see <see cref="BossPortraits"/>), or null.</summary>
+    public static Stream? BossPortrait(string path) =>
+        typeof(BundledGameData).Assembly.GetManifestResourceStream("gamedata/" + path);
 
     /// <summary>The map picture (JPEG, half the marker resolution).</summary>
     public static Stream? WorldMapImage(string key) =>
@@ -138,6 +142,11 @@ public static class BundledGameData
 
     /// <summary>Item levels and the stats each enchant level adds, parsed on first use.</summary>
     public static GearStats GearStats => GearStatsTable.Value;
+
+    private static readonly Lazy<RecipeBook> RecipeTable = new(() => RecipeBook.Parse(Read("recipes.json")));
+
+    /// <summary>The crafting recipes (materials, yields), parsed on first use.</summary>
+    public static RecipeBook Recipes => RecipeTable.Value;
 
     /// <summary>
     /// The tables for <paramref name="language"/>: each file from <paramref name="overrideDirectory"/> when it

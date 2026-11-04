@@ -24,7 +24,7 @@
 - Field boss board: who is up and when the dead ones respawn (from the game's own `01 91` table), saved across
   restarts, with respawn notifications
 - Official class emblems (from the AION2 armory CDN), built in
-- All game data built in (names in 10 languages, field bosses, zone names, emblems); no runtime downloads
+- All game data built in (names in 8 languages, field bosses, zone names, emblems); no runtime downloads
 - Theme engine with live switching: AION2 and VOID (Enter The Void design manual)
 - Separate built-in sounds and volumes for low HP (warning beeps) and notifications (bell)
 - Movement, skill casts, buffs, ownership and legion records decoded (docs/PROTOCOL.md)
