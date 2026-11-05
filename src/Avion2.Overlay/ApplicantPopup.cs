@@ -7,7 +7,7 @@ namespace Avion2.Overlay;
 /// <summary>
 /// Opens the applicant card (<see cref="ApplicantWindow"/>) while someone asks to join the group-finder room we lead,
 /// and looks each applicant up on the official site. The card closes by itself once nobody is waiting (they joined,
-/// withdrew or the request ran out); ✕ hides it until the next new request. Settings → Notifications → Applicant card.
+/// withdrew or the request ran out); ✕ hides it until the next new request. Settings → Overlays → Applicant card.
 /// </summary>
 public sealed class ApplicantPopup
 {

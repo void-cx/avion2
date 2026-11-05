@@ -518,7 +518,7 @@ public partial class SettingsPage : UserControl
     private static readonly Dictionary<string, (string Title, string Hint)> SectionTexts = new()
     {
         ["general"] = ("General", "Starting AVION2 and updates."),
-        ["overlay"] = ("Overlays", "The DPS overlay: when it shows and how it looks, and the hotkeys."),
+        ["overlay"] = ("Overlays", "The DPS overlay: when it shows and how it looks, and the hotkeys; the applicant card."),
         ["hud"] = ("HUD effects", "Effects drawn on the game's own HUD."),
         ["cubes"] = ("Find My Cube", "The hidden cube compass. Optional, off by default."),
         ["alerts"] = ("Alerts & timers", "Notifications for rifts, bosses and events, and the low-HP alert."),

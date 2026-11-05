@@ -15,6 +15,13 @@
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="Margin" Value="0,2,0,6" />
         </Style>
+        <!-- The line below a checkbox's name saying what it does -->
+        <Style x:Key="OptionHint" TargetType="TextBlock">
+            <Setter Property="Opacity" Value="0.65" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,2,0,0" />
+        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -163,9 +170,39 @@
             </Border>
 
             <!-- Timers -->
+            <!-- Notifications: how they look and sound -->
             <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="alerts">
                 <StackPanel>
-                    <TextBlock Text="Timers &amp; notifications" Style="{StaticResource Heading}" />
+                    <TextBlock Text="Notifications" Style="{StaticResource Heading}" />
+                    <CheckBox Content="Play a sound with notifications" IsChecked="{Binding NotifySound}"
+                              ToolTip="Boss skill casts and pet souls are always silent." />
+                    <DockPanel Margin="0,8,0,0">
+                        <Button DockPanel.Dock="Right" Content="Built-in" Margin="6,0,0,0" Click="DefaultNoticeSound_Click" />
+                        <Button DockPanel.Dock="Right" Content="Browse…" Margin="6,0,0,0" Click="BrowseNoticeSound_Click" />
+                        <Button DockPanel.Dock="Right" Content="▶ Test" Margin="6,0,0,0" Click="TestNoticeSound_Click" />
+                        <TextBlock Text="Sound" Width="150" VerticalAlignment="Center" />
+                        <TextBlock x:Name="NoticeSoundName" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    </DockPanel>
+                    <DockPanel Margin="0,8,0,0">
+                        <TextBlock DockPanel.Dock="Right" Width="44" TextAlignment="Right" VerticalAlignment="Center"
+                                   Text="{Binding NoticeVolume, StringFormat={}{0:P0}}" />
+                        <TextBlock Text="Volume" Width="150" VerticalAlignment="Center" />
+                        <Slider Minimum="0" Maximum="1" Value="{Binding NoticeVolume}" SmallChange="0.05" LargeChange="0.1"
+                                TickFrequency="0.05" IsSnapToTickEnabled="True" />
+                    </DockPanel>
+                    <StackPanel Orientation="Horizontal" Margin="150,8,0,0">
+                        <Button Content="Show a test notification" Margin="0,0,6,0" Click="TestNotification_Click" />
+                        <Button Content="Move notification area" Click="MoveNotifications_Click" />
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,0"
+                               Text="Notifications appear in their own transparent, click-through area on top of the game; place it with &quot;Move notification area&quot;." />
+                </StackPanel>
+            </Border>
+
+            <!-- Timers: from the timetable, ahead of time -->
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="alerts">
+                <StackPanel>
+                    <TextBlock Text="Timers" Style="{StaticResource Heading}" />
                     <DockPanel>
                         <TextBlock Text="Server region" Width="150" VerticalAlignment="Center" />
                         <ComboBox x:Name="RegionBox" Width="180" HorizontalAlignment="Left" SelectedItem="{Binding Region}" />
@@ -176,48 +213,93 @@
                         <TextBlock Text="Notify before" Width="150" VerticalAlignment="Center" />
                         <Slider Minimum="1" Maximum="30" Value="{Binding NotifyLeadMinutes}" TickFrequency="1" IsSnapToTickEnabled="True" />
                     </DockPanel>
-                    <WrapPanel Margin="150,8,0,0">
-                        <CheckBox Content="Spacetime Rifts" IsChecked="{Binding NotifyRift}" Margin="0,0,16,4" />
-                        <CheckBox Content="Dimensional Invasion" IsChecked="{Binding NotifyBossRaid}" Margin="0,0,16,4" />
-                        <CheckBox Content="Field boss respawns" IsChecked="{Binding NotifyFieldBoss}" Margin="0,0,16,4" />
-                        <CheckBox Content="World bosses (Reshanta)" IsChecked="{Binding NotifyWorldBoss}" Margin="0,0,16,4" />
-                        <CheckBox Content="Boss skill casts" IsChecked="{Binding NotifyBossCasts}" Margin="0,0,16,4"
-                                  ToolTip="While the meter runs: a notice when a boss starts a named skill (no sound)." />
-                        <CheckBox Content="Pet souls" IsChecked="{Binding NotifyPetSouls}" Margin="0,0,16,4"
-                                  ToolTip="While the meter runs: a line when a pet soul comes in, e.g. 'Zelophi: 3/5 souls to the pet' (no sound)." />
-                        <CheckBox Content="Shugo Festival" IsChecked="{Binding NotifyFieldEvents}" Margin="0,0,16,4" />
-                        <CheckBox Content="Join requests" IsChecked="{Binding NotifyJoinRequests}" Margin="0,0,16,4"
-                                  ToolTip="While the meter runs: a notice when someone asks to join the group finder room you lead." />
-                        <CheckBox Content="Applicant card" IsChecked="{Binding ApplicantCard}" Margin="0,0,16,4"
-                                  ToolTip="While the meter runs: a small window with the applicant's item level, combat power and gear (from the official site) when someone asks to join the room you lead. Drag it anywhere." />
-                        <CheckBox Content="Room full and ready" IsChecked="{Binding NotifyRoomReady}" Margin="0,0,16,4"
-                                  ToolTip="While the meter runs: a notice when every slot of your group finder room is taken and everyone is ready." />
-                        <CheckBox Content="Dungeon starting" IsChecked="{Binding NotifyDungeonStart}" Margin="0,0,16,4"
-                                  ToolTip="While the meter runs: a notice when your group finder room's dungeon starts." />
-                        <CheckBox Content="PvP events" IsChecked="{Binding NotifyPvp}" Margin="0,0,16,4" ToolTip="Abyss events and the Airspace Battle." />
-                        <CheckBox Content="Resets" IsChecked="{Binding NotifyReset}" Margin="0,0,16,4" />
-                        <CheckBox Content="Play a sound" IsChecked="{Binding NotifySound}" Margin="0,0,16,4" />
-                    </WrapPanel>
-                    <DockPanel Margin="0,8,0,0">
-                        <Button DockPanel.Dock="Right" Content="Built-in" Margin="6,0,0,0" Click="DefaultNoticeSound_Click" />
-                        <Button DockPanel.Dock="Right" Content="Browse…" Margin="6,0,0,0" Click="BrowseNoticeSound_Click" />
-                        <Button DockPanel.Dock="Right" Content="▶ Test" Margin="6,0,0,0" Click="TestNoticeSound_Click" />
-                        <TextBlock Text="Notification sound" Width="150" VerticalAlignment="Center" />
-                        <TextBlock x:Name="NoticeSoundName" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                    </DockPanel>
-                    <DockPanel Margin="0,8,0,0">
-                        <TextBlock DockPanel.Dock="Right" Width="44" TextAlignment="Right" VerticalAlignment="Center"
-                                   Text="{Binding NoticeVolume, StringFormat={}{0:P0}}" />
-                        <TextBlock Text="Notification volume" Width="150" VerticalAlignment="Center" />
-                        <Slider Minimum="0" Maximum="1" Value="{Binding NoticeVolume}" SmallChange="0.05" LargeChange="0.1"
-                                TickFrequency="0.05" IsSnapToTickEnabled="True" />
-                    </DockPanel>
-                    <StackPanel Orientation="Horizontal" Margin="150,6,0,0">
-                        <Button Content="Show a test notification" Margin="0,0,6,0" Click="TestNotification_Click" />
-                        <Button Content="Move notification area" Click="MoveNotifications_Click" />
-                    </StackPanel>
+                    <UniformGrid Columns="2" Margin="0,14,0,0">
+                        <CheckBox IsChecked="{Binding NotifyRift}" Margin="0,0,16,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="Spacetime Rifts" />
+                                <TextBlock Style="{StaticResource OptionHint}" Text="Before each rift opens." />
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox IsChecked="{Binding NotifyBossRaid}" Margin="0,0,16,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="Dimensional Invasion" />
+                                <TextBlock Style="{StaticResource OptionHint}" Text="Before the boss raid starts." />
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox IsChecked="{Binding NotifyWorldBoss}" Margin="0,0,16,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="World bosses (Reshanta)" />
+                                <TextBlock Style="{StaticResource OptionHint}" Text="Before a world boss appears in Reshanta." />
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox IsChecked="{Binding NotifyFieldBoss}" Margin="0,0,16,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="Field boss respawns" />
+                                <TextBlock Style="{StaticResource OptionHint}" Text="Before a field boss is back." />
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox IsChecked="{Binding NotifyFieldEvents}" Margin="0,0,16,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="Shugo Festival" />
+                                <TextBlock Style="{StaticResource OptionHint}" Text="Before each Shugo Festival." />
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox IsChecked="{Binding NotifyPvp}" Margin="0,0,16,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="PvP events" />
+                                <TextBlock Style="{StaticResource OptionHint}" Text="Artifact Siege, Abyss Rift Zone, Airspace Battle." />
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox IsChecked="{Binding NotifyReset}" Margin="0,0,16,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="Resets" />
+                                <TextBlock Style="{StaticResource OptionHint}" Text="Before the daily and the weekly reset." />
+                            </StackPanel>
+                        </CheckBox>
+                    </UniformGrid>
                     <TextBlock Style="{StaticResource Hint}"
-                               Text="Notices appear in their own transparent, click-through area on top of the game; place it with &quot;Move notification area&quot;. Timetable from aion2hub.com (Global client of 2026-09-19). Field boss respawns come from the game itself (for the maps you visited with the meter running)." />
+                               Text="Timetable from aion2hub.com (Global client of 2026-09-19). Field boss respawns come from the game itself, for the maps you visited with the meter running." />
+                </StackPanel>
+            </Border>
+
+            <!-- While you play: straight from the game, while the meter runs -->
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="alerts">
+                <StackPanel>
+                    <TextBlock Text="While you play" Style="{StaticResource Heading}" />
+                    <TextBlock Style="{StaticResource Hint}" Margin="0,-4,0,10" Text="From the game, while the meter runs." />
+                    <UniformGrid Columns="2">
+                        <CheckBox IsChecked="{Binding NotifyJoinRequests}" Margin="0,0,16,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="Join requests" />
+                                <TextBlock Style="{StaticResource OptionHint}" Text="Someone asks to join the room you lead." />
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox IsChecked="{Binding NotifyRoomReady}" Margin="0,0,16,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="Room full and ready" />
+                                <TextBlock Style="{StaticResource OptionHint}" Text="Every slot is taken and everyone is ready." />
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox IsChecked="{Binding NotifyDungeonStart}" Margin="0,0,16,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="Dungeon starting" />
+                                <TextBlock Style="{StaticResource OptionHint}" Text="Your room's dungeon starts." />
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox IsChecked="{Binding NotifyBossCasts}" Margin="0,0,16,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="Boss skill casts" />
+                                <TextBlock Style="{StaticResource OptionHint}" Text="A boss starts a named skill. Silent." />
+                            </StackPanel>
+                        </CheckBox>
+                        <CheckBox IsChecked="{Binding NotifyPetSouls}" Margin="0,0,16,12" VerticalAlignment="Top">
+                            <StackPanel>
+                                <TextBlock Text="Pet souls" />
+                                <TextBlock Style="{StaticResource OptionHint}" Text="A pet soul comes in (3/5 to the pet). Silent." />
+                            </StackPanel>
+                        </CheckBox>
+                    </UniformGrid>
+                    <TextBlock Style="{StaticResource Hint}" Text="Join requests, room full and dungeon starting are for the group finder room you sit in. The applicant card with the applicant's gear is under Overlays." />
                 </StackPanel>
             </Border>
 
@@ -267,6 +349,16 @@
                     <CheckBox Margin="0,4,0,0" Content="Compact rows (one line per player instead of player cards)" IsChecked="{Binding CompactRows}" />
                     <CheckBox Margin="0,4,0,0" Content="Party HP: the other members' HP under the meter while you are in a party" IsChecked="{Binding PartyFrames}" />
                     <TextBlock Style="{StaticResource Hint}" Text="While locked, unlock with Ctrl+Shift+L." />
+                </StackPanel>
+            </Border>
+
+            <!-- Applicant card -->
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="overlay">
+                <StackPanel>
+                    <TextBlock Text="Applicant card" Style="{StaticResource Heading}" />
+                    <CheckBox Content="Show who asks to join my group finder room" IsChecked="{Binding ApplicantCard}" />
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="While the meter runs and you lead a group finder room: a small window beside the game with the applicant's item level and combat power against your room, their gear from the official site and your runs with them. It never takes focus; drag it anywhere. It closes when they join, withdraw or the request runs out." />
                 </StackPanel>
             </Border>
 
