@@ -188,6 +188,8 @@
                         <CheckBox Content="Shugo Festival" IsChecked="{Binding NotifyFieldEvents}" Margin="0,0,16,4" />
                         <CheckBox Content="Join requests" IsChecked="{Binding NotifyJoinRequests}" Margin="0,0,16,4"
                                   ToolTip="While the meter runs: a notice when someone asks to join the group finder room you lead." />
+                        <CheckBox Content="Applicant card" IsChecked="{Binding ApplicantCard}" Margin="0,0,16,4"
+                                  ToolTip="While the meter runs: a small window with the applicant's item level, combat power and gear (from the official site) when someone asks to join the room you lead. Drag it anywhere." />
                         <CheckBox Content="Room full and ready" IsChecked="{Binding NotifyRoomReady}" Margin="0,0,16,4"
                                   ToolTip="While the meter runs: a notice when every slot of your group finder room is taken and everyone is ready." />
                         <CheckBox Content="Dungeon starting" IsChecked="{Binding NotifyDungeonStart}" Margin="0,0,16,4"

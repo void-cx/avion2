@@ -47,7 +47,8 @@ official AION2 site for the characters you open and for your own characters' por
   member a boss is targeting.
 - **Group finder** on Home: the room you sit in with every slot's role, class, item level, combat power and ready
   check, and the join requests while you lead; notices when someone asks to join, when the room is full and ready
-  and when the dungeon starts.
+  and when the dungeon starts. When someone asks to join your room, a small card shows their item level and combat
+  power against your room, their gear from the official site and your runs with them.
 - **Boss casts** under the boss HP bar on the overlay: the skill being wound up with the time left, and "Interrupted".
 - **Low-HP alert** with its own sound.
 - **HUD effects** (beta, off by default): after a one-off calibration picture of the game, AVION2 draws on the

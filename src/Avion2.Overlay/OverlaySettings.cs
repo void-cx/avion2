@@ -158,6 +158,12 @@ public sealed class OverlaySettings
 
     /// <summary>Group finder notices: a join request, the room full and ready, the dungeon starting.</summary>
     public bool NotifyJoinRequests { get; set; } = true;
+
+    /// <summary>A card with the applicant's stats and gear when someone asks to join the room we lead.</summary>
+    public bool ApplicantCard { get; set; } = true;
+
+    public double? ApplicantLeft { get; set; }
+    public double? ApplicantTop { get; set; }
     public bool NotifyRoomReady { get; set; } = true;
     public bool NotifyDungeonStart { get; set; } = true;
     public bool NotifySound { get; set; } = true;

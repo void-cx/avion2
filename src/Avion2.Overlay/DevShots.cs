@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Avion2.Engine;
 
 namespace Avion2.Overlay;
 
@@ -133,6 +134,8 @@ internal static class DevShots
                     compass.Close();
                 }
             }
+
+            Applicant(state, directory);
 
             Shoot(home, "forge", directory, "forge.png");
             if (home.CurrentPage is ForgePage forge)
@@ -349,6 +352,50 @@ internal static class DevShots
             encoder.Save(stream);
         }
         Application.Current.Shutdown();
+    }
+
+    /// <summary>The applicant card on made-up players: while the site is asked, then with the gear.</summary>
+    private static void Applicant(AppState state, string directory)
+    {
+        static Avion2.Analysis.FinderSlotView Seat(byte slot, string name, Avion2.Protocol.GameClass cls, uint itemLevel, uint power, bool self = false) =>
+            new(slot, 100u + slot, name, cls, 45, itemLevel, power, default, false, true, self, self);
+
+        var room = new Avion2.Analysis.FinderRoomView(1, "Room", 0, default, 4,
+            [Seat(0, "Leader", Avion2.Protocol.GameClass.Templar, 2310, 121_000, self: true),
+             Seat(1, "Healer", Avion2.Protocol.GameClass.Chanter, 1860, 96_400),
+             Seat(2, "Archer", Avion2.Protocol.GameClass.Ranger, 2120, 112_900),
+             new(3, 0, "", default, 0, 0, 0, default, false, false, false, false)],
+            [], true);
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var request = new Avion2.Analysis.FinderJoinRequestView(9, "Seraphine", Avion2.Protocol.GameClass.Cleric, 45, 2165, 113_568, 1321, now + 102_000);
+        (uint Id, string Grade, int Enchant, int Slot)[] items =
+        [
+            (10031102, "Unique", 9, 1), (115020003, "Unique", 8, 2), (250360016, "Epic", 9, 3), (250460020, "Epic", 7, 4),
+            (250100022, "Epic", 8, 5), (250200022, "Epic", 8, 6), (250560020, "Legend", 6, 7), (250760018, "Epic", 7, 19),
+            (50017101, "Epic", 9, 10), (50011103, "Legend", 5, 12), (310330010, "Special", 4, 13), (310420003, "Epic", 7, 15),
+        ];
+        var profile = new ArmoryProfile("x", "Seraphine", "Cleric", 45, 113_568, 2165, "Elyos", "Ravens", 1321, "Test", null, [],
+            [new ArmoryBoard(1, "Nezekan", 120, 200), new ArmoryBoard(2, "Zikel", 106, 180)], [], 174,
+            items.Select(i => new ArmoryItem(i.Id, "Item", i.Grade, i.Enchant, 0, i.Slot, "Slot", null)).ToList(),
+            [], null, null, null, [], DateTimeOffset.UtcNow);
+        var shown = new ApplicantShown(request, "Krao Cave (Exploration)", ApplicantCard.Room(room), 0, 2, null, null, "Knights", now - 18_000);
+
+        var window = new ApplicantWindow(state) { Left = -20000 };
+        window.Show();
+        foreach (var (name, view) in new[]
+        {
+            ("loading", shown),
+            ("gear", shown with { Lookup = new ArmoryLookup(profile, null), Seen = "3 runs with you, last Krao Cave 2 days ago" }),
+            ("missing", shown with { Index = 1, Lookup = new ArmoryLookup(null, "No character named Seraphine on Test."), Request = request with { ItemLevel = 1700, CombatPower = 70_000 } }),
+        })
+        {
+            window.Fill(view);
+            window.Tick(now);
+            Pump(TimeSpan.FromMilliseconds(400));
+            Save(window, Path.Combine(directory, $"applicant-{name}.png"));
+        }
+
+        window.Close();
     }
 
     private static void Save(Window window, string path)

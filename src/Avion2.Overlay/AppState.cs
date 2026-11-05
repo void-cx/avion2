@@ -58,6 +58,7 @@ public sealed partial class AppState
         Timers = new TimerService(Settings, FieldBossOccurrences, WorldEvents);
         Timers.Due += OnEventDue;
         Cubes = new CubeFinder(this);
+        Applicants = new ApplicantPopup(this);
         Ceilings = new RewardCeilings(this, () => KeepsGameState);
         Crafts = new CraftJournal(this, () => KeepsGameState);
         Obs = new ObsOverlay(this);
@@ -79,6 +80,9 @@ public sealed partial class AppState
 
     /// <summary>Find My Cube: the compass and what it leads to (runs with the capture, not with the Map page).</summary>
     public CubeFinder Cubes { get; }
+
+    /// <summary>The applicant card for join requests to the group-finder room we lead.</summary>
+    public ApplicantPopup Applicants { get; }
 
     private static string FieldBossFile =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AVION2", "field_bosses.json");
@@ -1258,6 +1262,7 @@ public sealed partial class AppState
         Settings.NotifyBossCasts = s.NotifyBossCasts;
         Settings.NotifyPetSouls = s.NotifyPetSouls;
         Settings.NotifyJoinRequests = s.NotifyJoinRequests;
+        Settings.ApplicantCard = s.ApplicantCard;
         Settings.NotifyRoomReady = s.NotifyRoomReady;
         Settings.NotifyDungeonStart = s.NotifyDungeonStart;
         Settings.NotifySound = s.NotifySound;
@@ -1307,6 +1312,7 @@ public sealed partial class AppState
         s.NotifyBossCasts = Settings.NotifyBossCasts;
         s.NotifyPetSouls = Settings.NotifyPetSouls;
         s.NotifyJoinRequests = Settings.NotifyJoinRequests;
+        s.ApplicantCard = Settings.ApplicantCard;
         s.NotifyRoomReady = Settings.NotifyRoomReady;
         s.NotifyDungeonStart = Settings.NotifyDungeonStart;
         s.NotifySound = Settings.NotifySound;

@@ -364,6 +364,11 @@ public sealed class OverlayViewModel : Bindable
     /// <summary>Group finder: someone asks to join the room we lead.</summary>
     public bool NotifyJoinRequests { get => _notifyJoinRequests; set => Set(ref _notifyJoinRequests, value); }
 
+    private bool _applicantCard = true;
+
+    /// <summary>Group finder: a card with the applicant's stats and gear (its own window).</summary>
+    public bool ApplicantCard { get => _applicantCard; set => Set(ref _applicantCard, value); }
+
     /// <summary>Group finder: every slot taken and everyone ready.</summary>
     public bool NotifyRoomReady { get => _notifyRoomReady; set => Set(ref _notifyRoomReady, value); }
 
