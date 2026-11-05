@@ -222,6 +222,10 @@ public sealed class MeterEngine : IDisposable
             {
                 FieldBossTable?.Invoke(table);
             }
+            else if (e is CharacterProfileEvent profile)
+            {
+                ProfileOpened?.Invoke(profile);
+            }
             else if (e is AirspaceBattleEvent or FieldEventListEvent or FieldEventChangedEvent)
             {
                 WorldEvent?.Invoke(e);
@@ -620,6 +624,9 @@ public sealed class MeterEngine : IDisposable
 
     /// <summary>Raised on the capture thread when one of our crafts finished, with the character it belongs to.</summary>
     public event Action<CraftEntry, string>? Crafted;
+
+    /// <summary>Raised on the capture thread when we opened another player's profile in the game.</summary>
+    public event Action<CharacterProfileEvent>? ProfileOpened;
 
     /// <summary>Raised on the capture thread when we acquired a pet.</summary>
     public event Action<PetAcquiredEvent>? PetAcquired;

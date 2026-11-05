@@ -369,6 +369,11 @@ public sealed class OverlayViewModel : Bindable
     /// <summary>Group finder: a card with the applicant's stats and gear (its own window).</summary>
     public bool ApplicantCard { get => _applicantCard; set => Set(ref _applicantCard, value); }
 
+    private bool _openProfiles = true;
+
+    /// <summary>A profile opened in the game opens on the Characters page too.</summary>
+    public bool OpenProfiles { get => _openProfiles; set => Set(ref _openProfiles, value); }
+
     /// <summary>Group finder: every slot taken and everyone ready.</summary>
     public bool NotifyRoomReady { get => _notifyRoomReady; set => Set(ref _notifyRoomReady, value); }
 

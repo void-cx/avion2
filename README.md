@@ -28,8 +28,9 @@ official AION2 site for the characters you open and for your own characters' por
   cube positions the game sends before you can see them, which may count as an unfair advantage). Your party shows on
   it too, also out of view, and a click on a member shows their map.
 - **Characters**: combat power, item level, gear, skills, Daevanion boards and stats of your characters and of
-  anyone you look up (or right-click in the meter); Compare puts one of yours beside them, piece by piece. It asks
-  the official AION2 site, only when you open a character (or fill the stat calculator in from one).
+  anyone you look up (or right-click in the meter); a profile you open in the game opens there too. Compare puts one
+  of yours beside them, piece by piece. It asks the official AION2 site, only when you open a character (or fill the
+  stat calculator in from one).
 - **Gear Forge**, the calculators:
   - **Enchant and amplify:** average and unlucky cost (materials, Kinah, attempts) for any item, and the best next
     upgrades for your gear: the most item level for your Kinah.

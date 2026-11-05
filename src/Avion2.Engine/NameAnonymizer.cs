@@ -18,7 +18,7 @@ public sealed class NameAnonymizer
         PlayerSpawnEvent player => player with { Name = Alias(player.Name) },
         NpcSpawnEvent { InlineName: { } owner } npc => npc with { InlineName = Alias(owner) },
         LegionTagEvent tag => tag with { Legion = "Legion" },
-        LegionDetailsEvent or LegionRosterEvent => null,
+        LegionDetailsEvent or LegionRosterEvent or CharacterProfileEvent => null,
         PartyRosterEvent roster => roster with { Members = roster.Members.Select(Member).ToList() },
         PartyMemberJoinedEvent joined => joined with { Member = Member(joined.Member) },
         PartyMemberStatusEvent { Status.Legion: not null } status => status with { Status = status.Status with { Legion = "Legion" } },

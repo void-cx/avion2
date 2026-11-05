@@ -99,6 +99,7 @@ public static class PacketParser
                  RewardsParsers.TryParse(opcode, body, timestampMs, emit) ||
                  FinderParsers.TryParse(opcode, body, timestampMs, emit) ||
                  PetParsers.TryParse(opcode, body, timestampMs, emit) ||
+                 ProfileParsers.TryParse(opcode, body, timestampMs, emit) ||
                  LegionsParsers.TryParse(opcode, body, timestampMs, emit),
         };
     }

@@ -163,6 +163,9 @@ public sealed class OverlaySettings
     public bool ApplicantCard { get; set; } = true;
 
     public double? ApplicantLeft { get; set; }
+
+    /// <summary>A profile opened in the game opens on the Characters page too (without taking the focus).</summary>
+    public bool OpenProfiles { get; set; } = true;
     public double? ApplicantTop { get; set; }
     public bool NotifyRoomReady { get; set; } = true;
     public bool NotifyDungeonStart { get; set; } = true;

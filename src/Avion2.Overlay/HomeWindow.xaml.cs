@@ -51,6 +51,12 @@ public partial class HomeWindow : Window
             ShowPage("characters");
             _characters.Show(name, server);
         };
+        state.ProfileOpened += (name, server) =>
+        {
+            // the game has the focus: switch the page, but leave the window where it is
+            ShowPage("characters", front: false);
+            _characters.Show(name, server);
+        };
         state.BackdropChanged += () =>
         {
             _playing = null; // force a reload of the (possibly new) file
@@ -165,8 +171,9 @@ public partial class HomeWindow : Window
         }
     }
 
-    /// <summary>Shows a page and brings the window to the front (used by the overlay's buttons).</summary>
-    public void ShowPage(string page, HistoryRow? select = null)
+    /// <summary>Shows a page and brings the window to the front (used by the overlay's buttons), unless <paramref name="front"/> is false.</summary>
+    /// <param name="front">Show, restore and activate the window; false only switches the page.</param>
+    public void ShowPage(string page, HistoryRow? select = null, bool front = true)
     {
         foreach (var link in NavLinks)
         {
@@ -179,6 +186,11 @@ public partial class HomeWindow : Window
         if (select is not null)
         {
             _history.Select(select);
+        }
+
+        if (!front)
+        {
+            return;
         }
 
         if (!IsVisible)

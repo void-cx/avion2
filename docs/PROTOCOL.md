@@ -463,6 +463,40 @@ The combat power sits after the last `F4 CB 1F` marker: from 11 bytes on, the fi
 followed by a zero `u32`. It equals the finder room's CP for the same player in 105 of 115 spawns. A faction byte
 follows the class code (1 Light, 2 Dark; Aion2Flow).
 
+### `50 36` — Player profile
+Status: Verified (8 of 8 records) · sent when we open another player's profile in the game; the request is encrypted
+
+| Field | Type | Meaning |
+|---|---|---|
+| result | `u16` | 0 |
+| — | `u8` | `07` in all records |
+| name | `str8` | |
+| class | `u32` | [roster class code](#roster-class-codes) |
+| faction | `u8` | 1 Light, 2 Dark |
+| — | `u8` | 1 or 2 |
+| level | `u32` | |
+| — | `u32` | 0 |
+| item level | `u32` | equal to the legion list's value for the same player (1 of 1) |
+| server | `u16` | |
+| — | `u16` | the server again, once 3317 |
+| — | `u8` | `38`, `39` or `31` |
+| title | `u32` | the worn title, 11010004 and alike |
+| legion id | `u64` | 0 without a legion; its top bytes are the server |
+| legion | `str8` | empty without a legion |
+| rank | `u16` | `01 00` or `02 00` |
+| gear | | see below |
+| combat power | `u64` | after the last `04 06 0E 10 14`; equal to the legion list's within 6 (1 of 1) |
+
+The gear is one entry per equipped piece: `item u32`, an enchant `u8` (0–15) in the next bytes,
+the slot `u8` (the official site's slot numbers: 1–8, 10–17, 19, 22 gear, 23–24 runes, 41–45 the "of Vigor/Magic"
+pieces), then `n u8` stones and n × (`stone u32`, `stat u16`, `u8` 1–3), the manastones and soulstones. Some entries
+carry an extra byte (`9C`, `CE`) before the enchant or the slot, so the entries are not walked one by one yet. After
+the gear: 6 × (`01`, `u8` id, `u32`) that look like Daevanion board points, three title ids, and the appearance block
+also in `15 36`.
+
+AVION2 reads the header and the combat power; with Settings → General → Profiles on, the Characters page switches to
+the player (the window is not brought to the front).
+
 ### `41 36` — NPC, monster and summon spawn
 Status: Verified · `40 36` before June 2026
 
@@ -1405,6 +1439,7 @@ Seen in normal play. The names come from the client's message list, placed by it
 | `01 8C`, `07 8C` | NpcShopOpen, CoinShopOpen | |
 | `73 E2`, `25 E2` | RankingPointUpdate, UpdateCharAscension | |
 | `26 37`, `33`–`35 37`, `45 37`, `48`/`49`/`4B`/`4C 37` | movement records | rare |
+| `A0 56`, `9E 56`, `2C E3` | likely reporting a player and its confirmation (not named) | 4–7 bytes, mostly zeros; once each while chat spammers were reported |
 
 ## Identifiers
 

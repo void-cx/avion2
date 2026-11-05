@@ -102,6 +102,16 @@
                 </StackPanel>
             </Border>
 
+            <!-- Profiles -->
+            <Border Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="general">
+                <StackPanel>
+                    <TextBlock Text="Profiles" Style="{StaticResource Heading}" />
+                    <CheckBox Content="Open the profiles I look at in the game on the Characters page" IsChecked="{Binding OpenProfiles}" />
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="When you open a player's profile in the game, AVION2 switches to the Characters page and shows them. The window stays where it is and the game keeps the focus." />
+                </StackPanel>
+            </Border>
+
             <!-- OBS overlay -->
             <Border x:Name="ObsCard" Style="{StaticResource SurfaceCard}" Margin="0,0,0,12" Tag="general">
                 <StackPanel>

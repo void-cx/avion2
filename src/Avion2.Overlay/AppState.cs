@@ -337,6 +337,9 @@ public sealed partial class AppState
 
     public void ShowCharacter(string name, ushort serverId) => ShowCharacterRequested?.Invoke(name, serverId);
 
+    /// <summary>We opened a player's profile in the game (Settings → General → Profiles): name and server.</summary>
+    public event Action<string, ushort>? ProfileOpened;
+
     /// <summary>Starts capturing and shows the overlay. Returns an error message, or null.</summary>
     public string? StartMeter(OverlayTab startTab = OverlayTab.Damage)
     {
@@ -410,6 +413,13 @@ public sealed partial class AppState
             var progress = engine.Progress();
             Application.Current.Dispatcher.BeginInvoke(() => UpdateProgress(progress));
         };
+        engine.ProfileOpened += profile => Application.Current.Dispatcher.BeginInvoke(() =>
+        {
+            if (Settings.OpenProfiles)
+            {
+                ProfileOpened?.Invoke(profile.Name, profile.ServerId);
+            }
+        });
         engine.PetAcquired += pet => Application.Current.Dispatcher.BeginInvoke(() =>
             Notices.Notify($"New pet: {PetName(pet.PetId)}", "Pet acquired"));
         engine.HitTaken += hit =>
@@ -1263,6 +1273,7 @@ public sealed partial class AppState
         Settings.NotifyPetSouls = s.NotifyPetSouls;
         Settings.NotifyJoinRequests = s.NotifyJoinRequests;
         Settings.ApplicantCard = s.ApplicantCard;
+        Settings.OpenProfiles = s.OpenProfiles;
         Settings.NotifyRoomReady = s.NotifyRoomReady;
         Settings.NotifyDungeonStart = s.NotifyDungeonStart;
         Settings.NotifySound = s.NotifySound;
@@ -1313,6 +1324,7 @@ public sealed partial class AppState
         s.NotifyPetSouls = Settings.NotifyPetSouls;
         s.NotifyJoinRequests = Settings.NotifyJoinRequests;
         s.ApplicantCard = Settings.ApplicantCard;
+        s.OpenProfiles = Settings.OpenProfiles;
         s.NotifyRoomReady = Settings.NotifyRoomReady;
         s.NotifyDungeonStart = Settings.NotifyDungeonStart;
         s.NotifySound = Settings.NotifySound;
