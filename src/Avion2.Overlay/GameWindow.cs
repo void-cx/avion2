@@ -150,13 +150,21 @@ internal static class GameWindow
     /// One picture of the game's client area, copied from the screen (the game must be in front and not covered).
     /// Used once for calibration; nothing is saved.
     /// </summary>
-    public static BitmapSource? Capture()
-    {
-        if (ClientArea is not { } area)
-        {
-            return null;
-        }
+    public static BitmapSource? Capture() => ClientArea is { } area ? CaptureScreen(area) : null;
 
+    [DllImport("user32.dll")]
+    private static extern int GetSystemMetrics(int index);
+
+    /// <summary>The whole desktop (every monitor), for when the game window can't be found.</summary>
+    public static BitmapSource? CaptureDesktop()
+    {
+        var area = new Int32Rect(GetSystemMetrics(76), GetSystemMetrics(77), GetSystemMetrics(78), GetSystemMetrics(79));
+        return area.Width > 0 && area.Height > 0 ? CaptureScreen(area) : null;
+    }
+
+    /// <summary>A copy of one area of the screen, in pixels.</summary>
+    private static BitmapSource? CaptureScreen(Int32Rect area)
+    {
         nint screen = GetDC(0);
         nint memory = CreateCompatibleDC(screen);
         nint bitmap = CreateCompatibleBitmap(screen, area.Width, area.Height);

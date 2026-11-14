@@ -85,6 +85,25 @@ AION2's *Combat Analysis* is the ground truth:
 
 On a boss kill, total party damage should be roughly 97–107% of the boss's max HP.
 
+## Capture markers
+
+While a session is recorded, the marker key (**F9** by default; Settings → Developer → Protocol recordings, or Off)
+marks a moment: AVION2 takes the time and a picture of the game (the whole desktop if the game window isn't found),
+then opens a small note box on top of the game. Type what you just did; Enter saves, Esc saves without a note, and
+after 30 s without typing it saves what is there. The game gets the keyboard back when the box closes. The home page
+shows how many markers the recording has and the last note; each saved marker also shows a notice.
+
+Beside `session-….pcap`:
+
+- `session-…-markers.jsonl`: one line per marker,
+  `{"utc_ms": 1763125200123, "n": 3, "note": "gathered the node, 2nd use", "screenshot": "session-…-marker-003.png"}`.
+  `utc_ms` is the system clock (Unix ms) at the key press, the clock Npcap stamps the packets with. `screenshot` is
+  null when no picture could be taken.
+- `session-…-marker-003.png`: the picture of marker 3.
+
+They are deleted with their recording. While AVION2 records, the game doesn't see the marker key (it is a global
+hotkey); pick another key if the game needs it.
+
 ## Game data
 
 Skill/NPC/item/zone/dungeon names (en, de, fr, es, pt, ru, ja, ko), field bosses, crafting recipes, stat rates, enchant

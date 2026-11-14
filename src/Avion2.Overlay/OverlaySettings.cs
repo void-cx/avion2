@@ -203,6 +203,12 @@ public sealed class OverlaySettings
     /// <summary>Developer: session recordings also save pictures of the game window, two a second.</summary>
     public bool RecordScreen { get; set; }
 
+    /// <summary>
+    /// The capture-marker key while a session is recorded ("F9", "Ctrl+Shift+M"; "" = off): saves the moment, a
+    /// picture of the game and a note beside the recording.
+    /// </summary>
+    public string MarkerHotkey { get; set; } = "F9";
+
     /// <summary>Delete saved fights / recordings older than this many days when AVION2 starts (0 = keep).</summary>
     public int KeepFightsDays { get; set; }
     public int KeepRecordingsDays { get; set; }

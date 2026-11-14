@@ -111,6 +111,22 @@ public partial class HomePage : UserControl
         ComingUp.ItemsSource = lines.OrderBy(l => l.At).Take(4).Select(l => l.Line).ToList();
     }
 
+    /// <summary>The capture markers of the running recording: how many, the last note, or how to make one.</summary>
+    private void RefreshMarkers()
+    {
+        if (_state.Markers is not { } markers || string.IsNullOrWhiteSpace(_state.Stored.MarkerHotkey))
+        {
+            MarkerLine.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        MarkerLine.Visibility = Visibility.Visible;
+        string key = _state.Stored.MarkerHotkey;
+        MarkerLine.Text = _state.MarkerKeyError ?? (markers.Count == 0
+            ? $"Markers: none yet · press {key} in the game to mark what you just did"
+            : $"Markers: {markers.Count} · last: {(string.IsNullOrEmpty(markers.LastNote) ? "(no note)" : markers.LastNote)}");
+    }
+
     private void Refresh()
     {
         RefreshComingUp();
@@ -129,6 +145,7 @@ public partial class HomePage : UserControl
         OverlayToggle.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
         OverlayToggle.Content = _state.OverlayVisible ? "Hide overlay" : "Show overlay";
         DeviceBox.IsEnabled = RecordBox.IsEnabled = !running; // the overlay choice stays editable while capturing
+        RefreshMarkers();
 
         if (_state.Engine is not { } engine)
         {

@@ -19,6 +19,7 @@ public partial class MainWindow : Window
     private const int HotkeyLock = 1;
     private const int HotkeyReset = 2;
     private const int HotkeyToggle = 3;
+    private const int HotkeyMarker = 4;
 
     private readonly AppState _state;
     private readonly MeterEngine _engine;
@@ -111,6 +112,23 @@ public partial class MainWindow : Window
         NativeMethods.RegisterHotKey(_hwnd, HotkeyLock, mods, (uint)KeyInterop.VirtualKeyFromKey(Key.L));
         NativeMethods.RegisterHotKey(_hwnd, HotkeyReset, mods, (uint)KeyInterop.VirtualKeyFromKey(Key.R));
         NativeMethods.RegisterHotKey(_hwnd, HotkeyToggle, mods, (uint)KeyInterop.VirtualKeyFromKey(Key.O));
+        RegisterMarkerKey();
+    }
+
+    /// <summary>
+    /// The capture-marker key, only while a session is recorded (a global hotkey: the game doesn't see that key
+    /// while AVION2 records).
+    /// </summary>
+    private void RegisterMarkerKey()
+    {
+        if (_state.Markers is null || !NativeMethods.TryParseHotkey(_state.Stored.MarkerHotkey, out uint modifiers, out uint key))
+        {
+            return;
+        }
+
+        _state.MarkerKeyError = NativeMethods.RegisterHotKey(_hwnd, HotkeyMarker, modifiers, key)
+            ? null
+            : $"{_state.Stored.MarkerHotkey} is taken by another program; pick another marker key in Settings → Developer";
     }
 
     private void Refresh()
@@ -222,6 +240,9 @@ public partial class MainWindow : Window
                 break;
             case HotkeyToggle:
                 _state.SetOverlayVisible(!IsVisible);
+                break;
+            case HotkeyMarker:
+                _state.Mark();
                 break;
         }
 
@@ -382,6 +403,7 @@ public partial class MainWindow : Window
             NativeMethods.UnregisterHotKey(_hwnd, HotkeyLock);
             NativeMethods.UnregisterHotKey(_hwnd, HotkeyReset);
             NativeMethods.UnregisterHotKey(_hwnd, HotkeyToggle);
+            NativeMethods.UnregisterHotKey(_hwnd, HotkeyMarker);
         }
 
         _alertSound.Dispose();

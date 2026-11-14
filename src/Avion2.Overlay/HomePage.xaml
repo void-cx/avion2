@@ -309,6 +309,9 @@
                             <ComboBox x:Name="DeviceBox" DisplayMemberPath="Label" Margin="0,0,0,10"
                                       ToolTip="Automatic captures on every adapter and finds the game connection by itself (also through VPNs and ping reducers)." />
                             <CheckBox x:Name="RecordBox" Content="Record session (.pcap)" Foreground="{DynamicResource SecondaryTextBrush}" />
+                            <TextBlock x:Name="MarkerLine" Visibility="Collapsed" Margin="0,8,0,0" TextWrapping="Wrap" FontSize="12"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                       ToolTip="Capture markers: the marker key saves the moment, a picture of the game and your note beside the recording (session-…-markers.jsonl)." />
                         </StackPanel>
                     </Border>
                 </Grid>

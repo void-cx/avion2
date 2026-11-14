@@ -15,12 +15,33 @@ public static class Recordings
     /// <summary>The pictures of the screen recorded with <paramref name="recording"/> (Developer setting).</summary>
     public static string FramesDirectory(string recording) => Path.ChangeExtension(recording, ".frames");
 
+    /// <summary>
+    /// The capture markers saved with <paramref name="recording"/> (F9 while recording): one JSON line per marker,
+    /// <c>session-…-markers.jsonl</c> beside the .pcap.
+    /// </summary>
+    public static string MarkersPath(string recording) => StemOf(recording) + "-markers.jsonl";
+
+    /// <summary>The picture of marker <paramref name="number"/>: <c>session-…-marker-003.png</c> beside the .pcap.</summary>
+    public static string MarkerPicturePath(string recording, int number) => $"{StemOf(recording)}-marker-{number:D3}.png";
+
+    private static string StemOf(string recording) =>
+        Path.Combine(Path.GetDirectoryName(Path.GetFullPath(recording))!, Path.GetFileNameWithoutExtension(recording));
+
+    /// <summary>The marker list and marker pictures that belong to <paramref name="recording"/>.</summary>
+    private static IEnumerable<FileInfo> MarkerFiles(FileInfo recording)
+    {
+        string stem = Path.GetFileNameWithoutExtension(recording.Name);
+        return recording.Directory is not { } folder ? []
+            : folder.EnumerateFiles(stem + "-marker-*.png").Append(new FileInfo(MarkersPath(recording.FullName))).Where(f => f.Exists);
+    }
+
     /// <summary>How many recordings there are and their size, screen pictures included.</summary>
     public static (int Files, long Bytes) Usage()
     {
         var files = Files();
         long frames = Frames().Sum(d => d.EnumerateFiles().Sum(f => f.Length));
-        return (files.Count, files.Sum(f => f.Length) + frames);
+        long markers = files.Sum(f => MarkerFiles(f).Sum(m => m.Length));
+        return (files.Count, files.Sum(f => f.Length) + frames + markers);
     }
 
     /// <summary>
@@ -40,6 +61,11 @@ public static class Recordings
 
             try
             {
+                foreach (var marker in MarkerFiles(file).ToList())
+                {
+                    marker.Delete();
+                }
+
                 file.Delete();
                 deleted++;
             }

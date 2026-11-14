@@ -360,6 +360,8 @@ public sealed partial class AppState
         }
 
         CurrentRecording = record;
+        Markers = record is not null && !IsReplay ? new CaptureMarkers(record) : null;
+        MarkerKeyError = null;
         var engine = new MeterEngine(new EngineOptions
         {
             Devices = _baseOptions.Devices ?? (Stored.Device is { } device ? [device] : null),
@@ -493,6 +495,8 @@ public sealed partial class AppState
         Overlay = null;
         Engine = null;
         StopScreen();
+        _markerNote?.Commit();
+        Markers = null;
         overlay?.Stop(); // disposes the engine
         UpdateHud();
         MeterStateChanged?.Invoke();
@@ -531,6 +535,8 @@ public sealed partial class AppState
         Overlay = null;
         Engine = null;
         StopScreen();
+        _markerNote?.Commit();
+        Markers = null;
         MeterStateChanged?.Invoke();
     }
 
@@ -547,6 +553,49 @@ public sealed partial class AppState
     {
         History.Delete(row.Entry);
         Fights.Remove(row);
+    }
+
+    /// <summary>The capture markers of the recording being written, or null when nothing is recorded.</summary>
+    internal CaptureMarkers? Markers { get; private set; }
+
+    /// <summary>Why the marker key could not be set up (taken by another program), or null.</summary>
+    public string? MarkerKeyError { get; internal set; }
+
+    private MarkerNoteWindow? _markerNote;
+
+    /// <summary>
+    /// The marker key was pressed: the moment and a picture are taken now, then a note box opens on top of the game.
+    /// A second press while the box is open saves the first marker with what is typed so far.
+    /// </summary>
+    public void Mark()
+    {
+        if (Markers is not { } markers)
+        {
+            return;
+        }
+
+        _markerNote?.Commit();
+        var pending = markers.Begin();
+        var box = new MarkerNoteWindow(pending.Number, pending.Picture is not null);
+        _markerNote = box;
+        box.Done += note =>
+        {
+            if (_markerNote == box)
+            {
+                _markerNote = null;
+            }
+
+            // Off the UI thread: the marker waits for its picture to be written
+            _ = Task.Run(() => markers.Finish(pending, note)).ContinueWith(task => Application.Current.Dispatcher.BeginInvoke(() =>
+            {
+                bool saved = task.IsCompletedSuccessfully && task.Result;
+                Notices.Notify(
+                    saved ? $"Marker {pending.Number} saved{(note.Length > 0 ? $": {note}" : string.Empty)}" : $"Marker {pending.Number} could not be saved",
+                    "Marker");
+                MeterStateChanged?.Invoke();
+            }), TaskScheduler.Default);
+        };
+        box.Show();
     }
 
     /// <summary>The .pcap being written by the running meter (never deleted), or null.</summary>

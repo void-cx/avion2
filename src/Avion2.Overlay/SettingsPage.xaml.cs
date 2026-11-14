@@ -59,6 +59,15 @@ public partial class SettingsPage : UserControl
             _state.Stored.RecordScreen = RecordScreenBox.IsChecked == true;
             _state.SaveSettings();
         };
+        string[] markerKeys = ["Off", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Ctrl+Shift+M"];
+        MarkerKeyBox.ItemsSource = markerKeys;
+        MarkerKeyBox.SelectedItem = string.IsNullOrWhiteSpace(state.Stored.MarkerHotkey) ? "Off"
+            : markerKeys.FirstOrDefault(k => string.Equals(k, state.Stored.MarkerHotkey, StringComparison.OrdinalIgnoreCase)) ?? "F9";
+        MarkerKeyBox.SelectionChanged += (_, _) =>
+        {
+            _state.Stored.MarkerHotkey = MarkerKeyBox.SelectedItem is "Off" ? string.Empty : MarkerKeyBox.SelectedItem as string ?? "F9";
+            _state.SaveSettings();
+        };
         SetUpStorage();
         CubeFinderBox.IsChecked = state.Stored.CubeFinder;
         OverlayModeBox.ItemsSource = OverlayModes;

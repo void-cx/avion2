@@ -448,6 +448,12 @@
                     <CheckBox x:Name="RecordScreenBox" Content="Record the game window with each session recording" Margin="0,12,0,0" />
                     <TextBlock Style="{StaticResource Hint}"
                                Text="Two pictures a second, saved beside the recording (a folder named like it, one picture per moment, named by the same clock as the packets) to match the traffic with what was on screen. Only the game's area of the screen, and only while the game or AVION2 is in front. About 35 MB a minute; deleted with the recordings. Applies from the next capture start." />
+                    <DockPanel Margin="0,12,0,0">
+                        <TextBlock Text="Marker key" Width="150" VerticalAlignment="Center" />
+                        <ComboBox x:Name="MarkerKeyBox" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="While a session is recorded, this key saves a capture marker: the time (same clock as the packets), a picture of the game and a short note you type into a box on top of the game (Enter saves, Esc saves without a note). Saved beside the recording as session-…-markers.jsonl and session-…-marker-001.png; deleted with the recordings. The game doesn't see this key while AVION2 records. Applies from the next capture start." />
                 </StackPanel>
             </Border>
 
