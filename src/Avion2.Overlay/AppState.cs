@@ -473,6 +473,7 @@ public sealed partial class AppState
         _screen = record is not null && Stored.RecordScreen && !IsReplay ? new ScreenRecorder(record) : null;
         Overlay = new MainWindow(this, engine) { StartTab = startTab };
         Overlay.Run();
+        UpdateMarkerButton();
         if (Stored.OverlayAutoShow == "start")
         {
             Overlay.Show();
@@ -497,6 +498,7 @@ public sealed partial class AppState
         StopScreen();
         _markerNote?.Commit();
         Markers = null;
+        UpdateMarkerButton();
         overlay?.Stop(); // disposes the engine
         UpdateHud();
         MeterStateChanged?.Invoke();
@@ -537,6 +539,7 @@ public sealed partial class AppState
         StopScreen();
         _markerNote?.Commit();
         Markers = null;
+        UpdateMarkerButton();
         MeterStateChanged?.Invoke();
     }
 
@@ -562,6 +565,26 @@ public sealed partial class AppState
     public string? MarkerKeyError { get; internal set; }
 
     private MarkerNoteWindow? _markerNote;
+    private MarkerButton? _markerButton;
+
+    /// <summary>
+    /// The floating marker button: shown while a session is recorded (unless turned off in Settings → Developer),
+    /// closed otherwise.
+    /// </summary>
+    public void UpdateMarkerButton()
+    {
+        bool wanted = Markers is not null && Stored.MarkerButton;
+        if (wanted && _markerButton is null)
+        {
+            _markerButton = new MarkerButton(this);
+            _markerButton.Show();
+        }
+        else if (!wanted && _markerButton is { } button)
+        {
+            _markerButton = null;
+            button.Close();
+        }
+    }
 
     /// <summary>
     /// The marker key was pressed: the moment and a picture are taken now, then a note box opens on top of the game.
@@ -592,6 +615,7 @@ public sealed partial class AppState
                 Notices.Notify(
                     saved ? $"Marker {pending.Number} saved{(note.Length > 0 ? $": {note}" : string.Empty)}" : $"Marker {pending.Number} could not be saved",
                     "Marker");
+                _markerButton?.Refresh();
                 MeterStateChanged?.Invoke();
             }), TaskScheduler.Default);
         };

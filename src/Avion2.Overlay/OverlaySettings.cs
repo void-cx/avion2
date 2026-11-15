@@ -209,6 +209,14 @@ public sealed class OverlaySettings
     /// </summary>
     public string MarkerHotkey { get; set; } = "F9";
 
+    /// <summary>A floating button on top of the game that does what the marker key does, while a session is recorded.</summary>
+    public bool MarkerButton { get; set; } = true;
+
+    /// <summary>Where the marker button was dragged to; null = near the game's top right corner.</summary>
+    public double? MarkerButtonLeft { get; set; }
+
+    public double? MarkerButtonTop { get; set; }
+
     /// <summary>Delete saved fights / recordings older than this many days when AVION2 starts (0 = keep).</summary>
     public int KeepFightsDays { get; set; }
     public int KeepRecordingsDays { get; set; }

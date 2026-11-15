@@ -101,8 +101,11 @@ Beside `session-….pcap`:
   null when no picture could be taken.
 - `session-…-marker-003.png`: the picture of marker 3.
 
-They are deleted with their recording. While AVION2 records, the game doesn't see the marker key (it is a global
-hotkey); pick another key if the game needs it.
+They are deleted with their recording. The marker key is a global hotkey: while AVION2 records, other programs don't
+get it. A game can keep such keys from reaching AVION2 while it is in front; for that, a small round **marker button**
+floats on top of the game while recording (Settings → Developer turns it off): a click does what the key does,
+dragging moves it (the place is kept), and the number on it is how many markers the recording has. It is left out of
+the marker pictures.
 
 ## Game data
 

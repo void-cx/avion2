@@ -453,7 +453,10 @@
                         <ComboBox x:Name="MarkerKeyBox" Width="200" HorizontalAlignment="Left" VerticalAlignment="Center" />
                     </DockPanel>
                     <TextBlock Style="{StaticResource Hint}"
-                               Text="While a session is recorded, this key saves a capture marker: the time (same clock as the packets), a picture of the game and a short note you type into a box on top of the game (Enter saves, Esc saves without a note). Saved beside the recording as session-…-markers.jsonl and session-…-marker-001.png; deleted with the recordings. The game doesn't see this key while AVION2 records. Applies from the next capture start." />
+                               Text="While a session is recorded, this key saves a capture marker: the time (same clock as the packets), a picture of the game and a short note you type into a box on top of the game (Enter saves, Esc saves without a note). Saved beside the recording as session-…-markers.jsonl and session-…-marker-001.png; deleted with the recordings. While AVION2 records, other programs don't get this key; if the game doesn't let it through while it is in front, use the floating marker button below. Applies from the next capture start." />
+                    <CheckBox x:Name="MarkerButtonBox" Content="Show a floating marker button while recording" Margin="0,12,0,0" />
+                    <TextBlock Style="{StaticResource Hint}"
+                               Text="A small round button on top of the game that does what the marker key does: click it to mark what you just did, drag it to move it. For when the game doesn't let the key through. The number on it is how many markers the recording has. It is left out of the marker pictures." />
                 </StackPanel>
             </Border>
 

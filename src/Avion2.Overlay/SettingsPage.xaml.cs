@@ -68,6 +68,13 @@ public partial class SettingsPage : UserControl
             _state.Stored.MarkerHotkey = MarkerKeyBox.SelectedItem is "Off" ? string.Empty : MarkerKeyBox.SelectedItem as string ?? "F9";
             _state.SaveSettings();
         };
+        MarkerButtonBox.IsChecked = state.Stored.MarkerButton;
+        MarkerButtonBox.Click += (_, _) =>
+        {
+            _state.Stored.MarkerButton = MarkerButtonBox.IsChecked == true;
+            _state.SaveSettings();
+            _state.UpdateMarkerButton();
+        };
         SetUpStorage();
         CubeFinderBox.IsChecked = state.Stored.CubeFinder;
         OverlayModeBox.ItemsSource = OverlayModes;
